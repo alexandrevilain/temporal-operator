@@ -1,0 +1,293 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: temporalclusters.apps.alexandrevilain.dev
+spec:
+  group: apps.alexandrevilain.dev
+  names:
+    kind: TemporalCluster
+    listKind: TemporalClusterList
+    plural: temporalclusters
+    singular: temporalcluster
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TemporalCluster is the Schema for the temporalclusters API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TemporalClusterSpec defines the desired state of TemporalCluster.
+            properties:
+              datastores:
+                items:
+                  description: TemporalDatastoreSpec contains temporal datastore specifications.
+                  properties:
+                    name:
+                      description: Name is the name of the datatstore. It should be
+                        unique and will be referenced within the persitence spec.
+                      type: string
+                    passwordSecretRef:
+                      description: PasswordSecret is the reference to the secret holding
+                        the password.
+                      properties:
+                        key:
+                          description: Key in the Secret.
+                          type: string
+                        name:
+                          description: Name of the Secret.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    sql:
+                      description: SQL holds all connection parameters for SQL datastores.
+                      properties:
+                        connectAddr:
+                          description: ConnectAddr is the remote addr of the database.
+                          type: string
+                        connectAttributes:
+                          additionalProperties:
+                            type: string
+                          description: ConnectAttributes is a set of key-value attributes
+                            to be sent as part of connect data_source_name url
+                          type: object
+                        connectProtocol:
+                          description: ConnectProtocol is the protocol that goes with
+                            the ConnectAddr.
+                          type: string
+                        databaseName:
+                          description: DatabaseName is the name of SQL database to
+                            connect to.
+                          type: string
+                        maxConnLifetime:
+                          description: MaxConnLifetime is the maximum time a connection
+                            can be alive
+                          format: int64
+                          type: integer
+                        maxConns:
+                          description: MaxConns the max number of connections to this
+                            datastore.
+                          type: integer
+                        maxIdleConns:
+                          description: MaxIdleConns is the max number of idle connections
+                            to this datastore.
+                          type: integer
+                        pluginName:
+                          description: PluginName is the name of SQL plugin.
+                          type: string
+                        taskScanPartitions:
+                          description: TaskScanPartitions is the number of partitions
+                            to sequentially scan during ListTaskQueue operations.
+                          type: integer
+                        user:
+                          description: User is the username to be used for the connection.
+                          type: string
+                      required:
+                      - connectAddr
+                      - databaseName
+                      - pluginName
+                      - user
+                      type: object
+                    tls:
+                      description: TLS is an optionnal s
+                      properties:
+                        bool:
+                          type: boolean
+                        caFileRef:
+                          description: SecretKeyReference contains enough information
+                            to locate the referenced Kubernetes Secret object in the
+                            same namespace.
+                          properties:
+                            key:
+                              description: Key in the Secret.
+                              type: string
+                            name:
+                              description: Name of the Secret.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        certFileRef:
+                          description: SecretKeyReference contains enough information
+                            to locate the referenced Kubernetes Secret object in the
+                            same namespace.
+                          properties:
+                            key:
+                              description: Key in the Secret.
+                              type: string
+                            name:
+                              description: Name of the Secret.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        enableHostVerification:
+                          type: boolean
+                        keyFileRef:
+                          description: SecretKeyReference contains enough information
+                            to locate the referenced Kubernetes Secret object in the
+                            same namespace.
+                          properties:
+                            key:
+                              description: Key in the Secret.
+                              type: string
+                            name:
+                              description: Name of the Secret.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        serverName:
+                          type: string
+                      required:
+                      - bool
+                      - caFileRef
+                      - certFileRef
+                      - enableHostVerification
+                      - keyFileRef
+                      - serverName
+                      type: object
+                  required:
+                  - name
+                  - passwordSecretRef
+                  type: object
+                type: array
+              image:
+                description: Image defines the temporal server image the instance
+                  should use.
+                type: string
+              imagePullSecrets:
+                items:
+                  description: LocalObjectReference contains enough information to
+                    let you locate the referenced object inside the same namespace.
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
+                type: array
+              numHistoryShards:
+                description: NumHistoryShards is the desired number of history shards.
+                  This field is immutable.
+                format: int32
+                minimum: 1
+                type: integer
+              persistence:
+                description: TemporalPersistenceSpec contains temporal persistence
+                  specifications.
+                properties:
+                  advancedVisibilityStore:
+                    description: AdvancedVisibilityStore is the name of the datastore
+                      to be used for visibility records
+                    type: string
+                  defaultStore:
+                    description: DefaultStore is the name of the default data store
+                      to use.
+                    type: string
+                  visibilityStore:
+                    description: VisibilityStore is the name of the datastore to be
+                      used for visibility records. If not set it defaults to the default
+                      store.
+                    type: string
+                required:
+                - defaultStore
+                type: object
+              services:
+                description: TemporalServicesSpec contains all temporal services specifications.
+                properties:
+                  frontend:
+                    description: ServiceSpec contains a temporal service specifications.
+                    properties:
+                      membershipPort:
+                        type: integer
+                      port:
+                        type: integer
+                      replicas:
+                        minimum: 1
+                        type: integer
+                    required:
+                    - replicas
+                    type: object
+                  history:
+                    description: ServiceSpec contains a temporal service specifications.
+                    properties:
+                      membershipPort:
+                        type: integer
+                      port:
+                        type: integer
+                      replicas:
+                        minimum: 1
+                        type: integer
+                    required:
+                    - replicas
+                    type: object
+                  matching:
+                    description: ServiceSpec contains a temporal service specifications.
+                    properties:
+                      membershipPort:
+                        type: integer
+                      port:
+                        type: integer
+                      replicas:
+                        minimum: 1
+                        type: integer
+                    required:
+                    - replicas
+                    type: object
+                  worker:
+                    description: ServiceSpec contains a temporal service specifications.
+                    properties:
+                      membershipPort:
+                        type: integer
+                      port:
+                        type: integer
+                      replicas:
+                        minimum: 1
+                        type: integer
+                    required:
+                    - replicas
+                    type: object
+                type: object
+              version:
+                description: Version defines the temporal version the instance should
+                  run.
+                type: string
+            required:
+            - datastores
+            - numHistoryShards
+            - persistence
+            - services
+            - version
+            type: object
+          status:
+            description: TemporalClusterStatus defines the observed state of TemporalCluster.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

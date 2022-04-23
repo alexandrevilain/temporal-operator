@@ -1,0 +1,20 @@
+# permissions for end users to view temporalclusters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: temporalcluster-viewer-role
+rules:
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalclusters
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalclusters/status
+  verbs:
+  - get
