@@ -18,15 +18,10 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	temporallog "go.temporal.io/server/common/log"
-	"go.temporal.io/server/tools/common/schema"
-	"go.temporal.io/server/tools/sql"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -39,10 +34,6 @@ import (
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/cluster"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
-	"github.com/urfave/cli"
-
-	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/mysql"      // needed to load mysql plugin
-	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/postgresql" // needed to load postgresql plugin
 )
 
 const (
@@ -53,7 +44,8 @@ const (
 // TemporalClusterReconciler reconciles a TemporalCluster object
 type TemporalClusterReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme             *runtime.Scheme
+	PersistenceManager *persistence.Manager
 }
 
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
@@ -94,35 +86,11 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	defaultStore, found := temporalCluster.GetDefaultDatastore()
-	if !found {
-		return errors.New("default datastore not found")
-	}
-
-	sqlCfg := persistence.NewSQLconfigFromDatastoreSpec(defaultStore)
-	sqlCfg.ConnectAddr = "localhost:5432"
-	passwordSecret := &corev1.Secret{}
-	err := r.Client.Get(ctx, types.NamespacedName{Name: defaultStore.PasswordSecretRef.Name, Namespace: temporalCluster.Namespace}, passwordSecret)
-	if err != nil {
+	if err := r.PersistenceManager.RunDefaultStoreSchemaTasks(ctx, temporalCluster); err != nil {
 		return err
 	}
 
-	sqlCfg.Password = string(passwordSecret.Data[defaultStore.PasswordSecretRef.Key])
-
-	conn, err := sql.NewConnection(sqlCfg)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	clictx := &cli.Context{}
-	clictx.Set(schema.CLIOptSchemaFile, "")
-	clictx.Set(schema.CLIOptVersion, "")
-	clictx.Set(schema.CLIOptDisableVersioning, "")
-	clictx.Set(schema.CLIOptOverwrite, "")
-	schema.Setup(&cli.Context{}, conn, temporallog.NewNoopLogger())
-
-	err = conn.CreateDatabase("temporal")
-	if err != nil {
+	if err := r.PersistenceManager.RunVisibilityStoreSchemaTasks(ctx, temporalCluster); err != nil {
 		return err
 	}
 
@@ -153,7 +121,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 			return builder.Update(resource)
 		})
 		if err != nil {
-			action := r.OperationResultToAction(operationResult)
+			action := r.operationResultToAction(operationResult)
 			msg := fmt.Sprintf("failed to %s %T %s", action, resource, resource.GetName())
 			logger.Error(err, msg)
 			return err
@@ -167,7 +135,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 	return nil
 }
 
-func (r *TemporalClusterReconciler) OperationResultToAction(operationResult controllerutil.OperationResult) string {
+func (r *TemporalClusterReconciler) operationResultToAction(operationResult controllerutil.OperationResult) string {
 	var action string
 	switch operationResult {
 	case controllerutil.OperationResultCreated:

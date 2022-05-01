@@ -33,6 +33,7 @@ import (
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
+	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -52,11 +53,14 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var schemaPath string
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&schemaPath, "schema-path", "/data/schema", "The path where temporal schemas are stored.")
+
 	opts := zap.Options{
 		Development: true,
 	}
@@ -78,9 +82,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	persistenceMgr := persistence.NewManager(mgr.GetClient(), schemaPath)
+
 	if err = (&controllers.TemporalClusterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:             mgr.GetClient(),
+		Scheme:             mgr.GetScheme(),
+		PersistenceManager: persistenceMgr,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
 		os.Exit(1)

@@ -17,7 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"errors"
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -110,13 +112,24 @@ type SQLSpec struct {
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.
 type DatastoreTLSSpec struct {
-	Enabled                bool               `json:"bool"`
-	CertFileRef            SecretKeyReference `json:"certFileRef"`
-	KeyFileRef             SecretKeyReference `json:"keyFileRef"`
-	CaFileRef              SecretKeyReference `json:"caFileRef"`
-	EnableHostVerification bool               `json:"enableHostVerification"`
-	ServerName             string             `json:"serverName"`
+	Enabled bool `json:"bool"`
+	// +optional
+	CertFileRef *SecretKeyReference `json:"certFileRef"`
+	// +optional
+	KeyFileRef *SecretKeyReference `json:"keyFileRef"`
+	// +optional
+	CaFileRef              *SecretKeyReference `json:"caFileRef"`
+	EnableHostVerification bool                `json:"enableHostVerification"`
+	ServerName             string              `json:"serverName"`
 }
+
+type DatastoreType string
+
+const (
+	CassandraDatastore   DatastoreType = "cassandra"
+	PostgresSQLDatastore DatastoreType = "postgresql"
+	MySQLDatastore       DatastoreType = "mysql"
+)
 
 // TemporalDatastoreSpec contains temporal datastore specifications.
 type TemporalDatastoreSpec struct {
@@ -142,6 +155,46 @@ func (s *TemporalDatastoreSpec) Default() {
 			s.SQL.ConnectProtocol = "tcp"
 		}
 	}
+}
+
+func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
+	if s.SQL != nil {
+		switch s.SQL.PluginName {
+		case "postgres":
+			return PostgresSQLDatastore, nil
+		case "mysql":
+			return MySQLDatastore, nil
+		}
+	}
+	return DatastoreType(""), errors.New("can't specify datastore type from current spec")
+}
+
+// GetTLSKeyFileMountPath returns the client TLS cert mount path.
+// It returns empty if the tls config is nil or if no secret key ref has been specified.
+func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
+	if s.TLS == nil || s.TLS.CertFileRef == nil {
+		return ""
+	}
+
+	return path.Join("/etc/tls/datastores", s.Name, "client.pem")
+}
+
+// GetTLSKeyFileMountPath returns the client TLS key mount path.
+// It returns empty if the tls config is nil or if no secret key ref has been specified.
+func (s *TemporalDatastoreSpec) GetTLSKeyFileMountPath() string {
+	if s.TLS == nil || s.TLS.KeyFileRef == nil {
+		return ""
+	}
+	return path.Join("/etc/tls/datastores", s.Name, "client.key")
+}
+
+// GetTLSCaFileMountPath  returns the CA key mount path.
+// It returns empty if the tls config is nil or if no secret key ref has been specified.
+func (s *TemporalDatastoreSpec) GetTLSCaFileMountPath() string {
+	if s.TLS == nil || s.TLS.CaFileRef == nil {
+		return ""
+	}
+	return path.Join("/etc/tls/datastores", s.Name, "ca.pem")
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.

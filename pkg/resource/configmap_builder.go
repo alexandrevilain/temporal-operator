@@ -8,6 +8,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"gopkg.in/yaml.v3"
@@ -86,17 +87,19 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			Stdout: true,
 			Level:  "info",
 		},
-		// ClusterMetadata: &cluster.Config{
-		// 	EnableGlobalNamespace:    false,
-		// 	FailoverVersionIncrement: 0,
-		// 	MasterClusterName:        "",
-		// 	CurrentClusterName:       "",
-		// 	ClusterInformation:       map[string]cluster.ClusterInformation{},
-		// },
-		// DCRedirectionPolicy: config.DCRedirectionPolicy{
-		// 	Policy: "",
-		// 	ToDC:   "",
-		// },
+		ClusterMetadata: &cluster.Config{
+			EnableGlobalNamespace:    false,
+			FailoverVersionIncrement: 10,
+			MasterClusterName:        b.instance.Name,
+			CurrentClusterName:       b.instance.Name,
+			ClusterInformation: map[string]cluster.ClusterInformation{
+				b.instance.Name: {
+					Enabled:                true,
+					InitialFailoverVersion: 1,
+					RPCAddress:             "127.0.0.1:7233",
+				},
+			},
+		},
 		Services: map[string]config.Service{
 			common.FrontendServiceName: {
 				RPC: config.RPC{
@@ -131,13 +134,17 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				},
 			},
 		},
+		PublicClient: config.PublicClient{
+			HostPort: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
+		},
+		// DCRedirectionPolicy: config.DCRedirectionPolicy{
+		// 	Policy: "",
+		// 	ToDC:   "",
+		// },
 		// Archival: config.Archival{
 		// 	History:    config.HistoryArchival{},
 		// 	Visibility: config.VisibilityArchival{},
 		// },
-		PublicClient: config.PublicClient{
-			HostPort: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), b.instance.Spec.Services.Frontend.Port),
-		},
 		// DynamicConfigClient: &dynamicconfig.FileBasedClientConfig{
 		// 	Filepath:     "",
 		// 	PollInterval: 0,
