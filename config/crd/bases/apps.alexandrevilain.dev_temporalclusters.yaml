@@ -158,10 +158,7 @@ spec:
                           type: string
                       required:
                       - bool
-                      - caFileRef
-                      - certFileRef
                       - enableHostVerification
-                      - keyFileRef
                       - serverName
                       type: object
                   required:
