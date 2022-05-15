@@ -86,10 +86,6 @@ func (m *Manager) RunVisibilityStoreSchemaTasks(ctx context.Context, cluster *v1
 func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (*sql.Connection, error) {
 	config := NewSQLconfigFromDatastoreSpec(store)
 
-	// TODO(alexandrevilain): remove this
-	config.ConnectAddr = "localhost:5432"
-	// TODO(alexandrevilain): remove this
-
 	passwordSecret := &corev1.Secret{}
 	err := m.Get(ctx, types.NamespacedName{Name: store.PasswordSecretRef.Name, Namespace: namespace}, passwordSecret)
 	if err != nil {

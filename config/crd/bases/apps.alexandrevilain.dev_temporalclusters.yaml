@@ -106,7 +106,8 @@ spec:
                       - user
                       type: object
                     tls:
-                      description: TLS is an optionnal s
+                      description: TLS is an optional option to connect to the datastore
+                        using TLS.
                       properties:
                         bool:
                           type: boolean
@@ -271,7 +272,6 @@ spec:
             - datastores
             - numHistoryShards
             - persistence
-            - services
             - version
             type: object
           status:

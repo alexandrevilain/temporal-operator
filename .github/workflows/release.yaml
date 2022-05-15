@@ -44,5 +44,5 @@ jobs:
         with:
           body: See [CHANGELOG](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md)' 
           files: |
-            out/release/*.yaml
+            out/release/artifacts/*.yaml
           
