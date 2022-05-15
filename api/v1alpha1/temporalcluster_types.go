@@ -27,6 +27,7 @@ import (
 	"go.temporal.io/server/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 )
 
 // ServiceSpec contains a temporal service specifications.
@@ -143,7 +144,7 @@ type TemporalDatastoreSpec struct {
 	// PasswordSecret is the reference to the secret holding the password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
-	// TLS is an optionnal s
+	// TLS is an optional option to connect to the datastore using TLS.
 	// +optional
 	TLS *DatastoreTLSSpec `json:"tls"`
 }
@@ -227,10 +228,11 @@ type TemporalClusterSpec struct {
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
-	NumHistoryShards int32                   `json:"numHistoryShards"`
-	Services         TemporalServicesSpec    `json:"services"`
-	Persistence      TemporalPersistenceSpec `json:"persistence"`
-	Datastores       []TemporalDatastoreSpec `json:"datastores"`
+	NumHistoryShards int32 `json:"numHistoryShards"`
+	// +optional
+	Services    *TemporalServicesSpec   `json:"services"`
+	Persistence TemporalPersistenceSpec `json:"persistence"`
+	Datastores  []TemporalDatastoreSpec `json:"datastores"`
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets"`
 }
@@ -279,45 +281,48 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Image == "" {
 		c.Spec.Image = "temporalio/server"
 	}
+	if c.Spec.Services == nil {
+		c.Spec.Services = new(TemporalServicesSpec)
+	}
 	// Frontend specs
 	if c.Spec.Services.Frontend == nil {
 		c.Spec.Services.Frontend = new(ServiceSpec)
 	}
 	if c.Spec.Services.Frontend.Port == nil {
-		*c.Spec.Services.Frontend.Port = 7233
+		c.Spec.Services.Frontend.Port = pointer.Int(7233)
 	}
 	if c.Spec.Services.Frontend.MembershipPort == nil {
-		*c.Spec.Services.Frontend.MembershipPort = 6933
+		c.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
 	}
 	// History specs
 	if c.Spec.Services.History == nil {
 		c.Spec.Services.History = new(ServiceSpec)
 	}
 	if c.Spec.Services.History.Port == nil {
-		*c.Spec.Services.History.Port = 7234
+		c.Spec.Services.History.Port = pointer.Int(7234)
 	}
 	if c.Spec.Services.History.MembershipPort == nil {
-		*c.Spec.Services.History.MembershipPort = 6934
+		c.Spec.Services.History.MembershipPort = pointer.Int(6934)
 	}
 	// Matching specs
 	if c.Spec.Services.Matching == nil {
 		c.Spec.Services.Matching = new(ServiceSpec)
 	}
 	if c.Spec.Services.Matching.Port == nil {
-		*c.Spec.Services.Matching.Port = 7235
+		c.Spec.Services.Matching.Port = pointer.Int(7235)
 	}
 	if c.Spec.Services.Matching.MembershipPort == nil {
-		*c.Spec.Services.Matching.MembershipPort = 6935
+		c.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
 	}
 	// Worker specs
 	if c.Spec.Services.Worker == nil {
 		c.Spec.Services.Worker = new(ServiceSpec)
 	}
 	if c.Spec.Services.Worker.Port == nil {
-		*c.Spec.Services.Worker.Port = 7239
+		c.Spec.Services.Worker.Port = pointer.Int(7239)
 	}
 	if c.Spec.Services.Worker.MembershipPort == nil {
-		*c.Spec.Services.Worker.MembershipPort = 6939
+		c.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
 	}
 
 	for _, datastore := range c.Spec.Datastores {
