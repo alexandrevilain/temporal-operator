@@ -35,3 +35,14 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Generate release artifacts
+        run: |
+          mkdir -p out/release
+          make artifacts
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: See [CHANGELOG](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md)' 
+          files: |
+            out/release/*.yaml
+          
