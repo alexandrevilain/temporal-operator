@@ -101,15 +101,14 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: artifacts
-artifacts:
+artifacts: kustomize
+	mkdir -p $(RELEASE_PATH)
 	$(KUSTOMIZE) build config/crd > ${RELEASE_PATH}/temporal-operator.crds.yaml
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
 ##@ Build Dependencies
 
 RELEASE_PATH ?= $(shell pwd)/out/release/artifacts
-$(RELEASE_PATH):
-	mkdir -p $(RELEASE_PATH)
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
