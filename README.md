@@ -19,7 +19,3 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
 - [ ] Complete end2end test suite.
-
-
-
-

@@ -56,6 +56,14 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: ensure-license
+ensure-license: go-licenser
+	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -license ASL2 .
+
+.PHONY: check-license
+check-license: go-licenser
+	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -license ASL2 -d .
+
 ##@ Build
 
 .PHONY: build
@@ -112,16 +120,23 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+GO_LICENSER ?= $(LOCALBIN)/go-licenser
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.8.0
+GO_LICENSER_VERSION ?= v0.4.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
 	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+
+.PHONY: go-licenser
+go-licenser: $(GO_LICENSER)
+$(GO_LICENSER): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/elastic/go-licenser@$(GO_LICENSER_VERSION)
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.

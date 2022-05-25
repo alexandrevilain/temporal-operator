@@ -15,6 +15,13 @@ env:
   GOLANG_CI_VERSION: v1.45.2
 
 jobs:
+  license:
+    name: Check license on files
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v3
+      - name: check
+        run: make check-license
   lint:
     name: Lint files
     runs-on: 'ubuntu-latest'
@@ -39,7 +46,6 @@ jobs:
           check-latest: true
       - name: build
         run: make build
-    
   test:
     name: Test operator
     runs-on: 'ubuntu-latest'
