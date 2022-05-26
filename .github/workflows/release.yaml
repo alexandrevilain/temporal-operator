@@ -40,7 +40,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          body: See [CHANGELOG](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md)' 
+          body: See [CHANGELOG](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md)
           files: |
             out/release/artifacts/*.yaml
           
