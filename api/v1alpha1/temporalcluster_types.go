@@ -243,6 +243,8 @@ type TemporalClusterStatus struct {
 	// TODO(alexandrevilain): Use status
 }
 
+// +genclient
+// +genclient:Namespaced
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
