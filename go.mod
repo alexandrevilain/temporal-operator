@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/gosimple/slug v1.12.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.17.0
+	github.com/onsi/gomega v1.19.0
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
 	go.temporal.io/server v1.16.0
