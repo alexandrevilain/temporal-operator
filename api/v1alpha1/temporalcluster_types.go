@@ -33,7 +33,6 @@ import (
 
 // ServiceSpec contains a temporal service specifications.
 type ServiceSpec struct {
-	//
 	// +optional
 	Port *int `json:"port"`
 	// +optional
@@ -238,9 +237,20 @@ type TemporalClusterSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets"`
 }
 
+// ServiceStatus reports a service status.
+type ServiceStatus struct {
+	Name string `json:"name"`
+	// Version hols the current service version.
+	Version string `json:"version"`
+}
+
 // TemporalClusterStatus defines the observed state of TemporalCluster.
 type TemporalClusterStatus struct {
-	// TODO(alexandrevilain): Use status
+	// Version holds the current temporal version.
+	Version string `json:"version"`
+	// Services holds all services statuses.
+	Services []ServiceStatus `json:"components"`
+	// TODO(alexandrevilain): add conditions
 }
 
 // +genclient

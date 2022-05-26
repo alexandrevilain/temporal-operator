@@ -18,6 +18,9 @@
 package resource
 
 import (
+	"context"
+
+	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -30,4 +33,8 @@ const (
 type Builder interface {
 	Build() (client.Object, error)
 	Update(client.Object) error
+}
+
+type StatusReporter interface {
+	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
 }

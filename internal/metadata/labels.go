@@ -27,8 +27,9 @@ func LabelsSelector(clusterName, serviceName string) map[string]string {
 }
 
 // GetLabels returns a Labels for a temporal service.
-func GetLabels(name, service string, labels map[string]string) map[string]string {
+func GetLabels(name, service, version string, labels map[string]string) map[string]string {
 	l := LabelsSelector(name, service)
+	l["app.kubernetes.io/version"] = version
 	for k, v := range labels {
 		l[k] = v
 	}

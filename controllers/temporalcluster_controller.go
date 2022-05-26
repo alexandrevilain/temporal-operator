@@ -35,6 +35,8 @@ import (
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/cluster"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
 const (
@@ -76,7 +78,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	// Set defaults on unfilled fields.
+	// Set defaults on unfiled fields.
 	temporalCluster.Default()
 
 	if err := r.reconcilePersistence(ctx, temporalCluster); err != nil {
@@ -137,7 +139,32 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		}
 	}
 
-	return nil
+	for _, builder := range builders {
+		reporter, ok := builder.(resource.StatusReporter)
+		if !ok {
+			continue
+		}
+
+		serviceStatus, err := reporter.ReportServiceStatus(ctx, r.Client)
+		if err != nil {
+			return err
+		}
+
+		status.AddServiceStatus(temporalCluster, serviceStatus)
+	}
+
+	observedVersionMatchesDesiredVersion := true
+	for _, serviceStatus := range temporalCluster.Status.Services {
+		if serviceStatus.Version != temporalCluster.Spec.Version {
+			observedVersionMatchesDesiredVersion = false
+		}
+	}
+
+	if observedVersionMatchesDesiredVersion {
+		temporalCluster.Status.Version = temporalCluster.Spec.Version
+	}
+
+	return r.Status().Update(ctx, temporalCluster)
 }
 
 func (r *TemporalClusterReconciler) operationResultToAction(operationResult controllerutil.OperationResult) string {
