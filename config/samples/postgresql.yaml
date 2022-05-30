@@ -7,6 +7,21 @@ type: Opaque
 data:
   PASSWORD: dGVzdA==
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: demo
+data:
+  init-visibility-db.sh: |
+    #!/bin/bash
+    set -e
+
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      CREATE DATABASE temporal_visibility;
+      GRANT ALL PRIVILEGES ON DATABASE temporal_visibility TO $POSTGRES_USER;
+    EOSQL
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,6 +42,9 @@ spec:
           image: postgres
           ports:
             - containerPort: 5432
+          volumeMounts:
+          - name: postgres-init
+            mountPath: /docker-entrypoint-initdb.d
           env:
             - name: POSTGRES_DB
               value: temporal
@@ -37,7 +55,10 @@ spec:
                 secretKeyRef:
                   name: postgres-password
                   key: PASSWORD
-
+      volumes:
+      - name: postgres-init
+        configMap:
+          name: postgres-init
 ---
 apiVersion: v1
 kind: Service

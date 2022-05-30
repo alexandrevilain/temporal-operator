@@ -48,13 +48,23 @@ spec:
   numHistoryShards: 1
   persistence:
     defaultStore: default
-    visibilityStore: default
+    visibilityStore: visibility
   datastores:
     - name: default
       sql:
         user: temporal
         pluginName: postgres
         databaseName: temporal
+        connectAddr: postgres.demo.svc.cluster.local
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+    - name: visibility
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal_visibility
         connectAddr: postgres.demo.svc.cluster.local
         connectProtocol: tcp
       passwordSecretRef:
