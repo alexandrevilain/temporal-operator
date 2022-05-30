@@ -79,7 +79,7 @@ func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.Tempo
 		InitialVersion:    "0.0",
 		Overwrite:         false,
 		DisableVersioning: false,
-	}, temporallog.NewNoopLogger())
+	}, temporallog.NewCLILogger())
 
 	return setupTask.Run()
 }
@@ -107,7 +107,6 @@ func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *
 
 	return sql.NewConnection(config)
 }
-
 func (m *Manager) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchema Schema) string {
 	storeSchemaPath := ""
 	storeVersionSchemaPath := ""
@@ -147,7 +146,7 @@ func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.Te
 		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
-	}, temporallog.NewNoopLogger())
+	}, temporallog.NewCLILogger())
 
 	err = updateTask.Run()
 	if err != nil {
