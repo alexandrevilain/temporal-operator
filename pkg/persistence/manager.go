@@ -19,11 +19,12 @@ package persistence
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"path"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/common/schema"
+	"github.com/blang/semver/v4"
 	temporallog "go.temporal.io/server/common/log"
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/mysql"      // needed to load mysql plugin
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/postgresql" // needed to load postgresql plugin
@@ -66,38 +67,31 @@ func NewManager(c client.Client, schemaFilePath string) *Manager {
 	}
 }
 
-// RunDefaultStoreSchemaTasks runs the setup and update default schema tasks
-// on the provided cluster's default store.
-func (m *Manager) RunDefaultStoreSchemaTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster) error {
-	defaultStore, found := cluster.GetDefaultDatastore()
-	if !found {
-		return errors.New("default datastore not found")
-	}
-
-	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, defaultStore, cluster.Namespace)
+// RunStoreSetupTask runs the setup schema task on the provided cluster's store.
+func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec) error {
+	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	return m.runDatabaseSchemaTasks(ctx, conn, defaultStore, DefaultSchema)
+	setupTask := schema.NewSetupSchemaTask(conn, &schema.SetupConfig{
+		InitialVersion:    "0.0",
+		Overwrite:         false,
+		DisableVersioning: false,
+	}, temporallog.NewNoopLogger())
+
+	return setupTask.Run()
 }
 
-// RunVisibilityStoreSchemaTasks runs the setup and update visibility schema tasks
-// on the provided cluster's visibility store.
-func (m *Manager) RunVisibilityStoreSchemaTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster) error {
-	visibilityStore, found := cluster.GetVisibilityDatastore()
-	if !found {
-		return errors.New("visibility datastore not found")
-	}
+// RunDefaultStoreUpdateTask runs the update schema task on the provided cluster's default store.
+func (m *Manager) RunDefaultStoreUpdateTask(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, version semver.Version) error {
+	return m.runUpdateSchemaTasks(ctx, cluster, store, DefaultSchema, version)
+}
 
-	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, visibilityStore, cluster.Namespace)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	return m.runDatabaseSchemaTasks(ctx, conn, visibilityStore, VisibilitySchema)
+// RunVisibilityStoreUpdateTask runs the update schema task on the provided cluster's visibility store.
+func (m *Manager) RunVisibilityStoreUpdateTask(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, version semver.Version) error {
+	return m.runUpdateSchemaTasks(ctx, cluster, store, VisibilitySchema, version)
 }
 
 func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (*sql.Connection, error) {
@@ -136,17 +130,12 @@ func (m *Manager) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchem
 	return path.Join(m.SchemaFilePath, storeSchemaPath, storeVersionSchemaPath, tagetSchemaPath, "versioned")
 }
 
-func (m *Manager) runDatabaseSchemaTasks(ctx context.Context, conn *sql.Connection, store *v1alpha1.TemporalDatastoreSpec, targetSchema Schema) error {
-	setupTask := schema.NewSetupSchemaTask(conn, &schema.SetupConfig{
-		InitialVersion:    "0.0",
-		Overwrite:         false,
-		DisableVersioning: false,
-	}, temporallog.NewNoopLogger())
-
-	err := setupTask.Run()
+func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, targetSchema Schema, targetVersion semver.Version) error {
+	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	datastoreType, err := store.GetDatastoreType()
 	if err != nil {
@@ -155,7 +144,7 @@ func (m *Manager) runDatabaseSchemaTasks(ctx context.Context, conn *sql.Connecti
 
 	updateTask := schema.NewUpdateSchemaTask(conn, &schema.UpdateConfig{
 		DBName:        store.SQL.DatabaseName,
-		TargetVersion: "",
+		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
 	}, temporallog.NewNoopLogger())

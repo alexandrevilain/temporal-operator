@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,6 +38,8 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
+	"github.com/blang/semver/v4"
 )
 
 const (
@@ -81,7 +84,14 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Set defaults on unfiled fields.
 	temporalCluster.Default()
 
-	if err := r.reconcilePersistence(ctx, temporalCluster); err != nil {
+	// Validate that the cluster version is a supported one.
+	// TODO(alexandrevilain): this should be moved to an AdmissionWebhook.
+	clusterVersion, err := version.ParseAndValidateTemporalVersion(temporalCluster.Spec.Version)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcilePersistence(ctx, temporalCluster, clusterVersion); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -92,16 +102,81 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	return ctrl.Result{}, nil
 }
 
-func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	if err := r.PersistenceManager.RunDefaultStoreSchemaTasks(ctx, temporalCluster); err != nil {
+// reconcilePersistence tries to reconcile the cluster persistence.
+// If first checks if the schema status field for both of the default and visibility stores are empty. If empty it tries to setup the stores' schemas.
+// Then it compares the current schema version (from the cluster's status) and determine if a schema upgrade is needed.
+func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, clusterVersion semver.Version) error {
+	defaultStore, found := temporalCluster.GetDefaultDatastore()
+	if !found {
+		return errors.New("default datastore not found")
+	}
+
+	visibilityStore, found := temporalCluster.GetVisibilityDatastore()
+	if !found {
+		return errors.New("visibility datastore not found")
+	}
+
+	if temporalCluster.Status.Persistence.DefaultStoreSchemaVersion == "" {
+		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, defaultStore)
+		if err != nil {
+			return err
+		}
+		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = "0.0.0"
+	}
+
+	if temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion == "" {
+		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, visibilityStore)
+		if err != nil {
+			return err
+		}
+		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = "0.0.0"
+	}
+
+	defaultStoreType, err := defaultStore.GetDatastoreType()
+	if err != nil {
 		return err
 	}
 
-	if err := r.PersistenceManager.RunVisibilityStoreSchemaTasks(ctx, temporalCluster); err != nil {
+	visibilityStoreType, err := visibilityStore.GetDatastoreType()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	expectedSchemaVersions, err := version.GetExpectedSchemaVersions(clusterVersion)
+	if err != nil {
+		return err
+	}
+
+	expectedDefaultStoreSchemaVersion := expectedSchemaVersions[defaultStoreType]
+	expectedVisibilityStoreSchemaVersion := expectedSchemaVersions[visibilityStoreType]
+
+	currentDefaultStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.DefaultStoreSchemaVersion)
+	if err != nil {
+		return err
+	}
+
+	currentVisibilityStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion)
+	if err != nil {
+		return err
+	}
+
+	if expectedDefaultStoreSchemaVersion.GT(currentDefaultStoreSchemaVersion) {
+		err := r.PersistenceManager.RunDefaultStoreUpdateTask(ctx, temporalCluster, defaultStore, expectedDefaultStoreSchemaVersion)
+		if err != nil {
+			return err
+		}
+		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = expectedDefaultStoreSchemaVersion.String()
+	}
+
+	if expectedVisibilityStoreSchemaVersion.GT(currentVisibilityStoreSchemaVersion) {
+		err := r.PersistenceManager.RunVisibilityStoreUpdateTask(ctx, temporalCluster, visibilityStore, expectedVisibilityStoreSchemaVersion)
+		if err != nil {
+			return err
+		}
+		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = expectedVisibilityStoreSchemaVersion.String()
+	}
+
+	return r.updateTemporalClusterStatus(ctx, temporalCluster)
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
@@ -164,7 +239,17 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		temporalCluster.Status.Version = temporalCluster.Spec.Version
 	}
 
-	return r.Status().Update(ctx, temporalCluster)
+	return r.updateTemporalClusterStatus(ctx, temporalCluster)
+}
+
+func (r *TemporalClusterReconciler) updateTemporalClusterStatus(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
+	err := r.Status().Update(ctx, temporalCluster)
+	if err != nil {
+		return err
+	}
+	// Set back defaults as the status update retrieve the object from the API server.
+	temporalCluster.Default()
+	return nil
 }
 
 func (r *TemporalClusterReconciler) operationResultToAction(operationResult controllerutil.OperationResult) string {
