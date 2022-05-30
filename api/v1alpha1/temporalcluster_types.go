@@ -167,7 +167,7 @@ func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 			return MySQLDatastore, nil
 		}
 	}
-	return DatastoreType(""), errors.New("can't specify datastore type from current spec")
+	return DatastoreType(""), errors.New("can't get datastore type from current spec")
 }
 
 // GetTLSKeyFileMountPath returns the client TLS cert mount path.
@@ -244,12 +244,22 @@ type ServiceStatus struct {
 	Version string `json:"version"`
 }
 
+// PersistenceStatus reports datastores schema versions.
+type PersistenceStatus struct {
+	// DefaultStoreSchemaVersion holds the current schema version for the default store.
+	DefaultStoreSchemaVersion string `json:"defaultStoreSchemaVersion"`
+	// VisibilityStoreSchemaVersion holds the current schema version for the visibility store.
+	VisibilityStoreSchemaVersion string `json:"visibilityStoreSchemaVersion"`
+}
+
 // TemporalClusterStatus defines the observed state of TemporalCluster.
 type TemporalClusterStatus struct {
 	// Version holds the current temporal version.
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
+	// Persistence holds the persistence status.
+	Persistence PersistenceStatus `json:"persistence,omitempty"`
 	// Services holds all services statuses.
-	Services []ServiceStatus `json:"components"`
+	Services []ServiceStatus `json:"services,omitempty"`
 	// TODO(alexandrevilain): add conditions
 }
 
@@ -291,6 +301,9 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 
 // Default sets default values on the temporal Cluster.
 func (c *TemporalCluster) Default() {
+	if c.Spec.Version == "" {
+		c.Spec.Version = "1.16.2"
+	}
 	if c.Spec.Image == "" {
 		c.Spec.Image = "temporalio/server"
 	}
