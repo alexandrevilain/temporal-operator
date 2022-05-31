@@ -10,8 +10,8 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Deploy a new temporal cluster.
 - [x] Ability to deploy multiple clusters.
 - [x] Support for SQL datastores.
-- [x] Deploy Web UI.
-- [ ] Deploy admin tools.
+- [x] Deploy Web UI. (will be released in [v0.0.4](https://github.com/alexandrevilain/temporal-operator/projects/1))
+- [ ] Deploy admin tools. (will be released in [v0.0.4](https://github.com/alexandrevilain/temporal-operator/projects/1))
 - [ ] Support for cassandra datastore.
 - [ ] Support for Elastisearch.
 - [ ] Cluster version upgrades.
