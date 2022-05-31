@@ -10,12 +10,13 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Deploy a new temporal cluster.
 - [x] Ability to deploy multiple clusters.
 - [x] Support for SQL datastores.
+- [x] Deploy Web UI.
+- [ ] Deploy admin tools.
 - [ ] Support for cassandra datastore.
 - [ ] Support for Elastisearch.
 - [ ] Cluster version upgrades.
 - [ ] Automatic mTLS certificates management (using istio, linkerd or cert-manager).
 - [ ] Cluster monitoring.
-- [ ] Deploy Web UI.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
 - [ ] Complete end2end test suite.

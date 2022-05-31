@@ -30,3 +30,5 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
+  ui:
+    enabled: true

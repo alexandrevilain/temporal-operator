@@ -27,6 +27,7 @@ import (
 	"github.com/gosimple/slug"
 	"go.temporal.io/server/common"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 )
@@ -218,6 +219,35 @@ type TemporalPersistenceSpec struct {
 	AdvancedVisibilityStore string `json:"advancedVisibilityStore"`
 }
 
+// TemporalUIIngressSpec contains all configurations options for the UI ingress.
+type TemporalUIIngressSpec struct {
+	// Annotations allow custom annotations on the ingress ressource.
+	Annotations map[string]string `json:"annotations,omitempty"`
+	// IngressClassName is the name of the IngressClass cluster resource.
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+	// Host is the list of host the ingress should use.
+	Hosts []string `json:"hosts"`
+	// TLS configuration.
+	TLS []networkingv1.IngressTLS `json:"tls,omitempty" protobuf:"bytes,2,rep,name=tls"`
+}
+
+// TemporalUISpec contains temporal ui specificiations.
+type TemporalUISpec struct {
+	// Enabled defines if the operator should deploy the web ui alongside the cluster.
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Version defines the temporal ui version the instance should run.
+	// +optional
+	Version string `json:"version"`
+	// Image defines the temporal ui docker image the instance should run.
+	// +optional
+	Image string `json:"image"`
+	// Ingress is an optional ingress configuration for the UI.
+	// If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.
+	// +optional
+	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
+}
+
 // TemporalClusterSpec defines the desired state of TemporalCluster.
 type TemporalClusterSpec struct {
 	// Image defines the temporal server image the instance should use.
@@ -235,6 +265,8 @@ type TemporalClusterSpec struct {
 	Datastores  []TemporalDatastoreSpec `json:"datastores"`
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets"`
+	// +optional
+	UI *TemporalUISpec `json:"ui,omitempty"`
 }
 
 // ServiceStatus reports a service status.
@@ -357,6 +389,18 @@ func (c *TemporalCluster) Default() {
 
 	if c.Spec.Persistence.VisibilityStore == "" {
 		c.Spec.Persistence.VisibilityStore = c.Spec.Persistence.DefaultStore
+	}
+
+	if c.Spec.UI == nil {
+		c.Spec.UI = new(TemporalUISpec)
+	}
+
+	if c.Spec.UI.Version == "" {
+		c.Spec.UI.Version = "0.15.0"
+	}
+
+	if c.Spec.UI.Image == "" {
+		c.Spec.UI.Image = "temporalio/ui"
 	}
 }
 
