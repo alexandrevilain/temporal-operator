@@ -49,5 +49,13 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 	}
 
+	if b.Instance.Spec.UI != nil && b.Instance.Spec.UI.Enabled {
+		builders = append(builders, resource.NewUIDeploymentBuilder(b.Instance, b.Scheme))
+		builders = append(builders, resource.NewUIServiceBuilder(b.Instance, b.Scheme))
+		if b.Instance.Spec.UI.Ingress != nil {
+			builders = append(builders, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
+		}
+	}
+
 	return builders, nil
 }

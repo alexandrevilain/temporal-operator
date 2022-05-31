@@ -146,6 +146,19 @@ TemporalPersistenceSpec
 <em>(Optional)</em>
 </td>
 </tr>
+<tr>
+<td>
+<code>ui</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">
+TemporalUISpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -680,6 +693,19 @@ TemporalPersistenceSpec
 <em>(Optional)</em>
 </td>
 </tr>
+<tr>
+<td>
+<code>ui</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">
+TemporalUISpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -940,6 +966,145 @@ ServiceSpec
 </td>
 <td>
 <em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalUIIngressSpec">TemporalUIIngressSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">TemporalUISpec</a>)
+</p>
+<p>TemporalUIIngressSpec contains all configurations options for the UI ingress.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>annotations</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>Annotations allow custom annotations on the ingress ressource.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ingressClassName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>IngressClassName is the name of the IngressClass cluster resource.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hosts</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>Host is the list of host the ingress should use.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tls</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#ingresstls-v1-networking">
+[]Kubernetes networking/v1.IngressTLS
+</a>
+</em>
+</td>
+<td>
+<p>TLS configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">TemporalUISpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>TemporalUISpec contains temporal ui specificiations.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should deploy the web ui alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Version defines the temporal ui version the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image defines the temporal ui docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ingress</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUIIngressSpec">
+TemporalUIIngressSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Ingress is an optional ingress configuration for the UI.
+If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.</p>
 </td>
 </tr>
 </tbody>
