@@ -34,22 +34,40 @@ import (
 
 // ServiceSpec contains a temporal service specifications.
 type ServiceSpec struct {
+	// Port defines a custom gRPC port for the service.
+	// Default values are:
+	// 7233 for Frontend service
+	// 7234 for History service
+	// 7235 for Matching service
+	// 7239 for Worker service
 	// +optional
 	Port *int `json:"port"`
+	// Port defines a custom membership port for the service.
+	// Default values are:
+	// 6933 for Frontend service
+	// 6934 for History service
+	// 6935 for Matching service
+	// 6939 for Worker service
 	// +optional
 	MembershipPort *int `json:"membershipPort"`
-	//+kubebuilder:validation:Minimum=1
+	// Number of desired replicas for the service. Default to 1.
+	// +kubebuilder:validation:Minimum=1
+	// +optional
 	Replicas *int `json:"replicas"`
 }
 
 // TemporalServicesSpec contains all temporal services specifications.
 type TemporalServicesSpec struct {
+	// Frontend service custom specifications.
 	// +optional
 	Frontend *ServiceSpec `json:"frontend"`
+	// History service custom specifications.
 	// +optional
 	History *ServiceSpec `json:"history"`
+	// Matching service custom specifications.
 	// +optional
 	Matching *ServiceSpec `json:"matching"`
+	// Worker service custom specifications.
 	// +optional
 	Worker *ServiceSpec `json:"worker"`
 }
@@ -76,7 +94,6 @@ type SecretKeyReference struct {
 	// Name of the Secret.
 	// +required
 	Name string `json:"name"`
-
 	// Key in the Secret.
 	// +optional
 	Key string `json:"key,omitempty"`
@@ -114,15 +131,21 @@ type SQLSpec struct {
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.
 type DatastoreTLSSpec struct {
+	// Enabled defines if the cluster should use a TLS connection to connect to the datastore.
 	Enabled bool `json:"bool"`
+	// CertFileRef is a reference to a secret containing the cert file.
 	// +optional
 	CertFileRef *SecretKeyReference `json:"certFileRef"`
+	// KeyFileRef is a reference to a secret containing the key file.
 	// +optional
 	KeyFileRef *SecretKeyReference `json:"keyFileRef"`
+	// CaFileRef is a reference to a secret containing the ca file.
 	// +optional
-	CaFileRef              *SecretKeyReference `json:"caFileRef"`
-	EnableHostVerification bool                `json:"enableHostVerification"`
-	ServerName             string              `json:"serverName"`
+	CaFileRef *SecretKeyReference `json:"caFileRef"`
+	// EnableHostVerification defines if the hostname should be verified when connecting to the datastore.
+	EnableHostVerification bool `json:"enableHostVerification"`
+	// ServerName the datastore should present.
+	ServerName string `json:"serverName"`
 }
 
 type DatastoreType string
@@ -211,8 +234,6 @@ type TemporalPersistenceSpec struct {
 	// DefaultStore is the name of the default data store to use.
 	DefaultStore string `json:"defaultStore"`
 	// VisibilityStore is the name of the datastore to be used for visibility records.
-	// If not set it defaults to the default store.
-	// +optional
 	VisibilityStore string `json:"visibilityStore"`
 	// AdvancedVisibilityStore is the name of the datastore to be used for visibility records
 	// +optional
@@ -221,9 +242,9 @@ type TemporalPersistenceSpec struct {
 
 // TemporalUIIngressSpec contains all configurations options for the UI ingress.
 type TemporalUIIngressSpec struct {
-	// Annotations allow custom annotations on the ingress ressource.
+	// Annotations allows custom annotations on the ingress ressource.
 	Annotations map[string]string `json:"annotations,omitempty"`
-	// IngressClassName is the name of the IngressClass cluster resource.
+	// IngressClassName is the name of the IngressClass the deployed ingress resource should use.
 	IngressClassName *string `json:"ingressClassName,omitempty"`
 	// Host is the list of host the ingress should use.
 	Hosts []string `json:"hosts"`
@@ -231,7 +252,7 @@ type TemporalUIIngressSpec struct {
 	TLS []networkingv1.IngressTLS `json:"tls,omitempty" protobuf:"bytes,2,rep,name=tls"`
 }
 
-// TemporalUISpec contains temporal ui specificiations.
+// TemporalUISpec defines parameters for the temporal UI within a Temporal cluster deployment.
 type TemporalUISpec struct {
 	// Enabled defines if the operator should deploy the web ui alongside the cluster.
 	// +optional
@@ -250,29 +271,38 @@ type TemporalUISpec struct {
 
 // TemporalClusterSpec defines the desired state of TemporalCluster.
 type TemporalClusterSpec struct {
-	// Image defines the temporal server image the instance should use.
+	// Image defines the temporal server docker image the cluster should use for each services.
 	// +optional
 	Image string `json:"image"`
-	// Version defines the temporal version the instance should run.
+	// Version defines the temporal version the cluster to be deployed.
+	// This version impacts the underlying persistence schemas versions.
 	Version string `json:"version"`
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
 	NumHistoryShards int32 `json:"numHistoryShards"`
+	// Services allows customizations for for each temporal services deployment.
 	// +optional
-	Services    *TemporalServicesSpec   `json:"services"`
+	Services *TemporalServicesSpec `json:"services,omitempty"`
+	// Persistence defines temporal persistence configuration.
 	Persistence TemporalPersistenceSpec `json:"persistence"`
-	Datastores  []TemporalDatastoreSpec `json:"datastores"`
+	// Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
+	// for the cluster's persistence layer.
+	Datastores []TemporalDatastoreSpec `json:"datastores"`
+	// An optional list of references to secrets in the same namespace
+	// to use for pulling temporal images from registries.
 	// +optional
-	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets"`
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+	// UI allows configuration of the optional temporal web ui deployed alongside the cluster.
 	// +optional
 	UI *TemporalUISpec `json:"ui,omitempty"`
 }
 
 // ServiceStatus reports a service status.
 type ServiceStatus struct {
+	// Name of the temporal service.
 	Name string `json:"name"`
-	// Version hols the current service version.
+	// Current observed version of the service.
 	Version string `json:"version"`
 }
 
@@ -300,12 +330,14 @@ type TemporalClusterStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// TemporalCluster is the Schema for the temporalclusters API
+// TemporalCluster defines a temporal cluster deployment.
 type TemporalCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TemporalClusterSpec   `json:"spec,omitempty"`
+	// Specification of the desired behavior of the Temporal cluster.
+	Spec TemporalClusterSpec `json:"spec,omitempty"`
+	// Most recent observed status of the Temporal cluster.
 	Status TemporalClusterStatus `json:"status,omitempty"`
 }
 
@@ -318,10 +350,12 @@ func (c *TemporalCluster) getDatastoreByName(name string) (*TemporalDatastoreSpe
 	return nil, false
 }
 
+// GetDefaultDatastore returns the cluster's default datastore.
 func (c *TemporalCluster) GetDefaultDatastore() (*TemporalDatastoreSpec, bool) {
 	return c.getDatastoreByName(c.Spec.Persistence.DefaultStore)
 }
 
+// GetVisibilityDatastore returns the cluster's visibility datastore.
 func (c *TemporalCluster) GetVisibilityDatastore() (*TemporalDatastoreSpec, bool) {
 	return c.getDatastoreByName(c.Spec.Persistence.VisibilityStore)
 }
