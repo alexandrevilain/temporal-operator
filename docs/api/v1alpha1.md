@@ -6,7 +6,7 @@ Resource Types:
 </li></ul>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalCluster">TemporalCluster
 </h3>
-<p>TemporalCluster is the Schema for the temporalclusters API</p>
+<p>TemporalCluster defines a temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -58,6 +58,7 @@ TemporalClusterSpec
 </em>
 </td>
 <td>
+<p>Specification of the desired behavior of the Temporal cluster.</p>
 <br/>
 <br/>
 <table>
@@ -70,7 +71,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Image defines the temporal server image the instance should use.</p>
+<p>Image defines the temporal server docker image the cluster should use for each services.</p>
 </td>
 </tr>
 <tr>
@@ -81,7 +82,8 @@ string
 </em>
 </td>
 <td>
-<p>Version defines the temporal version the instance should run.</p>
+<p>Version defines the temporal version the cluster to be deployed.
+This version impacts the underlying persistence schemas versions.</p>
 </td>
 </tr>
 <tr>
@@ -107,6 +109,7 @@ TemporalServicesSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>Services allows customizations for for each temporal services deployment.</p>
 </td>
 </tr>
 <tr>
@@ -119,6 +122,7 @@ TemporalPersistenceSpec
 </em>
 </td>
 <td>
+<p>Persistence defines temporal persistence configuration.</p>
 </td>
 </tr>
 <tr>
@@ -131,6 +135,8 @@ TemporalPersistenceSpec
 </em>
 </td>
 <td>
+<p>Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
+for the cluster&rsquo;s persistence layer.</p>
 </td>
 </tr>
 <tr>
@@ -144,6 +150,8 @@ TemporalPersistenceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>An optional list of references to secrets in the same namespace
+to use for pulling temporal images from registries.</p>
 </td>
 </tr>
 <tr>
@@ -157,6 +165,7 @@ TemporalUISpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
 </td>
 </tr>
 </table>
@@ -172,6 +181,7 @@ TemporalClusterStatus
 </em>
 </td>
 <td>
+<p>Most recent observed status of the Temporal cluster.</p>
 </td>
 </tr>
 </tbody>
@@ -203,6 +213,7 @@ bool
 </em>
 </td>
 <td>
+<p>Enabled defines if the cluster should use a TLS connection to connect to the datastore.</p>
 </td>
 </tr>
 <tr>
@@ -216,6 +227,7 @@ SecretKeyReference
 </td>
 <td>
 <em>(Optional)</em>
+<p>CertFileRef is a reference to a secret containing the cert file.</p>
 </td>
 </tr>
 <tr>
@@ -229,6 +241,7 @@ SecretKeyReference
 </td>
 <td>
 <em>(Optional)</em>
+<p>KeyFileRef is a reference to a secret containing the key file.</p>
 </td>
 </tr>
 <tr>
@@ -242,6 +255,7 @@ SecretKeyReference
 </td>
 <td>
 <em>(Optional)</em>
+<p>CaFileRef is a reference to a secret containing the ca file.</p>
 </td>
 </tr>
 <tr>
@@ -252,6 +266,7 @@ bool
 </em>
 </td>
 <td>
+<p>EnableHostVerification defines if the hostname should be verified when connecting to the datastore.</p>
 </td>
 </tr>
 <tr>
@@ -262,6 +277,7 @@ string
 </em>
 </td>
 <td>
+<p>ServerName the datastore should present.</p>
 </td>
 </tr>
 </tbody>
@@ -522,6 +538,12 @@ int
 </td>
 <td>
 <em>(Optional)</em>
+<p>Port defines a custom gRPC port for the service.
+Default values are:
+7233 for Frontend service
+7234 for History service
+7235 for Matching service
+7239 for Worker service</p>
 </td>
 </tr>
 <tr>
@@ -533,6 +555,12 @@ int
 </td>
 <td>
 <em>(Optional)</em>
+<p>Port defines a custom membership port for the service.
+Default values are:
+6933 for Frontend service
+6934 for History service
+6935 for Matching service
+6939 for Worker service</p>
 </td>
 </tr>
 <tr>
@@ -543,6 +571,8 @@ int
 </em>
 </td>
 <td>
+<em>(Optional)</em>
+<p>Number of desired replicas for the service. Default to 1.</p>
 </td>
 </tr>
 </tbody>
@@ -574,6 +604,7 @@ string
 </em>
 </td>
 <td>
+<p>Name of the temporal service.</p>
 </td>
 </tr>
 <tr>
@@ -584,7 +615,7 @@ string
 </em>
 </td>
 <td>
-<p>Version hols the current service version.</p>
+<p>Current observed version of the service.</p>
 </td>
 </tr>
 </tbody>
@@ -617,7 +648,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Image defines the temporal server image the instance should use.</p>
+<p>Image defines the temporal server docker image the cluster should use for each services.</p>
 </td>
 </tr>
 <tr>
@@ -628,7 +659,8 @@ string
 </em>
 </td>
 <td>
-<p>Version defines the temporal version the instance should run.</p>
+<p>Version defines the temporal version the cluster to be deployed.
+This version impacts the underlying persistence schemas versions.</p>
 </td>
 </tr>
 <tr>
@@ -654,6 +686,7 @@ TemporalServicesSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>Services allows customizations for for each temporal services deployment.</p>
 </td>
 </tr>
 <tr>
@@ -666,6 +699,7 @@ TemporalPersistenceSpec
 </em>
 </td>
 <td>
+<p>Persistence defines temporal persistence configuration.</p>
 </td>
 </tr>
 <tr>
@@ -678,6 +712,8 @@ TemporalPersistenceSpec
 </em>
 </td>
 <td>
+<p>Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
+for the cluster&rsquo;s persistence layer.</p>
 </td>
 </tr>
 <tr>
@@ -691,6 +727,8 @@ TemporalPersistenceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>An optional list of references to secrets in the same namespace
+to use for pulling temporal images from registries.</p>
 </td>
 </tr>
 <tr>
@@ -704,6 +742,7 @@ TemporalUISpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
 </td>
 </tr>
 </tbody>
@@ -878,9 +917,7 @@ string
 </em>
 </td>
 <td>
-<em>(Optional)</em>
-<p>VisibilityStore is the name of the datastore to be used for visibility records.
-If not set it defaults to the default store.</p>
+<p>VisibilityStore is the name of the datastore to be used for visibility records.</p>
 </td>
 </tr>
 <tr>
@@ -927,6 +964,7 @@ ServiceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>Frontend service custom specifications.</p>
 </td>
 </tr>
 <tr>
@@ -940,6 +978,7 @@ ServiceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>History service custom specifications.</p>
 </td>
 </tr>
 <tr>
@@ -953,6 +992,7 @@ ServiceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>Matching service custom specifications.</p>
 </td>
 </tr>
 <tr>
@@ -966,6 +1006,7 @@ ServiceSpec
 </td>
 <td>
 <em>(Optional)</em>
+<p>Worker service custom specifications.</p>
 </td>
 </tr>
 </tbody>
@@ -997,7 +1038,7 @@ map[string]string
 </em>
 </td>
 <td>
-<p>Annotations allow custom annotations on the ingress ressource.</p>
+<p>Annotations allows custom annotations on the ingress ressource.</p>
 </td>
 </tr>
 <tr>
@@ -1008,7 +1049,7 @@ string
 </em>
 </td>
 <td>
-<p>IngressClassName is the name of the IngressClass cluster resource.</p>
+<p>IngressClassName is the name of the IngressClass the deployed ingress resource should use.</p>
 </td>
 </tr>
 <tr>
@@ -1045,7 +1086,7 @@ string
 (<em>Appears on:</em>
 <a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
-<p>TemporalUISpec contains temporal ui specificiations.</p>
+<p>TemporalUISpec defines parameters for the temporal UI within a Temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
