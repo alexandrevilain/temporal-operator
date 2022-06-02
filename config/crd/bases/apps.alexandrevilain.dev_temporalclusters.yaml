@@ -18,7 +18,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TemporalCluster is the Schema for the temporalclusters API
+        description: TemporalCluster defines a temporal cluster deployment.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,9 +33,25 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalClusterSpec defines the desired state of TemporalCluster.
+            description: Specification of the desired behavior of the Temporal cluster.
             properties:
+              admintools:
+                description: AdminTools allows configuration of the optional admin
+                  tool pod deployed alongside the cluster.
+                properties:
+                  enabled:
+                    description: Enabled defines if the operator should deploy the
+                      admin tools alongside the cluster.
+                    type: boolean
+                  image:
+                    description: Image defines the temporal admin tools docker image
+                      the instance should run.
+                    type: string
+                type: object
               datastores:
+                description: Datastores the cluster can use. Datastore names are then
+                  referenced in the PersistenceSpec to use them for the cluster's
+                  persistence layer.
                 items:
                   description: TemporalDatastoreSpec contains temporal datastore specifications.
                   properties:
@@ -110,11 +126,12 @@ spec:
                         using TLS.
                       properties:
                         bool:
+                          description: Enabled defines if the cluster should use a
+                            TLS connection to connect to the datastore.
                           type: boolean
                         caFileRef:
-                          description: SecretKeyReference contains enough information
-                            to locate the referenced Kubernetes Secret object in the
-                            same namespace.
+                          description: CaFileRef is a reference to a secret containing
+                            the ca file.
                           properties:
                             key:
                               description: Key in the Secret.
@@ -126,9 +143,8 @@ spec:
                           - name
                           type: object
                         certFileRef:
-                          description: SecretKeyReference contains enough information
-                            to locate the referenced Kubernetes Secret object in the
-                            same namespace.
+                          description: CertFileRef is a reference to a secret containing
+                            the cert file.
                           properties:
                             key:
                               description: Key in the Secret.
@@ -140,11 +156,12 @@ spec:
                           - name
                           type: object
                         enableHostVerification:
+                          description: EnableHostVerification defines if the hostname
+                            should be verified when connecting to the datastore.
                           type: boolean
                         keyFileRef:
-                          description: SecretKeyReference contains enough information
-                            to locate the referenced Kubernetes Secret object in the
-                            same namespace.
+                          description: KeyFileRef is a reference to a secret containing
+                            the key file.
                           properties:
                             key:
                               description: Key in the Secret.
@@ -156,6 +173,7 @@ spec:
                           - name
                           type: object
                         serverName:
+                          description: ServerName the datastore should present.
                           type: string
                       required:
                       - bool
@@ -168,10 +186,12 @@ spec:
                   type: object
                 type: array
               image:
-                description: Image defines the temporal server image the instance
-                  should use.
+                description: Image defines the temporal server docker image the cluster
+                  should use for each services.
                 type: string
               imagePullSecrets:
+                description: An optional list of references to secrets in the same
+                  namespace to use for pulling temporal images from registries.
                 items:
                   description: LocalObjectReference contains enough information to
                     let you locate the referenced object inside the same namespace.
@@ -189,8 +209,7 @@ spec:
                 minimum: 1
                 type: integer
               persistence:
-                description: TemporalPersistenceSpec contains temporal persistence
-                  specifications.
+                description: Persistence defines temporal persistence configuration.
                 properties:
                   advancedVisibilityStore:
                     description: AdvancedVisibilityStore is the name of the datastore
@@ -202,70 +221,100 @@ spec:
                     type: string
                   visibilityStore:
                     description: VisibilityStore is the name of the datastore to be
-                      used for visibility records. If not set it defaults to the default
-                      store.
+                      used for visibility records.
                     type: string
                 required:
                 - defaultStore
+                - visibilityStore
                 type: object
               services:
-                description: TemporalServicesSpec contains all temporal services specifications.
+                description: Services allows customizations for for each temporal
+                  services deployment.
                 properties:
                   frontend:
-                    description: ServiceSpec contains a temporal service specifications.
+                    description: Frontend service custom specifications.
                     properties:
                       membershipPort:
+                        description: 'Port defines a custom membership port for the
+                          service. Default values are: 6933 for Frontend service 6934
+                          for History service 6935 for Matching service 6939 for Worker
+                          service'
                         type: integer
                       port:
+                        description: 'Port defines a custom gRPC port for the service.
+                          Default values are: 7233 for Frontend service 7234 for History
+                          service 7235 for Matching service 7239 for Worker service'
                         type: integer
                       replicas:
+                        description: Number of desired replicas for the service. Default
+                          to 1.
                         minimum: 1
                         type: integer
-                    required:
-                    - replicas
                     type: object
                   history:
-                    description: ServiceSpec contains a temporal service specifications.
+                    description: History service custom specifications.
                     properties:
                       membershipPort:
+                        description: 'Port defines a custom membership port for the
+                          service. Default values are: 6933 for Frontend service 6934
+                          for History service 6935 for Matching service 6939 for Worker
+                          service'
                         type: integer
                       port:
+                        description: 'Port defines a custom gRPC port for the service.
+                          Default values are: 7233 for Frontend service 7234 for History
+                          service 7235 for Matching service 7239 for Worker service'
                         type: integer
                       replicas:
+                        description: Number of desired replicas for the service. Default
+                          to 1.
                         minimum: 1
                         type: integer
-                    required:
-                    - replicas
                     type: object
                   matching:
-                    description: ServiceSpec contains a temporal service specifications.
+                    description: Matching service custom specifications.
                     properties:
                       membershipPort:
+                        description: 'Port defines a custom membership port for the
+                          service. Default values are: 6933 for Frontend service 6934
+                          for History service 6935 for Matching service 6939 for Worker
+                          service'
                         type: integer
                       port:
+                        description: 'Port defines a custom gRPC port for the service.
+                          Default values are: 7233 for Frontend service 7234 for History
+                          service 7235 for Matching service 7239 for Worker service'
                         type: integer
                       replicas:
+                        description: Number of desired replicas for the service. Default
+                          to 1.
                         minimum: 1
                         type: integer
-                    required:
-                    - replicas
                     type: object
                   worker:
-                    description: ServiceSpec contains a temporal service specifications.
+                    description: Worker service custom specifications.
                     properties:
                       membershipPort:
+                        description: 'Port defines a custom membership port for the
+                          service. Default values are: 6933 for Frontend service 6934
+                          for History service 6935 for Matching service 6939 for Worker
+                          service'
                         type: integer
                       port:
+                        description: 'Port defines a custom gRPC port for the service.
+                          Default values are: 7233 for Frontend service 7234 for History
+                          service 7235 for Matching service 7239 for Worker service'
                         type: integer
                       replicas:
+                        description: Number of desired replicas for the service. Default
+                          to 1.
                         minimum: 1
                         type: integer
-                    required:
-                    - replicas
                     type: object
                 type: object
               ui:
-                description: TemporalUISpec contains temporal ui specificiations.
+                description: UI allows configuration of the optional temporal web
+                  ui deployed alongside the cluster.
                 properties:
                   enabled:
                     description: Enabled defines if the operator should deploy the
@@ -283,8 +332,8 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations allow custom annotations on the ingress
-                          ressource.
+                        description: Annotations allows custom annotations on the
+                          ingress ressource.
                         type: object
                       hosts:
                         description: Host is the list of host the ingress should use.
@@ -293,7 +342,7 @@ spec:
                         type: array
                       ingressClassName:
                         description: IngressClassName is the name of the IngressClass
-                          cluster resource.
+                          the deployed ingress resource should use.
                         type: string
                       tls:
                         description: TLS configuration.
@@ -331,8 +380,9 @@ spec:
                     type: string
                 type: object
               version:
-                description: Version defines the temporal version the instance should
-                  run.
+                description: Version defines the temporal version the cluster to be
+                  deployed. This version impacts the underlying persistence schemas
+                  versions.
                 type: string
             required:
             - datastores
@@ -341,7 +391,7 @@ spec:
             - version
             type: object
           status:
-            description: TemporalClusterStatus defines the observed state of TemporalCluster.
+            description: Most recent observed status of the Temporal cluster.
             properties:
               persistence:
                 description: Persistence holds the persistence status.
@@ -364,9 +414,10 @@ spec:
                   description: ServiceStatus reports a service status.
                   properties:
                     name:
+                      description: Name of the temporal service.
                       type: string
                     version:
-                      description: Version hols the current service version.
+                      description: Current observed version of the service.
                       type: string
                   required:
                   - name

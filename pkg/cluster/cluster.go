@@ -57,5 +57,9 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		}
 	}
 
+	if b.Instance.Spec.AdminTools != nil && b.Instance.Spec.AdminTools.Enabled {
+		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
+	}
+
 	return builders, nil
 }
