@@ -67,6 +67,8 @@ type TemporalClusterReconciler struct {
 func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
+	logger.Info("Starting reconciliation")
+
 	temporalCluster := &appsv1alpha1.TemporalCluster{}
 	err := r.Get(ctx, req.NamespacedName, temporalCluster)
 	if client.IgnoreNotFound(err) != nil {
@@ -91,11 +93,15 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
+	logger.Info("Retrieved desired cluster version", "version", clusterVersion.String())
+
 	if err := r.reconcilePersistence(ctx, temporalCluster, clusterVersion); err != nil {
+		logger.Error(err, "Can't reconcile persistence")
 		return ctrl.Result{}, err
 	}
 
 	if err := r.reconcileResources(ctx, temporalCluster); err != nil {
+		logger.Error(err, "Can't reconcile resources")
 		return ctrl.Result{}, err
 	}
 
@@ -235,6 +241,8 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		if err != nil {
 			return err
 		}
+
+		logger.Info("Reporting service status", "service", serviceStatus.Name)
 
 		status.AddServiceStatus(temporalCluster, serviceStatus)
 	}
