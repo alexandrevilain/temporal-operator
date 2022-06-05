@@ -168,6 +168,20 @@ TemporalUISpec
 <p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>admintools</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">
+TemporalAdminToolsSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -622,6 +636,52 @@ string
 </table>
 </div>
 </div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">TemporalAdminToolsSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
+Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should deploy the admin tools alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image defines the temporal admin tools docker image the instance should run.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec
 </h3>
 <p>
@@ -743,6 +803,20 @@ TemporalUISpec
 <td>
 <em>(Optional)</em>
 <p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>admintools</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">
+TemporalAdminToolsSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
 </td>
 </tr>
 </tbody>
