@@ -269,6 +269,17 @@ type TemporalUISpec struct {
 	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
 }
 
+// TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
+// Note that deployed admin tools version is the same as the cluster's version.
+type TemporalAdminToolsSpec struct {
+	// Enabled defines if the operator should deploy the admin tools alongside the cluster.
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Image defines the temporal admin tools docker image the instance should run.
+	// +optional
+	Image string `json:"image"`
+}
+
 // TemporalClusterSpec defines the desired state of TemporalCluster.
 type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
@@ -296,6 +307,9 @@ type TemporalClusterSpec struct {
 	// UI allows configuration of the optional temporal web ui deployed alongside the cluster.
 	// +optional
 	UI *TemporalUISpec `json:"ui,omitempty"`
+	// AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.
+	// +optional
+	AdminTools *TemporalAdminToolsSpec `json:"admintools,omitempty"`
 }
 
 // ServiceStatus reports a service status.
@@ -435,6 +449,14 @@ func (c *TemporalCluster) Default() {
 
 	if c.Spec.UI.Image == "" {
 		c.Spec.UI.Image = "temporalio/ui"
+	}
+
+	if c.Spec.AdminTools == nil {
+		c.Spec.AdminTools = new(TemporalAdminToolsSpec)
+	}
+
+	if c.Spec.AdminTools.Image == "" {
+		c.Spec.AdminTools.Image = "temporalio/admin-tools"
 	}
 }
 

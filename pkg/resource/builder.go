@@ -24,10 +24,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// Service components.
 const (
-	ServiceHeadlessService = "headless-service"
-	ServiceConfig          = "config"
-	ServiceDeployment      = "deployment"
+	ServiceConfig = "config"
+)
+
+// Additionals services
+const (
+	ServiceUIName     = "ui"
+	ServiceAdminTools = "admintools"
 )
 
 type Builder interface {
