@@ -24,8 +24,8 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/common/schema"
+	"github.com/alexandrevilain/temporal-operator/pkg/log"
 	"github.com/blang/semver/v4"
-	temporallog "go.temporal.io/server/common/log"
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/mysql"      // needed to load mysql plugin
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/postgresql" // needed to load postgresql plugin
 	"go.temporal.io/server/tools/sql"
@@ -79,7 +79,7 @@ func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.Tempo
 		InitialVersion:    "0.0",
 		Overwrite:         false,
 		DisableVersioning: false,
-	}, temporallog.NewCLILogger())
+	}, log.NewTemporalLogFromContext(ctx))
 
 	return setupTask.Run()
 }
@@ -146,7 +146,7 @@ func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.Te
 		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
-	}, temporallog.NewCLILogger())
+	}, log.NewTemporalLogFromContext(ctx))
 
 	err = updateTask.Run()
 	if err != nil {
