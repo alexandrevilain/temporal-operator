@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.0.4
+
+**Release date:** 2022-06-07
+
+This release adds support for UI and admin tools. It
+Features:
+- Add support for webui [#18](https://github.com/alexandrevilain/temporal-operator/pull/18)
+- Add support for admin tools [#24](https://github.com/alexandrevilain/temporal-operator/pull/24)
+
+Improvements:
+- Improve API documentation [#23](https://github.com/alexandrevilain/temporal-operator/pull/23)
+- Create logger adapter for persistence reconciliations [#26](https://github.com/alexandrevilain/temporal-operator/pull/26)
+
+Fixes:
+- Packages where not in public, this is now fixed. Sorry for that.
+
 ## 0.0.3
 
 **Release date:** 2022-05-30
