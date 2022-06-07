@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 **Release date:** 2022-06-07
 
-This release adds support for UI and admin tools. It
+This release adds support for UI and admin tools.
 Features:
 - Add support for webui [#18](https://github.com/alexandrevilain/temporal-operator/pull/18)
 - Add support for admin tools [#24](https://github.com/alexandrevilain/temporal-operator/pull/24)
