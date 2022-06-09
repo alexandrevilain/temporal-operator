@@ -88,6 +88,12 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		ImagePullPolicy:          corev1.PullAlways,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+		SecurityContext: &corev1.SecurityContext{
+			AllowPrivilegeEscalation: pointer.Bool(false),
+			Capabilities: &corev1.Capabilities{
+				Drop: []corev1.Capability{"ALL"},
+			},
+		},
 		Ports: []corev1.ContainerPort{
 			{
 				Name:          "rpc",
@@ -148,7 +154,12 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		TerminationGracePeriodSeconds: pointer.Int64(30),
 		DNSPolicy:                     corev1.DNSClusterFirst,
 		SchedulerName:                 "default-scheduler",
-		SecurityContext:               &corev1.PodSecurityContext{},
+		SecurityContext: &corev1.PodSecurityContext{
+			RunAsUser:    pointer.Int64(1000),
+			RunAsGroup:   pointer.Int64(1000),
+			FSGroup:      pointer.Int64(1000),
+			RunAsNonRoot: pointer.Bool(true),
+		},
 		Volumes: []corev1.Volume{
 			{
 				Name: "config",
