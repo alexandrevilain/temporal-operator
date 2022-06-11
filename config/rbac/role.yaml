@@ -70,3 +70,13 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - networking
+  resources:
+  - ingress
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch

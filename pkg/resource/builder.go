@@ -40,6 +40,10 @@ type Builder interface {
 	Update(client.Object) error
 }
 
+type Pruner interface {
+	Build() (client.Object, error)
+}
+
 type StatusReporter interface {
 	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
 }

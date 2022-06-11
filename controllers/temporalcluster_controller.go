@@ -31,6 +31,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
@@ -58,6 +59,7 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
+//+kubebuilder:rbac:groups="networking",resources=ingress,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
@@ -221,7 +223,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		})
 		if err != nil {
 			action := r.operationResultToAction(operationResult)
-			msg := fmt.Sprintf("failed to %s %T %s", action, resource, resource.GetName())
+			msg := fmt.Sprintf("Failed to %s %T %s", action, resource, resource.GetName())
 			logger.Error(err, msg)
 			return err
 		}
@@ -229,6 +231,25 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 			msg := fmt.Sprintf("%s %T %s", operationResult, resource, resource.GetName())
 			logger.Info(msg)
 		}
+	}
+
+	pruners := clusterBuilder.ResourcePruners()
+
+	logger.Info("Retrieved pruners", "count", len(pruners))
+
+	for _, pruner := range pruners {
+		resource, err := pruner.Build()
+		if err != nil {
+			return err
+		}
+		err = r.Delete(ctx, resource)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				continue
+			}
+			logger.Error(err, "Failed to delete resource", "resource", resource.GetName(), "kind", fmt.Sprintf("%T", resource))
+		}
+		logger.Info("Deleted resource")
 	}
 
 	for _, builder := range builders {
@@ -295,6 +316,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		Owns(&networkingv1.Ingress{}).
 		Complete(r)
 }
 
@@ -307,6 +329,9 @@ func addResourceToIndex(rawObj client.Object) []string {
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	case *corev1.Service:
+		owner := metav1.GetControllerOf(resourceObject)
+		return validateAndGetOwner(owner)
+	case *networkingv1.Ingress:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:
