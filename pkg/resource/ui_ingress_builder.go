@@ -49,7 +49,7 @@ func (b *UIIngressBuilder) Build() (client.Object, error) {
 			Name:        b.instance.ChildResourceName("ui"),
 			Namespace:   b.instance.Namespace,
 			Labels:      metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
-			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations, b.instance.Spec.UI.Ingress.Annotations),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
 }
