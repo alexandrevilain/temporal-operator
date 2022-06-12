@@ -63,3 +63,16 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 
 	return builders, nil
 }
+
+func (b *TemporalClusterBuilder) ResourcePruners() []resource.Pruner {
+	pruners := []resource.Pruner{}
+	if b.Instance.Spec.UI == nil || (b.Instance.Spec.UI != nil && !b.Instance.Spec.UI.Enabled) {
+		pruners = append(pruners, resource.NewUIDeploymentBuilder(b.Instance, b.Scheme))
+		pruners = append(pruners, resource.NewUIServiceBuilder(b.Instance, b.Scheme))
+		pruners = append(pruners, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
+	}
+	if b.Instance.Spec.AdminTools == nil || (b.Instance.Spec.AdminTools != nil && !b.Instance.Spec.AdminTools.Enabled) {
+		pruners = append(pruners, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
+	}
+	return pruners
+}
