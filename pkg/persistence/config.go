@@ -18,13 +18,17 @@
 package persistence
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"go.temporal.io/server/common/auth"
 	"go.temporal.io/server/common/config"
+	esclient "go.temporal.io/server/common/persistence/visibility/store/elasticsearch/client"
 )
 
 // NewSQLconfigFromDatastoreSpec creates a new instance of a temporal SQL config from the provided TemporalDatastoreSpec.
-func NewSQLconfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config.SQL {
+func NewSQLConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config.SQL {
 	cfg := &config.SQL{
 		User:               spec.SQL.User,
 		Password:           "",
@@ -49,4 +53,34 @@ func NewSQLconfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config
 		}
 	}
 	return cfg
+}
+
+func elasticsearchIndicesToMap(indices v1alpha1.ElasticsearchIndices) map[string]string {
+	result := map[string]string{}
+	if indices.Visibility != "" {
+		result[esclient.VisibilityAppName] = indices.Visibility
+	}
+	if indices.SecondaryVisibility != "" {
+		result[esclient.SecondaryVisibilityAppName] = indices.SecondaryVisibility
+	}
+	return result
+}
+
+// NewElasticsearchConfigFromDatastoreSpec creates a new instance of a temporal elasticsearch client config from the provided TemporalDatastoreSpec.
+func NewElasticsearchConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) (*esclient.Config, error) {
+	parsedURL, err := url.Parse(spec.Elasticsearch.URL)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse elasticsearch url: %w", err)
+	}
+	return &esclient.Config{
+		Version:                      spec.Elasticsearch.Version,
+		URL:                          *parsedURL,
+		Username:                     spec.Elasticsearch.Username,
+		Password:                     "",
+		Indices:                      elasticsearchIndicesToMap(spec.Elasticsearch.Indices),
+		LogLevel:                     spec.Elasticsearch.LogLevel,
+		CloseIdleConnectionsInterval: spec.Elasticsearch.CloseIdleConnectionsInterval.Duration,
+		EnableSniff:                  spec.Elasticsearch.EnableSniff,
+		EnableHealthcheck:            spec.Elasticsearch.EnableSniff,
+	}, nil
 }

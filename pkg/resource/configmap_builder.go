@@ -66,8 +66,16 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	for _, store := range b.instance.Spec.Datastores {
 		cfg := config.DataStore{}
 		if store.SQL != nil {
-			cfg.SQL = persistence.NewSQLconfigFromDatastoreSpec(&store)
+			cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(&store)
 			cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		}
+		if store.Elasticsearch != nil {
+			esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(&store)
+			if err != nil {
+				return fmt.Errorf("can't get elasticsearch config: %w", err)
+			}
+			cfg.Elasticsearch = esCfg
+			cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
 		}
 		datastores[store.Name] = cfg
 	}

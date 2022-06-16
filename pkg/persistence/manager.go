@@ -20,18 +20,22 @@ package persistence
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
 	"path"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/common/schema"
-	"github.com/alexandrevilain/temporal-operator/pkg/log"
+	tlog "github.com/alexandrevilain/temporal-operator/pkg/log"
 	"github.com/blang/semver/v4"
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/mysql"      // needed to load mysql plugin
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/postgresql" // needed to load postgresql plugin
+	esclient "go.temporal.io/server/common/persistence/visibility/store/elasticsearch/client"
 	"go.temporal.io/server/tools/sql"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type Schema string
@@ -50,6 +54,9 @@ const (
 
 	mysqlSchemaPath        = "mysql"
 	mysqlVersionSchemaPath = "v57"
+
+	elasticsearchSchemaPath   = "elasticsearch"
+	elasticsearchTemplateName = "temporal_visibility_v1_template"
 )
 
 // Manager handler persistence receonciliation.
@@ -79,7 +86,7 @@ func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.Tempo
 		InitialVersion:    "0.0",
 		Overwrite:         false,
 		DisableVersioning: false,
-	}, log.NewTemporalLogFromContext(ctx))
+	}, tlog.NewTemporalLogFromContext(ctx))
 
 	return setupTask.Run()
 }
@@ -94,19 +101,88 @@ func (m *Manager) RunVisibilityStoreUpdateTask(ctx context.Context, cluster *v1a
 	return m.runUpdateSchemaTasks(ctx, cluster, store, VisibilitySchema, version)
 }
 
-func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (*sql.Connection, error) {
-	config := NewSQLconfigFromDatastoreSpec(store)
+// RunAdvancedVisibilityStoreTasks creates the index setting for the temporal index and the index itself.
+func (m *Manager) RunAdvancedVisibilityStoreTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, templateVersion semver.Version) error {
+	conn, err := m.getElasticsearchConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
+	if err != nil {
+		return fmt.Errorf("can' get elasticsearch connection from datastore spec: %w", err)
+	}
 
-	passwordSecret := &corev1.Secret{}
-	err := m.Get(ctx, types.NamespacedName{Name: store.PasswordSecretRef.Name, Namespace: namespace}, passwordSecret)
+	templateFilePath := m.computeAdvancedVisibilitySchemaDir(store.Elasticsearch.Version, templateVersion)
+	log.FromContext(ctx).Info("Retrieved advanced visibility schema dir", "path", templateFilePath)
+
+	content, err := os.ReadFile(templateFilePath)
+	if err != nil {
+		return fmt.Errorf("can'read template file: %w", err)
+	}
+
+	_, err = conn.IndexPutTemplate(ctx, elasticsearchTemplateName, string(content))
+	if err != nil {
+		return fmt.Errorf("can't put index template: %w", err)
+	}
+
+	if store.Elasticsearch.Indices.Visibility != "" {
+		_, err = conn.CreateIndex(ctx, store.Elasticsearch.Indices.Visibility)
+		if err != nil {
+			return fmt.Errorf("can't create '%s' index: %w", store.Elasticsearch.Indices.Visibility, err)
+		}
+	}
+
+	if store.Elasticsearch.Indices.SecondaryVisibility != "" {
+		_, err = conn.CreateIndex(ctx, store.Elasticsearch.Indices.SecondaryVisibility)
+		if err != nil {
+			return fmt.Errorf("can't create '%s' index: %w", store.Elasticsearch.Indices.SecondaryVisibility, err)
+		}
+	}
+
+	return nil
+}
+
+func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (*sql.Connection, error) {
+	config := NewSQLConfigFromDatastoreSpec(store)
+
+	var err error
+	config.Password, err = m.getStorePassword(ctx, store, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	config.Password = string(passwordSecret.Data[store.PasswordSecretRef.Key])
-
 	return sql.NewConnection(config)
 }
+
+// getElasticsearchConnectionFromDatastoreSpec returns the ES client connection from the store spec.
+func (m *Manager) getElasticsearchConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (esclient.IntegrationTestsClient, error) {
+	config, err := NewElasticsearchConfigFromDatastoreSpec(store)
+	if err != nil {
+		return nil, err
+	}
+
+	config.Password, err = m.getStorePassword(ctx, store, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := esclient.NewClient(config, &http.Client{}, tlog.NewTemporalLogFromContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("can't create elasticsearch client: %w", err)
+	}
+
+	return c.(esclient.IntegrationTestsClient), nil
+}
+
+func (m *Manager) getStorePassword(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (string, error) {
+	passwordSecret := &corev1.Secret{}
+	err := m.Get(ctx, types.NamespacedName{Name: store.PasswordSecretRef.Name, Namespace: namespace}, passwordSecret)
+	if err != nil {
+		return "", err
+	}
+	password, ok := passwordSecret.Data[store.PasswordSecretRef.Key]
+	if !ok {
+		return "", fmt.Errorf("key '%s' not found in secret %s", store.PasswordSecretRef.Key, store.PasswordSecretRef.Name)
+	}
+	return string(password), nil
+}
+
 func (m *Manager) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchema Schema) string {
 	storeSchemaPath := ""
 	storeVersionSchemaPath := ""
@@ -129,6 +205,12 @@ func (m *Manager) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchem
 	return path.Join(m.SchemaFilePath, storeSchemaPath, storeVersionSchemaPath, tagetSchemaPath, "versioned")
 }
 
+func (m *Manager) computeAdvancedVisibilitySchemaDir(esVersion string, templateVersion semver.Version) string {
+	v := fmt.Sprintf("v%d", templateVersion.Major)
+	file := fmt.Sprintf("index_template_%s.json", esVersion)
+	return path.Join(m.SchemaFilePath, elasticsearchSchemaPath, visibilitySchemaPath, "versioned", v, file)
+}
+
 func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, targetSchema Schema, targetVersion semver.Version) error {
 	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
 	if err != nil {
@@ -146,7 +228,7 @@ func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.Te
 		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
-	}, log.NewTemporalLogFromContext(ctx))
+	}, tlog.NewTemporalLogFromContext(ctx))
 
 	err = updateTask.Run()
 	if err != nil {

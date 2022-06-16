@@ -221,7 +221,7 @@ TemporalClusterStatus
 <tbody>
 <tr>
 <td>
-<code>bool</code><br>
+<code>enabled</code><br>
 <em>
 bool
 </em>
@@ -291,6 +291,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>ServerName the datastore should present.</p>
 </td>
 </tr>
@@ -300,6 +301,167 @@ string
 </div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.DatastoreType">DatastoreType
 (<code>string</code> alias)</h3>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.ElasticsearchIndices">ElasticsearchIndices
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">ElasticsearchSpec</a>)
+</p>
+<p>ElasticsearchIndices holds index names.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>visibility</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Visibility defines visibility&rsquo;s index name.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secondaryVisibility</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecondaryVisibility defines secondary visibility&rsquo;s index name.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">ElasticsearchSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+</p>
+<p>ElasticsearchSpec contains Elasticsearch datastore connections specifications.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Version defines the elasticsearch version.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>url</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>URL is the connection url to connect to the instance.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>username</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Username is the username to be used for the connection.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>indices</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchIndices">
+ElasticsearchIndices
+</a>
+</em>
+</td>
+<td>
+<p>Indices holds visibility index names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>logLevel</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LogLevel defines the temporal cluster&rsquo;s es client logger level.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>closeIdleConnectionsInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CloseIdleConnectionsInterval is the max duration a connection stay open while idle.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableSniff</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableSniff enables or disables sniffer on the temporal cluster&rsquo;s es client.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableHealthcheck</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableHealthcheck enables or disables healthcheck on the temporal cluster&rsquo;s es client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.PersistenceStatus">PersistenceStatus
 </h3>
 <p>
@@ -337,6 +499,17 @@ string
 </td>
 <td>
 <p>VisibilityStoreSchemaVersion holds the current schema version for the visibility store.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>advancedVisibilityStoreSchemaVersion</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>AdvancedVisibilityStoreSchemaVersion holds the current schema version for the advanced visibility store.</p>
 </td>
 </tr>
 </tbody>
@@ -922,6 +1095,20 @@ SQLSpec
 <td>
 <em>(Optional)</em>
 <p>SQL holds all connection parameters for SQL datastores.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>elasticsearch</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">
+ElasticsearchSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Elasticsearch holds all connection parameters for Elasticsearch datastores.</p>
 </td>
 </tr>
 <tr>

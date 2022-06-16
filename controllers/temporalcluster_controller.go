@@ -154,18 +154,13 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 		return err
 	}
 
-	expectedDefaultSchemaVersionByDatastoreType, err := version.GetExpectedDefaultSchemaVersions(clusterVersion)
-	if err != nil {
-		return err
+	matchingVersion, ok := version.GetMatchingSupportedVersion(clusterVersion)
+	if !ok {
+		return errors.New("no matching version found")
 	}
 
-	expectedVisibilitySchemaVersionByDatastoreType, err := version.GetExpectedVisibilitySchemaVersions(clusterVersion)
-	if err != nil {
-		return err
-	}
-
-	expectedDefaultStoreSchemaVersion := expectedDefaultSchemaVersionByDatastoreType[defaultStoreType]
-	expectedVisibilityStoreSchemaVersion := expectedVisibilitySchemaVersionByDatastoreType[visibilityStoreType]
+	expectedDefaultStoreSchemaVersion := matchingVersion.DefaultSchemaVersions[defaultStoreType]
+	expectedVisibilityStoreSchemaVersion := matchingVersion.VisibilitySchemaVersion[visibilityStoreType]
 
 	currentDefaultStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.DefaultStoreSchemaVersion)
 	if err != nil {
@@ -193,6 +188,34 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 			return err
 		}
 		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = expectedVisibilityStoreSchemaVersion.String()
+	}
+
+	// Reconcile advanced visibility store if enabled
+	if temporalCluster.Spec.Persistence.AdvancedVisibilityStore != "" {
+		expectedAdvancedVisibilityStoreSchemaVersion := matchingVersion.AdvancedVisibilitySchemaVersion[appsv1alpha1.ElasticsearchDatastore]
+
+		currentAdvancedVisibilityStoreSchemaVersion := version.NullVersion
+		if temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion != "" {
+			currentAdvancedVisibilityStoreSchemaVersion, err = version.Parse(temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion)
+			if err != nil {
+				return fmt.Errorf("can't parse current advanced visibility schema version: %w", err)
+			}
+		}
+
+		if expectedAdvancedVisibilityStoreSchemaVersion.GT(currentAdvancedVisibilityStoreSchemaVersion) {
+			logger.Info("Starting advanced visibility store update task")
+
+			advancedVisibilityStore, found := temporalCluster.GetAdvancedVisibilityDatastore()
+			if !found {
+				return errors.New("advanced visibility datastore not found")
+			}
+
+			err := r.PersistenceManager.RunAdvancedVisibilityStoreTasks(ctx, temporalCluster, advancedVisibilityStore, expectedAdvancedVisibilityStoreSchemaVersion)
+			if err != nil {
+				return err
+			}
+			temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion = expectedAdvancedVisibilityStoreSchemaVersion.String()
+		}
 	}
 
 	return r.updateTemporalClusterStatus(ctx, temporalCluster)
