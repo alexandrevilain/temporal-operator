@@ -132,7 +132,7 @@ type SQLSpec struct {
 // DatastoreTLSSpec contains datastore TLS connections specifications.
 type DatastoreTLSSpec struct {
 	// Enabled defines if the cluster should use a TLS connection to connect to the datastore.
-	Enabled bool `json:"bool"`
+	Enabled bool `json:"enabled"`
 	// CertFileRef is a reference to a secret containing the cert file.
 	// +optional
 	CertFileRef *SecretKeyReference `json:"certFileRef"`
@@ -145,15 +145,53 @@ type DatastoreTLSSpec struct {
 	// EnableHostVerification defines if the hostname should be verified when connecting to the datastore.
 	EnableHostVerification bool `json:"enableHostVerification"`
 	// ServerName the datastore should present.
+	// +optional
 	ServerName string `json:"serverName"`
+}
+
+// ElasticsearchIndices holds index names.
+type ElasticsearchIndices struct {
+	// Visibility defines visibility's index name.
+	Visibility string `json:"visibility"`
+	// SecondaryVisibility defines secondary visibility's index name.
+	// +optional
+	SecondaryVisibility string `json:"secondaryVisibility"`
+}
+
+// ElasticsearchSpec contains Elasticsearch datastore connections specifications.
+type ElasticsearchSpec struct {
+	// Version defines the elasticsearch version.
+	// +kubebuilder:default=v7
+	// +kubebuilder:validation:Pattern=`^v(6|7)$`
+	Version string `json:"version"`
+	// URL is the connection url to connect to the instance.
+	// +kubebuilder:validation:Pattern=`^https?:\/\/.+$`
+	URL string `json:"url"`
+	// Username is the username to be used for the connection.
+	Username string `json:"username"`
+	// Indices holds visibility index names.
+	Indices ElasticsearchIndices `json:"indices"`
+	// LogLevel defines the temporal cluster's es client logger level.
+	// +optional
+	LogLevel string `json:"logLevel"`
+	// CloseIdleConnectionsInterval is the max duration a connection stay open while idle.
+	// +optional
+	CloseIdleConnectionsInterval metav1.Duration `json:"closeIdleConnectionsInterval"`
+	// EnableSniff enables or disables sniffer on the temporal cluster's es client.
+	// +optional
+	EnableSniff bool `json:"enableSniff"`
+	// EnableHealthcheck enables or disables healthcheck on the temporal cluster's es client.
+	// +optional
+	EnableHealthcheck bool `json:"enableHealthcheck"`
 }
 
 type DatastoreType string
 
 const (
-	CassandraDatastore   DatastoreType = "cassandra"
-	PostgresSQLDatastore DatastoreType = "postgresql"
-	MySQLDatastore       DatastoreType = "mysql"
+	CassandraDatastore     DatastoreType = "cassandra"
+	PostgresSQLDatastore   DatastoreType = "postgresql"
+	MySQLDatastore         DatastoreType = "mysql"
+	ElasticsearchDatastore DatastoreType = "elasticsearch"
 )
 
 // TemporalDatastoreSpec contains temporal datastore specifications.
@@ -165,6 +203,9 @@ type TemporalDatastoreSpec struct {
 	// SQL holds all connection parameters for SQL datastores.
 	// +optional
 	SQL *SQLSpec `json:"sql"`
+	// Elasticsearch holds all connection parameters for Elasticsearch datastores.
+	// +optional
+	Elasticsearch *ElasticsearchSpec `json:"elasticsearch"`
 	// PasswordSecret is the reference to the secret holding the password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
@@ -190,6 +231,9 @@ func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 		case "mysql":
 			return MySQLDatastore, nil
 		}
+	}
+	if s.Elasticsearch != nil {
+		return ElasticsearchDatastore, nil
 	}
 	return DatastoreType(""), errors.New("can't get datastore type from current spec")
 }
@@ -326,6 +370,8 @@ type PersistenceStatus struct {
 	DefaultStoreSchemaVersion string `json:"defaultStoreSchemaVersion"`
 	// VisibilityStoreSchemaVersion holds the current schema version for the visibility store.
 	VisibilityStoreSchemaVersion string `json:"visibilityStoreSchemaVersion"`
+	// AdvancedVisibilityStoreSchemaVersion holds the current schema version for the advanced visibility store.
+	AdvancedVisibilityStoreSchemaVersion string `json:"advancedVisibilityStoreSchemaVersion"`
 }
 
 // TemporalClusterStatus defines the observed state of TemporalCluster.
@@ -372,6 +418,11 @@ func (c *TemporalCluster) GetDefaultDatastore() (*TemporalDatastoreSpec, bool) {
 // GetVisibilityDatastore returns the cluster's visibility datastore.
 func (c *TemporalCluster) GetVisibilityDatastore() (*TemporalDatastoreSpec, bool) {
 	return c.getDatastoreByName(c.Spec.Persistence.VisibilityStore)
+}
+
+// GetAdvancedVisibilityDatastore returns the cluster's advanced visibility datastore.
+func (c *TemporalCluster) GetAdvancedVisibilityDatastore() (*TemporalDatastoreSpec, bool) {
+	return c.getDatastoreByName(c.Spec.Persistence.AdvancedVisibilityStore)
 }
 
 // ChildResourceName returns child resource name using the cluster's name.

@@ -33,8 +33,8 @@ kubectl apply -f https://github.com/alexandrevilain/temporal-operator/releases/l
 Then create the namespace "demo" and create a simple postgresql server:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/config/samples/namespace.yaml
-kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/config/samples/postgresql.yaml
+kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/examples/cluster-postgres/00-namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/examples/cluster-postgres/01-postgresql.yaml
 ```
 
 Finish by creating your first temporal cluster:
@@ -75,6 +75,12 @@ spec:
 
 Apply this file to the cluster.
 For more customization options refers to the [api documentation](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/api/v1alpha1.md).
+
+## Examples
+
+Few examples are available to help you get started:
+- [Demo cluster with PostgreSQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres)
+- [Demo cluster with PostgreSQL & advanced visibility using ElasticSearch](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres-es)
 
 ## License
 
