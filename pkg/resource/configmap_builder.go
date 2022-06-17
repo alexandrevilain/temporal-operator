@@ -64,12 +64,20 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 	datastores := map[string]config.DataStore{}
 	for _, store := range b.instance.Spec.Datastores {
+		datastoreType, err := store.GetDatastoreType()
+		if err != nil {
+			return err
+		}
+
 		cfg := config.DataStore{}
-		if store.SQL != nil {
+		switch datastoreType {
+		case v1alpha1.MySQLDatastore, v1alpha1.PostgresSQLDatastore:
 			cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(&store)
 			cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		}
-		if store.Elasticsearch != nil {
+		case v1alpha1.CassandraDatastore:
+			cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(&store)
+			cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		case v1alpha1.ElasticsearchDatastore:
 			esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(&store)
 			if err != nil {
 				return fmt.Errorf("can't get elasticsearch config: %w", err)

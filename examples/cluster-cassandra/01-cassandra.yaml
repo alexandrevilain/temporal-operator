@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cassandra-password
+  namespace: demo
+type: Opaque
+data:
+  PASSWORD: Y2Fzc2FuZHJh
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-init
+  namespace: demo
+data:
+  cassandra-init.sh: |
+    cat >/import.cql <<EOF
+    CREATE KEYSPACE IF NOT EXISTS temporal WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
+    CREATE KEYSPACE IF NOT EXISTS temporal_visibility WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
+    EOF
+
+    # You may add some other conditionals that fits your stuation here
+    until cqlsh -f /import.cql; do
+      echo "cqlsh: Cassandra is unavailable to initialize - will retry later"
+      sleep 2
+    done &
+
+    exec /docker-entrypoint.sh "$@"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra-headless
+  namespace: demo
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: cql
+      port: 9042
+      targetPort: cql
+  selector:
+    app.kubernetes.io/name: cassandra
+    app.kubernetes.io/instance: cassandra
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra
+  namespace: demo
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: cql
+      port: 9042
+      targetPort: cql
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: cassandra
+    app.kubernetes.io/instance: cassandra
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra
+  namespace: "demo"
+  labels:
+    app.kubernetes.io/name: cassandra
+    app.kubernetes.io/instance: cassandra
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cassandra
+      app.kubernetes.io/instance: cassandra
+  serviceName: cassandra-headless
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cassandra
+        app.kubernetes.io/instance: cassandra
+    spec:
+      containers:
+        - name: cassandra
+          command:
+            - sh
+            - /init/cassandra-init.sh
+          image: cassandra:3.11.9
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: cql
+              containerPort: 9042
+          resources: 
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: init
+              mountPath: /init
+      volumes:
+        - name: init
+          configMap:
+            name: cassandra-init
