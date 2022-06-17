@@ -27,45 +27,58 @@ import (
 // SchemaVersions is temporal schemas versions by datastore type.
 type SchemaVersions map[v1alpha1.DatastoreType]semver.Version
 
-// Version represents a temporal version range.
-type Version struct {
-	Range                   semver.Range
-	DefaultSchemaVersions   SchemaVersions
-	VisibilitySchemaVersion SchemaVersions
+// VersionInfo holds a temporal version range depedencies versions.
+type VersionInfo struct {
+	Range                           semver.Range
+	DefaultSchemaVersions           SchemaVersions
+	VisibilitySchemaVersion         SchemaVersions
+	AdvancedVisibilitySchemaVersion SchemaVersions
 }
 
-// SupportedVersions holds all supported temporal versions.
-var SupportedVersions = []Version{
-	{
-		Range: semver.MustParseRange(">= 1.16.0"),
-		DefaultSchemaVersions: SchemaVersions{
-			v1alpha1.PostgresSQLDatastore: semver.MustParse("1.8.0"),
-			v1alpha1.MySQLDatastore:       semver.MustParse("1.8.0"),
-			v1alpha1.CassandraDatastore:   semver.MustParse("1.7.0"),
-		},
-		VisibilitySchemaVersion: SchemaVersions{
-			v1alpha1.PostgresSQLDatastore: semver.MustParse("1.1.0"),
-			v1alpha1.MySQLDatastore:       semver.MustParse("1.1.0"),
-			v1alpha1.CassandraDatastore:   semver.MustParse("1.0.0"),
-		},
-	},
-	{
-		Range: semver.MustParseRange(">= 1.14.0 <1.16.0"),
-		DefaultSchemaVersions: SchemaVersions{
-			v1alpha1.PostgresSQLDatastore: semver.MustParse("1.7.0"),
-			v1alpha1.MySQLDatastore:       semver.MustParse("1.7.0"),
-			v1alpha1.CassandraDatastore:   semver.MustParse("1.6.0"),
-		},
-		VisibilitySchemaVersion: SchemaVersions{
-			v1alpha1.PostgresSQLDatastore: semver.MustParse("1.1.0"),
-			v1alpha1.MySQLDatastore:       semver.MustParse("1.1.0"),
-			v1alpha1.CassandraDatastore:   semver.MustParse("1.0.0"),
-		},
-	},
-	// Releases < 1.14 are not supported by this operator.
-}
+var (
+	// NullVersion is the v0.0.0 constant
+	NullVersion = semver.MustParse("0.0.0")
 
-func findMatchingSupportedVersion(v semver.Version) (*Version, bool) {
+	// SupportedVersions holds all supported temporal versions.
+	SupportedVersions = []VersionInfo{
+		{
+			Range: semver.MustParseRange(">= 1.16.0"),
+			DefaultSchemaVersions: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.8.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.8.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.7.0"),
+			},
+			VisibilitySchemaVersion: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.1.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.1.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.0.0"),
+			},
+			AdvancedVisibilitySchemaVersion: SchemaVersions{
+				v1alpha1.ElasticsearchDatastore: semver.MustParse("1.0.0"),
+			},
+		},
+		{
+			Range: semver.MustParseRange(">= 1.14.0 <1.16.0"),
+			DefaultSchemaVersions: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.7.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.7.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.6.0"),
+			},
+			VisibilitySchemaVersion: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.1.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.1.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.0.0"),
+			},
+			AdvancedVisibilitySchemaVersion: SchemaVersions{
+				v1alpha1.ElasticsearchDatastore: semver.MustParse("1.0.0"),
+			},
+		},
+		// Releases < 1.14 are not supported by this operator.
+	}
+)
+
+// GetMatchingSupportedVersion retrives the matching supported VersionInfo from the provided version.
+func GetMatchingSupportedVersion(v semver.Version) (*VersionInfo, bool) {
 	for _, version := range SupportedVersions {
 		if version.Range(v) {
 			return &version, true
@@ -81,30 +94,12 @@ func ParseAndValidateTemporalVersion(v string) (semver.Version, error) {
 		return semver.Version{}, fmt.Errorf("can't parse version: %w", err)
 	}
 
-	_, found := findMatchingSupportedVersion(version)
+	_, found := GetMatchingSupportedVersion(version)
 	if !found {
 		return semver.Version{}, fmt.Errorf("%s is not a supported version", v)
 	}
 
 	return version, nil
-}
-
-// GetExpectedDefaultSchemaVersions returns the default SchemaVersion for the provided temporal version.
-func GetExpectedDefaultSchemaVersions(v semver.Version) (SchemaVersions, error) {
-	version, found := findMatchingSupportedVersion(v)
-	if !found {
-		return SchemaVersions{}, fmt.Errorf("%s is not a supported version", v)
-	}
-	return version.DefaultSchemaVersions, nil
-}
-
-// GetExpectedVisibilitySchemaVersions returns the default SchemaVersion for the provided temporal version.
-func GetExpectedVisibilitySchemaVersions(v semver.Version) (SchemaVersions, error) {
-	version, found := findMatchingSupportedVersion(v)
-	if !found {
-		return SchemaVersions{}, fmt.Errorf("%s is not a supported version", v)
-	}
-	return version.VisibilitySchemaVersion, nil
 }
 
 // Parse is a utility function to parse the provided version.
