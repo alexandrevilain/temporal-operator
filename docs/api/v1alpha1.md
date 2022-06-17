@@ -202,6 +202,181 @@ TemporalClusterStatus
 </table>
 </div>
 </div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.CassandraConsistencySpec">CassandraConsistencySpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraSpec">CassandraSpec</a>)
+</p>
+<p>CassandraConsistencySpec sets the consistency level for regular &amp; serial queries to Cassandra.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>consistency</code><br>
+<em>
+github.com/gocql/gocql.Consistency
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Consistency sets the default consistency level.
+Values identical to gocql Consistency values. (defaults to LOCAL_QUORUM if not set).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serialConsistency</code><br>
+<em>
+github.com/gocql/gocql.SerialConsistency
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
+(defaults to LOCAL_SERIAL if not set)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.CassandraSpec">CassandraSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+</p>
+<p>CassandraSpec contains cassandra datastore connections specifications.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>hosts</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>Hosts is a list of cassandra endpoints.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>port</code><br>
+<em>
+int
+</em>
+</td>
+<td>
+<p>Port is the cassandra port used for connection by gocql client.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>user</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>User is the cassandra user used for authentication by gocql client.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>keyspace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Keyspace is the cassandra keyspace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>datacenter</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Datacenter is the data center filter arg for cassandra.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxConns</code><br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MaxConns is the max number of connections to this datastore for a single keyspace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>connectTimeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ConnectTimeout is a timeout for initial dial to cassandra server.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>consistency</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraConsistencySpec">
+CassandraConsistencySpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Consistency configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>disableInitialHostLookup</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DisableInitialHostLookup instructs the gocql client to connect only using the supplied hosts.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec
 </h3>
 <p>
@@ -1109,6 +1284,19 @@ ElasticsearchSpec
 <td>
 <em>(Optional)</em>
 <p>Elasticsearch holds all connection parameters for Elasticsearch datastores.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>cassandra</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraSpec">
+CassandraSpec
+</a>
+</em>
+</td>
+<td>
+<p>Cassandra holds all connection parameters for Cassandra datastore.</p>
 </td>
 </tr>
 <tr>

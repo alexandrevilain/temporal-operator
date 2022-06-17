@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/go-logr/logr v1.2.3
+	github.com/gocql/gocql v1.0.0
 	github.com/gosimple/slug v1.12.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
@@ -44,7 +45,6 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/gocql/gocql v0.0.0-20211222173705-d73e6b1002a7 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect

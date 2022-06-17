@@ -68,6 +68,10 @@ ensure-license: go-licenser
 check-license: go-licenser
 	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -license ASL2 -d .
 
+.PHONY: deploy-dev
+deploy-dev: docker-build-dev manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/dev | kubectl apply -f -
+
 ##@ Build
 
 .PHONY: build
