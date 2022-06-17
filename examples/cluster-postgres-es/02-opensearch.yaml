@@ -12,6 +12,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: opensearch-cluster-master-config
+  namespace: demo
   labels:
     helm.sh/chart: opensearch-2.0.1
     app.kubernetes.io/name: opensearch
@@ -30,6 +31,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: opensearch-cluster-master
+  namespace: demo
   labels:
     helm.sh/chart: opensearch-2.0.1
     app.kubernetes.io/name: opensearch
@@ -55,6 +57,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: opensearch-cluster-master-headless
+  namespace: demo
   labels:
     helm.sh/chart: opensearch-2.0.1
     app.kubernetes.io/name: opensearch
@@ -82,6 +85,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: opensearch-cluster-master
+  namespace: demo
   labels:
     helm.sh/chart: opensearch-2.0.1
     app.kubernetes.io/name: opensearch
@@ -111,8 +115,6 @@ spec:
         app.kubernetes.io/version: "2.0.0"
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: opensearch-cluster-master
-      annotations:
-        configchecksum: 91e9a60b0aa750852d7e5a5efaf0faee45d8ba5cc60db8eb3e2d2b99aafec58
     spec:
       securityContext:
         fsGroup: 1000
