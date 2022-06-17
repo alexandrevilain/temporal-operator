@@ -495,7 +495,7 @@ func (c *TemporalCluster) Default() {
 	}
 
 	if c.Spec.UI.Version == "" {
-		c.Spec.UI.Version = "0.15.0"
+		c.Spec.UI.Version = "2.0.1"
 	}
 
 	if c.Spec.UI.Image == "" {
