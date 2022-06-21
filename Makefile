@@ -68,6 +68,10 @@ ensure-license: go-licenser
 check-license: go-licenser
 	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -license ASL2 -d .
 
+.PHONY: deploy-dev
+deploy-dev: docker-build-dev manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/dev | kubectl apply -f -
+
 ##@ Build
 
 .PHONY: build
@@ -128,7 +132,7 @@ GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
-CONTROLLER_TOOLS_VERSION ?= v0.8.0
+CONTROLLER_TOOLS_VERSION ?= v0.9.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 

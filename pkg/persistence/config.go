@@ -20,6 +20,7 @@ package persistence
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"go.temporal.io/server/common/auth"
@@ -29,7 +30,7 @@ import (
 
 // NewSQLconfigFromDatastoreSpec creates a new instance of a temporal SQL config from the provided TemporalDatastoreSpec.
 func NewSQLConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config.SQL {
-	cfg := &config.SQL{
+	return &config.SQL{
 		User:               spec.SQL.User,
 		Password:           "",
 		PluginName:         spec.SQL.PluginName,
@@ -41,29 +42,8 @@ func NewSQLConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config
 		MaxIdleConns:       spec.SQL.MaxIdleConns,
 		MaxConnLifetime:    spec.SQL.MaxConnLifetime,
 		TaskScanPartitions: spec.SQL.TaskScanPartitions,
+		TLS:                tlsConfigConfigFromDatastoreSpec(spec),
 	}
-	if spec.TLS != nil {
-		cfg.TLS = &auth.TLS{
-			Enabled:                cfg.TLS.Enabled,
-			CertFile:               spec.GetTLSCertFileMountPath(),
-			KeyFile:                spec.GetTLSKeyFileMountPath(),
-			CaFile:                 spec.GetTLSCaFileMountPath(),
-			EnableHostVerification: cfg.TLS.EnableHostVerification,
-			ServerName:             cfg.TLS.ServerName,
-		}
-	}
-	return cfg
-}
-
-func elasticsearchIndicesToMap(indices v1alpha1.ElasticsearchIndices) map[string]string {
-	result := map[string]string{}
-	if indices.Visibility != "" {
-		result[esclient.VisibilityAppName] = indices.Visibility
-	}
-	if indices.SecondaryVisibility != "" {
-		result[esclient.SecondaryVisibilityAppName] = indices.SecondaryVisibility
-	}
-	return result
 }
 
 // NewElasticsearchConfigFromDatastoreSpec creates a new instance of a temporal elasticsearch client config from the provided TemporalDatastoreSpec.
@@ -83,4 +63,64 @@ func NewElasticsearchConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpe
 		EnableSniff:                  spec.Elasticsearch.EnableSniff,
 		EnableHealthcheck:            spec.Elasticsearch.EnableSniff,
 	}, nil
+}
+
+func elasticsearchIndicesToMap(indices v1alpha1.ElasticsearchIndices) map[string]string {
+	result := map[string]string{}
+	if indices.Visibility != "" {
+		result[esclient.VisibilityAppName] = indices.Visibility
+	}
+	if indices.SecondaryVisibility != "" {
+		result[esclient.SecondaryVisibilityAppName] = indices.SecondaryVisibility
+	}
+	return result
+}
+
+// NewCassandraConfigFromDatastoreSpec creates a new instance of a temporal cassandra config from the provided TemporalDatastoreSpec.
+func NewCassandraConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *config.Cassandra {
+	cfg := &config.Cassandra{
+		Hosts:                    strings.Join(spec.Cassandra.Hosts, ","),
+		Port:                     spec.Cassandra.Port,
+		User:                     spec.Cassandra.User,
+		Password:                 "",
+		Keyspace:                 spec.Cassandra.Keyspace,
+		Datacenter:               spec.Cassandra.Datacenter,
+		MaxConns:                 spec.Cassandra.MaxConns,
+		TLS:                      tlsConfigConfigFromDatastoreSpec(spec),
+		Consistency:              &config.CassandraStoreConsistency{},
+		DisableInitialHostLookup: spec.Cassandra.DisableInitialHostLookup,
+	}
+
+	if spec.Cassandra.ConnectTimeout != nil {
+		cfg.ConnectTimeout = spec.Cassandra.ConnectTimeout.Duration
+	}
+
+	if spec.Cassandra.Consistency != nil {
+		cfg.Consistency = &config.CassandraStoreConsistency{
+			Default: &config.CassandraConsistencySettings{},
+		}
+
+		if spec.Cassandra.Consistency.Consistency != nil {
+			cfg.Consistency.Default.Consistency = spec.Cassandra.Consistency.Consistency.String()
+		}
+
+		if spec.Cassandra.Consistency.SerialConsistency != nil {
+			cfg.Consistency.Default.Consistency = spec.Cassandra.Consistency.SerialConsistency.String()
+		}
+	}
+	return cfg
+}
+
+func tlsConfigConfigFromDatastoreSpec(spec *v1alpha1.TemporalDatastoreSpec) *auth.TLS {
+	if spec.TLS == nil {
+		return nil
+	}
+	return &auth.TLS{
+		Enabled:                spec.TLS.Enabled,
+		CertFile:               spec.GetTLSCertFileMountPath(),
+		KeyFile:                spec.GetTLSKeyFileMountPath(),
+		CaFile:                 spec.GetTLSCaFileMountPath(),
+		EnableHostVerification: spec.TLS.EnableHostVerification,
+		ServerName:             spec.TLS.ServerName,
+	}
 }
