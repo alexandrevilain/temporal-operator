@@ -12,8 +12,8 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Support for SQL datastores.
 - [x] Deploy Web UI.
 - [x] Deploy admin tools.
-- [x] Support for Elastisearch (will be released in [v0.1.0](https://github.com/alexandrevilain/temporal-operator/milestone/1)).
-- [ ] Support for Cassandra datastore (will be released in [v0.1.0](https://github.com/alexandrevilain/temporal-operator/milestone/1)).
+- [x] Support for Elastisearch.
+- [x] Support for Cassandra datastore.
 - [ ] Cluster version upgrades.
 - [ ] Automatic mTLS certificates management (using istio, linkerd or cert-manager).
 - [ ] Cluster monitoring.
