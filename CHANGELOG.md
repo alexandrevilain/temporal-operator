@@ -2,11 +2,33 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.1.0
+
+**Release date:** 2022-06-21
+
+This release adds support for Elasticsearch & Cassandra.
+
+Features:
+- Add cassandra support [#42](https://github.com/alexandrevilain/temporal-operator/pull/42)
+- Add elasticsearch support [#35](https://github.com/alexandrevilain/temporal-operator/pull/35)
+
+Improvements:
+- Prune resources when they are disabled [#33](https://github.com/alexandrevilain/temporal-operator/pull/33)
+- Add security context on component container and pod [#31](https://github.com/alexandrevilain/temporal-operator/pull/31)
+
+Updates:
+- Bump default version of temporalio/ui to 2.0.1 [#36](https://github.com/alexandrevilain/temporal-operator/pull/36)
+
+Fixes:
+- Fix rbac for ingresses and services [#34](https://github.com/alexandrevilain/temporal-operator/pull/34)
+
+
 ## 0.0.4
 
 **Release date:** 2022-06-07
 
 This release adds support for UI and admin tools.
+
 Features:
 - Add support for webui [#18](https://github.com/alexandrevilain/temporal-operator/pull/18)
 - Add support for admin tools [#24](https://github.com/alexandrevilain/temporal-operator/pull/24)
