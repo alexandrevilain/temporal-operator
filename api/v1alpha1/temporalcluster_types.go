@@ -248,6 +248,7 @@ type TemporalDatastoreSpec struct {
 	// +optional
 	Elasticsearch *ElasticsearchSpec `json:"elasticsearch"`
 	// Cassandra holds all connection parameters for Cassandra datastore.
+	// +optional
 	Cassandra *CassandraSpec `json:"cassandra"`
 	// PasswordSecret is the reference to the secret holding the password.
 	// +required
