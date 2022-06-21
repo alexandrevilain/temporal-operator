@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.1.1
+
+**Release date:** 2022-06-21
+
+This release is a regression fix release.
+
+Fixes:
+- Regression in CRD which makes cassandra required [#46](https://github.com/alexandrevilain/temporal-operator/pull/46)
+
 ## 0.1.0
 
 **Release date:** 2022-06-21
