@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cassandra-password
+  namespace: demo
+type: Opaque
+data:
+  PASSWORD: Y2Fzc2FuZHJh
+---
+apiVersion: apps.alexandrevilain.dev/v1alpha1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.16.0
+  numHistoryShards: 1
+  persistence:
+    defaultStore: default
+    visibilityStore: visibility
+  datastores:
+    - name: default
+      cassandra:
+        hosts:
+          - "cassandra.demo"
+        port: 9042
+        user: cassandra
+        keyspace: temporal
+        datacenter: datacenter1
+        disableInitialHostLookup: true
+      passwordSecretRef:
+        name: cassandra-password
+        key: PASSWORD
+    - name: visibility
+      cassandra:
+        hosts:
+          - "cassandra.demo"
+        port: 9042
+        user: cassandra
+        keyspace: temporal_visibility
+        datacenter: datacenter1
+        disableInitialHostLookup: true
+      passwordSecretRef:
+        name: cassandra-password
+        key: PASSWORD
+  ui:
+    enabled: true
+  admintools:
+    enabled: true

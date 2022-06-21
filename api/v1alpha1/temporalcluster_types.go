@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
 	"go.temporal.io/server/common"
 	corev1 "k8s.io/api/core/v1"
@@ -185,6 +186,46 @@ type ElasticsearchSpec struct {
 	EnableHealthcheck bool `json:"enableHealthcheck"`
 }
 
+// CassandraConsistencySpec sets the consistency level for regular & serial queries to Cassandra.
+type CassandraConsistencySpec struct {
+	// Consistency sets the default consistency level.
+	// Values identical to gocql Consistency values. (defaults to LOCAL_QUORUM if not set).
+	// +kubebuilder:validation:Enum=ANY;ONE;TWO;THREE;QUORUM;ALL;LOCAL_QUORUM;EACH_QUORUM;LOCAL_ONE
+	// +optional
+	Consistency *gocql.Consistency `json:"consistency"`
+	// SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
+	// (defaults to LOCAL_SERIAL if not set)
+	// +kubebuilder:validation:Enum=SERIAL;LOCAL_SERIAL
+	// +optional
+	SerialConsistency *gocql.SerialConsistency `json:"serialConsistency"`
+}
+
+// CassandraSpec contains cassandra datastore connections specifications.
+type CassandraSpec struct {
+	// Hosts is a list of cassandra endpoints.
+	Hosts []string `json:"hosts"`
+	// Port is the cassandra port used for connection by gocql client.
+	Port int `json:"port"`
+	// User is the cassandra user used for authentication by gocql client.
+	User string `json:"user"`
+	// Keyspace is the cassandra keyspace.
+	Keyspace string `json:"keyspace"`
+	// Datacenter is the data center filter arg for cassandra.
+	Datacenter string `json:"datacenter"`
+	// MaxConns is the max number of connections to this datastore for a single keyspace.
+	// +optional
+	MaxConns int `json:"maxConns"`
+	// ConnectTimeout is a timeout for initial dial to cassandra server.
+	// +optional
+	ConnectTimeout *metav1.Duration `json:"connectTimeout"`
+	// Consistency configuration.
+	// +optional
+	Consistency *CassandraConsistencySpec `json:"consistency"`
+	// DisableInitialHostLookup instructs the gocql client to connect only using the supplied hosts.
+	// +optional
+	DisableInitialHostLookup bool `json:"disableInitialHostLookup"`
+}
+
 type DatastoreType string
 
 const (
@@ -206,6 +247,8 @@ type TemporalDatastoreSpec struct {
 	// Elasticsearch holds all connection parameters for Elasticsearch datastores.
 	// +optional
 	Elasticsearch *ElasticsearchSpec `json:"elasticsearch"`
+	// Cassandra holds all connection parameters for Cassandra datastore.
+	Cassandra *CassandraSpec `json:"cassandra"`
 	// PasswordSecret is the reference to the secret holding the password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
@@ -234,6 +277,9 @@ func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 	}
 	if s.Elasticsearch != nil {
 		return ElasticsearchDatastore, nil
+	}
+	if s.Cassandra != nil {
+		return CassandraDatastore, nil
 	}
 	return DatastoreType(""), errors.New("can't get datastore type from current spec")
 }

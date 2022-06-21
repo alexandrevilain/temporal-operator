@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
+    controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
   name: temporalclusters.apps.alexandrevilain.dev
 spec:
@@ -55,6 +55,77 @@ spec:
                 items:
                   description: TemporalDatastoreSpec contains temporal datastore specifications.
                   properties:
+                    cassandra:
+                      description: Cassandra holds all connection parameters for Cassandra
+                        datastore.
+                      properties:
+                        connectTimeout:
+                          description: ConnectTimeout is a timeout for initial dial
+                            to cassandra server.
+                          type: string
+                        consistency:
+                          description: Consistency configuration.
+                          properties:
+                            consistency:
+                              description: Consistency sets the default consistency
+                                level. Values identical to gocql Consistency values.
+                                (defaults to LOCAL_QUORUM if not set).
+                              enum:
+                              - ANY
+                              - ONE
+                              - TWO
+                              - THREE
+                              - QUORUM
+                              - ALL
+                              - LOCAL_QUORUM
+                              - EACH_QUORUM
+                              - LOCAL_ONE
+                              type: integer
+                            serialConsistency:
+                              description: SerialConsistency sets the consistency
+                                for the serial prtion of queries. Values identical
+                                to gocql SerialConsistency values. (defaults to LOCAL_SERIAL
+                                if not set)
+                              enum:
+                              - SERIAL
+                              - LOCAL_SERIAL
+                              type: integer
+                          type: object
+                        datacenter:
+                          description: Datacenter is the data center filter arg for
+                            cassandra.
+                          type: string
+                        disableInitialHostLookup:
+                          description: DisableInitialHostLookup instructs the gocql
+                            client to connect only using the supplied hosts.
+                          type: boolean
+                        hosts:
+                          description: Hosts is a list of cassandra endpoints.
+                          items:
+                            type: string
+                          type: array
+                        keyspace:
+                          description: Keyspace is the cassandra keyspace.
+                          type: string
+                        maxConns:
+                          description: MaxConns is the max number of connections to
+                            this datastore for a single keyspace.
+                          type: integer
+                        port:
+                          description: Port is the cassandra port used for connection
+                            by gocql client.
+                          type: integer
+                        user:
+                          description: User is the cassandra user used for authentication
+                            by gocql client.
+                          type: string
+                      required:
+                      - datacenter
+                      - hosts
+                      - keyspace
+                      - port
+                      - user
+                      type: object
                     elasticsearch:
                       description: Elasticsearch holds all connection parameters for
                         Elasticsearch datastores.
@@ -233,6 +304,7 @@ spec:
                       - enabled
                       type: object
                   required:
+                  - cassandra
                   - name
                   - passwordSecretRef
                   type: object
@@ -490,9 +562,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

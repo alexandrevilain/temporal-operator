@@ -25,6 +25,7 @@ import (
 	"path"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/cassandra"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/common/schema"
 	tlog "github.com/alexandrevilain/temporal-operator/pkg/log"
 	"github.com/blang/semver/v4"
@@ -55,6 +56,9 @@ const (
 	mysqlSchemaPath        = "mysql"
 	mysqlVersionSchemaPath = "v57"
 
+	cassandraSchemaPath        = "cassandra"
+	cassandraVersionSchemaPath = ""
+
 	elasticsearchSchemaPath   = "elasticsearch"
 	elasticsearchTemplateName = "temporal_visibility_v1_template"
 )
@@ -76,7 +80,7 @@ func NewManager(c client.Client, schemaFilePath string) *Manager {
 
 // RunStoreSetupTask runs the setup schema task on the provided cluster's store.
 func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec) error {
-	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
+	conn, err := m.getDatastoreConnection(ctx, store, cluster.Namespace)
 	if err != nil {
 		return err
 	}
@@ -150,6 +154,22 @@ func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *
 	return sql.NewConnection(config)
 }
 
+func (m *Manager) getDatastoreConnection(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (schema.DB, error) {
+	datastoreType, err := store.GetDatastoreType()
+	if err != nil {
+		return nil, err
+	}
+
+	switch datastoreType {
+	case v1alpha1.MySQLDatastore, v1alpha1.PostgresSQLDatastore:
+		return m.getSQLConnectionFromDatastoreSpec(ctx, store, namespace)
+	case v1alpha1.CassandraDatastore:
+		return m.getCassandraConnectionFromDatastoreSpec(ctx, store, namespace)
+	default:
+		return nil, fmt.Errorf("unknown datastore type: %s", datastoreType)
+	}
+}
+
 // getElasticsearchConnectionFromDatastoreSpec returns the ES client connection from the store spec.
 func (m *Manager) getElasticsearchConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (esclient.IntegrationTestsClient, error) {
 	config, err := NewElasticsearchConfigFromDatastoreSpec(store)
@@ -168,6 +188,37 @@ func (m *Manager) getElasticsearchConnectionFromDatastoreSpec(ctx context.Contex
 	}
 
 	return c.(esclient.IntegrationTestsClient), nil
+}
+
+func (m *Manager) getCassandraConnectionFromDatastoreSpec(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (*cassandra.CQLClient, error) {
+	config := NewCassandraConfigFromDatastoreSpec(store)
+	var err error
+	config.Password, err = m.getStorePassword(ctx, store, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &cassandra.CQLClientConfig{
+		Hosts:                    config.Hosts,
+		Port:                     config.Port,
+		User:                     config.User,
+		Password:                 config.Password,
+		Keyspace:                 config.Keyspace,
+		Timeout:                  int(config.ConnectTimeout),
+		Datacenter:               config.Datacenter,
+		TLS:                      config.TLS,
+		DisableInitialHostLookup: config.DisableInitialHostLookup,
+	}
+
+	if cfg.Timeout == 0 {
+		cfg.Timeout = 10
+	}
+
+	if config.Consistency != nil && config.Consistency.Default != nil {
+		cfg.Consistency = config.Consistency.Default.Consistency
+	}
+
+	return cassandra.NewCQLClient(cfg, tlog.NewTemporalLogFromContext(ctx))
 }
 
 func (m *Manager) getStorePassword(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (string, error) {
@@ -194,7 +245,8 @@ func (m *Manager) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchem
 		storeSchemaPath = mysqlSchemaPath
 		storeVersionSchemaPath = mysqlVersionSchemaPath
 	case v1alpha1.CassandraDatastore:
-		panic("not supported yet")
+		storeSchemaPath = cassandraSchemaPath
+		storeVersionSchemaPath = cassandraVersionSchemaPath
 	}
 
 	tagetSchemaPath := defaultSchemaPath
@@ -212,7 +264,7 @@ func (m *Manager) computeAdvancedVisibilitySchemaDir(esVersion string, templateV
 }
 
 func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.TemporalCluster, store *v1alpha1.TemporalDatastoreSpec, targetSchema Schema, targetVersion semver.Version) error {
-	conn, err := m.getSQLConnectionFromDatastoreSpec(ctx, store, cluster.Namespace)
+	conn, err := m.getDatastoreConnection(ctx, store, cluster.Namespace)
 	if err != nil {
 		return err
 	}
@@ -224,7 +276,6 @@ func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.Te
 	}
 
 	updateTask := schema.NewUpdateSchemaTask(conn, &schema.UpdateConfig{
-		DBName:        store.SQL.DatabaseName,
 		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
