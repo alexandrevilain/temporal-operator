@@ -1296,6 +1296,7 @@ CassandraSpec
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Cassandra holds all connection parameters for Cassandra datastore.</p>
 </td>
 </tr>

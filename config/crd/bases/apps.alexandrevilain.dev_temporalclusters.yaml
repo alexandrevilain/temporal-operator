@@ -304,7 +304,6 @@ spec:
                       - enabled
                       type: object
                   required:
-                  - cassandra
                   - name
                   - passwordSecretRef
                   type: object
