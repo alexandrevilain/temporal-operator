@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"go.temporal.io/server/common"
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -102,24 +102,41 @@ func TestWithPostgresPersistence(t *testing.T) {
 			return ctx
 		}).
 		Assess("Temporal cluster created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
-
-			for _, child := range []string{
-				temporalCluster.ChildResourceName(common.FrontendServiceName),
-				temporalCluster.ChildResourceName(common.HistoryServiceName),
-				temporalCluster.ChildResourceName(common.MatchingServiceName),
-				temporalCluster.ChildResourceName(common.WorkerServiceName),
-			} {
-				err := waitForDeployment(ctx, cfg, &appsv1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{Name: child, Namespace: namespace},
-				})
-				if err != nil {
-					t.Fatal(err)
-				}
+			err := waitForTemporalCluster(ctx, cfg, temporalCluster)
+			if err != nil {
+				t.Fatal(err)
 			}
 			return ctx
 		}).
 		Assess("Temporal cluster can handle workflows", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, temporalCluster)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer closePortForward()
+
+			t.Logf("Temporal frontend addr: %s", connectAddr)
+
+			w, err := testworker.NewWorker(connectAddr)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Log("Starting test worker")
+			w.Start()
+			defer w.Stop()
+
+			s, err := teststarter.NewStarter(connectAddr)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Logf("Starting workflow")
+			err = s.StartGreetingWorkflow()
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			return ctx
 		}).
 		Feature()

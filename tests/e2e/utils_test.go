@@ -19,8 +19,14 @@ package e2e
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
+	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/networking"
+	"github.com/anthhub/forwarder"
+	"go.temporal.io/server/common"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,4 +60,80 @@ func deployAndWaitForPostgres(ctx context.Context, cfg *envconf.Config, namespac
 
 func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Deployment) error {
 	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*10))
+}
+
+// waitForTemporalCluster waits for the temporal cluster's components to be up and running.
+// TODO: this function should be refactored once the cluster status exposes conditions.
+func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) error {
+	for _, child := range []string{
+		temporalCluster.ChildResourceName(common.FrontendServiceName),
+		temporalCluster.ChildResourceName(common.HistoryServiceName),
+		temporalCluster.ChildResourceName(common.MatchingServiceName),
+		temporalCluster.ChildResourceName(common.WorkerServiceName),
+	} {
+		err := waitForDeployment(ctx, cfg, &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: child, Namespace: temporalCluster.GetNamespace()},
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
+	selector, err := metav1.LabelSelectorAsSelector(
+		&metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "app.kubernetes.io/name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{temporalCluster.GetName()},
+				},
+				{
+					Key:      "app.kubernetes.io/component",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{common.FrontendServiceName},
+				},
+			},
+		},
+	)
+	if err != nil {
+		return "", nil, err
+	}
+
+	podList := &v1.PodList{}
+	err = cfg.Client().Resources(temporalCluster.GetNamespace()).List(ctx, podList, resources.WithLabelSelector(selector.String()))
+	if err != nil {
+		return "", nil, err
+	}
+
+	if len(podList.Items) == 0 {
+		return "", nil, errors.New("No frontend port found")
+	}
+
+	port, err := networking.GetFreePort()
+	if err != nil {
+		return "", nil, err
+	}
+
+	ret, err := forwarder.WithRestConfig(ctx, []*forwarder.Option{
+		{
+			LocalPort:  port,
+			RemotePort: 7233,
+			Namespace:  podList.Items[0].GetNamespace(),
+			PodName:    podList.Items[0].GetName(),
+		},
+	}, cfg.Client().RESTConfig())
+	if err != nil {
+		return "", nil, err
+	}
+	_, err = ret.Ready()
+	if err != nil {
+		return "", nil, err
+	}
+
+	connectAddr := fmt.Sprintf("localhost:%d", port)
+
+	return connectAddr, func() { ret.Close() }, nil
 }
