@@ -1,0 +1,151 @@
+// Licensed to Alexandre VILAIN under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Alexandre VILAIN licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+package e2e
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/e2e-framework/klient/decoder"
+	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
+	"sigs.k8s.io/e2e-framework/klient/wait"
+	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
+	"sigs.k8s.io/e2e-framework/pkg/env"
+	"sigs.k8s.io/e2e-framework/pkg/envconf"
+	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
+
+	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+)
+
+var testenv env.Environment
+
+func TestMain(m *testing.M) {
+	kindVersion := os.Getenv("KUBERNETES_VERSION")
+	if kindVersion == "" {
+		kindVersion = "v1.23.4"
+	}
+	kindImage := fmt.Sprintf("kindest/node:%s", kindVersion)
+
+	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
+
+	kindClusterName := envconf.RandomName("temporal", 16)
+	runID := envconf.RandomName("ns", 4)
+
+	testenv = env.
+		New().
+		// Create the cluster
+		Setup(
+			envfuncs.CreateKindClusterWithConfig(kindClusterName, kindImage, "kind-config.yaml"),
+			envfuncs.LoadImageArchiveToCluster(kindClusterName, operatorImagePath),
+			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
+		).
+		// Add the operators crds to the client scheme.
+		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
+			fmt.Printf("KUBECONFIG=%s\n", c.KubeconfigFile())
+
+			r, err := resources.New(c.Client().RESTConfig())
+			if err != nil {
+				return ctx, err
+			}
+			appsv1alpha1.AddToScheme(r.GetScheme())
+			return ctx, nil
+		}).
+		// Deploy the operator and wait for it.
+		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
+			objects, err := decoder.DecodeAllFiles(ctx, os.DirFS("../../out/release/artifacts"), "temporal-operator.yaml")
+			if err != nil {
+				return ctx, err
+			}
+
+			var operatorDeploy *appsv1.Deployment
+			for _, obj := range objects {
+				deploy, ok := obj.(*appsv1.Deployment)
+				if ok {
+					operatorDeploy = deploy
+					for i, container := range deploy.Spec.Template.Spec.Containers {
+						if strings.Contains(container.Image, "ghcr.io/alexandrevilain/temporal-operator") {
+							deploy.Spec.Template.Spec.Containers[i].Image = "temporal-operator"
+							deploy.Spec.Template.Spec.Containers[i].ImagePullPolicy = "IfNotPresent"
+						}
+					}
+				}
+				c.Client().Resources().Create(ctx, obj)
+			}
+
+			err = wait.For(conditions.New(c.Client().Resources()).DeploymentConditionMatch(operatorDeploy, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*1))
+			return ctx, err
+		}).
+		Finish(
+			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
+			envfuncs.DestroyKindCluster(kindClusterName),
+		).
+		BeforeEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+			return createNSForTest(ctx, cfg, t, runID)
+		}).
+		AfterEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+			return deleteNSForTest(ctx, cfg, t, runID)
+		})
+
+	os.Exit(testenv.Run(m))
+}
+
+// createNSForTest creates a random namespace with the runID as a prefix. It is stored in the context
+// so that the deleteNSForTest routine can look it up and delete it.
+func createNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, runID string) (context.Context, error) {
+	ns := envconf.RandomName(runID, 10)
+	ctx = SetNamespaceForTest(ctx, t, ns)
+
+	t.Logf("Creating namespace %s for test %s", ns, t.Name())
+
+	return ctx, cfg.Client().Resources().Create(ctx, &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ns,
+		},
+	})
+}
+
+// deleteNSForTest looks up the namespace corresponding to the given test and deletes it.
+func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, runID string) (context.Context, error) {
+	ns := GetNamespaceForTest(ctx, t)
+	t.Logf("Deleting namespace %s for test %s", ns, t.Name())
+	return ctx, cfg.Client().Resources().Delete(ctx, &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ns,
+		},
+	})
+}
+
+type namespaceKey string
+
+func nsKey(t *testing.T) namespaceKey {
+	return namespaceKey("ns-%v" + t.Name())
+}
+
+func GetNamespaceForTest(ctx context.Context, t *testing.T) string {
+	return ctx.Value(nsKey(t)).(string)
+}
+
+func SetNamespaceForTest(ctx context.Context, t *testing.T, namespace string) context.Context {
+	return context.WithValue(ctx, nsKey(t), namespace)
+}
