@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    service: mysql
+spec:
+  selector:
+    matchLabels:
+      service: mysql
+  template:
+    metadata:
+      labels:
+        service: mysql
+    spec:
+      containers:
+      - image: mariadb:10.8
+        name: mysql
+        env:
+        - name: MARIADB_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MARIADB_USER
+          value: temporal
+        - name: MARIADB_DATABASE
+          value: temporal
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-password
+              key: PASSWORD
+        ports:
+          - containerPort: 3306
+        volumeMounts:
+          - name: mysql-init
+            mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-init
+        configMap:
+          name: mysql-init
