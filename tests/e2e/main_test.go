@@ -47,6 +47,8 @@ func TestMain(m *testing.M) {
 	}
 	kindImage := fmt.Sprintf("kindest/node:%s", kindVersion)
 
+	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
+
 	kindClusterName := envconf.RandomName("temporal", 16)
 	runID := envconf.RandomName("ns", 4)
 
@@ -55,7 +57,7 @@ func TestMain(m *testing.M) {
 		// Create the cluster
 		Setup(
 			envfuncs.CreateKindClusterWithConfig(kindClusterName, kindImage, "kind-config.yaml"),
-			envfuncs.LoadDockerImageToCluster(kindClusterName, "temporal-operator"),
+			envfuncs.LoadImageArchiveToCluster(kindClusterName, operatorImagePath),
 			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
 		).
 		// Add the operators crds to the client scheme.
