@@ -7,19 +7,21 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gocql/gocql v1.0.0
+	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.12.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	github.com/stretchr/testify v1.7.2
 	github.com/urfave/cli v1.22.9
+	go.temporal.io/api v1.8.0
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.16.2
 	go.uber.org/zap v1.21.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.23.0
-	k8s.io/apimachinery v0.23.0
+	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.23.0
-	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b
+	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/controller-runtime v0.11.1
 	sigs.k8s.io/e2e-framework v0.0.7
 )
@@ -64,10 +66,10 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.1 // indirect
+	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
@@ -125,7 +127,6 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.27.0 // indirect
 	go.opentelemetry.io/otel/trace v1.4.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	go.temporal.io/api v1.8.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/dig v1.13.0 // indirect
 	go.uber.org/fx v1.16.0 // indirect
@@ -150,11 +151,11 @@ require (
 	k8s.io/apiextensions-apiserver v0.23.0 // indirect
 	k8s.io/cli-runtime v0.21.3 // indirect
 	k8s.io/component-base v0.23.0 // indirect
-	k8s.io/klog/v2 v2.30.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
-	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
+	k8s.io/klog/v2 v2.60.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
+	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/kustomize/api v0.10.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.13.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
