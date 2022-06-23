@@ -42,7 +42,25 @@ var (
 	// SupportedVersions holds all supported temporal versions.
 	SupportedVersions = []VersionInfo{
 		{
-			Range: semver.MustParseRange(">= 1.16.0"),
+			Range: semver.MustParseRange(">= 1.17.0 < 1.18.0"),
+			DefaultSchemaVersions: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.8.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.8.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.7.0"),
+			},
+			VisibilitySchemaVersion: SchemaVersions{
+				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.1.0"),
+				v1alpha1.MySQLDatastore:       semver.MustParse("1.1.0"),
+				v1alpha1.CassandraDatastore:   semver.MustParse("1.0.0"),
+			},
+			AdvancedVisibilitySchemaVersion: SchemaVersions{
+				// TODO(alexandrevilain): Support advanced visbility schema version upgrade
+				// from v1 to v2 when implementing cluster version upgrades.
+				v1alpha1.ElasticsearchDatastore: semver.MustParse("2.0.0"),
+			},
+		},
+		{
+			Range: semver.MustParseRange(">= 1.16.0 < 1.17.0"),
 			DefaultSchemaVersions: SchemaVersions{
 				v1alpha1.PostgresSQLDatastore: semver.MustParse("1.8.0"),
 				v1alpha1.MySQLDatastore:       semver.MustParse("1.8.0"),
