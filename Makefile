@@ -61,8 +61,14 @@ test: manifests generate fmt vet ## Run tests.
 	go test $(go list ./... | grep -v /tests/e2e) -coverprofile cover.out
 
 .PHONY: test-e2e
-test-e2e: docker-build-dev artifacts ## Run end2end tests.
+test-e2e: artifacts ## Run end2end tests.
 	go test ./tests/e2e -v 
+
+.PHONY: test-e2e-dev
+test-e2e-dev: docker-build-dev
+	docker build -t temporal-operator .
+	docker save temporal-operator > /tmp/temporal-operator.tar
+	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v 
 
 .PHONY: ensure-license
 ensure-license: go-licenser
