@@ -56,6 +56,10 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: lint
+lint: golangci-lint ## Run golang-ci-lint against code.
+	$(GOLANGCI_LINT) run ./...
+
 .PHONY: test
 test: manifests generate fmt vet ## Run tests.
 	go test $(go list ./... | grep -v /tests/e2e) -coverprofile cover.out
@@ -139,18 +143,25 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GO_LICENSER ?= $(LOCALBIN)/go-licenser
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
+GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
+GOLANGCI_LINT_VERSION ?= v1.46.2
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
 	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+
+.PHONY: golangci-lint
+golangci-lint: $(GOLANGCI_LINT)
+$(GOLANGCI_LINT): $(GOLANGCI_LINT)
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 .PHONY: go-licenser
 go-licenser: $(GO_LICENSER)

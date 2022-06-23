@@ -480,7 +480,7 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 // Default sets default values on the temporal Cluster.
 func (c *TemporalCluster) Default() {
 	if c.Spec.Version == "" {
-		c.Spec.Version = "1.16.2"
+		c.Spec.Version = "1.17.0"
 	}
 	if c.Spec.Image == "" {
 		c.Spec.Image = "temporalio/server"
