@@ -38,27 +38,38 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForPostgres(ctx context.Context, cfg *envconf.Config, namespace string) error {
-	client, err := cfg.NewClient()
-	if err != nil {
-		return err
-	}
+func deployAndWaitForMySQL(ctx context.Context, cfg *envconf.Config, namespace string) error {
+	return deployAndWaitFor(ctx, cfg, "mysql", namespace)
+}
 
+func deployAndWaitForPostgres(ctx context.Context, cfg *envconf.Config, namespace string) error {
+	return deployAndWaitFor(ctx, cfg, "postgres", namespace)
+}
+
+func deployAndWaitFor(ctx context.Context, cfg *envconf.Config, name, namespace string) error {
+	path := fmt.Sprintf("testdata/%s", name)
 	// create the postgres
-	err = decoder.ApplyWithManifestDir(ctx, client.Resources(namespace), "testdata/postgres", "*", []resources.CreateOption{}, decoder.MutateNamespace(namespace))
+	err := decoder.ApplyWithManifestDir(ctx, cfg.Client().Resources(namespace), path, "*", []resources.CreateOption{}, decoder.MutateNamespace(namespace))
 	if err != nil {
 		return err
 	}
 
 	dep := appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: "postgres", Namespace: namespace},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
 	}
 
-	// wait for the deployment to finish becoming available
-	return wait.For(conditions.New(client.Resources()).DeploymentConditionMatch(&dep, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*1))
+	// wait for the deployment to become available
+	return waitForDeployment(ctx, cfg, &dep)
 }
 
 func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Deployment) error {
+	err := wait.For(
+		conditions.New(cfg.Client().Resources()).ResourcesFound(&appsv1.DeploymentList{Items: []appsv1.Deployment{*dep}}),
+		wait.WithTimeout(time.Minute*10),
+	)
+	if err != nil {
+		return err
+	}
 	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*10))
 }
 
