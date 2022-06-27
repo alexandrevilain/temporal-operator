@@ -46,10 +46,22 @@ func deployAndWaitForPostgres(ctx context.Context, cfg *envconf.Config, namespac
 	return deployAndWaitFor(ctx, cfg, "postgres", namespace)
 }
 
+func deployAndWaitForCassandra(ctx context.Context, cfg *envconf.Config, namespace string) error {
+	name := "cassandra"
+	err := deployTestManifest(ctx, cfg, name, namespace)
+	if err != nil {
+		return err
+	}
+
+	pod := v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-0", name), Namespace: namespace},
+	}
+
+	return wait.For(conditions.New(cfg.Client().Resources()).PodReady(&pod), wait.WithTimeout(10*time.Minute))
+}
+
 func deployAndWaitFor(ctx context.Context, cfg *envconf.Config, name, namespace string) error {
-	path := fmt.Sprintf("testdata/%s", name)
-	// create the postgres
-	err := decoder.ApplyWithManifestDir(ctx, cfg.Client().Resources(namespace), path, "*", []resources.CreateOption{}, decoder.MutateNamespace(namespace))
+	err := deployTestManifest(ctx, cfg, name, namespace)
 	if err != nil {
 		return err
 	}
@@ -60,6 +72,11 @@ func deployAndWaitFor(ctx context.Context, cfg *envconf.Config, name, namespace 
 
 	// wait for the deployment to become available
 	return waitForDeployment(ctx, cfg, &dep)
+}
+
+func deployTestManifest(ctx context.Context, cfg *envconf.Config, name, namespace string) error {
+	path := fmt.Sprintf("testdata/%s", name)
+	return decoder.ApplyWithManifestDir(ctx, cfg.Client().Resources(namespace), path, "*", []resources.CreateOption{}, decoder.MutateNamespace(namespace))
 }
 
 func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Deployment) error {
