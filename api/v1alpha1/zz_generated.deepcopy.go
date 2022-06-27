@@ -214,7 +214,7 @@ func (in *ServiceSpec) DeepCopyInto(out *ServiceSpec) {
 	}
 	if in.Replicas != nil {
 		in, out := &in.Replicas, &out.Replicas
-		*out = new(int)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -369,6 +369,13 @@ func (in *TemporalClusterStatus) DeepCopyInto(out *TemporalClusterStatus) {
 		in, out := &in.Services, &out.Services
 		*out = make([]ServiceStatus, len(*in))
 		copy(*out, *in)
+	}
+	if in.Conditions != nil {
+		in, out := &in.Conditions, &out.Conditions
+		*out = make([]v1.Condition, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 

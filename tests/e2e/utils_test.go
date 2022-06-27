@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/klient/decoder"
+	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
@@ -73,23 +74,17 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*10))
 }
 
-// waitForTemporalCluster waits for the temporal cluster's components to be up and running.
-// TODO: this function should be refactored once the cluster status exposes conditions.
+// waitForTemporalCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
 func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	for _, child := range []string{
-		temporalCluster.ChildResourceName(common.FrontendServiceName),
-		temporalCluster.ChildResourceName(common.HistoryServiceName),
-		temporalCluster.ChildResourceName(common.MatchingServiceName),
-		temporalCluster.ChildResourceName(common.WorkerServiceName),
-	} {
-		err := waitForDeployment(ctx, cfg, &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: child, Namespace: temporalCluster.GetNamespace()},
-		})
-		if err != nil {
-			return err
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalCluster, func(object k8s.Object) bool {
+		for _, condition := range object.(*appsv1alpha1.TemporalCluster).Status.Conditions {
+			if condition.Type == appsv1alpha1.ReadyCondition && condition.Status == metav1.ConditionTrue {
+				return true
+			}
 		}
-	}
-	return nil
+		return false
+	})
+	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
 func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
