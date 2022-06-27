@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra
+  labels:
+    app.kubernetes.io/name: cassandra
+    app.kubernetes.io/instance: cassandra
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cassandra
+      app.kubernetes.io/instance: cassandra
+  serviceName: cassandra-headless
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cassandra
+        app.kubernetes.io/instance: cassandra
+    spec:
+      containers:
+        - name: cassandra
+          command:
+            - sh
+            - /init/cassandra-init.sh
+          image: cassandra:3.11.9
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: cql
+              containerPort: 9042
+          resources: 
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: init
+              mountPath: /init
+      volumes:
+        - name: init
+          configMap:
+            name: cassandra-init
