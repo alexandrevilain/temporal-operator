@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.2.0
+
+**Release date:** 2022-06-28
+
+This release adds better observability, support for temporal 1.17 and end2end tests.
+
+Features:
+- Add support for temporal 1.17.0 [#53](https://github.com/alexandrevilain/temporal-operator/pull/53)
+- Add conditions in status reporting and add event recorder [#57](https://github.com/alexandrevilain/temporal-operator/pull/57)
+
+Improvements:
+- Bootstrap end2end test suite [#45](https://github.com/alexandrevilain/temporal-operator/pull/45)
+- Add mysql persistence end2end test case [#52](https://github.com/alexandrevilain/temporal-operator/pull/52)
+- Add cassandra end2end tests [#56](https://github.com/alexandrevilain/temporal-operator/pull/56)
+
+Updates:
+- Bump kubernetes dependencies to 0.24.2 [#48](https://github.com/alexandrevilain/temporal-operator/pull/48)
+- Bump github.com/gocql/gocql from 1.0.0 to 1.1.0 [#51](https://github.com/alexandrevilain/temporal-operator/pull/51)
+- Bump github.com/stretchr/testify from 1.7.2 to 1.7.5 [#55](https://github.com/alexandrevilain/temporal-operator/pull/55)
+- Bump sigs.k8s.io/controller-runtime from 0.11.1 to 0.12.2 [#54](https://github.com/alexandrevilain/temporal-operator/pull/54)
+
+
 ## 0.1.1
 
 **Release date:** 2022-06-21
