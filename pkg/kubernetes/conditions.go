@@ -15,33 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package status
+package kubernetes
 
-import "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+import (
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+)
 
-// ObservedVersionMatchesDesiredVersion returns true if all services status
-// versions are matching the desired cluster version.
-func ObservedVersionMatchesDesiredVersion(c *v1alpha1.TemporalCluster) bool {
-	if len(c.Status.Services) == 0 {
-		return false
-	}
-	for _, serviceStatus := range c.Status.Services {
-		if serviceStatus.Version != c.Spec.Version {
-			return false
+// IsDeploymentReady returns whenever the provided deployment is ready.
+func IsDeploymentReady(deploy *appsv1.Deployment) bool {
+	for _, condition := range deploy.Status.Conditions {
+		if condition.Type == appsv1.DeploymentAvailable && condition.Status == v1.ConditionTrue {
+			return true
 		}
 	}
-	return true
-}
-
-// IsClusterReady returns true if all services status are in ready state.
-func IsClusterReady(c *v1alpha1.TemporalCluster) bool {
-	if len(c.Status.Services) == 0 {
-		return false
-	}
-	for _, serviceStatus := range c.Status.Services {
-		if !serviceStatus.Ready {
-			return false
-		}
-	}
-	return true
+	return false
 }

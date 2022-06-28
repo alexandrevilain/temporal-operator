@@ -24,6 +24,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -145,6 +146,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			})
 	}
 
+	deployment.Spec.Replicas = b.service.Replicas
+
 	deployment.Spec.Template.Spec = corev1.PodSpec{
 		ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 		Containers: []corev1.Container{
@@ -199,5 +202,6 @@ func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Cl
 	return &v1alpha1.ServiceStatus{
 		Name:    b.serviceName,
 		Version: val,
+		Ready:   kubernetes.IsDeploymentReady(deploy),
 	}, nil
 }
