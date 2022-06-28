@@ -19,15 +19,19 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -40,7 +44,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
-	"github.com/blang/semver/v4"
 )
 
 const (
@@ -52,6 +55,7 @@ const (
 type TemporalClusterReconciler struct {
 	client.Client
 	Scheme             *runtime.Scheme
+	Recorder           record.EventRecorder
 	PersistenceManager *persistence.Manager
 }
 
@@ -73,152 +77,56 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	temporalCluster := &appsv1alpha1.TemporalCluster{}
 	err := r.Get(ctx, req.NamespacedName, temporalCluster)
-	if client.IgnoreNotFound(err) != nil {
-		return ctrl.Result{}, err
-	} else if apierrors.IsNotFound(err) {
-		return ctrl.Result{}, nil
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+		return reconcile.Result{}, err
 	}
 
 	// Check if the resource has been marked for deletion
 	if !temporalCluster.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("Deleting temporal cluster", "name", temporalCluster.Name)
-		return ctrl.Result{}, nil
+		return reconcile.Result{}, nil
 	}
 
 	// Set defaults on unfiled fields.
-	temporalCluster.Default()
-
+	updated := r.reconcileDefaults(ctx, temporalCluster)
+	if updated {
+		err := r.Update(ctx, temporalCluster)
+		if err != nil {
+			logger.Error(err, "Can't set cluster defaults")
+			return r.handleError(ctx, temporalCluster, "", err)
+		}
+		// As we updated the instance, another reconcile will be triggered.
+		return reconcile.Result{}, nil
+	}
 	// Validate that the cluster version is a supported one.
-	// TODO(alexandrevilain): this should be moved to an AdmissionWebhook.
 	clusterVersion, err := version.ParseAndValidateTemporalVersion(temporalCluster.Spec.Version)
 	if err != nil {
-		return ctrl.Result{}, err
+		logger.Error(err, "Can't validate temporal version")
+		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
 	}
 
 	logger.Info("Retrieved desired cluster version", "version", clusterVersion.String())
 
+	appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionUnknown, appsv1alpha1.ProgressingReason, "")
+	err = r.updateTemporalClusterStatus(ctx, temporalCluster)
+	if err != nil {
+		return r.handleError(ctx, temporalCluster, "", err)
+	}
+
 	if err := r.reconcilePersistence(ctx, temporalCluster, clusterVersion); err != nil {
 		logger.Error(err, "Can't reconcile persistence")
-		return ctrl.Result{}, err
+		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.PersistenceReconciliationFailedReason, err, 2*time.Second)
 	}
 
 	if err := r.reconcileResources(ctx, temporalCluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return ctrl.Result{}, err
+		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
-	return ctrl.Result{}, nil
-}
-
-// reconcilePersistence tries to reconcile the cluster persistence.
-// If first checks if the schema status field for both of the default and visibility stores are empty. If empty it tries to setup the stores' schemas.
-// Then it compares the current schema version (from the cluster's status) and determine if a schema upgrade is needed.
-func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, clusterVersion semver.Version) error {
-	logger := log.FromContext(ctx)
-
-	defaultStore, found := temporalCluster.GetDefaultDatastore()
-	if !found {
-		return errors.New("default datastore not found")
-	}
-
-	visibilityStore, found := temporalCluster.GetVisibilityDatastore()
-	if !found {
-		return errors.New("visibility datastore not found")
-	}
-
-	if temporalCluster.Status.Persistence.DefaultStoreSchemaVersion == "" {
-		logger.Info("Starting default store setup task")
-		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, defaultStore)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = "0.0.0"
-	}
-
-	if temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion == "" {
-		logger.Info("Starting visibility store setup task")
-		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, visibilityStore)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = "0.0.0"
-	}
-
-	defaultStoreType, err := defaultStore.GetDatastoreType()
-	if err != nil {
-		return err
-	}
-
-	visibilityStoreType, err := visibilityStore.GetDatastoreType()
-	if err != nil {
-		return err
-	}
-
-	matchingVersion, ok := version.GetMatchingSupportedVersion(clusterVersion)
-	if !ok {
-		return errors.New("no matching version found")
-	}
-
-	expectedDefaultStoreSchemaVersion := matchingVersion.DefaultSchemaVersions[defaultStoreType]
-	expectedVisibilityStoreSchemaVersion := matchingVersion.VisibilitySchemaVersion[visibilityStoreType]
-
-	currentDefaultStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.DefaultStoreSchemaVersion)
-	if err != nil {
-		return err
-	}
-
-	currentVisibilityStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion)
-	if err != nil {
-		return err
-	}
-
-	if expectedDefaultStoreSchemaVersion.GT(currentDefaultStoreSchemaVersion) {
-		logger.Info("Starting default store update task")
-		err := r.PersistenceManager.RunDefaultStoreUpdateTask(ctx, temporalCluster, defaultStore, expectedDefaultStoreSchemaVersion)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = expectedDefaultStoreSchemaVersion.String()
-	}
-
-	if expectedVisibilityStoreSchemaVersion.GT(currentVisibilityStoreSchemaVersion) {
-		logger.Info("Starting visibility store update task")
-		err := r.PersistenceManager.RunVisibilityStoreUpdateTask(ctx, temporalCluster, visibilityStore, expectedVisibilityStoreSchemaVersion)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = expectedVisibilityStoreSchemaVersion.String()
-	}
-
-	// Reconcile advanced visibility store if enabled
-	if temporalCluster.Spec.Persistence.AdvancedVisibilityStore != "" {
-		expectedAdvancedVisibilityStoreSchemaVersion := matchingVersion.AdvancedVisibilitySchemaVersion[appsv1alpha1.ElasticsearchDatastore]
-
-		currentAdvancedVisibilityStoreSchemaVersion := version.NullVersion
-		if temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion != "" {
-			currentAdvancedVisibilityStoreSchemaVersion, err = version.Parse(temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion)
-			if err != nil {
-				return fmt.Errorf("can't parse current advanced visibility schema version: %w", err)
-			}
-		}
-
-		if expectedAdvancedVisibilityStoreSchemaVersion.GT(currentAdvancedVisibilityStoreSchemaVersion) {
-			logger.Info("Starting advanced visibility store update task")
-
-			advancedVisibilityStore, found := temporalCluster.GetAdvancedVisibilityDatastore()
-			if !found {
-				return errors.New("advanced visibility datastore not found")
-			}
-
-			err := r.PersistenceManager.RunAdvancedVisibilityStoreTasks(ctx, temporalCluster, advancedVisibilityStore, expectedAdvancedVisibilityStoreSchemaVersion)
-			if err != nil {
-				return err
-			}
-			temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion = expectedAdvancedVisibilityStoreSchemaVersion.String()
-		}
-	}
-
-	return r.updateTemporalClusterStatus(ctx, temporalCluster)
+	return r.handleSuccess(ctx, temporalCluster)
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
@@ -244,15 +152,9 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource, func() error {
 			return builder.Update(resource)
 		})
+		r.logAndRecordOperationResult(ctx, temporalCluster, resource, operationResult, err)
 		if err != nil {
-			action := r.operationResultToAction(operationResult)
-			msg := fmt.Sprintf("Failed to %s %T %s", action, resource, resource.GetName())
-			logger.Error(err, msg)
 			return err
-		}
-		if operationResult != controllerutil.OperationResultNone {
-			msg := fmt.Sprintf("%s %T %s", operationResult, resource, resource.GetName())
-			logger.Info(msg)
 		}
 	}
 
@@ -270,9 +172,8 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 			if apierrors.IsNotFound(err) {
 				continue
 			}
-			logger.Error(err, "Failed to delete resource", "resource", resource.GetName(), "kind", fmt.Sprintf("%T", resource))
 		}
-		logger.Info("Deleted resource")
+		r.logAndRecordOperationResult(ctx, temporalCluster, resource, controllerutil.OperationResult("deleted"), err)
 	}
 
 	for _, builder := range builders {
@@ -288,21 +189,44 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 
 		logger.Info("Reporting service status", "service", serviceStatus.Name)
 
-		status.AddServiceStatus(temporalCluster, serviceStatus)
+		temporalCluster.Status.AddServiceStatus(serviceStatus)
 	}
 
-	observedVersionMatchesDesiredVersion := true
-	for _, serviceStatus := range temporalCluster.Status.Services {
-		if serviceStatus.Version != temporalCluster.Spec.Version {
-			observedVersionMatchesDesiredVersion = false
-		}
-	}
-
-	if observedVersionMatchesDesiredVersion {
+	if status.ObservedVersionMatchesDesiredVersion(temporalCluster) {
 		temporalCluster.Status.Version = temporalCluster.Spec.Version
 	}
 
+	if status.IsClusterReady(temporalCluster) {
+		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionTrue, appsv1alpha1.ServicesReadyReason, "")
+	} else {
+		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionFalse, appsv1alpha1.ServicesNotReadyReason, "")
+	}
+
 	return r.updateTemporalClusterStatus(ctx, temporalCluster)
+}
+
+func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(ctx, temporalCluster, 0)
+}
+
+func (r *TemporalClusterReconciler) handleError(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, temporalCluster, reason, err, 0)
+}
+
+func (r *TemporalClusterReconciler) handleSuccessWithRequeue(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, requeueAfter time.Duration) (ctrl.Result, error) {
+	appsv1alpha1.SetTemporalClusterReconcileSuccess(temporalCluster, metav1.ConditionTrue, appsv1alpha1.ReconcileSuccessReason, "")
+	err := r.updateTemporalClusterStatus(ctx, temporalCluster)
+	return reconcile.Result{RequeueAfter: requeueAfter}, err
+}
+
+func (r *TemporalClusterReconciler) handleErrorWithRequeue(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+	r.Recorder.Event(temporalCluster, corev1.EventTypeWarning, "ProcessingError", err.Error())
+	if reason == "" {
+		reason = appsv1alpha1.ReconcileErrorReason
+	}
+	appsv1alpha1.SetTemporalClusterReconcileError(temporalCluster, metav1.ConditionTrue, reason, err.Error())
+	err = r.updateTemporalClusterStatus(ctx, temporalCluster)
+	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
 func (r *TemporalClusterReconciler) updateTemporalClusterStatus(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
@@ -310,20 +234,43 @@ func (r *TemporalClusterReconciler) updateTemporalClusterStatus(ctx context.Cont
 	if err != nil {
 		return err
 	}
-	// Set back defaults as the status update retrieve the object from the API server.
-	temporalCluster.Default()
 	return nil
 }
 
-func (r *TemporalClusterReconciler) operationResultToAction(operationResult controllerutil.OperationResult) string {
-	var action string
+func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, resource runtime.Object, operationResult controllerutil.OperationResult, err error) {
+	logger := log.FromContext(ctx)
+
+	var (
+		action string
+		reason string
+	)
 	switch operationResult {
 	case controllerutil.OperationResultCreated:
 		action = "create"
+		reason = "RessourceCreate"
 	case controllerutil.OperationResultUpdated:
 		action = "update"
+		reason = "ResourceUpdate"
+	case controllerutil.OperationResult("deleted"):
+		action = "delete"
+		reason = "ResourceDelete"
+	default:
+		return
 	}
-	return action
+
+	if err == nil {
+		msg := fmt.Sprintf("%sd resource %s of type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
+		reason := fmt.Sprintf("%sSucess", reason)
+		logger.Info(msg)
+		r.Recorder.Event(temporalCluster, corev1.EventTypeNormal, reason, msg)
+	}
+
+	if err != nil {
+		msg := fmt.Sprintf("failed to %s resource %s of Type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
+		reason := fmt.Sprintf("%sError", reason)
+		logger.Error(err, msg)
+		r.Recorder.Event(temporalCluster, corev1.EventTypeWarning, reason, msg)
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -335,7 +282,11 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1alpha1.TemporalCluster{}).
+		For(&appsv1alpha1.TemporalCluster{}, builder.WithPredicates(predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+		))).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).

@@ -69,7 +69,7 @@ test-e2e: artifacts ## Run end2end tests.
 	go test ./tests/e2e -v 
 
 .PHONY: test-e2e-dev
-test-e2e-dev:
+test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
 	docker build -t temporal-operator .
 	docker save temporal-operator > /tmp/temporal-operator.tar
 	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v 

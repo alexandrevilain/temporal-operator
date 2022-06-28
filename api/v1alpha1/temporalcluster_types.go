@@ -30,7 +30,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 // ServiceSpec contains a temporal service specifications.
@@ -54,7 +53,7 @@ type ServiceSpec struct {
 	// Number of desired replicas for the service. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
-	Replicas *int `json:"replicas"`
+	Replicas *int32 `json:"replicas"`
 }
 
 // TemporalServicesSpec contains all temporal services specifications.
@@ -258,15 +257,6 @@ type TemporalDatastoreSpec struct {
 	TLS *DatastoreTLSSpec `json:"tls"`
 }
 
-// Default sets default values on the datastore.
-func (s *TemporalDatastoreSpec) Default() {
-	if s.SQL != nil {
-		if s.SQL.ConnectProtocol == "" {
-			s.SQL.ConnectProtocol = "tcp"
-		}
-	}
-}
-
 func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 	if s.SQL != nil {
 		switch s.SQL.PluginName {
@@ -409,6 +399,8 @@ type ServiceStatus struct {
 	Name string `json:"name"`
 	// Current observed version of the service.
 	Version string `json:"version"`
+	// Ready defines if the service is ready.
+	Ready bool `json:"ready"`
 }
 
 // PersistenceStatus reports datastores schema versions.
@@ -429,13 +421,32 @@ type TemporalClusterStatus struct {
 	Persistence PersistenceStatus `json:"persistence,omitempty"`
 	// Services holds all services statuses.
 	Services []ServiceStatus `json:"services,omitempty"`
-	// TODO(alexandrevilain): add conditions
+	// Conditions represent the latest available observations of the TemporalCluster state.
+	Conditions []metav1.Condition `json:"conditions"`
+}
+
+// AddServiceStatus adds the provided service status to the cluster's status.
+func (s *TemporalClusterStatus) AddServiceStatus(status *ServiceStatus) {
+	found := false
+	for i, serviceStatus := range s.Services {
+		if serviceStatus.Name == status.Name {
+			s.Services[i].Version = status.Version
+			s.Services[i].Ready = status.Ready
+			found = true
+		}
+	}
+	if !found {
+		s.Services = append(s.Services, *status)
+	}
 }
 
 // +genclient
 // +genclient:Namespaced
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type == 'Ready')].status"
+// +kubebuilder:printcolumn:name="ReconcileSuccess",type="string",JSONPath=".status.conditions[?(@.type == 'ReconcileSuccess')].status"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // TemporalCluster defines a temporal cluster deployment.
 type TemporalCluster struct {
@@ -475,87 +486,6 @@ func (c *TemporalCluster) GetAdvancedVisibilityDatastore() (*TemporalDatastoreSp
 // ChildResourceName returns child resource name using the cluster's name.
 func (c *TemporalCluster) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
-}
-
-// Default sets default values on the temporal Cluster.
-func (c *TemporalCluster) Default() {
-	if c.Spec.Version == "" {
-		c.Spec.Version = "1.17.0"
-	}
-	if c.Spec.Image == "" {
-		c.Spec.Image = "temporalio/server"
-	}
-	if c.Spec.Services == nil {
-		c.Spec.Services = new(TemporalServicesSpec)
-	}
-	// Frontend specs
-	if c.Spec.Services.Frontend == nil {
-		c.Spec.Services.Frontend = new(ServiceSpec)
-	}
-	if c.Spec.Services.Frontend.Port == nil {
-		c.Spec.Services.Frontend.Port = pointer.Int(7233)
-	}
-	if c.Spec.Services.Frontend.MembershipPort == nil {
-		c.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
-	}
-	// History specs
-	if c.Spec.Services.History == nil {
-		c.Spec.Services.History = new(ServiceSpec)
-	}
-	if c.Spec.Services.History.Port == nil {
-		c.Spec.Services.History.Port = pointer.Int(7234)
-	}
-	if c.Spec.Services.History.MembershipPort == nil {
-		c.Spec.Services.History.MembershipPort = pointer.Int(6934)
-	}
-	// Matching specs
-	if c.Spec.Services.Matching == nil {
-		c.Spec.Services.Matching = new(ServiceSpec)
-	}
-	if c.Spec.Services.Matching.Port == nil {
-		c.Spec.Services.Matching.Port = pointer.Int(7235)
-	}
-	if c.Spec.Services.Matching.MembershipPort == nil {
-		c.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
-	}
-	// Worker specs
-	if c.Spec.Services.Worker == nil {
-		c.Spec.Services.Worker = new(ServiceSpec)
-	}
-	if c.Spec.Services.Worker.Port == nil {
-		c.Spec.Services.Worker.Port = pointer.Int(7239)
-	}
-	if c.Spec.Services.Worker.MembershipPort == nil {
-		c.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
-	}
-
-	for _, datastore := range c.Spec.Datastores {
-		datastore.Default()
-	}
-
-	if c.Spec.Persistence.VisibilityStore == "" {
-		c.Spec.Persistence.VisibilityStore = c.Spec.Persistence.DefaultStore
-	}
-
-	if c.Spec.UI == nil {
-		c.Spec.UI = new(TemporalUISpec)
-	}
-
-	if c.Spec.UI.Version == "" {
-		c.Spec.UI.Version = "2.0.1"
-	}
-
-	if c.Spec.UI.Image == "" {
-		c.Spec.UI.Image = "temporalio/ui"
-	}
-
-	if c.Spec.AdminTools == nil {
-		c.Spec.AdminTools = new(TemporalAdminToolsSpec)
-	}
-
-	if c.Spec.AdminTools.Image == "" {
-		c.Spec.AdminTools.Image = "temporalio/admin-tools"
-	}
 }
 
 //+kubebuilder:object:root=true

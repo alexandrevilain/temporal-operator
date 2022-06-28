@@ -15,33 +15,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package status
+package controllers
 
-import "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+import (
+	"context"
+	"testing"
 
-// ObservedVersionMatchesDesiredVersion returns true if all services status
-// versions are matching the desired cluster version.
-func ObservedVersionMatchesDesiredVersion(c *v1alpha1.TemporalCluster) bool {
-	if len(c.Status.Services) == 0 {
-		return false
-	}
-	for _, serviceStatus := range c.Status.Services {
-		if serviceStatus.Version != c.Spec.Version {
-			return false
-		}
-	}
-	return true
-}
+	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
-// IsClusterReady returns true if all services status are in ready state.
-func IsClusterReady(c *v1alpha1.TemporalCluster) bool {
-	if len(c.Status.Services) == 0 {
-		return false
+func TestReconcileDefaults(t *testing.T) {
+	c := &appsv1alpha1.TemporalCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
 	}
-	for _, serviceStatus := range c.Status.Services {
-		if !serviceStatus.Ready {
-			return false
-		}
-	}
-	return true
+
+	r := &TemporalClusterReconciler{}
+
+	ctx := context.Background()
+
+	updated := r.reconcileDefaults(ctx, c)
+	assert.True(t, updated)
+
+	updated = r.reconcileDefaults(ctx, c)
+	assert.False(t, updated)
 }

@@ -88,6 +88,7 @@ func main() {
 	if err = (&controllers.TemporalClusterReconciler{
 		Client:             mgr.GetClient(),
 		Scheme:             mgr.GetScheme(),
+		Recorder:           mgr.GetEventRecorderFor("temporacluster-controller"),
 		PersistenceManager: persistenceMgr,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")

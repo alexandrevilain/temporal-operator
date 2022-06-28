@@ -929,7 +929,7 @@ Default values are:
 <td>
 <code>replicas</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -978,6 +978,17 @@ string
 </td>
 <td>
 <p>Current observed version of the service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ready</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Ready defines if the service is ready.</p>
 </td>
 </tr>
 </tbody>
@@ -1223,6 +1234,19 @@ PersistenceStatus
 </td>
 <td>
 <p>Services holds all services statuses.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the TemporalCluster state.</p>
 </td>
 </tr>
 </tbody>
