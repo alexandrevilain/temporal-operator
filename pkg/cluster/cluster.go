@@ -50,8 +50,10 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 	}
 
 	if b.Instance.Spec.UI != nil && b.Instance.Spec.UI.Enabled {
-		builders = append(builders, resource.NewUIDeploymentBuilder(b.Instance, b.Scheme))
-		builders = append(builders, resource.NewUIServiceBuilder(b.Instance, b.Scheme))
+		builders = append(builders,
+			resource.NewUIDeploymentBuilder(b.Instance, b.Scheme),
+			resource.NewUIServiceBuilder(b.Instance, b.Scheme),
+		)
 		if b.Instance.Spec.UI.Ingress != nil {
 			builders = append(builders, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
 		}
@@ -59,6 +61,22 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 
 	if b.Instance.Spec.AdminTools != nil && b.Instance.Spec.AdminTools.Enabled {
 		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
+	}
+
+	if b.Instance.MTLSEnabled() {
+		builders = append(builders,
+			resource.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),
+			resource.NewMTLSRootCACertificateBuilder(b.Instance, b.Scheme),
+			resource.NewMTLSRootCAIssuerBuilder(b.Instance, b.Scheme),
+		)
+
+		if b.Instance.Spec.MTLS.InternodeEnabled() {
+			builders = append(builders,
+				resource.NewMTLSInternodeItermediateCACertificateBuilder(b.Instance, b.Scheme),
+				resource.NewMTLSInternodeIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
+				resource.NewMTLSInternodeCertificateBuilder(b.Instance, b.Scheme),
+			)
+		}
 	}
 
 	return builders, nil

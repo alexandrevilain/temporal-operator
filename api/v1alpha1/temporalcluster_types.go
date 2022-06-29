@@ -361,6 +361,66 @@ type TemporalAdminToolsSpec struct {
 	Image string `json:"image"`
 }
 
+// MTLSProvider is the enum for support mTLS provider.
+type MTLSProvider string
+
+const (
+	// CertManagerMTLSProvider uses cert-manager to manage mTLS certificate.
+	CertManagerMTLSProvider MTLSProvider = "cert-manager"
+)
+
+// InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
+type FrontendMTLSSpec struct {
+	// Enabled defines if the operator should enable mTLS for cluster's public endpoints.
+	// +optional
+	Enabled bool `json:"enabled"`
+}
+
+// InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
+type InternodeMTLSSpec struct {
+	// Enabled defines if the operator should enable mTLS for network between cluster nodes.
+	// +optional
+	Enabled bool `json:"enabled"`
+}
+
+// ServerName returns internode servername for mTLS certificates.
+func (InternodeMTLSSpec) ServerName(serverName string) string {
+	return fmt.Sprintf("internode.%s", serverName)
+}
+
+// GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
+func (InternodeMTLSSpec) GetIntermediateCACertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/ca"
+}
+
+// GetCertificateMountPath returns the mount path for the internode certificate.
+func (InternodeMTLSSpec) GetCertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/internode"
+}
+
+// MTLSSpec defines parameters for the temporal encryption in transit with mTLS.
+type MTLSSpec struct {
+	// Provider defines the tool used to manage mTLS certificates.
+	// +kubebuilder:default=cert-manager
+	// +kubebuilder:validation:Enum=cert-manager
+	// +optional
+	Provider MTLSProvider `json:"provider"`
+	// Internode allows configuration of the internode traffic encryption.
+	// +optional
+	Internode *InternodeMTLSSpec `json:"internode"`
+	// Frontend  allows configuration of the frontend's public endpoint traffic encryption.
+	// +optional
+	Frontend *FrontendMTLSSpec `json:"frontend"`
+}
+
+func (m *MTLSSpec) InternodeEnabled() bool {
+	return m.Internode != nil && m.Internode.Enabled
+}
+
+func (m *MTLSSpec) FrontendEnabled() bool {
+	return m.Frontend != nil && m.Frontend.Enabled
+}
+
 // TemporalClusterSpec defines the desired state of TemporalCluster.
 type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
@@ -391,6 +451,9 @@ type TemporalClusterSpec struct {
 	// AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.
 	// +optional
 	AdminTools *TemporalAdminToolsSpec `json:"admintools,omitempty"`
+	// MTLS allows configuration of the network traffic encryption for the cluster.
+	// +optional
+	MTLS *MTLSSpec `json:"mTLS,omitempty"`
 }
 
 // ServiceStatus reports a service status.
@@ -457,6 +520,16 @@ type TemporalCluster struct {
 	Spec TemporalClusterSpec `json:"spec,omitempty"`
 	// Most recent observed status of the Temporal cluster.
 	Status TemporalClusterStatus `json:"status,omitempty"`
+}
+
+// ServerName returns cluster's server name.
+func (c *TemporalCluster) ServerName() string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", c.Name, c.Namespace)
+}
+
+// MTLSEnabled returns true if mTLS is enabled for internode or frontend.
+func (c *TemporalCluster) MTLSEnabled() bool {
+	return c.Spec.MTLS != nil && (c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled())
 }
 
 func (c *TemporalCluster) getDatastoreByName(name string) (*TemporalDatastoreSpec, bool) {

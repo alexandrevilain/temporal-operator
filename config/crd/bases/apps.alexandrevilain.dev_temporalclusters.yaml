@@ -335,6 +335,35 @@ spec:
                       type: string
                   type: object
                 type: array
+              mTLS:
+                description: MTLS allows configuration of the network traffic encryption
+                  for the cluster.
+                properties:
+                  frontend:
+                    description: Frontend  allows configuration of the frontend's
+                      public endpoint traffic encryption.
+                    properties:
+                      enabled:
+                        description: Enabled defines if the operator should enable
+                          mTLS for cluster's public endpoints.
+                        type: boolean
+                    type: object
+                  internode:
+                    description: Internode allows configuration of the internode traffic
+                      encryption.
+                    properties:
+                      enabled:
+                        description: Enabled defines if the operator should enable
+                          mTLS for network between cluster nodes.
+                        type: boolean
+                    type: object
+                  provider:
+                    default: cert-manager
+                    description: Provider defines the tool used to manage mTLS certificates.
+                    enum:
+                    - cert-manager
+                    type: string
+                type: object
               numHistoryShards:
                 description: NumHistoryShards is the desired number of history shards.
                   This field is immutable.

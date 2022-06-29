@@ -14,8 +14,9 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Deploy admin tools.
 - [x] Support for Elastisearch.
 - [x] Support for Cassandra datastore.
+- [x] Automatic mTLS certificates management (using cert-manager).
+- [ ] Support for integration in meshes (linkerd & istio).
 - [ ] Cluster version upgrades.
-- [ ] Automatic mTLS certificates management (using istio, linkerd or cert-manager).
 - [ ] Cluster monitoring.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.

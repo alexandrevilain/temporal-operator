@@ -19,6 +19,7 @@ package resource
 
 import (
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
@@ -94,20 +95,6 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				MaxJoinDuration:  30 * time.Second,
 				BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
 			},
-			// TLS: config.RootTLS{
-			// 	Internode: config.GroupTLS{
-			// 		Client:           config.ClientTLS{},
-			// 		Server:           config.ServerTLS{},
-			// 		PerHostOverrides: map[string]config.ServerTLS{},
-			// 	},
-			// 	Frontend:         config.GroupTLS{},
-			// 	SystemWorker:     config.WorkerTLS{},
-			// 	RemoteClusters:   map[string]config.GroupTLS{},
-			// 	ExpirationChecks: config.CertExpirationValidation{},
-			// 	RefreshInterval:  0,
-			// },
-			// Metrics:       &metrics.Config{},
-			// Authorization: config.Authorization{},
 		},
 		Persistence: config.Persistence{
 			DefaultStore:            b.instance.Spec.Persistence.DefaultStore,
@@ -170,30 +157,54 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		PublicClient: config.PublicClient{
 			HostPort: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
 		},
-		// DCRedirectionPolicy: config.DCRedirectionPolicy{
-		// 	Policy: "",
-		// 	ToDC:   "",
-		// },
-		// Archival: config.Archival{
-		// 	History:    config.HistoryArchival{},
-		// 	Visibility: config.VisibilityArchival{},
-		// },
-		// DynamicConfigClient: &dynamicconfig.FileBasedClientConfig{
-		// 	Filepath:     "",
-		// 	PollInterval: 0,
-		// },
-		// NamespaceDefaults: config.NamespaceDefaults{
-		// 	Archival: config.ArchivalNamespaceDefaults{
-		// 		History: config.HistoryArchivalNamespaceDefaults{
-		// 			State: "",
-		// 			URI:   "",
-		// 		},
-		// 		Visibility: config.VisibilityArchivalNamespaceDefaults{
-		// 			State: "",
-		// 			URI:   "",
-		// 		},
-		// 	},
-		// },
+	}
+
+	if b.instance.Spec.MTLS != nil && (b.instance.Spec.MTLS.InternodeEnabled() || b.instance.Spec.MTLS.FrontendEnabled()) {
+		temporalCfg.Global.TLS = config.RootTLS{
+			RefreshInterval:  1 * time.Hour,
+			ExpirationChecks: config.CertExpirationValidation{},
+		}
+
+		internodeMTLS := b.instance.Spec.MTLS.Internode
+		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), "tls.crt")
+		serverCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.crt")
+		serverKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.key")
+		internodeClientTLS := config.ClientTLS{
+			ServerName:              internodeMTLS.ServerName(b.instance.ServerName()),
+			DisableHostVerification: false,
+			RootCAFiles:             []string{internodeIntermediateCAFilePath},
+			ForceTLS:                true,
+		}
+
+		if b.instance.Spec.MTLS.InternodeEnabled() {
+			temporalCfg.Global.TLS.Internode = config.GroupTLS{
+				Client: internodeClientTLS,
+				Server: config.ServerTLS{
+					CertFile: serverCertFilePath,
+					KeyFile:  serverKeyFilePath,
+					ClientCAFiles: []string{
+						internodeIntermediateCAFilePath,
+					},
+					RequireClientAuth: true,
+				},
+			}
+		}
+
+		if b.instance.Spec.MTLS.FrontendEnabled() {
+			temporalCfg.Global.TLS.Frontend = config.GroupTLS{
+				Server: config.ServerTLS{
+					RequireClientAuth: true,
+					// TODO(alexandrevilain): add frontend intermediate CA
+					// ClientCAFiles: ,
+				},
+				PerHostOverrides: map[string]config.ServerTLS{},
+			}
+			temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
+				CertFile: serverCertFilePath,
+				KeyFile:  serverKeyFilePath,
+				Client:   internodeClientTLS,
+			}
+		}
 	}
 
 	result, err := yaml.Marshal(temporalCfg)
