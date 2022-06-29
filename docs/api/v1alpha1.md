@@ -182,6 +182,20 @@ TemporalAdminToolsSpec
 <p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>mTLS</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+MTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -631,6 +645,59 @@ bool
 <td>
 <em>(Optional)</em>
 <p>EnableHealthcheck enables or disables healthcheck on the temporal cluster&rsquo;s es client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSProvider">MTLSProvider
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>MTLSProvider is the enum for support mTLS provider.</p>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>MTLSSpec defines paramaters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should deploy the admin tools alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>provider</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSProvider">
+MTLSProvider
+</a>
+</em>
+</td>
+<td>
+<p>Provider defines the tool used to manage mTLS certificates.</p>
 </td>
 </tr>
 </tbody>
@@ -1176,6 +1243,20 @@ TemporalAdminToolsSpec
 <td>
 <em>(Optional)</em>
 <p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mTLS</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+MTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
 </td>
 </tr>
 </tbody>

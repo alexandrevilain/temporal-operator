@@ -35,6 +35,7 @@ import (
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -45,14 +46,15 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(appsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var disableCertManager bool
 	var probeAddr string
 	var schemaPath string
 
@@ -61,6 +63,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&schemaPath, "schema-path", "/data/schema", "The path where temporal schemas are stored.")
+	flag.BoolVar(&disableCertManager, "disable-cert-manager", false, "Disable features using cert-manager such as automatic mTLS configuration.")
 
 	opts := zap.Options{
 		Development: true,
@@ -86,10 +89,11 @@ func main() {
 	persistenceMgr := persistence.NewManager(mgr.GetClient(), schemaPath)
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Client:             mgr.GetClient(),
-		Scheme:             mgr.GetScheme(),
-		Recorder:           mgr.GetEventRecorderFor("temporacluster-controller"),
-		PersistenceManager: persistenceMgr,
+		Client:              mgr.GetClient(),
+		Scheme:              mgr.GetScheme(),
+		Recorder:            mgr.GetEventRecorderFor("temporacluster-controller"),
+		PersistenceManager:  persistenceMgr,
+		CertManagerDisabled: disableCertManager,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
 		os.Exit(1)

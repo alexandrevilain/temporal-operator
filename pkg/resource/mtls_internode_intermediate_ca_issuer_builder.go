@@ -18,32 +18,21 @@
 package resource
 
 import (
-	"context"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// Service components.
-const (
-	ServiceConfig = "config"
-)
-
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
-
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
+type MTLSInternodeIntermediateCAIssuerBuilder struct {
+	GenericCAIssuerBuilder
 }
 
-type Pruner interface {
-	Build() (client.Object, error)
-}
-
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
+func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeIntermediateCAIssuerBuilder {
+	return &MTLSInternodeIntermediateCAIssuerBuilder{
+		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
+			instance:   instance,
+			scheme:     scheme,
+			name:       instance.ChildResourceName("internode-intermediate-ca-issuer"),
+			secretName: instance.ChildResourceName("internode-intermediate-ca-certificate"),
+		},
+	}
 }
