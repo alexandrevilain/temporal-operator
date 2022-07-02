@@ -49,20 +49,6 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 	}
 
-	if b.Instance.Spec.UI != nil && b.Instance.Spec.UI.Enabled {
-		builders = append(builders,
-			resource.NewUIDeploymentBuilder(b.Instance, b.Scheme),
-			resource.NewUIServiceBuilder(b.Instance, b.Scheme),
-		)
-		if b.Instance.Spec.UI.Ingress != nil {
-			builders = append(builders, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
-		}
-	}
-
-	if b.Instance.Spec.AdminTools != nil && b.Instance.Spec.AdminTools.Enabled {
-		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
-	}
-
 	if b.Instance.MTLSEnabled() {
 		builders = append(builders,
 			resource.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),
@@ -72,10 +58,41 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 
 		if b.Instance.Spec.MTLS.InternodeEnabled() {
 			builders = append(builders,
-				resource.NewMTLSInternodeItermediateCACertificateBuilder(b.Instance, b.Scheme),
+				resource.NewMTLSInternodeIntermediateCACertificateBuilder(b.Instance, b.Scheme),
 				resource.NewMTLSInternodeIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
 				resource.NewMTLSInternodeCertificateBuilder(b.Instance, b.Scheme),
 			)
+		}
+
+		if b.Instance.Spec.MTLS.FrontendEnabled() {
+			builders = append(builders,
+				resource.NewMTLSFrontendIntermediateCACertificateBuilder(b.Instance, b.Scheme),
+				resource.NewMTLSFrontendIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
+				resource.NewMTLSFrontendCertificateBuilder(b.Instance, b.Scheme),
+				resource.NewWorkerFrontendClientCertificateBuilder(b.Instance, b.Scheme),
+			)
+		}
+	}
+
+	if b.Instance.Spec.UI != nil && b.Instance.Spec.UI.Enabled {
+		builders = append(builders,
+			resource.NewUIDeploymentBuilder(b.Instance, b.Scheme),
+			resource.NewUIServiceBuilder(b.Instance, b.Scheme),
+		)
+		if b.Instance.Spec.UI.Ingress != nil {
+			builders = append(builders, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
+		}
+
+		if b.Instance.MTLSEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
+			builders = append(builders, resource.NewUIFrontendClientCertificateBuilder(b.Instance, b.Scheme))
+		}
+	}
+
+	if b.Instance.Spec.AdminTools != nil && b.Instance.Spec.AdminTools.Enabled {
+		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
+
+		if b.Instance.MTLSEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
+			builders = append(builders, resource.NewAdminToolsFrontendClientCertificateBuilder(b.Instance, b.Scheme))
 		}
 	}
 

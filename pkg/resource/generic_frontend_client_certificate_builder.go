@@ -29,35 +29,35 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type MTLSInternodeItermediateCACertificateBuilder struct {
+type GenericFrontendClientCertificateBuilder struct {
 	instance *v1alpha1.TemporalCluster
 	scheme   *runtime.Scheme
+	// name defines the name of the certificate
+	name string
+	// secretName is the name of the secrets holding the certificate
+	secretName string
+	// dnsName is the dns alt name of the certificate
+	dnsName string
+	// commonName is the common name to be used on the Certificate
+	commonName string
 }
 
-func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
-	return &MTLSInternodeItermediateCACertificateBuilder{
-		instance: instance,
-		scheme:   scheme,
-	}
-}
-
-func (b *MTLSInternodeItermediateCACertificateBuilder) Build() (client.Object, error) {
+func (b *GenericFrontendClientCertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+			Name:      b.instance.ChildResourceName(b.name),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
 }
 
-func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Object) error {
+func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) error {
 	certificate := object.(*certmanagerv1.Certificate)
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		IsCA:       true,
-		SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
-		CommonName: "Internode intermediate CA certificate",
+		SecretName: b.instance.ChildResourceName(b.secretName),
+		CommonName: b.commonName,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,
@@ -65,16 +65,11 @@ func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Obje
 			Size:           4096,
 		},
 		DNSNames: []string{
-			b.instance.ServerName(),
+			b.dnsName,
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("root-ca-issuer"),
+			Name: b.instance.ChildResourceName("frontend-intermediate-ca-issuer"),
 			Kind: certmanagerv1.IssuerKind,
-		},
-		Usages: []certmanagerv1.KeyUsage{
-			certmanagerv1.UsageDigitalSignature,
-			certmanagerv1.UsageCRLSign,
-			certmanagerv1.UsageCertSign,
 		},
 	}
 

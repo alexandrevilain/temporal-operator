@@ -31,8 +31,8 @@ func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalClus
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       instance.ChildResourceName("internode-intermediate-ca-issuer"),
-			secretName: instance.ChildResourceName("internode-intermediate-ca-certificate"),
+			name:       "internode-intermediate-ca-issuer",
+			secretName: "internode-intermediate-ca-certificate",
 		},
 	}
 }
