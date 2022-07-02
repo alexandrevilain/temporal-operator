@@ -159,16 +159,20 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.instance.Spec.MTLS != nil && (b.instance.Spec.MTLS.InternodeEnabled() || b.instance.Spec.MTLS.FrontendEnabled()) {
+	if b.instance.MTLSEnabled() {
 		temporalCfg.Global.TLS = config.RootTLS{
 			RefreshInterval:  1 * time.Hour,
 			ExpirationChecks: config.CertExpirationValidation{},
 		}
 
 		internodeMTLS := b.instance.Spec.MTLS.Internode
+		if internodeMTLS == nil {
+			internodeMTLS = &v1alpha1.InternodeMTLSSpec{}
+		}
+
 		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), "tls.crt")
-		serverCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.crt")
-		serverKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.key")
+		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.crt")
+		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.key")
 		internodeClientTLS := config.ClientTLS{
 			ServerName:              internodeMTLS.ServerName(b.instance.ServerName()),
 			DisableHostVerification: false,
@@ -180,8 +184,8 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			temporalCfg.Global.TLS.Internode = config.GroupTLS{
 				Client: internodeClientTLS,
 				Server: config.ServerTLS{
-					CertFile: serverCertFilePath,
-					KeyFile:  serverKeyFilePath,
+					CertFile: internodeServerCertFilePath,
+					KeyFile:  internodeServerKeyFilePath,
 					ClientCAFiles: []string{
 						internodeIntermediateCAFilePath,
 					},
@@ -191,18 +195,37 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		}
 
 		if b.instance.Spec.MTLS.FrontendEnabled() {
+			frontendMTLS := b.instance.Spec.MTLS.Frontend
+			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), "tls.crt")
+
 			temporalCfg.Global.TLS.Frontend = config.GroupTLS{
 				Server: config.ServerTLS{
+					CertFile:          path.Join(frontendMTLS.GetCertificateMountPath(), "tls.crt"),
+					KeyFile:           path.Join(frontendMTLS.GetCertificateMountPath(), "tls.key"),
 					RequireClientAuth: true,
-					// TODO(alexandrevilain): add frontend intermediate CA
-					// ClientCAFiles: ,
+					ClientCAFiles: []string{
+						internodeIntermediateCAFilePath,
+						frontendIntermediateCAFilePath,
+					},
+				},
+				Client: config.ClientTLS{
+					ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
+					DisableHostVerification: false,
+					RootCAFiles:             []string{frontendIntermediateCAFilePath},
+					ForceTLS:                true,
 				},
 				PerHostOverrides: map[string]config.ServerTLS{},
 			}
+
 			temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
-				CertFile: serverCertFilePath,
-				KeyFile:  serverKeyFilePath,
-				Client:   internodeClientTLS,
+				CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), "tls.crt"),
+				KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), "tls.key"),
+				Client: config.ClientTLS{
+					ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
+					DisableHostVerification: false,
+					RootCAFiles:             []string{frontendIntermediateCAFilePath},
+					ForceTLS:                true,
+				},
 			}
 		}
 	}

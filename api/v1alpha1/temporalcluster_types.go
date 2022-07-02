@@ -376,6 +376,26 @@ type FrontendMTLSSpec struct {
 	Enabled bool `json:"enabled"`
 }
 
+// ServerName returns frontend servername for mTLS certificates.
+func (FrontendMTLSSpec) ServerName(serverName string) string {
+	return fmt.Sprintf("frontend.%s", serverName)
+}
+
+// GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
+func (FrontendMTLSSpec) GetIntermediateCACertificateMountPath() string {
+	return "/etc/temporal/config/certs/client/ca"
+}
+
+// GetCertificateMountPath returns the mount path for the frontend certificate.
+func (FrontendMTLSSpec) GetCertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/frontend"
+}
+
+// GetWorkerCertificateMountPath returns the mount path for the worker certificate.
+func (FrontendMTLSSpec) GetWorkerCertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/worker"
+}
+
 // InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
 type InternodeMTLSSpec struct {
 	// Enabled defines if the operator should enable mTLS for network between cluster nodes.

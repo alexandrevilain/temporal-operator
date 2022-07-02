@@ -100,6 +100,37 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
+	if b.instance.MTLSEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
+		container.VolumeMounts = append(container.VolumeMounts,
+			corev1.VolumeMount{
+				Name:      "ui-mtls-certificate",
+				MountPath: "/etc/temporal/config/certs/client/ui",
+			},
+		)
+		container.Env = append(container.Env,
+			corev1.EnvVar{
+				Name:  "TEMPORAL_TLS_CA",
+				Value: "/etc/temporal/config/certs/client/ui/ca.crt",
+			},
+			corev1.EnvVar{
+				Name:  "TEMPORAL_TLS_CERT",
+				Value: "/etc/temporal/config/certs/client/ui/tls.crt",
+			},
+			corev1.EnvVar{
+				Name:  "TEMPORAL_TLS_KEY",
+				Value: "/etc/temporal/config/certs/client/ui/tls.key",
+			},
+			corev1.EnvVar{
+				Name:  "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION",
+				Value: "true",
+			},
+			corev1.EnvVar{
+				Name:  "TEMPORAL_TLS_SERVER_NAME",
+				Value: b.instance.Spec.MTLS.Frontend.ServerName(b.instance.ServerName()),
+			},
+		)
+	}
+
 	deployment.Spec.Template.Spec = corev1.PodSpec{
 		ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 		Containers: []corev1.Container{
@@ -110,6 +141,21 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		DNSPolicy:                     corev1.DNSClusterFirst,
 		SchedulerName:                 "default-scheduler",
 		SecurityContext:               &corev1.PodSecurityContext{},
+	}
+
+	if b.instance.MTLSEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
+		if b.instance.Spec.MTLS.InternodeEnabled() {
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+				corev1.Volume{
+					Name: "ui-mtls-certificate",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("ui-mtls-certificate"),
+						},
+					},
+				},
+			)
+		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

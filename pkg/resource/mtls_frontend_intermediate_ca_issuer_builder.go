@@ -22,17 +22,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type MTLSRootCAIssuerBuilder struct {
+type MTLSFrontendIntermediateCAIssuerBuilder struct {
 	GenericCAIssuerBuilder
 }
 
-func NewMTLSRootCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSRootCAIssuerBuilder {
-	return &MTLSRootCAIssuerBuilder{
+func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
+	return &MTLSFrontendIntermediateCAIssuerBuilder{
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "root-ca-issuer",
-			secretName: "root-ca-certificate",
+			name:       "frontend-intermediate-ca-issuer",
+			secretName: "frontend-intermediate-ca-certificate",
 		},
 	}
 }

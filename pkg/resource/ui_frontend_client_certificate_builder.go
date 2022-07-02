@@ -18,21 +18,25 @@
 package resource
 
 import (
+	"fmt"
+
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type MTLSRootCAIssuerBuilder struct {
-	GenericCAIssuerBuilder
+type UIFrontendClientCertificateBuilder struct {
+	GenericFrontendClientCertificateBuilder
 }
 
-func NewMTLSRootCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSRootCAIssuerBuilder {
-	return &MTLSRootCAIssuerBuilder{
-		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
+func NewUIFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
+	return &UIFrontendClientCertificateBuilder{
+		GenericFrontendClientCertificateBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "root-ca-issuer",
-			secretName: "root-ca-certificate",
+			name:       "ui-mtls-certificate",
+			secretName: "ui-mtls-certificate",
+			commonName: "UI client certificate",
+			dnsName:    fmt.Sprintf("ui.%s", instance.ServerName()),
 		},
 	}
 }
