@@ -19,6 +19,7 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -34,6 +35,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
+	"sigs.k8s.io/e2e-framework/third_party/helm"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 )
@@ -52,8 +54,13 @@ func TestMain(m *testing.M) {
 	kindClusterName := envconf.RandomName("temporal", 16)
 	runID := envconf.RandomName("ns", 4)
 
+	cfg, err := envconf.NewFromFlags()
+	if err != nil {
+		log.Fatalf("envconf failed: %s", err)
+	}
+
 	testenv = env.
-		New().
+		NewWithConfig(cfg).
 		// Create the cluster
 		Setup(
 			envfuncs.CreateKindClusterWithConfig(kindClusterName, kindImage, "kind-config.yaml"),
@@ -69,6 +76,32 @@ func TestMain(m *testing.M) {
 				return ctx, err
 			}
 			appsv1alpha1.AddToScheme(r.GetScheme())
+			return ctx, nil
+		}).
+		// Deploy cert-manager.
+		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
+			manager := helm.New(c.KubeconfigFile())
+			err := manager.RunRepo(helm.WithArgs("add", "jetstack", "https://charts.jetstack.io"))
+			if err != nil {
+				return ctx, fmt.Errorf("failed to add cert-manager helm chart repo: %w", err)
+			}
+			err = manager.RunRepo(helm.WithArgs("update"))
+			if err != nil {
+				return ctx, fmt.Errorf("failed to upgrade helm repo: %w", err)
+			}
+			err = manager.RunInstall(
+				helm.WithName("cert-manager"),
+				helm.WithNamespace("cert-manager"),
+				helm.WithReleaseName("jetstack/cert-manager"),
+				helm.WithVersion("v1.8.2"),
+				helm.WithArgs("--create-namespace"),
+				helm.WithArgs("--set", "installCRDs=true"),
+				helm.WithWait(),
+				helm.WithTimeout("10m"),
+			)
+			if err != nil {
+				return ctx, fmt.Errorf("failed to install cert-manager chart: %w", err)
+			}
 			return ctx, nil
 		}).
 		// Deploy the operator and wait for it.
