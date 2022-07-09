@@ -418,6 +418,22 @@ func (InternodeMTLSSpec) GetCertificateMountPath() string {
 	return "/etc/temporal/config/certs/cluster/internode"
 }
 
+// CertificatesDurationSpec defines parameters for the temporal mTLS certificates duration.
+type CertificatesDurationSpec struct {
+	// RootCACertificate is the 'duration' (i.e. lifetime) of the Root CA Certificate.
+	// It defaults to 10 years.
+	// +optional
+	RootCACertificate *metav1.Duration `json:"rootCACertificate"`
+	// IntermediateCACertificates is the 'duration' (i.e. lifetime) of the intermediate CAs Certificates.
+	// It defaults to 5 years.
+	// +optional
+	IntermediateCAsCertificates *metav1.Duration `json:"intermediateCAsCertificates"`
+	// ClientCertificates is the 'duration' (i.e. lifetime) of the client certificates.
+	// It defaults to 1 year.
+	// +optional
+	ClientCertificates *metav1.Duration `json:"clientCertificates"`
+}
+
 // MTLSSpec defines parameters for the temporal encryption in transit with mTLS.
 type MTLSSpec struct {
 	// Provider defines the tool used to manage mTLS certificates.
@@ -428,9 +444,16 @@ type MTLSSpec struct {
 	// Internode allows configuration of the internode traffic encryption.
 	// +optional
 	Internode *InternodeMTLSSpec `json:"internode"`
-	// Frontend  allows configuration of the frontend's public endpoint traffic encryption.
+	// Frontend allows configuration of the frontend's public endpoint traffic encryption.
 	// +optional
 	Frontend *FrontendMTLSSpec `json:"frontend"`
+	// CertificatesDuration allows configuration of maximum certificates lifetime.
+	// +optional
+	CertificatesDuration *CertificatesDurationSpec `json:"certificatesDuration,omitempty"`
+	// RefreshInterval defines interval between refreshes of certificates in the cluster components.
+	// Defaults to 1 hour.
+	// +optional
+	RefreshInterval *metav1.Duration `json:"refreshInterval"`
 }
 
 func (m *MTLSSpec) InternodeEnabled() bool {

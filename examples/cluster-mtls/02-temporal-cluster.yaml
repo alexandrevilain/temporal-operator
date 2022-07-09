@@ -15,6 +15,11 @@ spec:
       enabled: true
     frontend:
       enabled: true
+    certificatesDuration:
+      rootCACertificate: 2h
+      intermediateCAsCertificates: 1h30m
+      clientCertificates: 1h
+    refreshInterval: 5m
   datastores:
     - name: default
       sql:

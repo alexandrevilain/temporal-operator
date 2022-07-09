@@ -339,9 +339,27 @@ spec:
                 description: MTLS allows configuration of the network traffic encryption
                   for the cluster.
                 properties:
+                  certificatesDuration:
+                    description: CertificatesDuration allows configuration of maximum
+                      certificates lifetime.
+                    properties:
+                      clientCertificates:
+                        description: ClientCertificates is the 'duration' (i.e. lifetime)
+                          of the client certificates. It defaults to 1 year.
+                        type: string
+                      intermediateCAsCertificates:
+                        description: IntermediateCACertificates is the 'duration'
+                          (i.e. lifetime) of the intermediate CAs Certificates. It
+                          defaults to 5 years.
+                        type: string
+                      rootCACertificate:
+                        description: RootCACertificate is the 'duration' (i.e. lifetime)
+                          of the Root CA Certificate. It defaults to 10 years.
+                        type: string
+                    type: object
                   frontend:
-                    description: Frontend  allows configuration of the frontend's
-                      public endpoint traffic encryption.
+                    description: Frontend allows configuration of the frontend's public
+                      endpoint traffic encryption.
                     properties:
                       enabled:
                         description: Enabled defines if the operator should enable
@@ -362,6 +380,10 @@ spec:
                     description: Provider defines the tool used to manage mTLS certificates.
                     enum:
                     - cert-manager
+                    type: string
+                  refreshInterval:
+                    description: RefreshInterval defines interval between refreshes
+                      of certificates in the cluster components. Defaults to 1 hour.
                     type: string
                 type: object
               numHistoryShards:

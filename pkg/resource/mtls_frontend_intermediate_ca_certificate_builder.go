@@ -58,6 +58,7 @@ func (b *MTLSFrontendItermediateCACertificateBuilder) Update(object client.Objec
 		IsCA:       true,
 		SecretName: b.instance.ChildResourceName("frontend-intermediate-ca-certificate"),
 		CommonName: "Frontend intermediate CA certificate",
+		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,
