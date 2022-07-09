@@ -58,6 +58,7 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 	certificate.Spec = certmanagerv1.CertificateSpec{
 		SecretName: b.instance.ChildResourceName(b.secretName),
 		CommonName: b.commonName,
+		Duration:   b.instance.Spec.MTLS.CertificatesDuration.ClientCertificates,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,

@@ -391,6 +391,72 @@ bool
 </table>
 </div>
 </div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">CertificatesDurationSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>CertificatesDurationSpec defines parameters for the temporal mTLS certificates duration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>rootCACertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RootCACertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the Root CA Certificate.
+It defaults to 10 years.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>intermediateCAsCertificates</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IntermediateCACertificates is the &lsquo;duration&rsquo; (i.e. lifetime) of the intermediate CAs Certificates.
+It defaults to 5 years.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clientCertificates</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClientCertificates is the &lsquo;duration&rsquo; (i.e. lifetime) of the client certificates.
+It defaults to 1 year.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec
 </h3>
 <p>
@@ -651,20 +717,13 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSProvider">MTLSProvider
-(<code>string</code> alias)</h3>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">FrontendMTLSSpec
+</h3>
 <p>
 (<em>Appears on:</em>
 <a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
 </p>
-<p>MTLSProvider is the enum for support mTLS provider.</p>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
-</p>
-<p>MTLSSpec defines paramaters for the temporal encryption in transit with mTLS.</p>
+<p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -684,9 +743,70 @@ bool
 </td>
 <td>
 <em>(Optional)</em>
-<p>Enabled defines if the operator should deploy the admin tools alongside the cluster.</p>
+<p>Enabled defines if the operator should enable mTLS for cluster&rsquo;s public endpoints.</p>
 </td>
 </tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">InternodeMTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should enable mTLS for network between cluster nodes.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSProvider">MTLSProvider
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>MTLSProvider is the enum for support mTLS provider.</p>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>MTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>
 <code>provider</code><br>
@@ -697,7 +817,65 @@ MTLSProvider
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Provider defines the tool used to manage mTLS certificates.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internode</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">
+InternodeMTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Internode allows configuration of the internode traffic encryption.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>frontend</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">
+FrontendMTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Frontend allows configuration of the frontend&rsquo;s public endpoint traffic encryption.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>certificatesDuration</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">
+CertificatesDurationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CertificatesDuration allows configuration of maximum certificates lifetime.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>refreshInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RefreshInterval defines interval between refreshes of certificates in the cluster components.
+Defaults to 1 hour.</p>
 </td>
 </tr>
 </tbody>
