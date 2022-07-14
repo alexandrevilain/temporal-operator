@@ -22,6 +22,8 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type AdminToolsFrontendClientCertificateBuilder struct {
@@ -39,4 +41,13 @@ func NewAdminToolsFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCl
 			dnsName:    fmt.Sprintf("admintools.%s", instance.ServerName()),
 		},
 	}
+}
+
+func (b *AdminToolsFrontendClientCertificateBuilder) Update(object client.Object) error {
+	err := b.GenericFrontendClientCertificateBuilder.Update(object)
+	if err != nil {
+		return err
+	}
+
+	return controllerutil.SetControllerReference(b.instance, object, b.scheme)
 }

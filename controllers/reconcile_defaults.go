@@ -22,7 +22,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -140,7 +139,7 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, tempo
 			temporalCluster.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
 		}
 		if temporalCluster.Spec.MTLS.CertificatesDuration == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration = &v1alpha1.CertificatesDurationSpec{}
+			temporalCluster.Spec.MTLS.CertificatesDuration = &appsv1alpha1.CertificatesDurationSpec{}
 		}
 		if temporalCluster.Spec.MTLS.CertificatesDuration.RootCACertificate == nil {
 			temporalCluster.Spec.MTLS.CertificatesDuration.RootCACertificate = &metav1.Duration{Duration: time.Hour * 87600}
