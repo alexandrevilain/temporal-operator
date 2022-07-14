@@ -27,7 +27,7 @@ import (
 // SchemaVersions is temporal schemas versions by datastore type.
 type SchemaVersions map[v1alpha1.DatastoreType]semver.Version
 
-// VersionInfo holds a temporal version range depedencies versions.
+// VersionInfo holds a temporal version range dependencies versions.
 type VersionInfo struct {
 	Range                           semver.Range
 	DefaultSchemaVersions           SchemaVersions
