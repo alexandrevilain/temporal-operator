@@ -18,15 +18,12 @@
 package resource
 
 import (
-	"fmt"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type GenericFrontendClientCertificateBuilder struct {
@@ -40,6 +37,17 @@ type GenericFrontendClientCertificateBuilder struct {
 	dnsName string
 	// commonName is the common name to be used on the Certificate
 	commonName string
+}
+
+func NewGenericFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
+	return &GenericFrontendClientCertificateBuilder{
+		instance:   instance,
+		scheme:     scheme,
+		name:       name,
+		secretName: secretName,
+		dnsName:    dnsName,
+		commonName: commonName,
+	}
 }
 
 func (b *GenericFrontendClientCertificateBuilder) Build() (client.Object, error) {
@@ -74,8 +82,5 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 		},
 	}
 
-	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
-	}
 	return nil
 }
