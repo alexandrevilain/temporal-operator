@@ -84,7 +84,7 @@ func (s *TemporalServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error)
 	case common.WorkerServiceName:
 		return s.Worker, nil
 	default:
-		return nil, fmt.Errorf("unkown service %s", name)
+		return nil, fmt.Errorf("unknown service %s", name)
 	}
 }
 
