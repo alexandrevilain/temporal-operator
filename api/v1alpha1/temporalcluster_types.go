@@ -432,6 +432,14 @@ type CertificatesDurationSpec struct {
 	// It defaults to 1 year.
 	// +optional
 	ClientCertificates *metav1.Duration `json:"clientCertificates"`
+	// FrontendCertificate is the 'duration' (i.e. lifetime) of the frontend certificate.
+	// It defaults to 1 year.
+	// +optional
+	FrontendCertificate *metav1.Duration `json:"frontendCertificate"`
+	// InternodeCertificate is the 'duration' (i.e. lifetime) of the internode certificate.
+	// It defaults to 1 year.
+	// +optional
+	InternodeCertificate *metav1.Duration `json:"internodeCertificate"`
 }
 
 // MTLSSpec defines parameters for the temporal encryption in transit with mTLS.

@@ -150,6 +150,12 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, tempo
 		if temporalCluster.Spec.MTLS.CertificatesDuration.ClientCertificates == nil {
 			temporalCluster.Spec.MTLS.CertificatesDuration.ClientCertificates = &metav1.Duration{Duration: time.Hour * 8766}
 		}
+		if temporalCluster.Spec.MTLS.CertificatesDuration.FrontendCertificate == nil {
+			temporalCluster.Spec.MTLS.CertificatesDuration.FrontendCertificate = &metav1.Duration{Duration: time.Hour * 8766}
+		}
+		if temporalCluster.Spec.MTLS.CertificatesDuration.InternodeCertificate == nil {
+			temporalCluster.Spec.MTLS.CertificatesDuration.InternodeCertificate = &metav1.Duration{Duration: time.Hour * 8766}
+		}
 	}
 
 	return !reflect.DeepEqual(before.Spec, temporalCluster.Spec)

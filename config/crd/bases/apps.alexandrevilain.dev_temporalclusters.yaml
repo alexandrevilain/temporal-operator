@@ -347,10 +347,19 @@ spec:
                         description: ClientCertificates is the 'duration' (i.e. lifetime)
                           of the client certificates. It defaults to 1 year.
                         type: string
+                      frontendCertificate:
+                        description: FrontendCertificate is the 'duration' (i.e. lifetime)
+                          of the frontend certificate. It defaults to 1 year.
+                        type: string
                       intermediateCAsCertificates:
                         description: IntermediateCACertificates is the 'duration'
                           (i.e. lifetime) of the intermediate CAs Certificates. It
                           defaults to 5 years.
+                        type: string
+                      internodeCertificate:
+                        description: InternodeCertificate is the 'duration' (i.e.
+                          lifetime) of the internode certificate. It defaults to 1
+                          year.
                         type: string
                       rootCACertificate:
                         description: RootCACertificate is the 'duration' (i.e. lifetime)

@@ -19,6 +19,8 @@ spec:
       rootCACertificate: 2h
       intermediateCAsCertificates: 1h30m
       clientCertificates: 1h
+      frontendCertificate: 1h
+      internodeCertificate: 1h
     refreshInterval: 5m
   datastores:
     - name: default

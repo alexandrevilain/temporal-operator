@@ -453,6 +453,36 @@ Kubernetes meta/v1.Duration
 It defaults to 1 year.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>frontendCertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>FrontendCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the frontend certificate.
+It defaults to 1 year.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internodeCertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>InternodeCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the internode certificate.
+It defaults to 1 year.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
