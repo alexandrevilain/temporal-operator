@@ -377,11 +377,11 @@ spec:
                         description: 'Port defines a custom gRPC port for the service.
                           Default values are: 7233 for Frontend service 7234 for History
                           service 7235 for Matching service 7239 for Worker service'
-                        format: int32
                         type: integer
                       replicas:
                         description: Number of desired replicas for the service. Default
                           to 1.
+                        format: int32
                         minimum: 1
                         type: integer
                     type: object
@@ -398,11 +398,11 @@ spec:
                         description: 'Port defines a custom gRPC port for the service.
                           Default values are: 7233 for Frontend service 7234 for History
                           service 7235 for Matching service 7239 for Worker service'
-                        format: int32
                         type: integer
                       replicas:
                         description: Number of desired replicas for the service. Default
                           to 1.
+                        format: int32
                         minimum: 1
                         type: integer
                     type: object
@@ -419,11 +419,11 @@ spec:
                         description: 'Port defines a custom gRPC port for the service.
                           Default values are: 7233 for Frontend service 7234 for History
                           service 7235 for Matching service 7239 for Worker service'
-                        format: int32
                         type: integer
                       replicas:
                         description: Number of desired replicas for the service. Default
                           to 1.
+                        format: int32
                         minimum: 1
                         type: integer
                     type: object
@@ -440,11 +440,11 @@ spec:
                         description: 'Port defines a custom gRPC port for the service.
                           Default values are: 7233 for Frontend service 7234 for History
                           service 7235 for Matching service 7239 for Worker service'
-                        format: int32
                         type: integer
                       replicas:
                         description: Number of desired replicas for the service. Default
                           to 1.
+                        format: int32
                         minimum: 1
                         type: integer
                     type: object
