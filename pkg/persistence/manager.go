@@ -151,8 +151,6 @@ func (m *Manager) getSQLConnectionFromDatastoreSpec(ctx context.Context, store *
 		return nil, err
 	}
 
-	config.ConnectAddr = "localhost:5432"
-
 	return sql.NewConnection(config)
 }
 
