@@ -33,11 +33,15 @@ type Worker struct {
 	worker worker.Worker
 }
 
-func NewWorker(temporalAddr string) (*Worker, error) {
+func NewWorker(temporalAddr string, opts ...ClientOption) (*Worker, error) {
 	w := &Worker{}
 
 	clientOpts := client.Options{
 		HostPort: temporalAddr,
+	}
+
+	for _, opt := range opts {
+		opt(&clientOpts)
 	}
 
 	err := w.createDefaultNamespace(clientOpts)

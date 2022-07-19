@@ -33,7 +33,7 @@ import (
 func TestWithCassandraPersistence(t *testing.T) {
 	var temporalCluster *appsv1alpha1.TemporalCluster
 
-	pgFeature := features.New("Cassandra for persistence").
+	cassandraFeature := features.New("Cassandra for persistence").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForTest(ctx, t)
 			t.Logf("using %s", namespace)
@@ -142,6 +142,5 @@ func TestWithCassandraPersistence(t *testing.T) {
 			return ctx
 		}).
 		Feature()
-
-	testenv.Test(t, pgFeature)
+	testenv.Test(t, cassandraFeature)
 }
