@@ -25,6 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
+	certmanagermetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
@@ -170,7 +171,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			internodeMTLS = &v1alpha1.InternodeMTLSSpec{}
 		}
 
-		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), "tls.crt")
+		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), certmanagermetav1.TLSCAKey)
 		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.crt")
 		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.key")
 		internodeClientTLS := config.ClientTLS{
@@ -196,7 +197,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 		if b.instance.Spec.MTLS.FrontendEnabled() {
 			frontendMTLS := b.instance.Spec.MTLS.Frontend
-			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), "tls.crt")
+			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), certmanagermetav1.TLSCAKey)
 
 			temporalCfg.Global.TLS.Frontend = config.GroupTLS{
 				Server: config.ServerTLS{
