@@ -74,9 +74,6 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 	temporalCluster := &appsv1alpha1.TemporalCluster{}
 	err = r.Get(ctx, namespacedName, temporalCluster)
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return reconcile.Result{}, nil
-		}
 		return reconcile.Result{}, err
 	}
 
@@ -106,8 +103,10 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, err
 	}
 
+	certificate := res.(*certmanagerv1.Certificate)
+
 	temporalClusterClient.Status.SecretRef = corev1.LocalObjectReference{
-		Name: secretName,
+		Name: certificate.Spec.SecretName,
 	}
 
 	err = r.Client.Status().Update(ctx, temporalClusterClient)
