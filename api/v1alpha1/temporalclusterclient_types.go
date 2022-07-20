@@ -30,6 +30,8 @@ type TemporalClusterClientSpec struct {
 
 // TemporalClusterClientStatus defines the observed state of TemporalClusterClient
 type TemporalClusterClientStatus struct {
+	// ServerName is the hostname returned by the certificate.
+	ServerName string `json:"serverName"`
 	// Reference to the Kubernetes Secret containing the certificate for the client.
 	SecretRef corev1.LocalObjectReference `json:"secretRef"`
 }

@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -77,6 +78,12 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, err
 	}
 
+	if !(temporalCluster.MTLSEnabled() &&
+		temporalCluster.Spec.MTLS.FrontendEnabled() &&
+		temporalCluster.Spec.MTLS.Provider == appsv1alpha1.CertManagerMTLSProvider) {
+		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
+	}
+
 	dnsName := fmt.Sprintf("%s.%s", temporalClusterClient.GetName(), temporalCluster.ServerName())
 	commonName := fmt.Sprintf("%s Client", temporalClusterClient.GetName())
 	secretName := fmt.Sprintf("%s-mtls-certificate", temporalClusterClient.GetName())
@@ -105,6 +112,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 
 	certificate := res.(*certmanagerv1.Certificate)
 
+	temporalClusterClient.Status.ServerName = temporalCluster.Spec.MTLS.Frontend.ServerName(temporalCluster.ServerName())
 	temporalClusterClient.Status.SecretRef = corev1.LocalObjectReference{
 		Name: certificate.Spec.SecretName,
 	}

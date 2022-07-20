@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testclient"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	corev1 "k8s.io/api/core/v1"
@@ -208,9 +209,10 @@ func TestWithmTLSEnabled(t *testing.T) {
 			tlsCfg := &tls.Config{
 				RootCAs:      certPool,
 				Certificates: []tls.Certificate{clientCert},
+				ServerName:   temporalClusterClient.Status.ServerName,
 			}
 
-			w, err := testworker.NewWorker(connectAddr, testworker.WithTLSConfig(tlsCfg))
+			w, err := testworker.NewWorker(connectAddr, testclient.WithTLSConfig(tlsCfg))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -219,7 +221,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 			w.Start()
 			defer w.Stop()
 
-			s, err := teststarter.NewStarter(connectAddr)
+			s, err := teststarter.NewStarter(connectAddr, testclient.WithTLSConfig(tlsCfg))
 			if err != nil {
 				t.Fatal(err)
 			}
