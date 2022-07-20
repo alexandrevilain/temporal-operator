@@ -14,8 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
-package testworker
+package testclient
 
 import (
 	"crypto/tls"
@@ -23,10 +22,16 @@ import (
 	"go.temporal.io/sdk/client"
 )
 
-type ClientOption func(opts *client.Options)
+type Option func(opts *client.Options)
 
-func WithTLSConfig(cfg *tls.Config) ClientOption {
+func WithTLSConfig(cfg *tls.Config) Option {
 	return func(opts *client.Options) {
 		opts.ConnectionOptions.TLS = cfg
+	}
+}
+
+func ApplyOptions(o *client.Options, opts ...Option) {
+	for _, opt := range opts {
+		opt(o)
 	}
 }

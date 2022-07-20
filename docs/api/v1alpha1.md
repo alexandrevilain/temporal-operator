@@ -1441,6 +1441,17 @@ Kubernetes core/v1.LocalObjectReference
 <tbody>
 <tr>
 <td>
+<code>serverName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>ServerName is the hostname returned by the certificate.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>secretRef</code><br>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
