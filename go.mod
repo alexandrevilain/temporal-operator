@@ -7,7 +7,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.8.2
 	github.com/go-logr/logr v1.2.3
-	github.com/gocql/gocql v1.1.0
+	github.com/gocql/gocql v1.2.0
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.12.0
 	github.com/stretchr/testify v1.8.0
