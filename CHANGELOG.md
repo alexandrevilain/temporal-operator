@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.3.0
+
+**Release date:** 2022-07-22
+
+This release adds support for mTLS using cert-manager.
+
+Features:
+-  Add internode & frontend mTLS using cert-manager [#60](https://github.com/alexandrevilain/temporal-operator/pull/60)
+
+Improvements:
+- Add support for temporal v1.17.1 and set UI version to v2.2.1 by default [#70](https://github.com/alexandrevilain/temporal-operator/pull/70)
+
+Updates:
+- Bump github.com/stretchr/testify from 1.7.5 to 1.8.0 [#59](https://github.com/alexandrevilain/temporal-operator/pull/59)
+- Bump sigs.k8s.io/controller-runtime from 0.12.2 to 0.12.3 [#61](https://github.com/alexandrevilain/temporal-operator/pull/61)
+- Bump kubernetes dependencies to v0.24.3 [#73](https://github.com/alexandrevilain/temporal-operator/pull/73)
+
+Fixes:
+- Fix misspells [#71](https://github.com/alexandrevilain/temporal-operator/pull/71)
+- Add missing RBAC rule for manager role to create events [#74](https://github.com/alexandrevilain/temporal-operator/pull/74)
+
 ## 0.2.0
 
 **Release date:** 2022-06-28
