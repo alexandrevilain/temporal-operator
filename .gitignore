@@ -25,3 +25,4 @@ out
 *.swo
 *~
 .vscode
+.DS_Store
