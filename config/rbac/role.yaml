@@ -56,6 +56,32 @@ rules:
 - apiGroups:
   - apps.alexandrevilain.dev
   resources:
+  - temporalclusterclients
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalclusterclients/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalclusterclients/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
   - temporalclusters
   verbs:
   - create
@@ -79,6 +105,18 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  - issuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
 - apiGroups:
   - networking.k8s.io
   resources:

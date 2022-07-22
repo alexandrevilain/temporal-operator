@@ -13,4 +13,13 @@ resources:
   kind: TemporalCluster
   path: github.com/alexandrevilain/temporal-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: alexandrevilain.dev
+  group: apps
+  kind: TemporalClusterClient
+  path: github.com/alexandrevilain/temporal-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

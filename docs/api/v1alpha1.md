@@ -182,6 +182,20 @@ TemporalAdminToolsSpec
 <p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>mTLS</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+MTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -371,6 +385,102 @@ bool
 <td>
 <em>(Optional)</em>
 <p>DisableInitialHostLookup instructs the gocql client to connect only using the supplied hosts.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">CertificatesDurationSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>CertificatesDurationSpec defines parameters for the temporal mTLS certificates duration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>rootCACertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RootCACertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the Root CA Certificate.
+It defaults to 10 years.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>intermediateCAsCertificates</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IntermediateCACertificates is the &lsquo;duration&rsquo; (i.e. lifetime) of the intermediate CAs Certificates.
+It defaults to 5 years.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clientCertificates</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClientCertificates is the &lsquo;duration&rsquo; (i.e. lifetime) of the client certificates.
+It defaults to 1 year.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>frontendCertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>FrontendCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the frontend certificate.
+It defaults to 1 year.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internodeCertificate</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>InternodeCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the internode certificate.
+It defaults to 1 year.</p>
 </td>
 </tr>
 </tbody>
@@ -631,6 +741,171 @@ bool
 <td>
 <em>(Optional)</em>
 <p>EnableHealthcheck enables or disables healthcheck on the temporal cluster&rsquo;s es client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">FrontendMTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should enable mTLS for cluster&rsquo;s public endpoints.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">InternodeMTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should enable mTLS for network between cluster nodes.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSProvider">MTLSProvider
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+</p>
+<p>MTLSProvider is the enum for support mTLS provider.</p>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>MTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>provider</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSProvider">
+MTLSProvider
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Provider defines the tool used to manage mTLS certificates.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internode</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">
+InternodeMTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Internode allows configuration of the internode traffic encryption.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>frontend</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">
+FrontendMTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Frontend allows configuration of the frontend&rsquo;s public endpoint traffic encryption.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>certificatesDuration</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">
+CertificatesDurationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CertificatesDuration allows configuration of maximum certificates lifetime.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>refreshInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RefreshInterval defines interval between refreshes of certificates in the cluster components.
+Defaults to 1 hour.</p>
 </td>
 </tr>
 </tbody>
@@ -1041,6 +1316,157 @@ string
 </table>
 </div>
 </div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient
+</h3>
+<p>TemporalClusterClient is the Schema for the temporalclusterclients API</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientSpec">
+TemporalClusterClientSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>temporalClusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the client will get access to.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientStatus">
+TemporalClusterClientStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientSpec">TemporalClusterClientSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
+</p>
+<p>TemporalClusterClientSpec defines the desired state of TemporalClusterClient</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>temporalClusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the client will get access to.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientStatus">TemporalClusterClientStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
+</p>
+<p>TemporalClusterClientStatus defines the observed state of TemporalClusterClient</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>serverName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>ServerName is the hostname returned by the certificate.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the Kubernetes Secret containing the certificate for the client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec
 </h3>
 <p>
@@ -1176,6 +1602,20 @@ TemporalAdminToolsSpec
 <td>
 <em>(Optional)</em>
 <p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mTLS</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+MTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
 </td>
 </tr>
 </tbody>

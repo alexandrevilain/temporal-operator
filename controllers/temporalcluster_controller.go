@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -33,12 +34,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/cluster"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
@@ -54,9 +56,10 @@ const (
 // TemporalClusterReconciler reconciles a TemporalCluster object
 type TemporalClusterReconciler struct {
 	client.Client
-	Scheme             *runtime.Scheme
-	Recorder           record.EventRecorder
-	PersistenceManager *persistence.Manager
+	Scheme              *runtime.Scheme
+	Recorder            record.EventRecorder
+	PersistenceManager  *persistence.Manager
+	CertManagerDisabled bool
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -68,6 +71,7 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
+//+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -102,6 +106,17 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// As we updated the instance, another reconcile will be triggered.
 		return reconcile.Result{}, nil
 	}
+
+	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
+	// it can't process the request, return the error.
+	if temporalCluster.MTLSEnabled() &&
+		temporalCluster.Spec.MTLS.Provider == appsv1alpha1.CertManagerMTLSProvider &&
+		r.CertManagerDisabled {
+		err := errors.New("cert-manager is disabled on the controller")
+		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
+		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
+	}
+
 	// Validate that the cluster version is a supported one.
 	clusterVersion, err := version.ParseAndValidateTemporalVersion(temporalCluster.Spec.Version)
 	if err != nil {
@@ -282,7 +297,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	return ctrl.NewControllerManagedBy(mgr).
+	controller := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1alpha1.TemporalCluster{}, builder.WithPredicates(predicate.Or(
 			predicate.GenerationChangedPredicate{},
 			predicate.LabelChangedPredicate{},
@@ -291,8 +306,15 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
-		Owns(&networkingv1.Ingress{}).
-		Complete(r)
+		Owns(&networkingv1.Ingress{})
+
+	if !r.CertManagerDisabled {
+		controller = controller.
+			Owns(&certmanagerv1.Issuer{}).
+			Owns(&certmanagerv1.Certificate{})
+	}
+
+	return controller.Complete(r)
 }
 
 func addResourceToIndex(rawObj client.Object) []string {

@@ -104,6 +104,13 @@ func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCl
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
+func waitForTemporalClusterClient(ctx context.Context, cfg *envconf.Config, temporalClusterClient *appsv1alpha1.TemporalClusterClient) error {
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalClusterClient, func(object k8s.Object) bool {
+		return object.(*appsv1alpha1.TemporalClusterClient).Status.SecretRef.Name != ""
+	})
+	return wait.For(cond, wait.WithTimeout(time.Minute*10))
+}
+
 func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
