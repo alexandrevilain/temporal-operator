@@ -18,32 +18,36 @@
 package resource
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-// Service components.
-const (
-	ServiceConfig = "config"
-)
-
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
-
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
+type UIFrontendClientCertificateBuilder struct {
+	GenericFrontendClientCertificateBuilder
 }
 
-type Pruner interface {
-	Build() (client.Object, error)
+func NewUIFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
+	return &UIFrontendClientCertificateBuilder{
+		GenericFrontendClientCertificateBuilder{
+			instance:   instance,
+			scheme:     scheme,
+			name:       "ui-mtls-certificate",
+			secretName: "ui-mtls-certificate",
+			commonName: "UI client certificate",
+			dnsName:    fmt.Sprintf("ui.%s", instance.ServerName()),
+		},
+	}
 }
 
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
+func (b *UIFrontendClientCertificateBuilder) Update(object client.Object) error {
+	err := b.GenericFrontendClientCertificateBuilder.Update(object)
+	if err != nil {
+		return err
+	}
+
+	return controllerutil.SetControllerReference(b.instance, object, b.scheme)
 }

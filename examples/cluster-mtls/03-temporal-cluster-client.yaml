@@ -1,0 +1,9 @@
+apiVersion: apps.alexandrevilain.dev/v1alpha1
+kind: TemporalClusterClient
+metadata:
+  name: my-worker
+  namespace: demo
+spec:
+  temporalClusterRef:
+    name: prod
+  

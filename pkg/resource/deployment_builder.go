@@ -145,6 +145,36 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				},
 			})
 	}
+	if b.instance.MTLSEnabled() {
+		if b.instance.Spec.MTLS.InternodeEnabled() {
+			serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts,
+				corev1.VolumeMount{
+					Name:      "internode-intermediate-ca",
+					MountPath: b.instance.Spec.MTLS.Internode.GetIntermediateCACertificateMountPath(),
+				},
+				corev1.VolumeMount{
+					Name:      "internode-certificate",
+					MountPath: b.instance.Spec.MTLS.Internode.GetCertificateMountPath(),
+				},
+			)
+		}
+		if b.instance.Spec.MTLS.FrontendEnabled() {
+			serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts,
+				corev1.VolumeMount{
+					Name:      "frontend-intermediate-ca",
+					MountPath: b.instance.Spec.MTLS.Frontend.GetIntermediateCACertificateMountPath(),
+				},
+				corev1.VolumeMount{
+					Name:      "frontend-certificate",
+					MountPath: b.instance.Spec.MTLS.Frontend.GetCertificateMountPath(),
+				},
+				corev1.VolumeMount{
+					Name:      "worker-certificate",
+					MountPath: b.instance.Spec.MTLS.Frontend.GetWorkerCertificateMountPath(),
+				},
+			)
+		}
+	}
 
 	deployment.Spec.Replicas = b.service.Replicas
 
@@ -176,6 +206,58 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				},
 			},
 		},
+	}
+
+	if b.instance.MTLSEnabled() {
+		if b.instance.Spec.MTLS.InternodeEnabled() {
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+				corev1.Volume{
+					Name: "internode-intermediate-ca",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+						},
+					},
+				},
+				corev1.Volume{
+					Name: "internode-certificate",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("internode-certificate"),
+						},
+					},
+				},
+			)
+		}
+
+		if b.instance.Spec.MTLS.FrontendEnabled() {
+			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+				corev1.Volume{
+					Name: "frontend-intermediate-ca",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("frontend-intermediate-ca-certificate"),
+						},
+					},
+				},
+				corev1.Volume{
+					Name: "frontend-certificate",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("frontend-certificate"),
+						},
+					},
+				},
+				corev1.Volume{
+					Name: "worker-certificate",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: b.instance.ChildResourceName("worker-certificate"),
+						},
+					},
+				},
+			)
+		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

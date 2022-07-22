@@ -14,8 +14,9 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Deploy admin tools.
 - [x] Support for Elastisearch.
 - [x] Support for Cassandra datastore.
+- [x] Automatic mTLS certificates management (using cert-manager).
+- [ ] Support for integration in meshes (linkerd & istio).
 - [ ] Cluster version upgrades.
-- [ ] Automatic mTLS certificates management (using istio, linkerd or cert-manager).
 - [ ] Cluster monitoring.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
@@ -82,6 +83,7 @@ Few examples are available to help you get started:
 - [Demo cluster with PostgreSQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres)
 - [Demo cluster with PostgreSQL & advanced visibility using ElasticSearch](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres-es)
 - [Demo cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
+- [Demo cluster with mTLS using cert-manager & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls)
 
 ## License
 

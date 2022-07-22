@@ -21,6 +21,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testclient"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -33,12 +34,13 @@ type Worker struct {
 	worker worker.Worker
 }
 
-func NewWorker(temporalAddr string) (*Worker, error) {
+func NewWorker(temporalAddr string, opts ...testclient.Option) (*Worker, error) {
 	w := &Worker{}
 
 	clientOpts := client.Options{
 		HostPort: temporalAddr,
 	}
+	testclient.ApplyOptions(&clientOpts, opts...)
 
 	err := w.createDefaultNamespace(clientOpts)
 	if err != nil {
