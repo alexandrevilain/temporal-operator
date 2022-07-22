@@ -18,6 +18,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -33,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	"github.com/cert-manager/cert-manager/pkg/util/cmapichecker"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
@@ -55,7 +57,6 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
-	var disableCertManager bool
 	var probeAddr string
 	var schemaPath string
 
@@ -64,7 +65,6 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&schemaPath, "schema-path", "/data/schema", "The path where temporal schemas are stored.")
-	flag.BoolVar(&disableCertManager, "disable-cert-manager", false, "Disable features using cert-manager such as automatic mTLS configuration.")
 
 	opts := zap.Options{
 		Development: true,
@@ -87,23 +87,38 @@ func main() {
 		os.Exit(1)
 	}
 
+	apichecker, err := cmapichecker.New(mgr.GetConfig(), mgr.GetScheme(), "cert-manager")
+	if err != nil {
+		setupLog.Error(err, "unable to start cert-manager api checker")
+		os.Exit(1)
+	}
+
+	var certManagerAvailable bool
+	err = apichecker.Check(context.Background())
+	if err != nil {
+		setupLog.Info("Unable to find cert-manager installation in the cluster, features requiring cert-manager are disabled")
+	} else {
+		certManagerAvailable = true
+		setupLog.Info("Found cert-manager installation in the cluster, features requiring cert-manager are enabled")
+	}
+
 	persistenceMgr := persistence.NewManager(mgr.GetClient(), schemaPath)
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Client:              mgr.GetClient(),
-		Scheme:              mgr.GetScheme(),
-		Recorder:            mgr.GetEventRecorderFor("temporacluster-controller"),
-		PersistenceManager:  persistenceMgr,
-		CertManagerDisabled: disableCertManager,
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		Recorder:             mgr.GetEventRecorderFor("temporacluster-controller"),
+		PersistenceManager:   persistenceMgr,
+		CertManagerAvailable: certManagerAvailable,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalClusterClientReconciler{
-		Client:              mgr.GetClient(),
-		Scheme:              mgr.GetScheme(),
-		Recorder:            mgr.GetEventRecorderFor("temporaclusterclient-controller"),
-		CertManagerDisabled: disableCertManager,
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		Recorder:             mgr.GetEventRecorderFor("temporaclusterclient-controller"),
+		CertManagerAvailable: certManagerAvailable,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalClusterClient")
 		os.Exit(1)

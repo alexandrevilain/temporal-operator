@@ -56,10 +56,10 @@ const (
 // TemporalClusterReconciler reconciles a TemporalCluster object
 type TemporalClusterReconciler struct {
 	client.Client
-	Scheme              *runtime.Scheme
-	Recorder            record.EventRecorder
-	PersistenceManager  *persistence.Manager
-	CertManagerDisabled bool
+	Scheme               *runtime.Scheme
+	Recorder             record.EventRecorder
+	PersistenceManager   *persistence.Manager
+	CertManagerAvailable bool
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -111,8 +111,8 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// it can't process the request, return the error.
 	if temporalCluster.MTLSEnabled() &&
 		temporalCluster.Spec.MTLS.Provider == appsv1alpha1.CertManagerMTLSProvider &&
-		r.CertManagerDisabled {
-		err := errors.New("cert-manager is disabled on the controller")
+		!r.CertManagerAvailable {
+		err := errors.New("cert-manager is not available in the cluster")
 		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
 		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
 	}
@@ -308,7 +308,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&networkingv1.Ingress{})
 
-	if !r.CertManagerDisabled {
+	if r.CertManagerAvailable {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
