@@ -41,9 +41,9 @@ import (
 // TemporalClusterClientReconciler reconciles a TemporalClusterClient object
 type TemporalClusterClientReconciler struct {
 	client.Client
-	Scheme              *runtime.Scheme
-	Recorder            record.EventRecorder
-	CertManagerDisabled bool
+	Scheme               *runtime.Scheme
+	Recorder             record.EventRecorder
+	CertManagerAvailable bool
 }
 
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
@@ -126,7 +126,7 @@ func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) err
 	controller := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1alpha1.TemporalClusterClient{})
 
-	if !r.CertManagerDisabled {
+	if r.CertManagerAvailable {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
