@@ -49,7 +49,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 	}
 
-	if b.Instance.MTLSEnabled() {
+	if b.Instance.MTLSWithCertManagerEnabled() {
 		builders = append(builders,
 			resource.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),
 			resource.NewMTLSRootCACertificateBuilder(b.Instance, b.Scheme),
@@ -83,7 +83,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 			builders = append(builders, resource.NewUIIngressBuilder(b.Instance, b.Scheme))
 		}
 
-		if b.Instance.MTLSEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
+		if b.Instance.MTLSWithCertManagerEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
 			builders = append(builders, resource.NewUIFrontendClientCertificateBuilder(b.Instance, b.Scheme))
 		}
 	}
@@ -91,7 +91,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 	if b.Instance.Spec.AdminTools != nil && b.Instance.Spec.AdminTools.Enabled {
 		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
 
-		if b.Instance.MTLSEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
+		if b.Instance.MTLSWithCertManagerEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
 			builders = append(builders, resource.NewAdminToolsFrontendClientCertificateBuilder(b.Instance, b.Scheme))
 		}
 	}

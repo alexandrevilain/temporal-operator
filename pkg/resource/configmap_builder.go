@@ -160,7 +160,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.instance.MTLSEnabled() {
+	if b.instance.MTLSWithCertManagerEnabled() {
 		temporalCfg.Global.TLS = config.RootTLS{
 			RefreshInterval:  b.instance.Spec.MTLS.RefreshInterval.Duration,
 			ExpirationChecks: config.CertExpirationValidation{},

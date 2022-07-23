@@ -25,6 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -78,11 +79,13 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
-			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+			Labels: metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.Merge(
+				linkerd.GetAnnotations(b.instance),
+				metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+			),
 		},
 	}
-
 	serviceContainer := corev1.Container{
 		Name:                     b.serviceName,
 		Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
@@ -145,7 +148,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				},
 			})
 	}
-	if b.instance.MTLSEnabled() {
+	if b.instance.MTLSWithCertManagerEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts,
 				corev1.VolumeMount{
@@ -208,7 +211,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.instance.MTLSEnabled() {
+	if b.instance.MTLSWithCertManagerEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
 				corev1.Volume{

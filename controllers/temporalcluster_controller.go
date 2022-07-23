@@ -109,9 +109,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
 	// it can't process the request, return the error.
-	if temporalCluster.MTLSEnabled() &&
-		temporalCluster.Spec.MTLS.Provider == appsv1alpha1.CertManagerMTLSProvider &&
-		!r.CertManagerAvailable {
+	if temporalCluster.MTLSWithCertManagerEnabled() && !r.CertManagerAvailable {
 		err := errors.New("cert-manager is not available in the cluster")
 		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
 		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
