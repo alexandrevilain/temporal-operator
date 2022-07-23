@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.3.1
+
+**Release date:** 2022-07-23
+
+Improvements:
+-  Remove --disable-cert-manager flag but detect if cert-manager is available at operator setup [#76](https://github.com/alexandrevilain/temporal-operator/pull/76)
+
+Updates:
+-  Bump github.com/gocql/gocql from 1.1.0 to 1.2.0 [#62](https://github.com/alexandrevilain/temporal-operator/pull/62)
+
 ## 0.3.0
 
 **Release date:** 2022-07-22
