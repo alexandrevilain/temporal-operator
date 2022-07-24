@@ -862,7 +862,8 @@ InternodeMTLSSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>Internode allows configuration of the internode traffic encryption.</p>
+<p>Internode allows configuration of the internode traffic encryption.
+Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
 <tr>
@@ -876,7 +877,8 @@ FrontendMTLSSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>Frontend allows configuration of the frontend&rsquo;s public endpoint traffic encryption.</p>
+<p>Frontend allows configuration of the frontend&rsquo;s public endpoint traffic encryption.
+Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
 <tr>
@@ -890,7 +892,8 @@ CertificatesDurationSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>CertificatesDuration allows configuration of maximum certificates lifetime.</p>
+<p>CertificatesDuration allows configuration of maximum certificates lifetime.
+Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
 <tr>
@@ -905,7 +908,8 @@ Kubernetes meta/v1.Duration
 <td>
 <em>(Optional)</em>
 <p>RefreshInterval defines interval between refreshes of certificates in the cluster components.
-Defaults to 1 hour.</p>
+Defaults to 1 hour.
+Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
 </tbody>
