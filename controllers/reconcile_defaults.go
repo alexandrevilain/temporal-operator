@@ -134,7 +134,7 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, tempo
 		temporalCluster.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
 	}
 
-	if temporalCluster.MTLSEnabled() {
+	if temporalCluster.MTLSWithCertManagerEnabled() {
 		if temporalCluster.Spec.MTLS.RefreshInterval == nil {
 			temporalCluster.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
 		}

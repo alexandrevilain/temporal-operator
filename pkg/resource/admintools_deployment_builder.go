@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,8 +71,11 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels:      metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
-			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+			Labels: metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.Merge(
+				linkerd.GetAnnotations(b.instance),
+				metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+			),
 		},
 	}
 
@@ -104,7 +108,7 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.instance.MTLSEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
+	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
 		container.VolumeMounts = append(container.VolumeMounts,
 			corev1.VolumeMount{
 				Name:      "admintools-mtls-certificate",
@@ -147,7 +151,7 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 		SchedulerName:                 "default-scheduler",
 	}
 
-	if b.instance.MTLSEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
+	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
 				corev1.Volume{

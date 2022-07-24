@@ -367,6 +367,7 @@ type MTLSProvider string
 const (
 	// CertManagerMTLSProvider uses cert-manager to manage mTLS certificate.
 	CertManagerMTLSProvider MTLSProvider = "cert-manager"
+	LinkerdMTLSProvider     MTLSProvider = "linkerd"
 )
 
 // InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
@@ -446,20 +447,24 @@ type CertificatesDurationSpec struct {
 type MTLSSpec struct {
 	// Provider defines the tool used to manage mTLS certificates.
 	// +kubebuilder:default=cert-manager
-	// +kubebuilder:validation:Enum=cert-manager
+	// +kubebuilder:validation:Enum=cert-manager;linkerd
 	// +optional
 	Provider MTLSProvider `json:"provider"`
 	// Internode allows configuration of the internode traffic encryption.
+	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	Internode *InternodeMTLSSpec `json:"internode"`
 	// Frontend allows configuration of the frontend's public endpoint traffic encryption.
+	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	Frontend *FrontendMTLSSpec `json:"frontend"`
 	// CertificatesDuration allows configuration of maximum certificates lifetime.
+	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	CertificatesDuration *CertificatesDurationSpec `json:"certificatesDuration,omitempty"`
 	// RefreshInterval defines interval between refreshes of certificates in the cluster components.
 	// Defaults to 1 hour.
+	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	RefreshInterval *metav1.Duration `json:"refreshInterval"`
 }
@@ -578,9 +583,11 @@ func (c *TemporalCluster) ServerName() string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", c.Name, c.Namespace)
 }
 
-// MTLSEnabled returns true if mTLS is enabled for internode or frontend.
-func (c *TemporalCluster) MTLSEnabled() bool {
-	return c.Spec.MTLS != nil && (c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled())
+// MTLSEnabled returns true if mTLS is enabled for internode or frontend using cert-manager.
+func (c *TemporalCluster) MTLSWithCertManagerEnabled() bool {
+	return c.Spec.MTLS != nil &&
+		(c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled()) &&
+		c.Spec.MTLS.Provider == CertManagerMTLSProvider
 }
 
 func (c *TemporalCluster) getDatastoreByName(name string) (*TemporalDatastoreSpec, bool) {
