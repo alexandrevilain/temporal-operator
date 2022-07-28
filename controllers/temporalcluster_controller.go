@@ -45,12 +45,17 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 )
 
 const (
 	ownerKey  = ".metadata.controller"
 	ownerKind = "TemporalCluster"
+)
+
+var (
+	ErrClusterNotReady = errors.New("cluster is not ready")
 )
 
 // TemporalClusterReconciler reconciles a TemporalCluster object
@@ -66,7 +71,7 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
-// +kubebuilder:rbac:groups="",resources=events,verbs=get;create;patch
+//+kubebuilder:rbac:groups="",resources=events,verbs=get;create;patch
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
@@ -140,7 +145,29 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
+	if err := r.reconcileNamespaces(ctx, temporalCluster); err != nil {
+		if errors.Is(err, ErrClusterNotReady) {
+			return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+		}
+		logger.Error(err, "Can't reconcile namespaces")
+		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.TemporalNamespacesReconciliationFailedReason, err, 2*time.Second)
+	}
+
 	return r.handleSuccess(ctx, temporalCluster)
+}
+func (r *TemporalClusterReconciler) reconcileNamespaces(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
+	client, err := temporal.GetClusterNamespaceClient(ctx, r.Client, temporalCluster)
+	if err != nil {
+		return fmt.Errorf("can't create cluster namespace client: %w", err)
+	}
+
+	for _, namespace := range temporalCluster.Spec.Namespaces {
+		err := client.Register(ctx, temporal.NamespaceSpecToRegisterNamespaceRequest(namespace))
+		if err != nil {
+			return fmt.Errorf("can't create namespace %s : %w", namespace.Name, err)
+		}
+	}
+	return nil
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {

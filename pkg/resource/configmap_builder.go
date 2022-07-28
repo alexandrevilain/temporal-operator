@@ -156,7 +156,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			},
 		},
 		PublicClient: config.PublicClient{
-			HostPort: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
+			HostPort: b.instance.GetPublicClientAddress(),
 		},
 	}
 

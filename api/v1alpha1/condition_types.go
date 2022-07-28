@@ -31,6 +31,8 @@ const (
 	ResourcesReconciliationFailedReason string = "ResoucesReconciliationFailed"
 	// TemporalClusterValidationFailedReason signals an error while validation desired cluster version.
 	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
+	// ResourcesReconciliationFailedReason signals an error while reconciling namespaces.
+	TemporalNamespacesReconciliationFailedReason string = "TemporalNamespacesReconciliationFailed"
 )
 
 // SetTemporalClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.

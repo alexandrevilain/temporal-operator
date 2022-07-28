@@ -477,6 +477,37 @@ func (m *MTLSSpec) FrontendEnabled() bool {
 	return m.Frontend != nil && m.Frontend.Enabled
 }
 
+// NamespaceSpec defines parameters for a temporal namespace creation.
+type NamespaceSpec struct {
+	// Namespace name.
+	Name string `json:"namespace"`
+	// Namespace description.
+	// +optional
+	Description string `json:"description,omitempty"`
+	// Namespace owner email.
+	// +optional
+	OwnerEmail string `json:"ownerEmail,omitempty"`
+	// RetentionPeriod to apply on closed workflow executions.
+	// +optional
+	RetentionPeriod *metav1.Duration `json:"retentionPeriod,omitempty"`
+	// Data is a key-value map for any customized purpose.
+	// +optional
+	Data map[string]string `json:"data,omitempty"`
+	// +optional
+	SecurityToken string `json:"securityToken,omitempty"`
+	// IsGlobalNamespace defines whether the namespace is a global namespace.
+	// +optional
+	IsGlobalNamespace bool `json:"isGlobalNamespace,omitempty"`
+	// List of clusters names to which the namespace can fail over.
+	// Only applicable if the namespace is a global namespace.
+	// +optional
+	Clusters []string `json:"clusters,omitempty"`
+	// The name of active Temporal Cluster.
+	// Only applicable if the namespace is a global namespace.
+	// +optional
+	ActiveClusterName string `json:"activeClusterName,omitempty"`
+}
+
 // TemporalClusterSpec defines the desired state of TemporalCluster.
 type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
@@ -510,6 +541,9 @@ type TemporalClusterSpec struct {
 	// MTLS allows configuration of the network traffic encryption for the cluster.
 	// +optional
 	MTLS *MTLSSpec `json:"mTLS,omitempty"`
+	// Namespaces is the list of Temporal namespaces the operator should create.
+	// +optional
+	Namespaces []*NamespaceSpec `json:"namespaces,omitempty"`
 }
 
 // ServiceStatus reports a service status.
@@ -617,6 +651,10 @@ func (c *TemporalCluster) GetAdvancedVisibilityDatastore() (*TemporalDatastoreSp
 // ChildResourceName returns child resource name using the cluster's name.
 func (c *TemporalCluster) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
+}
+
+func (c *TemporalCluster) GetPublicClientAddress() string {
+	return fmt.Sprintf("%s:%d", c.ChildResourceName("frontend"), *c.Spec.Services.Frontend.Port)
 }
 
 //+kubebuilder:object:root=true
