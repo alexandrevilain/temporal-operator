@@ -106,6 +106,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalnamespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalnamespaces/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - apps.alexandrevilain.dev
+  resources:
+  - temporalnamespaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - cert-manager.io
   resources:
   - certificates

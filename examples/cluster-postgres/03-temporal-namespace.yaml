@@ -1,0 +1,9 @@
+apiVersion: apps.alexandrevilain.dev/v1alpha1
+kind: TemporalNamespace
+metadata:
+  name: accounting
+spec:
+  temporalClusterRef:
+    name: prod
+  description: Accounting team namespace
+  retentionPeriod: 168h #7 days

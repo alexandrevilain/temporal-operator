@@ -84,6 +84,7 @@ check-license: go-licenser
 
 .PHONY: deploy-dev
 deploy-dev: docker-build-dev manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	kind load docker-image temporal-operator
 	$(KUSTOMIZE) build config/dev | kubectl apply -f -
 
 ##@ Build

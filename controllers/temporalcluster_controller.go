@@ -45,7 +45,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
-	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 )
 
@@ -145,29 +144,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
-	if err := r.reconcileNamespaces(ctx, temporalCluster); err != nil {
-		if errors.Is(err, ErrClusterNotReady) {
-			return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
-		}
-		logger.Error(err, "Can't reconcile namespaces")
-		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.TemporalNamespacesReconciliationFailedReason, err, 2*time.Second)
-	}
-
 	return r.handleSuccess(ctx, temporalCluster)
-}
-func (r *TemporalClusterReconciler) reconcileNamespaces(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	client, err := temporal.GetClusterNamespaceClient(ctx, r.Client, temporalCluster)
-	if err != nil {
-		return fmt.Errorf("can't create cluster namespace client: %w", err)
-	}
-
-	for _, namespace := range temporalCluster.Spec.Namespaces {
-		err := client.Register(ctx, temporal.NamespaceSpecToRegisterNamespaceRequest(namespace))
-		if err != nil {
-			return fmt.Errorf("can't create namespace %s : %w", namespace.Name, err)
-		}
-	}
-	return nil
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
