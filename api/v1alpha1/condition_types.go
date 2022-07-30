@@ -31,8 +31,6 @@ const (
 	ResourcesReconciliationFailedReason string = "ResoucesReconciliationFailed"
 	// TemporalClusterValidationFailedReason signals an error while validation desired cluster version.
 	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
-	// ResourcesReconciliationFailedReason signals an error while reconciling namespaces.
-	TemporalNamespacesReconciliationFailedReason string = "TemporalNamespacesReconciliationFailed"
 )
 
 // SetTemporalClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
@@ -65,6 +63,32 @@ func SetTemporalClusterReconcileError(c *TemporalCluster, status metav1.Conditio
 func SetTemporalClusterReady(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReadyCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: c.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+}
+
+// SetTemporalNamespaceReconcileSuccess sets the ReconcileSuccessCondition status for a temporal namespace.
+func SetTemporalNamespaceReconcileSuccess(c *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileSuccessCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: c.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+}
+
+// SetTemporalNamespaceReconcileError sets the ReconcileErrorCondition status for a temporal namespace.
+func SetTemporalNamespaceReconcileError(c *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileErrorCondition,
 		LastTransitionTime: metav1.Now(),
 		ObservedGeneration: c.GetGeneration(),
 		Reason:             reason,

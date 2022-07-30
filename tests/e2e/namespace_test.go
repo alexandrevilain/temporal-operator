@@ -23,9 +23,11 @@ import (
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
+	"go.temporal.io/api/serviceerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
@@ -89,15 +91,19 @@ func TestNamespaceCreation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// sleep to wait for ns to be registered.
-			time.Sleep(10 * time.Second)
+			wait.For(func() (done bool, err error) {
+				// If no error while describing the namespace, it works.
+				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
+				if err != nil {
+					_, ok := err.(*serviceerror.NamespaceNotFound)
+					if ok {
+						return false, nil
+					}
+					return false, err
+				}
 
-			// If no error while describing the namespace, it works.
-			_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
-			if err != nil {
-				t.Fatal(err)
-			}
-
+				return true, nil
+			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
 			return ctx
 		}).
 		Feature()

@@ -20,14 +20,18 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.temporal.io/api/serviceerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
@@ -64,7 +68,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	temporalCluster := &appsv1alpha1.TemporalCluster{}
 	err = r.Get(ctx, namespacedName, temporalCluster)
 	if err != nil {
-		return reconcile.Result{}, err
+		return r.handleError(ctx, namespace, appsv1alpha1.ReconcileErrorReason, err)
 	}
 
 	// Check if the resource has been marked for deletion
@@ -76,7 +80,8 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	client, err := temporal.GetClusterNamespaceClient(ctx, r.Client, temporalCluster)
 	if err != nil {
-		return reconcile.Result{}, fmt.Errorf("can't create cluster namespace client: %w", err)
+		err = fmt.Errorf("can't create cluster namespace client: %w", err)
+		return r.handleError(ctx, namespace, appsv1alpha1.ReconcileErrorReason, err)
 	}
 	defer client.Close()
 
@@ -84,16 +89,54 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if err != nil {
 		_, ok := err.(*serviceerror.NamespaceAlreadyExists)
 		if !ok {
-			return reconcile.Result{}, fmt.Errorf("can't create \"%s\" namespace: %w", namespace.GetName(), err)
+			err = fmt.Errorf("can't create \"%s\" namespace: %w", namespace.GetName(), err)
+			return r.handleError(ctx, namespace, appsv1alpha1.ReconcileErrorReason, err)
 		}
 	}
 
-	return reconcile.Result{}, nil
+	logger.Info("Successfully reconciled namespace", "namespace", namespace.GetName())
+
+	return r.handleSuccess(ctx, namespace)
+}
+
+func (r *TemporalNamespaceReconciler) handleSuccess(ctx context.Context, namespace *appsv1alpha1.TemporalNamespace) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(ctx, namespace, 0)
+}
+
+func (r *TemporalNamespaceReconciler) handleError(ctx context.Context, namespace *appsv1alpha1.TemporalNamespace, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, namespace, reason, err, 0)
+}
+
+func (r *TemporalNamespaceReconciler) handleSuccessWithRequeue(ctx context.Context, namespace *appsv1alpha1.TemporalNamespace, requeueAfter time.Duration) (ctrl.Result, error) {
+	appsv1alpha1.SetTemporalNamespaceReconcileSuccess(namespace, metav1.ConditionTrue, appsv1alpha1.ReconcileSuccessReason, "")
+	err := r.updateTemporalNamespaceStatus(ctx, namespace)
+	return reconcile.Result{RequeueAfter: requeueAfter}, err
+}
+
+func (r *TemporalNamespaceReconciler) handleErrorWithRequeue(ctx context.Context, namespace *appsv1alpha1.TemporalNamespace, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+	if reason == "" {
+		reason = appsv1alpha1.ReconcileErrorReason
+	}
+	appsv1alpha1.SetTemporalNamespaceReconcileError(namespace, metav1.ConditionTrue, reason, err.Error())
+	err = r.updateTemporalNamespaceStatus(ctx, namespace)
+	return reconcile.Result{RequeueAfter: requeueAfter}, err
+}
+
+func (r *TemporalNamespaceReconciler) updateTemporalNamespaceStatus(ctx context.Context, namespace *appsv1alpha1.TemporalNamespace) error {
+	err := r.Status().Update(ctx, namespace)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalNamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1alpha1.TemporalNamespace{}).
+		For(&appsv1alpha1.TemporalNamespace{}, builder.WithPredicates(predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+		))).
 		Complete(r)
 }
