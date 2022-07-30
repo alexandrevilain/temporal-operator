@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -119,7 +120,17 @@ func TestWithCassandraPersistence(t *testing.T) {
 
 			t.Logf("Temporal frontend addr: %s", connectAddr)
 
-			w, err := testworker.NewWorker(connectAddr)
+			client, err := klientToControllerRuntimeClient(cfg.Client())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clusterClient, err := temporal.GetClusterClient(ctx, client, temporalCluster, temporal.WithHostPort(connectAddr))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			w, err := testworker.NewWorker(clusterClient)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -128,13 +139,8 @@ func TestWithCassandraPersistence(t *testing.T) {
 			w.Start()
 			defer w.Stop()
 
-			s, err := teststarter.NewStarter(connectAddr)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			t.Logf("Starting workflow")
-			err = s.StartGreetingWorkflow()
+			err = teststarter.NewStarter(clusterClient).StartGreetingWorkflow()
 			if err != nil {
 				t.Fatal(err)
 			}

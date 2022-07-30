@@ -21,7 +21,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testclient"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -34,20 +33,12 @@ type Worker struct {
 	worker worker.Worker
 }
 
-func NewWorker(temporalAddr string, opts ...testclient.Option) (*Worker, error) {
-	w := &Worker{}
-
-	clientOpts := client.Options{
-		HostPort: temporalAddr,
-	}
-	testclient.ApplyOptions(&clientOpts, opts...)
-
-	err := w.createDefaultNamespace(clientOpts)
-	if err != nil {
-		return nil, err
+func NewWorker(client client.Client) (*Worker, error) {
+	w := &Worker{
+		client: client,
 	}
 
-	w.client, err = client.Dial(clientOpts)
+	err := w.createDefaultNamespace()
 	if err != nil {
 		return nil, err
 	}
@@ -61,22 +52,15 @@ func NewWorker(temporalAddr string, opts ...testclient.Option) (*Worker, error) 
 	return w, nil
 }
 
-func (w *Worker) createDefaultNamespace(ops client.Options) error {
-	nsClient, err := client.NewNamespaceClient(ops)
-	if err != nil {
-		return err
-	}
-
+func (w *Worker) createDefaultNamespace() error {
 	dur := time.Hour * 24 * 10
-
-	err = nsClient.Register(context.Background(), &workflowservice.RegisterNamespaceRequest{
+	_, err := w.client.WorkflowService().RegisterNamespace(context.Background(), &workflowservice.RegisterNamespaceRequest{
 		Namespace:                        "default",
 		WorkflowExecutionRetentionPeriod: &dur,
 	})
 	if err != nil {
 		return err
 	}
-
 	// sleep to wait for ns to be registered
 	time.Sleep(10 * time.Second)
 	return nil
