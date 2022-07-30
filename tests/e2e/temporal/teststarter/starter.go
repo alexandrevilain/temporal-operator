@@ -20,7 +20,6 @@ package teststarter
 import (
 	"context"
 
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testclient"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	"github.com/google/uuid"
 	"go.temporal.io/sdk/client"
@@ -30,17 +29,10 @@ type Starter struct {
 	client client.Client
 }
 
-func NewStarter(temporalAddr string, opts ...testclient.Option) (*Starter, error) {
-	s := &Starter{}
-
-	clientOpts := client.Options{
-		HostPort: temporalAddr,
+func NewStarter(client client.Client) *Starter {
+	return &Starter{
+		client: client,
 	}
-	testclient.ApplyOptions(&clientOpts, opts...)
-
-	var err error
-	s.client, err = client.Dial(clientOpts)
-	return s, err
 }
 
 func (s *Starter) StartGreetingWorkflow() error {

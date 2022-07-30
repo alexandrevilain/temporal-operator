@@ -33,7 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func GetTlSConfigFromSecret(ctx context.Context, secret *corev1.Secret) (*tls.Config, error) {
+// GetTlSConfigFromSecret returns a tls.Config from the provided secret.
+// The secret should contain 3 keys: ca.crt, tls.crt and tls.key.
+func GetTlSConfigFromSecret(secret *corev1.Secret) (*tls.Config, error) {
 	caCrt, ok := secret.Data["ca.crt"]
 	if !ok {
 		return nil, errors.New("can't get ca.crt from client secret")
@@ -65,6 +67,7 @@ func GetTlSConfigFromSecret(ctx context.Context, secret *corev1.Secret) (*tls.Co
 	}, nil
 }
 
+// GetClusterClientTLSConfig returns the tls configuration for the provided temporal cluster.
 func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster) (*tls.Config, error) {
 	secret := &corev1.Secret{}
 
@@ -76,7 +79,7 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 		return nil, err
 	}
 
-	tlsConfig, err := GetTlSConfigFromSecret(ctx, secret)
+	tlsConfig, err := GetTlSConfigFromSecret(secret)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +89,7 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 
 }
 
-func buildClusterClientOptions(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster) (temporalclient.Options, error) {
+func buildClusterClientOptions(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.Options, error) {
 	opts := temporalclient.Options{
 		HostPort: cluster.GetPublicClientAddress(),
 		Logger:   temporallog.NewTemporalSDKLogFromContext(ctx),
@@ -98,11 +101,34 @@ func buildClusterClientOptions(ctx context.Context, client client.Client, cluste
 		}
 		opts.ConnectionOptions.TLS = tlsConfig
 	}
+
+	for _, override := range overrides {
+		override(&opts)
+	}
+
 	return opts, nil
 }
 
-func GetClusterClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster) (temporalclient.Client, error) {
-	opts, err := buildClusterClientOptions(ctx, client, cluster)
+// ClientOption is an override option for temporal sdk client.
+type ClientOption func(opts *temporalclient.Options)
+
+// WithTLSConfig is overriding the client tls config.
+func WithTLSConfig(cfg *tls.Config) ClientOption {
+	return func(opts *temporalclient.Options) {
+		opts.ConnectionOptions.TLS = cfg
+	}
+}
+
+// WithHostPort is overriding the client host port.
+func WithHostPort(hostPort string) ClientOption {
+	return func(opts *temporalclient.Options) {
+		opts.HostPort = hostPort
+	}
+}
+
+// GetClusterClient returns a temporal sdk client for the provider temporal cluster.
+func GetClusterClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.Client, error) {
+	opts, err := buildClusterClientOptions(ctx, client, cluster, overrides...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +142,9 @@ func GetClusterClient(ctx context.Context, client client.Client, cluster *v1alph
 	return c, nil
 }
 
-func GetClusterNamespaceClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster) (temporalclient.NamespaceClient, error) {
-	opts, err := buildClusterClientOptions(ctx, client, cluster)
+// GetClusterNamespaceClient returns a temporal sdk namespace client for the provider temporal cluster.
+func GetClusterNamespaceClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.NamespaceClient, error) {
+	opts, err := buildClusterClientOptions(ctx, client, cluster, overrides...)
 	if err != nil {
 		return nil, err
 	}
