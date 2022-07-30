@@ -1799,6 +1799,315 @@ DatastoreTLSSpec
 </table>
 </div>
 </div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace
+</h3>
+<p>TemporalNamespace is the Schema for the temporalnamespaces API</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceSpec">
+TemporalNamespaceSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>temporalClusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the namespace will be created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>description</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace description.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ownerEmail</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace owner email.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>retentionPeriod</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>RetentionPeriod to apply on closed workflow executions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>data</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Data is a key-value map for any customized purpose.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>securityToken</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>isGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusters</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>List of clusters names to which the namespace can fail over.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>activeClusterName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The name of active Temporal Cluster.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceStatus">
+TemporalNamespaceStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceSpec">TemporalNamespaceSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
+</p>
+<p>TemporalNamespaceSpec defines the desired state of TemporalNamespace</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>temporalClusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the namespace will be created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>description</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace description.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ownerEmail</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace owner email.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>retentionPeriod</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>RetentionPeriod to apply on closed workflow executions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>data</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Data is a key-value map for any customized purpose.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>securityToken</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>isGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusters</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>List of clusters names to which the namespace can fail over.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>activeClusterName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The name of active Temporal Cluster.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceStatus">TemporalNamespaceStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
+</p>
+<p>TemporalNamespaceStatus defines the observed state of TemporalNamespace</p>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalPersistenceSpec">TemporalPersistenceSpec
 </h3>
 <p>
