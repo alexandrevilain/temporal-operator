@@ -54,6 +54,8 @@ type TemporalNamespaceSpec struct {
 
 // TemporalNamespaceStatus defines the observed state of TemporalNamespace
 type TemporalNamespaceStatus struct {
+	// Conditions represent the latest available observations of the TemporalNamespace state.
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 //+kubebuilder:object:root=true

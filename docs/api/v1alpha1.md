@@ -2108,6 +2108,33 @@ Only applicable if the namespace is a global namespace.</p>
 <a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
 </p>
 <p>TemporalNamespaceStatus defines the observed state of TemporalNamespace</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the TemporalNamespace state.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalPersistenceSpec">TemporalPersistenceSpec
 </h3>
 <p>

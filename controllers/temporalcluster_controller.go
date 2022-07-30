@@ -53,10 +53,6 @@ const (
 	ownerKind = "TemporalCluster"
 )
 
-var (
-	ErrClusterNotReady = errors.New("cluster is not ready")
-)
-
 // TemporalClusterReconciler reconciles a TemporalCluster object
 type TemporalClusterReconciler struct {
 	client.Client
