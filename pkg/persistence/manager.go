@@ -27,7 +27,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/cassandra"
 	"github.com/alexandrevilain/temporal-operator/internal/forked/go.temporal.io/server/tools/common/schema"
-	tlog "github.com/alexandrevilain/temporal-operator/pkg/log"
+	tlog "github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	"github.com/blang/semver/v4"
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/mysql"      // needed to load mysql plugin
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/postgresql" // needed to load postgresql plugin
@@ -90,7 +90,7 @@ func (m *Manager) RunStoreSetupTask(ctx context.Context, cluster *v1alpha1.Tempo
 		InitialVersion:    "0.0",
 		Overwrite:         false,
 		DisableVersioning: false,
-	}, tlog.NewTemporalLogFromContext(ctx))
+	}, tlog.NewTemporalServerLogFromContext(ctx))
 
 	return setupTask.Run()
 }
@@ -182,7 +182,7 @@ func (m *Manager) getElasticsearchConnectionFromDatastoreSpec(ctx context.Contex
 		return nil, err
 	}
 
-	c, err := esclient.NewClient(config, &http.Client{}, tlog.NewTemporalLogFromContext(ctx))
+	c, err := esclient.NewClient(config, &http.Client{}, tlog.NewTemporalServerLogFromContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("can't create elasticsearch client: %w", err)
 	}
@@ -218,7 +218,7 @@ func (m *Manager) getCassandraConnectionFromDatastoreSpec(ctx context.Context, s
 		cfg.Consistency = config.Consistency.Default.Consistency
 	}
 
-	return cassandra.NewCQLClient(cfg, tlog.NewTemporalLogFromContext(ctx))
+	return cassandra.NewCQLClient(cfg, tlog.NewTemporalServerLogFromContext(ctx))
 }
 
 func (m *Manager) getStorePassword(ctx context.Context, store *v1alpha1.TemporalDatastoreSpec, namespace string) (string, error) {
@@ -279,7 +279,7 @@ func (m *Manager) runUpdateSchemaTasks(ctx context.Context, cluster *v1alpha1.Te
 		TargetVersion: fmt.Sprintf("v%d.%d", targetVersion.Major, targetVersion.Minor),
 		SchemaDir:     m.computeSchemaDir(datastoreType, targetSchema),
 		IsDryRun:      false,
-	}, tlog.NewTemporalLogFromContext(ctx))
+	}, tlog.NewTemporalServerLogFromContext(ctx))
 
 	err = updateTask.Run()
 	if err != nil {

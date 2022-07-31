@@ -26,16 +26,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type logAdapter struct {
+type serverLogAdapter struct {
 	l logr.Logger
 }
 
-// NewTemporalLogFromContext creates a new logger adapater for temporal.
-func NewTemporalLogFromContext(ctx context.Context) temporallog.Logger {
-	return &logAdapter{l: log.FromContext(ctx)}
+// NewTemporalServerLogFromContext creates a new logger adapater for temporal.
+func NewTemporalServerLogFromContext(ctx context.Context) temporallog.Logger {
+	return &serverLogAdapter{l: log.FromContext(ctx)}
 }
 
-func (a *logAdapter) applyTags(tags ...tag.Tag) logr.Logger {
+func (a *serverLogAdapter) applyTags(tags ...tag.Tag) logr.Logger {
 	log := a.l
 	for _, t := range tags {
 		log.WithValues(t.Key(), t.Value())
@@ -43,22 +43,22 @@ func (a *logAdapter) applyTags(tags ...tag.Tag) logr.Logger {
 	return log
 }
 
-func (a *logAdapter) Debug(msg string, tags ...tag.Tag) {
+func (a *serverLogAdapter) Debug(msg string, tags ...tag.Tag) {
 	a.applyTags(tags...).V(10).Info(msg)
 }
 
-func (a *logAdapter) Info(msg string, tags ...tag.Tag) {
+func (a *serverLogAdapter) Info(msg string, tags ...tag.Tag) {
 	a.applyTags(tags...).V(1).Info(msg)
 }
 
-func (a *logAdapter) Warn(msg string, tags ...tag.Tag) {
-	a.applyTags(tags...).V(5).Info(msg)
+func (a *serverLogAdapter) Warn(msg string, tags ...tag.Tag) {
+	a.applyTags(tags...).V(2).Info(msg)
 }
 
-func (a *logAdapter) Error(msg string, tags ...tag.Tag) {
+func (a *serverLogAdapter) Error(msg string, tags ...tag.Tag) {
 	a.applyTags(tags...).V(0).Info(msg)
 }
 
-func (a *logAdapter) Fatal(msg string, tags ...tag.Tag) {
+func (a *serverLogAdapter) Fatal(msg string, tags ...tag.Tag) {
 	a.applyTags(tags...).V(0).Info(msg)
 }
