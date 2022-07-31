@@ -18,13 +18,11 @@ package e2e
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"testing"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testclient"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	corev1 "k8s.io/api/core/v1"
@@ -162,6 +160,11 @@ func TestWithmTLSEnabled(t *testing.T) {
 
 			t.Logf("Temporal frontend addr: %s", connectAddr)
 
+			client, err := klientToControllerRuntimeClient(cfg.Client())
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			clientSecret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      temporalClusterClient.Status.SecretRef.Name,
@@ -181,38 +184,18 @@ func TestWithmTLSEnabled(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			caCrt, ok := clientSecret.Data["ca.crt"]
-			if !ok {
-				t.Fatal("Can't get ca.crt from client secret")
+			tlsCfg, err := temporal.GetTlSConfigFromSecret(clientSecret)
+			if err != nil {
+				t.Fatal(err)
 			}
+			tlsCfg.ServerName = temporalClusterClient.Status.ServerName
 
-			certPool := x509.NewCertPool()
-			if !certPool.AppendCertsFromPEM(caCrt) {
-				t.Fatal("failed to add server CA's certificate")
-			}
-
-			tlsCrt, ok := clientSecret.Data["tls.crt"]
-			if !ok {
-				t.Fatal("Can't get tls.crt from client secret")
-			}
-
-			tlsKey, ok := clientSecret.Data["tls.key"]
-			if !ok {
-				t.Fatal("Can't get tls.key from client secret")
-			}
-
-			clientCert, err := tls.X509KeyPair(tlsCrt, tlsKey)
+			clusterClient, err := temporal.GetClusterClient(ctx, client, temporalCluster, temporal.WithHostPort(connectAddr), temporal.WithTLSConfig(tlsCfg))
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			tlsCfg := &tls.Config{
-				RootCAs:      certPool,
-				Certificates: []tls.Certificate{clientCert},
-				ServerName:   temporalClusterClient.Status.ServerName,
-			}
-
-			w, err := testworker.NewWorker(connectAddr, testclient.WithTLSConfig(tlsCfg))
+			w, err := testworker.NewWorker(clusterClient)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -221,13 +204,8 @@ func TestWithmTLSEnabled(t *testing.T) {
 			w.Start()
 			defer w.Stop()
 
-			s, err := teststarter.NewStarter(connectAddr, testclient.WithTLSConfig(tlsCfg))
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			t.Logf("Starting workflow")
-			err = s.StartGreetingWorkflow()
+			err = teststarter.NewStarter(clusterClient).StartGreetingWorkflow()
 			if err != nil {
 				t.Fatal(err)
 			}

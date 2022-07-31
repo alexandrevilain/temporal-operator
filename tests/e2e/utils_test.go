@@ -30,7 +30,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"sigs.k8s.io/e2e-framework/klient"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
@@ -38,6 +40,79 @@ import (
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
+
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace string) (*appsv1alpha1.TemporalCluster, error) {
+	// create the postgres
+	err := deployAndWaitForPostgres(ctx, cfg, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	connectAddr := fmt.Sprintf("postgres.%s", namespace) // create the temporal cluster
+	temporalCluster := &appsv1alpha1.TemporalCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: namespace,
+		},
+		Spec: appsv1alpha1.TemporalClusterSpec{
+			NumHistoryShards: 1,
+			MTLS: &appsv1alpha1.MTLSSpec{
+				Provider: appsv1alpha1.CertManagerMTLSProvider,
+				Internode: &appsv1alpha1.InternodeMTLSSpec{
+					Enabled: true,
+				},
+				Frontend: &appsv1alpha1.FrontendMTLSSpec{
+					Enabled: true,
+				},
+			},
+			Persistence: appsv1alpha1.TemporalPersistenceSpec{
+				DefaultStore:    "default",
+				VisibilityStore: "visibility",
+			},
+			Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+				{
+					Name: "default",
+					SQL: &appsv1alpha1.SQLSpec{
+						User:            "temporal",
+						PluginName:      "postgres",
+						DatabaseName:    "temporal",
+						ConnectAddr:     connectAddr,
+						ConnectProtocol: "tcp",
+					},
+					PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+						Name: "postgres-password",
+						Key:  "PASSWORD",
+					},
+				},
+				{
+					Name: "visibility",
+					SQL: &appsv1alpha1.SQLSpec{
+						User:            "temporal",
+						PluginName:      "postgres",
+						DatabaseName:    "temporal_visibility",
+						ConnectAddr:     connectAddr,
+						ConnectProtocol: "tcp",
+					},
+					PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+						Name: "postgres-password",
+						Key:  "PASSWORD",
+					},
+				},
+			},
+		},
+	}
+	err = cfg.Client().Resources(namespace).Create(ctx, temporalCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	return temporalCluster, nil
+
+}
+
+func klientToControllerRuntimeClient(k klient.Client) (client.Client, error) {
+	return client.New(k.RESTConfig(), client.Options{})
+}
 
 func deployAndWaitForMySQL(ctx context.Context, cfg *envconf.Config, namespace string) error {
 	return deployAndWaitFor(ctx, cfg, "mysql", namespace)

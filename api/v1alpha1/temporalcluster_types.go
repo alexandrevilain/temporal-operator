@@ -619,6 +619,10 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
 }
 
+func (c *TemporalCluster) GetPublicClientAddress() string {
+	return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
+}
+
 //+kubebuilder:object:root=true
 
 // TemporalClusterList contains a list of TemporalCluster

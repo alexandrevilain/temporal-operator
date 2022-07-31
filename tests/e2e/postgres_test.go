@@ -18,13 +18,12 @@ package e2e
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
@@ -38,64 +37,8 @@ func TestWithPostgresPersistence(t *testing.T) {
 			namespace := GetNamespaceForTest(ctx, t)
 			t.Logf("using %s", namespace)
 
-			client, err := cfg.NewClient()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			// create the postgres
-			err = deployAndWaitForPostgres(ctx, cfg, namespace)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			connectAddr := fmt.Sprintf("postgres.%s", namespace)
-
-			// create the temporal cluster
-			temporalCluster = &appsv1alpha1.TemporalCluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: namespace,
-				},
-				Spec: appsv1alpha1.TemporalClusterSpec{
-					NumHistoryShards: 1,
-					Persistence: appsv1alpha1.TemporalPersistenceSpec{
-						DefaultStore:    "default",
-						VisibilityStore: "visibility",
-					},
-					Datastores: []appsv1alpha1.TemporalDatastoreSpec{
-						{
-							Name: "default",
-							SQL: &appsv1alpha1.SQLSpec{
-								User:            "temporal",
-								PluginName:      "postgres",
-								DatabaseName:    "temporal",
-								ConnectAddr:     connectAddr,
-								ConnectProtocol: "tcp",
-							},
-							PasswordSecretRef: appsv1alpha1.SecretKeyReference{
-								Name: "postgres-password",
-								Key:  "PASSWORD",
-							},
-						},
-						{
-							Name: "visibility",
-							SQL: &appsv1alpha1.SQLSpec{
-								User:            "temporal",
-								PluginName:      "postgres",
-								DatabaseName:    "temporal_visibility",
-								ConnectAddr:     connectAddr,
-								ConnectProtocol: "tcp",
-							},
-							PasswordSecretRef: appsv1alpha1.SecretKeyReference{
-								Name: "postgres-password",
-								Key:  "PASSWORD",
-							},
-						},
-					},
-				},
-			}
-			err = client.Resources(namespace).Create(ctx, temporalCluster)
+			var err error
+			temporalCluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -117,7 +60,17 @@ func TestWithPostgresPersistence(t *testing.T) {
 
 			t.Logf("Temporal frontend addr: %s", connectAddr)
 
-			w, err := testworker.NewWorker(connectAddr)
+			client, err := klientToControllerRuntimeClient(cfg.Client())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			clusterClient, err := temporal.GetClusterClient(ctx, client, temporalCluster, temporal.WithHostPort(connectAddr))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			w, err := testworker.NewWorker(clusterClient)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -126,13 +79,8 @@ func TestWithPostgresPersistence(t *testing.T) {
 			w.Start()
 			defer w.Stop()
 
-			s, err := teststarter.NewStarter(connectAddr)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			t.Logf("Starting workflow")
-			err = s.StartGreetingWorkflow()
+			err = teststarter.NewStarter(clusterClient).StartGreetingWorkflow()
 			if err != nil {
 				t.Fatal(err)
 			}
