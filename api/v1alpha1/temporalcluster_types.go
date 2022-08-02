@@ -368,6 +368,7 @@ const (
 	// CertManagerMTLSProvider uses cert-manager to manage mTLS certificate.
 	CertManagerMTLSProvider MTLSProvider = "cert-manager"
 	LinkerdMTLSProvider     MTLSProvider = "linkerd"
+	IstioMTLSProvider       MTLSProvider = "istio"
 )
 
 // InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
