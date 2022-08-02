@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.4.0
+
+**Release date:** 2022-08-02
+
+Features:
+- Add support for linkerd as mTLS provider [#78](https://github.com/alexandrevilain/temporal-operator/pull/78)
+- Add TemporalNamespace CRD to create namespaces on cluster [#81](https://github.com/alexandrevilain/temporal-operator/pull/81)
+
+Improvements:
+- Add e2e tests for kubernetes v1.24.0 [#83](https://github.com/alexandrevilain/temporal-operator/pull/83)
+
+Updates:
+- Bump github.com/cert-manager/cert-manager from 1.8.2 to 1.9.1 [#80](https://github.com/alexandrevilain/temporal-operator/pull/80)
+
+
 ## 0.3.1
 
 **Release date:** 2022-07-23
