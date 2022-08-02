@@ -20,6 +20,7 @@ package cluster
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
 	"go.temporal.io/server/common"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -45,8 +46,13 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		if err != nil {
 			return nil, err
 		}
+		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
+		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1alpha1.IstioMTLSProvider {
+			builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, b.Instance, b.Scheme, specs))
+			builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, b.Instance, b.Scheme, specs))
+		}
 	}
 
 	if b.Instance.MTLSWithCertManagerEnabled() {

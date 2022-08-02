@@ -35,6 +35,8 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/cert-manager/cert-manager/pkg/util/cmapichecker"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
@@ -51,6 +53,8 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(appsv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
+	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
+	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -110,6 +114,7 @@ func main() {
 		Recorder:             mgr.GetEventRecorderFor("temporacluster-controller"),
 		PersistenceManager:   persistenceMgr,
 		CertManagerAvailable: certManagerAvailable,
+		IstioAvailable:       true, // TODO(alexandrevilain): this should be checked as done for cert-manager.
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
 		os.Exit(1)

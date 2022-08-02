@@ -18,7 +18,7 @@ When you enable mTLS in the operator using the following configuration, the oper
     refreshInterval: 5m
 ```
 
-Here is a diagram of cert-manager's ressources created by the operator and their hierarchy:
+Here is a diagram of cert-manager's resources created by the operator and their hierarchy:
 
 ![diagram](/docs/assets/mtls-certmanager.png)
 
