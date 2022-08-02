@@ -1,0 +1,36 @@
+apiVersion: apps.alexandrevilain.dev/v1alpha1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.16.0
+  numHistoryShards: 1
+  persistence:
+    defaultStore: default
+    visibilityStore: visibility
+  mTLS:
+    provider: istio
+  datastores:
+    - name: default
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal
+        connectAddr: postgres.demo.svc.cluster.local
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+    - name: visibility
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal_visibility
+        connectAddr: postgres.demo.svc.cluster.local
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+  ui:
+    enabled: true

@@ -86,6 +86,7 @@ check-license: go-licenser
 deploy-dev: docker-build-dev manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	kind load docker-image temporal-operator
 	$(KUSTOMIZE) build config/dev | kubectl apply -f -
+	kubectl rollout restart deployment temporal-operator-controller-manager -n temporal-system
 
 ##@ Build
 

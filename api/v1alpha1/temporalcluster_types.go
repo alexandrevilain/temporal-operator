@@ -368,6 +368,7 @@ const (
 	// CertManagerMTLSProvider uses cert-manager to manage mTLS certificate.
 	CertManagerMTLSProvider MTLSProvider = "cert-manager"
 	LinkerdMTLSProvider     MTLSProvider = "linkerd"
+	IstioMTLSProvider       MTLSProvider = "istio"
 )
 
 // InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
@@ -447,7 +448,7 @@ type CertificatesDurationSpec struct {
 type MTLSSpec struct {
 	// Provider defines the tool used to manage mTLS certificates.
 	// +kubebuilder:default=cert-manager
-	// +kubebuilder:validation:Enum=cert-manager;linkerd
+	// +kubebuilder:validation:Enum=cert-manager;linkerd;istio
 	// +optional
 	Provider MTLSProvider `json:"provider"`
 	// Internode allows configuration of the internode traffic encryption.
