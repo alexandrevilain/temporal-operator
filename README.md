@@ -15,7 +15,7 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Support for Elastisearch.
 - [x] Support for Cassandra datastore.
 - [x] Automatic mTLS certificates management (using cert-manager).
-- [ ] Support for integration in meshes: istio (wip) & linkerd (available since [v0.4.0](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md#040)).
+- [ ] Support for integration in meshes: istio (wip, see: https://github.com/alexandrevilain/temporal-operator/pull/85) & linkerd (available since [v0.4.0](https://github.com/alexandrevilain/temporal-operator/blob/main/CHANGELOG.md#040)).
 - [x] Namespace management using CRDs.
 - [ ] Cluster version upgrades.
 - [ ] Cluster monitoring.
