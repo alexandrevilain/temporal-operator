@@ -15,7 +15,7 @@ require (
 	go.temporal.io/api v1.11.0
 	go.temporal.io/sdk v1.16.0
 	go.temporal.io/server v1.17.2
-	go.uber.org/zap v1.22.0
+	go.uber.org/zap v1.23.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.3
 	k8s.io/apimachinery v0.24.3
