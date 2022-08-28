@@ -15,24 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type MTLSInternodeIntermediateCAIssuerBuilder struct {
+type MTLSRootCAIssuerBuilder struct {
 	GenericCAIssuerBuilder
 }
 
-func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeIntermediateCAIssuerBuilder {
-	return &MTLSInternodeIntermediateCAIssuerBuilder{
+func NewMTLSRootCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSRootCAIssuerBuilder {
+	return &MTLSRootCAIssuerBuilder{
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "internode-intermediate-ca-issuer",
-			secretName: "internode-intermediate-ca-certificate",
+			name:       "root-ca-issuer",
+			secretName: "root-ca-certificate",
 		},
 	}
 }
