@@ -15,24 +15,39 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
+	"fmt"
+
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type MTLSFrontendIntermediateCAIssuerBuilder struct {
-	GenericCAIssuerBuilder
+type WorkerFrontendClientCertificateBuilder struct {
+	GenericFrontendClientCertificateBuilder
 }
 
-func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
-	return &MTLSFrontendIntermediateCAIssuerBuilder{
-		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
+func NewWorkerFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *WorkerFrontendClientCertificateBuilder {
+	return &WorkerFrontendClientCertificateBuilder{
+		GenericFrontendClientCertificateBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "frontend-intermediate-ca-issuer",
-			secretName: "frontend-intermediate-ca-certificate",
+			name:       "worker-certificate",
+			secretName: "worker-certificate",
+			commonName: "Worker client certificate",
+			dnsName:    fmt.Sprintf("worker.%s", instance.ServerName()),
 		},
 	}
+}
+
+func (b *WorkerFrontendClientCertificateBuilder) Update(object client.Object) error {
+	err := b.GenericFrontendClientCertificateBuilder.Update(object)
+	if err != nil {
+		return err
+	}
+
+	return controllerutil.SetControllerReference(b.instance, object, b.scheme)
 }

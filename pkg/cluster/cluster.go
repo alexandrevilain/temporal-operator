@@ -20,6 +20,7 @@ package cluster
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
 	"go.temporal.io/server/common"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,25 +58,25 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 
 	if b.Instance.MTLSWithCertManagerEnabled() {
 		builders = append(builders,
-			resource.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),
-			resource.NewMTLSRootCACertificateBuilder(b.Instance, b.Scheme),
-			resource.NewMTLSRootCAIssuerBuilder(b.Instance, b.Scheme),
+			certmanager.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),
+			certmanager.NewMTLSRootCACertificateBuilder(b.Instance, b.Scheme),
+			certmanager.NewMTLSRootCAIssuerBuilder(b.Instance, b.Scheme),
 		)
 
 		if b.Instance.Spec.MTLS.InternodeEnabled() {
 			builders = append(builders,
-				resource.NewMTLSInternodeIntermediateCACertificateBuilder(b.Instance, b.Scheme),
-				resource.NewMTLSInternodeIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
-				resource.NewMTLSInternodeCertificateBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSInternodeIntermediateCACertificateBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSInternodeIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSInternodeCertificateBuilder(b.Instance, b.Scheme),
 			)
 		}
 
 		if b.Instance.Spec.MTLS.FrontendEnabled() {
 			builders = append(builders,
-				resource.NewMTLSFrontendIntermediateCACertificateBuilder(b.Instance, b.Scheme),
-				resource.NewMTLSFrontendIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
-				resource.NewMTLSFrontendCertificateBuilder(b.Instance, b.Scheme),
-				resource.NewWorkerFrontendClientCertificateBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSFrontendIntermediateCACertificateBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSFrontendIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
+				certmanager.NewMTLSFrontendCertificateBuilder(b.Instance, b.Scheme),
+				certmanager.NewWorkerFrontendClientCertificateBuilder(b.Instance, b.Scheme),
 			)
 		}
 	}
@@ -90,7 +91,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		}
 
 		if b.Instance.MTLSWithCertManagerEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
-			builders = append(builders, resource.NewUIFrontendClientCertificateBuilder(b.Instance, b.Scheme))
+			builders = append(builders, certmanager.NewUIFrontendClientCertificateBuilder(b.Instance, b.Scheme))
 		}
 	}
 
@@ -98,7 +99,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		builders = append(builders, resource.NewAdminToolsDeploymentBuilder(b.Instance, b.Scheme))
 
 		if b.Instance.MTLSWithCertManagerEnabled() && b.Instance.Spec.MTLS.FrontendEnabled() {
-			builders = append(builders, resource.NewAdminToolsFrontendClientCertificateBuilder(b.Instance, b.Scheme))
+			builders = append(builders, certmanager.NewAdminToolsFrontendClientCertificateBuilder(b.Instance, b.Scheme))
 		}
 	}
 

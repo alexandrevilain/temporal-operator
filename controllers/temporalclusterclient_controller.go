@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
@@ -86,7 +86,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 	commonName := fmt.Sprintf("%s Client", temporalClusterClient.GetName())
 	secretName := fmt.Sprintf("%s-mtls-certificate", temporalClusterClient.GetName())
 
-	builder := resource.NewGenericFrontendClientCertificateBuilder(temporalCluster, r.Scheme, temporalClusterClient.GetName(), secretName, dnsName, commonName)
+	builder := certmanager.NewGenericFrontendClientCertificateBuilder(temporalCluster, r.Scheme, temporalClusterClient.GetName(), secretName, dnsName, commonName)
 
 	res, err := builder.Build()
 	if err != nil {

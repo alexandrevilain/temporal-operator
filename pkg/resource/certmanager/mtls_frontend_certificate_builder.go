@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
 	"fmt"
@@ -29,36 +29,35 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type MTLSRootCACertificateBuilder struct {
+type MTLSFrontendCertificateBuilder struct {
 	instance *v1alpha1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewMTLSRootCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSRootCACertificateBuilder {
-	return &MTLSRootCACertificateBuilder{
+func NewMTLSFrontendCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendCertificateBuilder {
+	return &MTLSFrontendCertificateBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *MTLSRootCACertificateBuilder) Build() (client.Object, error) {
+func (b *MTLSFrontendCertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("root-ca-certificate"),
+			Name:      b.instance.ChildResourceName("frontend-certificate"),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
 }
 
-func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
+func (b *MTLSFrontendCertificateBuilder) Update(object client.Object) error {
 	certificate := object.(*certmanagerv1.Certificate)
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		IsCA:       true,
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.RootCACertificate,
-		SecretName: b.instance.ChildResourceName("root-ca-certificate"),
-		CommonName: "Root CA certificate",
+		SecretName: b.instance.ChildResourceName("frontend-certificate"),
+		CommonName: "Frontend Certificate",
+		Duration:   b.instance.Spec.MTLS.CertificatesDuration.FrontendCertificate,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,
@@ -66,16 +65,14 @@ func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
 			Size:           4096,
 		},
 		DNSNames: []string{
-			b.instance.ServerName(),
+			b.instance.Spec.MTLS.Frontend.ServerName(b.instance.ServerName()),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("bootstrap-issuer"),
+			Name: b.instance.ChildResourceName("frontend-intermediate-ca-issuer"),
 			Kind: certmanagerv1.IssuerKind,
 		},
 		Usages: []certmanagerv1.KeyUsage{
 			certmanagerv1.UsageDigitalSignature,
-			certmanagerv1.UsageCRLSign,
-			certmanagerv1.UsageCertSign,
 		},
 	}
 
