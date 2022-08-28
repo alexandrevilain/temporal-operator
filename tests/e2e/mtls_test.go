@@ -38,7 +38,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 	var temporalCluster *appsv1alpha1.TemporalCluster
 	var temporalClusterClient *appsv1alpha1.TemporalClusterClient
 
-	pgFeature := features.New("mTLS enabled").
+	mTLSCertManagerFeature := features.New("mTLS enabled with cert-manager").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForTest(ctx, t)
 
@@ -214,5 +214,5 @@ func TestWithmTLSEnabled(t *testing.T) {
 		}).
 		Feature()
 
-	testenv.Test(t, pgFeature)
+	testenv.Test(t, mTLSCertManagerFeature)
 }
