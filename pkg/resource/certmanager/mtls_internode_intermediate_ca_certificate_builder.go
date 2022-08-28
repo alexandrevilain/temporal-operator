@@ -59,12 +59,7 @@ func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Obje
 		SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
 		CommonName: "Internode intermediate CA certificate",
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
-		PrivateKey: &certmanagerv1.CertificatePrivateKey{
-			RotationPolicy: certmanagerv1.RotationPolicyAlways,
-			Encoding:       certmanagerv1.PKCS8,
-			Algorithm:      certmanagerv1.RSAKeyAlgorithm,
-			Size:           4096,
-		},
+		PrivateKey: caCertificatePrivateKey,
 		DNSNames: []string{
 			b.instance.ServerName(),
 		},
@@ -72,11 +67,7 @@ func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Obje
 			Name: b.instance.ChildResourceName("root-ca-issuer"),
 			Kind: certmanagerv1.IssuerKind,
 		},
-		Usages: []certmanagerv1.KeyUsage{
-			certmanagerv1.UsageDigitalSignature,
-			certmanagerv1.UsageCRLSign,
-			certmanagerv1.UsageCertSign,
-		},
+		Usages: caCertificatesUsages,
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {

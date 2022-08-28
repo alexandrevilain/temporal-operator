@@ -15,14 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package istio
+package certmanager
 
-import (
-	"sigs.k8s.io/controller-runtime/pkg/client"
-)
+import certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
-func NewAPICheckerForTesting(client client.Client) *APIChecker {
-	return &APIChecker{
-		client: client,
+var (
+	caCertificatesUsages = []certmanagerv1.KeyUsage{
+		certmanagerv1.UsageDigitalSignature,
+		certmanagerv1.UsageCRLSign,
+		certmanagerv1.UsageCertSign,
 	}
-}
+	caCertificatePrivateKey = &certmanagerv1.CertificatePrivateKey{
+		RotationPolicy: certmanagerv1.RotationPolicyAlways,
+		Encoding:       certmanagerv1.PKCS8,
+		Algorithm:      certmanagerv1.RSAKeyAlgorithm,
+		Size:           4096,
+	}
+)

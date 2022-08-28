@@ -351,19 +351,11 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func addResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
-	case *appsv1.Deployment:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *corev1.ConfigMap:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *corev1.Service:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *corev1.ServiceAccount:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *networkingv1.Ingress:
+	case *appsv1.Deployment,
+		*corev1.ConfigMap,
+		*corev1.Service,
+		*corev1.ServiceAccount,
+		*networkingv1.Ingress:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:
@@ -373,10 +365,8 @@ func addResourceToIndex(rawObj client.Object) []string {
 
 func addCertManagerResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
-	case *istiosecurityv1beta1.PeerAuthentication:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *istionetworkingv1beta1.DestinationRule:
+	case *istiosecurityv1beta1.PeerAuthentication,
+		*istionetworkingv1beta1.DestinationRule:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:
@@ -386,10 +376,8 @@ func addCertManagerResourceToIndex(rawObj client.Object) []string {
 
 func addIstioResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
-	case *certmanagerv1.Issuer:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *certmanagerv1.Certificate:
+	case *certmanagerv1.Issuer,
+		*certmanagerv1.Certificate:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:

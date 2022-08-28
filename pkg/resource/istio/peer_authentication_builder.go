@@ -78,6 +78,6 @@ func (b *PeerAuthenticationBuilder) Update(object client.Object) error {
 	return nil
 }
 
-func (PeerAuthenticationBuilder) Equal(x, y istioapisecurityv1beta1.PeerAuthentication) bool {
-	return proto.Equal(&x, &y)
+func (PeerAuthenticationBuilder) Equal(x, y *istioapisecurityv1beta1.PeerAuthentication) bool {
+	return proto.Equal(x, y)
 }

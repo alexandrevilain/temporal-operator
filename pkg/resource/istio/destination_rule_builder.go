@@ -77,6 +77,6 @@ func (b *DestinationRuleBuilder) Update(object client.Object) error {
 	return nil
 }
 
-func (DestinationRuleBuilder) Equal(x, y istioapinetworkingv1beta1.DestinationRule) bool {
-	return proto.Equal(&x, &y)
+func (DestinationRuleBuilder) Equal(x, y *istioapinetworkingv1beta1.DestinationRule) bool {
+	return proto.Equal(x, y)
 }
