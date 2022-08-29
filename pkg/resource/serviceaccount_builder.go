@@ -21,47 +21,46 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type GenericCAIssuerBuilder struct {
-	instance *v1alpha1.TemporalCluster
-	scheme   *runtime.Scheme
-
-	name       string
-	secretName string
+type ServiceAccountBuilder struct {
+	serviceName string
+	instance    *v1alpha1.TemporalCluster
+	scheme      *runtime.Scheme
+	service     *v1alpha1.ServiceSpec
 }
 
-func NewGenericCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name, secretName string) *GenericCAIssuerBuilder {
-	return &GenericCAIssuerBuilder{
-		instance: instance,
-		scheme:   scheme,
+func NewServiceAccountBuilder(serviceName string, instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, service *v1alpha1.ServiceSpec) *ServiceAccountBuilder {
+	return &ServiceAccountBuilder{
+		serviceName: serviceName,
+		instance:    instance,
+		scheme:      scheme,
+		service:     service,
 	}
 }
 
-func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
-	return &certmanagerv1.Issuer{
+func (b *ServiceAccountBuilder) Build() (client.Object, error) {
+	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(b.name),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(b.serviceName),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
 }
 
-func (b *GenericCAIssuerBuilder) Update(object client.Object) error {
-	issuer := object.(*certmanagerv1.Issuer)
-	issuer.Labels = object.GetLabels()
-	issuer.Annotations = object.GetAnnotations()
-	issuer.Spec.CA = &certmanagerv1.CAIssuer{
-		SecretName: b.instance.ChildResourceName(b.secretName),
-	}
-
-	if err := controllerutil.SetControllerReference(b.instance, issuer, b.scheme); err != nil {
+func (b *ServiceAccountBuilder) Update(object client.Object) error {
+	sa := object.(*corev1.ServiceAccount)
+	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
+
 	return nil
 }

@@ -15,41 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package istio
 
 import (
-	"context"
-
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service components.
-const (
-	ServiceConfig = "config"
-)
-
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
-
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
-}
-
-type Pruner interface {
-	Build() (client.Object, error)
-}
-
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
-}
-
-// A Comparer provides a custom function to compare two resources returned
-// by a Builder.
-type Comparer interface {
-	Equal()
+func NewAPICheckerForTesting(client client.Client) *APIChecker {
+	return &APIChecker{
+		client: client,
+	}
 }

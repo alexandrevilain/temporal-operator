@@ -35,9 +35,12 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/cert-manager/cert-manager/pkg/util/cmapichecker"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
+	"github.com/alexandrevilain/temporal-operator/pkg/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	//+kubebuilder:scaffold:imports
 )
@@ -51,6 +54,8 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(appsv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
+	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
+	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -89,7 +94,7 @@ func main() {
 
 	apichecker, err := cmapichecker.New(mgr.GetConfig(), mgr.GetScheme(), "cert-manager")
 	if err != nil {
-		setupLog.Error(err, "unable to start cert-manager api checker")
+		setupLog.Error(err, "unable to create cert-manager api checker")
 		os.Exit(1)
 	}
 
@@ -102,6 +107,21 @@ func main() {
 		setupLog.Info("Found cert-manager installation in the cluster, features requiring cert-manager are enabled")
 	}
 
+	istioapichecker, err := istio.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), "default")
+	if err != nil {
+		setupLog.Error(err, "unable to create istio api checker")
+		os.Exit(1)
+	}
+
+	var istioAvailable bool
+	err = istioapichecker.Check(context.Background())
+	if err != nil {
+		setupLog.Info("Unable to find istio installation in the cluster, features requiring istio are disabled")
+	} else {
+		istioAvailable = true
+		setupLog.Info("Found istio installation in the cluster, features requiring istio are enabled")
+	}
+
 	persistenceMgr := persistence.NewManager(mgr.GetClient(), schemaPath)
 
 	if err = (&controllers.TemporalClusterReconciler{
@@ -110,6 +130,7 @@ func main() {
 		Recorder:             mgr.GetEventRecorderFor("temporacluster-controller"),
 		PersistenceManager:   persistenceMgr,
 		CertManagerAvailable: certManagerAvailable,
+		IstioAvailable:       istioAvailable,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
 		os.Exit(1)

@@ -391,6 +391,7 @@ spec:
                     enum:
                     - cert-manager
                     - linkerd
+                    - istio
                     type: string
                   refreshInterval:
                     description: RefreshInterval defines interval between refreshes

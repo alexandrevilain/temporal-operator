@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
 	"fmt"
@@ -29,51 +29,45 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type MTLSInternodeCertificateBuilder struct {
+type MTLSInternodeItermediateCACertificateBuilder struct {
 	instance *v1alpha1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewMTLSInternodeCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeCertificateBuilder {
-	return &MTLSInternodeCertificateBuilder{
+func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
+	return &MTLSInternodeItermediateCACertificateBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *MTLSInternodeCertificateBuilder) Build() (client.Object, error) {
+func (b *MTLSInternodeItermediateCACertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("internode-certificate"),
+			Name:      b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
 }
 
-func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
+func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Object) error {
 	certificate := object.(*certmanagerv1.Certificate)
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName("internode-certificate"),
-		CommonName: "Internode Certificate",
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.InternodeCertificate,
-		PrivateKey: &certmanagerv1.CertificatePrivateKey{
-			RotationPolicy: certmanagerv1.RotationPolicyAlways,
-			Encoding:       certmanagerv1.PKCS8,
-			Algorithm:      certmanagerv1.RSAKeyAlgorithm,
-			Size:           4096,
-		},
+		IsCA:       true,
+		SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+		CommonName: "Internode intermediate CA certificate",
+		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
+		PrivateKey: caCertificatePrivateKey,
 		DNSNames: []string{
-			b.instance.Spec.MTLS.Internode.ServerName(b.instance.ServerName()),
+			b.instance.ServerName(),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("internode-intermediate-ca-issuer"),
+			Name: b.instance.ChildResourceName("root-ca-issuer"),
 			Kind: certmanagerv1.IssuerKind,
 		},
-		Usages: []certmanagerv1.KeyUsage{
-			certmanagerv1.UsageDigitalSignature,
-		},
+		Usages: caCertificatesUsages,
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {

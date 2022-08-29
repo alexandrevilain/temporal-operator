@@ -25,6 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -79,9 +80,13 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Labels: metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Labels: metadata.Merge(
+				istio.GetLabels(b.instance),
+				metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			),
 			Annotations: metadata.Merge(
 				linkerd.GetAnnotations(b.instance),
+				istio.GetAnnotations(b.instance),
 				metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 			),
 		},
@@ -102,6 +107,11 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			{
 				Name:          "rpc",
 				ContainerPort: int32(*b.service.Port),
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "membership",
+				ContainerPort: int32(*b.service.MembershipPort),
 				Protocol:      corev1.ProtocolTCP,
 			},
 			{
@@ -182,7 +192,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec.Replicas = b.service.Replicas
 
 	deployment.Spec.Template.Spec = corev1.PodSpec{
-		ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+		ServiceAccountName: b.instance.ChildResourceName(b.serviceName),
+		ImagePullSecrets:   b.instance.Spec.ImagePullSecrets,
 		Containers: []corev1.Container{
 			serviceContainer,
 		},
