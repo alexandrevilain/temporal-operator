@@ -156,8 +156,31 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 						Key: datastore.PasswordSecretRef.Key,
 					},
 				},
-			})
+			},
+		)
+		if datastore.TLS != nil && datastore.TLS.Enabled {
+			if datastore.TLS.CaFileRef != nil {
+				serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts, corev1.VolumeMount{
+					Name:      fmt.Sprintf("%s-tls-ca-file", datastore.Name),
+					MountPath: datastore.GetTLSCaFileMountPath(),
+				})
+			}
+			if datastore.TLS.CertFileRef != nil {
+				serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts, corev1.VolumeMount{
+					Name:      fmt.Sprintf("%s-tls-cert-file", datastore.Name),
+					MountPath: datastore.GetTLSCertFileMountPath(),
+				})
+			}
+
+			if datastore.TLS.KeyFileRef != nil {
+				serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts, corev1.VolumeMount{
+					Name:      fmt.Sprintf("%s-tls-key-file", datastore.Name),
+					MountPath: datastore.GetTLSKeyFileMountPath(),
+				})
+			}
+		}
 	}
+
 	if b.instance.MTLSWithCertManagerEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			serviceContainer.VolumeMounts = append(serviceContainer.VolumeMounts,
@@ -192,8 +215,9 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec.Replicas = b.service.Replicas
 
 	deployment.Spec.Template.Spec = corev1.PodSpec{
-		ServiceAccountName: b.instance.ChildResourceName(b.serviceName),
-		ImagePullSecrets:   b.instance.Spec.ImagePullSecrets,
+		ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
+		DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
+		ImagePullSecrets:         b.instance.Spec.ImagePullSecrets,
 		Containers: []corev1.Container{
 			serviceContainer,
 		},
@@ -271,6 +295,78 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					},
 				},
 			)
+		}
+	}
+
+	for _, datastore := range b.instance.Spec.Datastores {
+		if datastore.TLS != nil && datastore.TLS.Enabled {
+			if datastore.TLS.CaFileRef != nil {
+				key := datastore.TLS.CaFileRef.Key
+				if key == "" {
+					key = v1alpha1.DataStoreClientTLSCaFileName
+				}
+				deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+					corev1.Volume{
+						Name: fmt.Sprintf("%s-tls-ca-file", datastore.Name),
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: datastore.TLS.CaFileRef.Name,
+								Items: []corev1.KeyToPath{
+									{
+										Key:  key,
+										Path: datastore.GetTLSCaFileMountPath(),
+									},
+								},
+							},
+						},
+					},
+				)
+			}
+			if datastore.TLS.CertFileRef != nil {
+				key := datastore.TLS.CertFileRef.Key
+				if key == "" {
+					key = v1alpha1.DataStoreClientTLSCertFileName
+				}
+				deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+					corev1.Volume{
+						Name: fmt.Sprintf("%s-tls-cert-file", datastore.Name),
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: datastore.TLS.CaFileRef.Name,
+								Items: []corev1.KeyToPath{
+									{
+										Key:  key,
+										Path: datastore.GetTLSCertFileMountPath(),
+									},
+								},
+							},
+						},
+					},
+				)
+			}
+
+			if datastore.TLS.KeyFileRef != nil {
+				key := datastore.TLS.KeyFileRef.Key
+				if key == "" {
+					key = v1alpha1.DataStoreClientTLSKeyFileName
+				}
+				deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
+					corev1.Volume{
+						Name: fmt.Sprintf("%s-tls-key-file", datastore.Name),
+						VolumeSource: corev1.VolumeSource{
+							Secret: &corev1.SecretVolumeSource{
+								SecretName: datastore.TLS.CaFileRef.Name,
+								Items: []corev1.KeyToPath{
+									{
+										Key:  key,
+										Path: datastore.GetTLSKeyFileMountPath(),
+									},
+								},
+							},
+						},
+					},
+				)
+			}
 		}
 	}
 

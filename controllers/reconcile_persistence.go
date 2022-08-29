@@ -19,122 +19,120 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"github.com/alexandrevilain/temporal-operator/pkg/version"
-	"github.com/blang/semver/v4"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
+	batchv1 "k8s.io/api/batch/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
+	schemaScriptConfigMapBuilder := persistence.NewSchemaScriptsConfigmapBuilder(temporalCluster, r.Scheme)
+	schemaScriptConfigMap, err := schemaScriptConfigMapBuilder.Build()
+	if err != nil {
+		return err
+	}
+
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, schemaScriptConfigMap, func() error {
+		return schemaScriptConfigMapBuilder.Update(schemaScriptConfigMap)
+	})
+	return err
+}
+
+type job struct {
+	name    string
+	command []string
+	action  string
+}
+
+func sanitizeVersionToName(version string) string {
+	return strings.ReplaceAll(version, ".", "-")
+}
 
 // reconcilePersistence tries to reconcile the cluster persistence.
 // If first checks if the schema status field for both of the default and visibility stores are empty. If empty it tries to setup the stores' schemas.
 // Then it compares the current schema version (from the cluster's status) and determine if a schema upgrade is needed.
-func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, clusterVersion semver.Version) error {
+func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) (time.Duration, error) {
 	logger := log.FromContext(ctx)
 
-	defaultStore, found := temporalCluster.GetDefaultDatastore()
-	if !found {
-		return errors.New("default datastore not found")
-	}
-
-	visibilityStore, found := temporalCluster.GetVisibilityDatastore()
-	if !found {
-		return errors.New("visibility datastore not found")
-	}
-
-	if temporalCluster.Status.Persistence.DefaultStoreSchemaVersion == "" {
-		logger.Info("Starting default store setup task")
-		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, defaultStore)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = "0.0.0"
-	}
-
-	if temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion == "" {
-		logger.Info("Starting visibility store setup task")
-		err := r.PersistenceManager.RunStoreSetupTask(ctx, temporalCluster, visibilityStore)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = "0.0.0"
-	}
-
-	defaultStoreType, err := defaultStore.GetDatastoreType()
+	// First of all, ensure the configmap containing scripts is up-to-date
+	err := r.reconcileSchemaScriptsConfigmap(ctx, temporalCluster)
 	if err != nil {
-		return err
+		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)
 	}
 
-	visibilityStoreType, err := visibilityStore.GetDatastoreType()
-	if err != nil {
-		return err
+	// Then for each stores actions, check if the corresponding job is created and has succesfully ran.
+	jobs := []job{
+		{
+			name:    "setup-default-schema",
+			command: []string{"/etc/scripts/setup-default-schema.sh"},
+		},
+		{
+			name:    "setup-visibility-schema",
+			command: []string{"/etc/scripts/setup-visibility-schema.sh"},
+		},
+		{
+			name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+			command: []string{"/etc/scripts/update-default-schema.sh"},
+		},
+		{
+			name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+			command: []string{"/etc/scripts/update-visibility-schema.sh"},
+		},
 	}
-
-	matchingVersion, ok := version.GetMatchingSupportedVersion(clusterVersion)
-	if !ok {
-		return errors.New("no matching version found")
-	}
-
-	expectedDefaultStoreSchemaVersion := matchingVersion.DefaultSchemaVersions[defaultStoreType]
-	expectedVisibilityStoreSchemaVersion := matchingVersion.VisibilitySchemaVersion[visibilityStoreType]
-
-	currentDefaultStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.DefaultStoreSchemaVersion)
-	if err != nil {
-		return err
-	}
-
-	currentVisibilityStoreSchemaVersion, err := version.Parse(temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion)
-	if err != nil {
-		return err
-	}
-
-	if expectedDefaultStoreSchemaVersion.GT(currentDefaultStoreSchemaVersion) {
-		logger.Info("Starting default store update task")
-		err := r.PersistenceManager.RunDefaultStoreUpdateTask(ctx, temporalCluster, defaultStore, expectedDefaultStoreSchemaVersion)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.DefaultStoreSchemaVersion = expectedDefaultStoreSchemaVersion.String()
-	}
-
-	if expectedVisibilityStoreSchemaVersion.GT(currentVisibilityStoreSchemaVersion) {
-		logger.Info("Starting visibility store update task")
-		err := r.PersistenceManager.RunVisibilityStoreUpdateTask(ctx, temporalCluster, visibilityStore, expectedVisibilityStoreSchemaVersion)
-		if err != nil {
-			return err
-		}
-		temporalCluster.Status.Persistence.VisibilityStoreSchemaVersion = expectedVisibilityStoreSchemaVersion.String()
-	}
-
-	// Reconcile advanced visibility store if enabled
 	if temporalCluster.Spec.Persistence.AdvancedVisibilityStore != "" {
-		expectedAdvancedVisibilityStoreSchemaVersion := matchingVersion.AdvancedVisibilitySchemaVersion[appsv1alpha1.ElasticsearchDatastore]
-
-		currentAdvancedVisibilityStoreSchemaVersion := version.NullVersion
-		if temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion != "" {
-			currentAdvancedVisibilityStoreSchemaVersion, err = version.Parse(temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion)
-			if err != nil {
-				return fmt.Errorf("can't parse current advanced visibility schema version: %w", err)
-			}
-		}
-
-		if expectedAdvancedVisibilityStoreSchemaVersion.GT(currentAdvancedVisibilityStoreSchemaVersion) {
-			logger.Info("Starting advanced visibility store update task")
-
-			advancedVisibilityStore, found := temporalCluster.GetAdvancedVisibilityDatastore()
-			if !found {
-				return errors.New("advanced visibility datastore not found")
-			}
-
-			err := r.PersistenceManager.RunAdvancedVisibilityStoreTasks(ctx, temporalCluster, advancedVisibilityStore, expectedAdvancedVisibilityStoreSchemaVersion)
-			if err != nil {
-				return err
-			}
-			temporalCluster.Status.Persistence.AdvancedVisibilityStoreSchemaVersion = expectedAdvancedVisibilityStoreSchemaVersion.String()
-		}
+		jobs = append(jobs,
+			job{
+				name:    "setup-advanced-visibility",
+				command: []string{"/etc/scripts/setup-advanced-visibility.sh"},
+			},
+			job{
+				name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+				command: []string{"/etc/scripts/update-advanced-visibility.sh"},
+			})
 	}
 
-	return r.updateTemporalClusterStatus(ctx, temporalCluster)
+	for _, job := range jobs {
+		logger.Info("Checking for persistence job", "name", job.name)
+		expectedJobBuilder := persistence.NewSchemaJobBuilder(temporalCluster, r.Scheme, job.name, job.action, job.command)
+
+		expectedJob, err := expectedJobBuilder.Build()
+		if err != nil {
+			return 0, nil
+		}
+
+		matchingJob := &batchv1.Job{}
+		err = r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				// The job is not found, create it
+				_, err := controllerutil.CreateOrUpdate(ctx, r.Client, expectedJob, func() error {
+					return expectedJobBuilder.Update(expectedJob)
+				})
+				if err != nil {
+					return 0, err
+				}
+			} else {
+				return 0, fmt.Errorf("can't get job: %w", err)
+			}
+		}
+
+		// TODO(alexandre.vilain): handle istio sidecar injection
+		if matchingJob.Status.Succeeded != 1 {
+			logger.Info("Waiting for persistence job to complete", "name", job.name)
+
+			// Requeue after 10 seconds
+			return 10 * time.Second, nil
+		}
+
+		logger.Info("persistence job is finished", "name", job.name)
+	}
+
+	return 0, nil
 }
