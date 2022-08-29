@@ -17,7 +17,7 @@ spec:
         user: temporal
         pluginName: postgres
         databaseName: temporal
-        connectAddr: postgres.demo.svc.cluster.local
+        connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
       passwordSecretRef:
         name: postgres-password
@@ -27,7 +27,7 @@ spec:
         user: temporal
         pluginName: postgres
         databaseName: temporal_visibility
-        connectAddr: postgres.demo.svc.cluster.local
+        connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
       passwordSecretRef:
         name: postgres-password

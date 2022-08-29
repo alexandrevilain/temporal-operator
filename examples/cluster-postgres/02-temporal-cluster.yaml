@@ -4,7 +4,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.16.0
+  version: 1.17.4
   numHistoryShards: 1
   persistence:
     defaultStore: default
@@ -15,7 +15,7 @@ spec:
         user: temporal
         pluginName: postgres
         databaseName: temporal
-        connectAddr: postgres.demo.svc.cluster.local
+        connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
       passwordSecretRef:
         name: postgres-password
@@ -25,7 +25,7 @@ spec:
         user: temporal
         pluginName: postgres
         databaseName: temporal_visibility
-        connectAddr: postgres.demo.svc.cluster.local
+        connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
       passwordSecretRef:
         name: postgres-password
