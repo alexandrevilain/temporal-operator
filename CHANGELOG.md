@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.5.0
+
+**Release date:** 2022-08-29
+
+Features:
+- Add istio mTLS provider [#85](https://github.com/alexandrevilain/temporal-operator/pull/85)
+
+Updates:
+- Add support for temporal 1.17.2 and use ui v2.5.0 as default [#88](https://github.com/alexandrevilain/temporal-operator/pull/88)
+- Bump go.uber.org/zap from 1.21.0 to 1.22.0 [#90](https://github.com/alexandrevilain/temporal-operator/pull/90)
+- Bump go.temporal.io/sdk from 1.15.0 to 1.16.0 [#89](https://github.com/alexandrevilain/temporal-operator/pull/89)
+- Bump go.uber.org/zap from 1.22.0 to 1.23.0 [#98](https://github.com/alexandrevilain/temporal-operator/pull/98)
+- Bump temporal.io server to v1.17.4 [#99](https://github.com/alexandrevilain/temporal-operator/pull/99)
+- Bump k8s dependencies to v0.25.0 [#100](https://github.com/alexandrevilain/temporal-operator/pull/100)
+
 ## 0.4.0
 
 **Release date:** 2022-08-02
