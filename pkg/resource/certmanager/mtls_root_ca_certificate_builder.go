@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
 	"fmt"
@@ -59,12 +59,7 @@ func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.RootCACertificate,
 		SecretName: b.instance.ChildResourceName("root-ca-certificate"),
 		CommonName: "Root CA certificate",
-		PrivateKey: &certmanagerv1.CertificatePrivateKey{
-			RotationPolicy: certmanagerv1.RotationPolicyAlways,
-			Encoding:       certmanagerv1.PKCS8,
-			Algorithm:      certmanagerv1.RSAKeyAlgorithm,
-			Size:           4096,
-		},
+		PrivateKey: caCertificatePrivateKey,
 		DNSNames: []string{
 			b.instance.ServerName(),
 		},
@@ -72,11 +67,7 @@ func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
 			Name: b.instance.ChildResourceName("bootstrap-issuer"),
 			Kind: certmanagerv1.IssuerKind,
 		},
-		Usages: []certmanagerv1.KeyUsage{
-			certmanagerv1.UsageDigitalSignature,
-			certmanagerv1.UsageCRLSign,
-			certmanagerv1.UsageCertSign,
-		},
+		Usages: caCertificatesUsages,
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {

@@ -49,7 +49,7 @@ func NewHeadlessServiceBuilder(serviceName string, instance *v1alpha1.TemporalCl
 func (b *HeadlessServiceBuilder) Build() (client.Object, error) {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(fmt.Sprintf("%s-headless-service", b.serviceName)),
+			Name:      b.instance.ChildResourceName(fmt.Sprintf("%s-headless", b.serviceName)),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
@@ -64,13 +64,22 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, b.serviceName)
 	service.Spec.Ports = []corev1.ServicePort{
 		{
-			Name:       "grpc-rpc",
+			// Here "tcp-" is used instead of "grpc-" because temporal uses
+			// pod-to-pod traffic over ip. Because no "Host" header is set,
+			// istio can't create mTLS for gRPC.
+			Name:       "tcp-rpc",
 			TargetPort: intstr.FromString("rpc"),
 			Protocol:   corev1.ProtocolTCP,
 			Port:       int32(*b.service.Port),
 		},
 		{
-			Name:       "metrics",
+			Name:       "tcp-membership",
+			TargetPort: intstr.FromString("membership"),
+			Protocol:   corev1.ProtocolTCP,
+			Port:       int32(*b.service.MembershipPort),
+		},
+		{
+			Name:       "http-metrics",
 			TargetPort: intstr.FromString("metrics"),
 			Protocol:   corev1.ProtocolTCP,
 			Port:       9090,

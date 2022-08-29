@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -36,6 +37,8 @@ import (
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -60,6 +63,7 @@ type TemporalClusterReconciler struct {
 	Recorder             record.EventRecorder
 	PersistenceManager   *persistence.Manager
 	CertManagerAvailable bool
+	IstioAvailable       bool
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -67,11 +71,14 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups="",resources=events,verbs=get;create;patch
+//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
 //+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups="networking.istio.io",resources=destinationrules,verbs=get;list;watch;create;update;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -159,14 +166,22 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 	logger.Info("Retrieved builders", "count", len(builders))
 
 	for _, builder := range builders {
-		resource, err := builder.Build()
+		if comparer, ok := builder.(resource.Comparer); ok {
+			err := equality.Semantic.AddFunc(comparer.Equal)
+			if err != nil {
+				return err
+			}
+		}
+
+		res, err := builder.Build()
 		if err != nil {
 			return err
 		}
-		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource, func() error {
-			return builder.Update(resource)
+
+		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, res, func() error {
+			return builder.Update(res)
 		})
-		r.logAndRecordOperationResult(ctx, temporalCluster, resource, operationResult, err)
+		r.logAndRecordOperationResult(ctx, temporalCluster, res, operationResult, err)
 		if err != nil {
 			return err
 		}
@@ -289,7 +304,7 @@ func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Cont
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}} {
+	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}} {
 		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
 			return err
 		}
@@ -304,12 +319,31 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		Owns(&corev1.ServiceAccount{}).
 		Owns(&networkingv1.Ingress{})
 
 	if r.CertManagerAvailable {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
+
+		for _, resource := range []client.Object{&certmanagerv1.Issuer{}, &certmanagerv1.Certificate{}} {
+			if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addCertManagerResourceToIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if r.IstioAvailable {
+		controller = controller.
+			Owns(&istiosecurityv1beta1.PeerAuthentication{}).
+			Owns(&istionetworkingv1beta1.DestinationRule{})
+
+		for _, resource := range []client.Object{&istiosecurityv1beta1.PeerAuthentication{}, &istionetworkingv1beta1.DestinationRule{}} {
+			if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addIstioResourceToIndex); err != nil {
+				return err
+			}
+		}
 	}
 
 	return controller.Complete(r)
@@ -317,16 +351,33 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func addResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
-	case *appsv1.Deployment:
+	case *appsv1.Deployment,
+		*corev1.ConfigMap,
+		*corev1.Service,
+		*corev1.ServiceAccount,
+		*networkingv1.Ingress:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
-	case *corev1.ConfigMap:
+	default:
+		return nil
+	}
+}
+
+func addCertManagerResourceToIndex(rawObj client.Object) []string {
+	switch resourceObject := rawObj.(type) {
+	case *istiosecurityv1beta1.PeerAuthentication,
+		*istionetworkingv1beta1.DestinationRule:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
-	case *corev1.Service:
-		owner := metav1.GetControllerOf(resourceObject)
-		return validateAndGetOwner(owner)
-	case *networkingv1.Ingress:
+	default:
+		return nil
+	}
+}
+
+func addIstioResourceToIndex(rawObj client.Object) []string {
+	switch resourceObject := rawObj.(type) {
+	case *certmanagerv1.Issuer,
+		*certmanagerv1.Certificate:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:

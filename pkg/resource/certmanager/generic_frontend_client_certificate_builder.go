@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package certmanager
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
