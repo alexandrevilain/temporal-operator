@@ -151,7 +151,9 @@ func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1alpha1.Temporal
 	args.Set(schema.CLIOptPassword, fmt.Sprintf("$%s", spec.GetPasswordEnvVarName()))
 	args.Set(schema.CLIOptKeyspace, spec.Cassandra.Keyspace)
 	args.Set(schema.CLIOptDatacenter, spec.Cassandra.Datacenter)
-	args.Set(schema.CLIOptConsistency, spec.Cassandra.Consistency.Consistency.String())
+	if spec.Cassandra.Consistency != nil {
+		args.Set(schema.CLIOptConsistency, spec.Cassandra.Consistency.Consistency.String())
+	}
 	// TODO(alexandrevilain): support schema.CLIOptTimeout
 	// TODO(alexandrevilain): support schema.CLIOptAddressTranslator & schema.CLIOptAddressTranslatorOptions
 
@@ -234,12 +236,14 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 	defaultStoreTool := "temporal-sql-tool"
 	if defaultStoreType == v1alpha1.CassandraDatastore {
-		defaultStoreTool = "temporal-cassandra-tool"
+		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
+		// Which requires an env var set.
+		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
 	}
 
 	visibilityStoreTool := "temporal-sql-tool"
 	if visibilityStoreType == v1alpha1.CassandraDatastore {
-		visibilityStoreTool = "temporal-cassandra-tool"
+		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
 	}
 
 	defaultStoreArgs, err := b.getStoreArgs(defaultStore)
@@ -301,20 +305,21 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 	advancedVisibilityStore, found := b.instance.GetAdvancedVisibilityDatastore()
 	if found {
-		var renderedSetupAdvancedVisibility bytes.Buffer
-		err = setupAdvancedVisibility.Execute(&renderedSetupAdvancedVisibility, setupAdvancedVisibilityData{
+		data := advancedVisibilityData{
 			Version:        advancedVisibilityStore.Elasticsearch.Version,
 			URL:            advancedVisibilityStore.Elasticsearch.URL,
 			Username:       advancedVisibilityStore.Elasticsearch.Username,
 			PasswordEnvVar: advancedVisibilityStore.GetPasswordEnvVarName(),
 			Indices:        advancedVisibilityStore.Elasticsearch.Indices,
-		})
+		}
+		var renderedSetupAdvancedVisibility bytes.Buffer
+		err = setupAdvancedVisibility.Execute(&renderedSetupAdvancedVisibility, data)
 		if err != nil {
 			return fmt.Errorf("can't render setup-advanced-visibility.sh")
 		}
 
 		var renderedUpdateAdvancedVisibility bytes.Buffer
-		err = updateAdvancedVisibility.Execute(&renderedUpdateAdvancedVisibility, updateAdvancedVisibilityData{})
+		err = updateAdvancedVisibility.Execute(&renderedUpdateAdvancedVisibility, data)
 		if err != nil {
 			return fmt.Errorf("can't render setup-advanced-visibility.sh")
 		}
