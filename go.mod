@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.12.0
 	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli v1.22.9
+	github.com/urfave/cli v1.22.10
 	go.temporal.io/api v1.11.0
 	go.temporal.io/sdk v1.16.0
 	go.temporal.io/server v1.17.4
