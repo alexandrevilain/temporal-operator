@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 

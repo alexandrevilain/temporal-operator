@@ -20,7 +20,7 @@ package istio_test
 import (
 	"testing"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"github.com/stretchr/testify/assert"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
 	istioapiv1beta1 "istio.io/api/type/v1beta1"
