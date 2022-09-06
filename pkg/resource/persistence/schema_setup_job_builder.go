@@ -22,8 +22,8 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

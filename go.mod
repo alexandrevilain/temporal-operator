@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/anthhub/forwarder v1.1.1-0.20211220023309-47c50bc55038
-	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.9.1
 	github.com/elliotchance/orderedmap/v2 v2.0.1
@@ -14,7 +13,6 @@ require (
 	github.com/gosimple/slug v1.12.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli v1.22.10
 	go.temporal.io/api v1.11.0
 	go.temporal.io/sdk v1.16.0
 	go.temporal.io/server v1.17.4
@@ -107,7 +105,7 @@ require (
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/uber-go/tally/v4 v4.1.1 // indirect
-	github.com/urfave/cli v1.22.9 // indirect
+	github.com/urfave/cli v1.22.10 // indirect
 	github.com/vladimirvivien/gexe v0.1.1 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.7.0 // indirect
