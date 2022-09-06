@@ -70,6 +70,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
 		},
 	}
+	envVars = append(envVars, GetDatastoresEnvironmentVariables(b.instance.Spec.Datastores)...)
 
 	volumeMounts := []corev1.VolumeMount{
 		{
@@ -77,6 +78,8 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 			MountPath: "/etc/scripts",
 		},
 	}
+
+	volumeMounts = append(volumeMounts, GetDatastoresVolumeMounts(b.instance.Spec.Datastores)...)
 
 	volumes := []corev1.Volume{
 		{
@@ -92,114 +95,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 		},
 	}
 
-	for _, datastore := range b.instance.Spec.Datastores {
-		envVars = append(envVars,
-			corev1.EnvVar{
-				Name: datastore.GetPasswordEnvVarName(),
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: datastore.PasswordSecretRef.Name,
-						},
-						Key: datastore.PasswordSecretRef.Key,
-					},
-				},
-			},
-		)
-		if datastore.TLS != nil && datastore.TLS.Enabled {
-			if datastore.TLS.CaFileRef != nil {
-				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-ca-file", datastore.Name),
-					MountPath: datastore.GetTLSCaFileMountPath(),
-				})
-			}
-			if datastore.TLS.CertFileRef != nil {
-				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-cert-file", datastore.Name),
-					MountPath: datastore.GetTLSCertFileMountPath(),
-				})
-			}
-
-			if datastore.TLS.KeyFileRef != nil {
-				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-key-file", datastore.Name),
-					MountPath: datastore.GetTLSKeyFileMountPath(),
-				})
-			}
-		}
-	}
-
-	for _, datastore := range b.instance.Spec.Datastores {
-		if datastore.TLS != nil && datastore.TLS.Enabled {
-			if datastore.TLS.CaFileRef != nil {
-				key := datastore.TLS.CaFileRef.Key
-				if key == "" {
-					key = v1alpha1.DataStoreClientTLSCaFileName
-				}
-				volumes = append(volumes,
-					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-ca-file", datastore.Name),
-						VolumeSource: corev1.VolumeSource{
-							Secret: &corev1.SecretVolumeSource{
-								SecretName: datastore.TLS.CaFileRef.Name,
-								Items: []corev1.KeyToPath{
-									{
-										Key:  key,
-										Path: datastore.GetTLSCaFileMountPath(),
-									},
-								},
-							},
-						},
-					},
-				)
-			}
-			if datastore.TLS.CertFileRef != nil {
-				key := datastore.TLS.CertFileRef.Key
-				if key == "" {
-					key = v1alpha1.DataStoreClientTLSCertFileName
-				}
-				volumes = append(volumes,
-					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-cert-file", datastore.Name),
-						VolumeSource: corev1.VolumeSource{
-							Secret: &corev1.SecretVolumeSource{
-								SecretName: datastore.TLS.CaFileRef.Name,
-								Items: []corev1.KeyToPath{
-									{
-										Key:  key,
-										Path: datastore.GetTLSCertFileMountPath(),
-									},
-								},
-							},
-						},
-					},
-				)
-			}
-
-			if datastore.TLS.KeyFileRef != nil {
-				key := datastore.TLS.KeyFileRef.Key
-				if key == "" {
-					key = v1alpha1.DataStoreClientTLSKeyFileName
-				}
-				volumes = append(volumes,
-					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-key-file", datastore.Name),
-						VolumeSource: corev1.VolumeSource{
-							Secret: &corev1.SecretVolumeSource{
-								SecretName: datastore.TLS.CaFileRef.Name,
-								Items: []corev1.KeyToPath{
-									{
-										Key:  key,
-										Path: datastore.GetTLSKeyFileMountPath(),
-									},
-								},
-							},
-						},
-					},
-				)
-			}
-		}
-	}
+	volumes = append(volumes, GetDatastoresVolumes(b.instance.Spec.Datastores)...)
 
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
