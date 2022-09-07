@@ -53,7 +53,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			connectAddr := fmt.Sprintf("postgres.%s", namespace)
+			connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 
 			// create the temporal cluster
 			temporalCluster = &appsv1alpha1.TemporalCluster{
@@ -113,16 +113,10 @@ func TestWithmTLSEnabled(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return ctx
+			return context.WithValue(ctx, "cluster", temporalCluster)
 		}).
-		Assess("Temporal cluster created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForTemporalCluster(ctx, cfg, temporalCluster)
-			if err != nil {
-				t.Fatal(err)
-			}
-			return ctx
-		}).
-		Assess("Can create a temporal cluster cluster", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Temporal cluster created", AssertClusterReady()).
+		Assess("Can create a temporal cluster namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForTest(ctx, t)
 
 			// create the temporal cluster client

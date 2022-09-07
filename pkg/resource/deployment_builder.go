@@ -68,12 +68,12 @@ func (b *DeploymentBuilder) Build() (client.Object, error) {
 func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
-		metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 		object.GetLabels(),
+		metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
-		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		object.GetAnnotations(),
+		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
 	envVars := []corev1.EnvVar{
@@ -283,14 +283,14 @@ func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Cl
 	if err != nil {
 		return nil, err
 	}
-	val, ok := deploy.Labels["app.kubernetes.io/version"]
+	version, ok := deploy.Labels["app.kubernetes.io/version"]
 	if !ok {
 		return nil, errors.New("can't determine service version from deployment labels")
 	}
 
 	return &v1alpha1.ServiceStatus{
 		Name:    b.serviceName,
-		Version: val,
+		Version: version,
 		Ready:   kubernetes.IsDeploymentReady(deploy),
 	}, nil
 }
