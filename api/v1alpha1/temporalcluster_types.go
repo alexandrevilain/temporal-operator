@@ -529,22 +529,10 @@ type ServiceStatus struct {
 	Ready bool `json:"ready"`
 }
 
-// PersistenceStatus reports datastores schema versions.
-type PersistenceStatus struct {
-	// DefaultStoreSchemaVersion holds the current schema version for the default store.
-	DefaultStoreSchemaVersion string `json:"defaultStoreSchemaVersion"`
-	// VisibilityStoreSchemaVersion holds the current schema version for the visibility store.
-	VisibilityStoreSchemaVersion string `json:"visibilityStoreSchemaVersion"`
-	// AdvancedVisibilityStoreSchemaVersion holds the current schema version for the advanced visibility store.
-	AdvancedVisibilityStoreSchemaVersion string `json:"advancedVisibilityStoreSchemaVersion"`
-}
-
 // TemporalClusterStatus defines the observed state of TemporalCluster.
 type TemporalClusterStatus struct {
 	// Version holds the current temporal version.
 	Version string `json:"version,omitempty"`
-	// Persistence holds the persistence status.
-	Persistence PersistenceStatus `json:"persistence,omitempty"`
 	// Services holds all services statuses.
 	Services []ServiceStatus `json:"services,omitempty"`
 	// Conditions represent the latest available observations of the TemporalCluster state.

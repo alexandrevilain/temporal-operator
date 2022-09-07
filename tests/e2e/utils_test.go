@@ -41,14 +41,14 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace string) (*appsv1alpha1.TemporalCluster, error) {
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*appsv1alpha1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	connectAddr := fmt.Sprintf("postgres.%s", namespace) // create the temporal cluster
+	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 	temporalCluster := &appsv1alpha1.TemporalCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -56,6 +56,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		},
 		Spec: appsv1alpha1.TemporalClusterSpec{
 			NumHistoryShards: 1,
+			Version:          version,
 			MTLS: &appsv1alpha1.MTLSSpec{
 				Provider: appsv1alpha1.CertManagerMTLSProvider,
 				Internode: &appsv1alpha1.InternodeMTLSSpec{

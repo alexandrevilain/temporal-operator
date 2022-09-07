@@ -131,7 +131,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 			return 10 * time.Second, nil
 		}
 
-		logger.Info("persistence job is finished", "name", job.name)
+		logger.Info("Persistence job is finished", "name", job.name)
 	}
 
 	return 0, nil

@@ -664,26 +664,6 @@ spec:
                   - type
                   type: object
                 type: array
-              persistence:
-                description: Persistence holds the persistence status.
-                properties:
-                  advancedVisibilityStoreSchemaVersion:
-                    description: AdvancedVisibilityStoreSchemaVersion holds the current
-                      schema version for the advanced visibility store.
-                    type: string
-                  defaultStoreSchemaVersion:
-                    description: DefaultStoreSchemaVersion holds the current schema
-                      version for the default store.
-                    type: string
-                  visibilityStoreSchemaVersion:
-                    description: VisibilityStoreSchemaVersion holds the current schema
-                      version for the visibility store.
-                    type: string
-                required:
-                - advancedVisibilityStoreSchemaVersion
-                - defaultStoreSchemaVersion
-                - visibilityStoreSchemaVersion
-                type: object
               services:
                 description: Services holds all services statuses.
                 items:
