@@ -19,15 +19,25 @@ package kubernetes
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 )
 
 // IsDeploymentReady returns whenever the provided deployment is ready.
-func IsDeploymentReady(deploy *appsv1.Deployment) bool {
-	for _, condition := range deploy.Status.Conditions {
-		if condition.Type == appsv1.DeploymentAvailable && condition.Status == v1.ConditionTrue {
-			return true
-		}
+func IsDeploymentReady(deploy *appsv1.Deployment) (bool, error) {
+	udeploy, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deploy)
+	if err != nil {
+		return false, err
 	}
-	return false
+
+	u := &unstructured.Unstructured{}
+	u.SetUnstructuredContent(udeploy)
+
+	result, err := kstatus.Compute(u)
+	if err != nil {
+		return false, err
+	}
+
+	return result.Status == kstatus.CurrentStatus, nil
 }
