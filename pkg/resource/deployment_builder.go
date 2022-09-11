@@ -33,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -248,6 +249,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 								Protocol:      corev1.ProtocolTCP,
 							},
 						},
+						LivenessProbe: &corev1.Probe{
+							InitialDelaySeconds: 150,
+							ProbeHandler: corev1.ProbeHandler{
+								TCPSocket: &corev1.TCPSocketAction{
+									Port: intstr.FromString("rpc"),
+								},
+							},
+						},
 						Env:          envVars,
 						VolumeMounts: volumeMounts,
 					},
@@ -288,9 +297,14 @@ func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Cl
 		return nil, errors.New("can't determine service version from deployment labels")
 	}
 
+	ready, err := kubernetes.IsDeploymentReady(deploy)
+	if err != nil {
+		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
+	}
+
 	return &v1alpha1.ServiceStatus{
 		Name:    b.serviceName,
 		Version: version,
-		Ready:   kubernetes.IsDeploymentReady(deploy),
+		Ready:   ready,
 	}, nil
 }
