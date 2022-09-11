@@ -38,29 +38,17 @@ type SchemaJobBuilder struct {
 	scheme   *runtime.Scheme
 	// name is the name of the job
 	name string
-	// action is the job action name label
-	action string
 	// command is the command the job should run
 	command []string
 }
 
-func NewSchemaJobBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name, action string, command []string) *SchemaJobBuilder {
+func NewSchemaJobBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name string, command []string) *SchemaJobBuilder {
 	return &SchemaJobBuilder{
 		instance: instance,
 		scheme:   scheme,
 		name:     name,
-		action:   action,
 		command:  command,
 	}
-}
-
-func (b *SchemaJobBuilder) GetLabels() map[string]string {
-	return metadata.Merge(
-		metadata.GetLabels(b.instance.Name, b.name, b.instance.Spec.Version, b.instance.Labels),
-		map[string]string{
-			"operator.temporal.io/action": b.action,
-		},
-	)
 }
 
 func (b *SchemaJobBuilder) Build() (client.Object, error) {
@@ -101,7 +89,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.name),
 			Namespace:   b.instance.Namespace,
-			Labels:      b.GetLabels(),
+			Labels:      metadata.GetLabels(b.instance.Name, b.name, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{

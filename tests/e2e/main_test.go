@@ -132,15 +132,14 @@ func TestMain(m *testing.M) {
 		}).
 		Finish(
 			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
-			// envfuncs.DestroyKindCluster(kindClusterName),
+			envfuncs.DestroyKindCluster(kindClusterName),
 		).
 		BeforeEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 			return createNSForTest(ctx, cfg, t, runID)
+		}).
+		AfterEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
+			return deleteNSForTest(ctx, cfg, t, runID)
 		})
-		//.
-		// AfterEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
-		// 	return deleteNSForTest(ctx, cfg, t, runID)
-		// })
 
 	os.Exit(testenv.Run(m))
 }

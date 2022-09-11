@@ -48,7 +48,6 @@ func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.
 type job struct {
 	name    string
 	command []string
-	action  string
 }
 
 func sanitizeVersionToName(version string) string {
@@ -100,7 +99,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 
 	for _, job := range jobs {
 		logger.Info("Checking for persistence job", "name", job.name)
-		expectedJobBuilder := persistence.NewSchemaJobBuilder(temporalCluster, r.Scheme, job.name, job.action, job.command)
+		expectedJobBuilder := persistence.NewSchemaJobBuilder(temporalCluster, r.Scheme, job.name, job.command)
 
 		expectedJob, err := expectedJobBuilder.Build()
 		if err != nil {
