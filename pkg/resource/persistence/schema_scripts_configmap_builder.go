@@ -256,44 +256,54 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		return fmt.Errorf("can't create visibility store setup args: %w", err)
 	}
 
+	baseData := baseData{}
+
+	if b.instance.Spec.MTLS != nil {
+		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
+	}
+
 	var renderedSetupDefaultSchema bytes.Buffer
-	err = setupSchema.Execute(&renderedSetupDefaultSchema, setupSchemaData{
+	err = templates[SetupSchemaTemplate].Execute(&renderedSetupDefaultSchema, setupSchemaData{
+		baseData:       baseData,
 		Tool:           defaultStoreTool,
 		ConnectionArgs: b.argsMapToString(defaultStoreArgs),
 		InitialVersion: "0.0",
 	})
 	if err != nil {
-		return fmt.Errorf("can't render setup-default-schema.sh")
+		return fmt.Errorf("can't render setup-default-schema.sh: %w", err)
 	}
 
 	var renderedUpdateDefaultSchema bytes.Buffer
-	err = updateSchema.Execute(&renderedUpdateDefaultSchema, updateSchemaData{
+	err = templates[UpdateSchemaTemplate].Execute(&renderedUpdateDefaultSchema, updateSchemaData{
+		baseData:       baseData,
 		Tool:           defaultStoreTool,
 		ConnectionArgs: b.argsMapToString(defaultStoreArgs),
 		SchemaDir:      b.computeSchemaDir(defaultStoreType, DefaultSchema),
 	})
 	if err != nil {
-		return fmt.Errorf("can't render update-default-schema.sh")
+		return fmt.Errorf("can't render update-default-schema.sh: %w", err)
 	}
 
 	var renderedSetupVisibilitySchema bytes.Buffer
-	err = setupSchema.Execute(&renderedSetupVisibilitySchema, setupSchemaData{
+	err = templates[SetupSchemaTemplate].Execute(&renderedSetupVisibilitySchema, setupSchemaData{
+		baseData:       baseData,
 		Tool:           visibilityStoreTool,
 		ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
 		InitialVersion: "0.0",
 	})
 	if err != nil {
-		return fmt.Errorf("can't render setup-visibility-schema.sh")
+		return fmt.Errorf("can't render setup-visibility-schema.sh: %w", err)
 	}
 
 	var renderedUpdateVisibilitySchema bytes.Buffer
-	err = updateSchema.Execute(&renderedUpdateVisibilitySchema, updateSchemaData{
+	err = templates[UpdateSchemaTemplate].Execute(&renderedUpdateVisibilitySchema, updateSchemaData{
+		baseData:       baseData,
 		Tool:           visibilityStoreTool,
 		ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
 		SchemaDir:      b.computeSchemaDir(visibilityStoreType, VisibilitySchema),
 	})
 	if err != nil {
-		return fmt.Errorf("can't render update-visibility-schema.sh")
+		return fmt.Errorf("can't render update-visibility-schema.sh: %w", err)
 	}
 
 	configMap.Data = map[string]string{
@@ -306,6 +316,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	advancedVisibilityStore, found := b.instance.GetAdvancedVisibilityDatastore()
 	if found {
 		data := advancedVisibilityData{
+			baseData:       baseData,
 			Version:        advancedVisibilityStore.Elasticsearch.Version,
 			URL:            advancedVisibilityStore.Elasticsearch.URL,
 			Username:       advancedVisibilityStore.Elasticsearch.Username,
@@ -313,15 +324,15 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 			Indices:        advancedVisibilityStore.Elasticsearch.Indices,
 		}
 		var renderedSetupAdvancedVisibility bytes.Buffer
-		err = setupAdvancedVisibility.Execute(&renderedSetupAdvancedVisibility, data)
+		err = templates[SetupAdvancedVisibility].Execute(&renderedSetupAdvancedVisibility, data)
 		if err != nil {
-			return fmt.Errorf("can't render setup-advanced-visibility.sh")
+			return fmt.Errorf("can't render setup-advanced-visibility.sh: %w", err)
 		}
 
 		var renderedUpdateAdvancedVisibility bytes.Buffer
-		err = updateAdvancedVisibility.Execute(&renderedUpdateAdvancedVisibility, data)
+		err = templates[UpdateAdvancedVisibility].Execute(&renderedUpdateAdvancedVisibility, data)
 		if err != nil {
-			return fmt.Errorf("can't render setup-advanced-visibility.sh")
+			return fmt.Errorf("can't render setup-advanced-visibility.sh: %w", err)
 		}
 
 		configMap.Data["setup-advanced-visibility.sh"] = renderedSetupAdvancedVisibility.String()
