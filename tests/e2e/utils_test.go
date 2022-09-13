@@ -178,7 +178,6 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalCluster, func(object k8s.Object) bool {
 		for _, condition := range object.(*appsv1alpha1.TemporalCluster).Status.Conditions {
-			fmt.Printf("%+v \n", condition)
 			if condition.Type == appsv1alpha1.ReadyCondition && condition.Status == metav1.ConditionTrue {
 				return true
 			}
