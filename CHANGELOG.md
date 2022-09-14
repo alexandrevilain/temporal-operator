@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.0
+
+**Release date:** 2022-09-14
+
+Features:
+- Automatic version upgrades [#102](https://github.com/alexandrevilain/temporal-operator/pull/102)
+
+Updates:
+- Bump github.com/urfave/cli from 1.22.9 to 1.22.10 [#105](https://github.com/alexandrevilain/temporal-operator/pull/105)
+
 ## 0.5.0
 
 **Release date:** 2022-08-29
