@@ -66,7 +66,7 @@ test: manifests generate fmt vet ## Run tests.
 
 .PHONY: test-e2e
 test-e2e: artifacts ## Run end2end tests.
-	go test ./tests/e2e -v 
+	go test ./tests/e2e -v -timeout 20m
 
 .PHONY: test-e2e-dev
 test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
