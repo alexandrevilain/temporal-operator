@@ -17,7 +17,7 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Automatic mTLS certificates management (using cert-manager).
 - [x] Support for integration in meshes: istio & linkerd.
 - [x] Namespace management using CRDs.
-- [ ] Cluster version upgrades.
+- [x] Cluster version upgrades.
 - [ ] Cluster monitoring.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
