@@ -122,7 +122,6 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 			}
 		}
 
-		// TODO(alexandre.vilain): handle istio sidecar injection
 		if matchingJob.Status.Succeeded != 1 {
 			logger.Info("Waiting for persistence job to complete", "name", job.name)
 
