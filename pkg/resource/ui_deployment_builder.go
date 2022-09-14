@@ -22,8 +22,8 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,12 +59,12 @@ func (b *UIDeploymentBuilder) Build() (client.Object, error) {
 func (b *UIDeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
-		metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
 		object.GetLabels(),
+		metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
-		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		object.GetAnnotations(),
+		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
 	deployment.Spec.Selector = &metav1.LabelSelector{

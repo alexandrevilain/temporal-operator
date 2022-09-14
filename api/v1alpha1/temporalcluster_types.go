@@ -275,6 +275,12 @@ func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 	return DatastoreType(""), errors.New("can't get datastore type from current spec")
 }
 
+const (
+	DataStoreClientTLSCertFileName = "client.pem"
+	DataStoreClientTLSKeyFileName  = "client.key"
+	DataStoreClientTLSCaFileName   = "ca.pem"
+)
+
 // GetTLSKeyFileMountPath returns the client TLS cert mount path.
 // It returns empty if the tls config is nil or if no secret key ref has been specified.
 func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
@@ -282,7 +288,7 @@ func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
 		return ""
 	}
 
-	return path.Join("/etc/tls/datastores", s.Name, "client.pem")
+	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSCertFileName)
 }
 
 // GetTLSKeyFileMountPath returns the client TLS key mount path.
@@ -291,7 +297,7 @@ func (s *TemporalDatastoreSpec) GetTLSKeyFileMountPath() string {
 	if s.TLS == nil || s.TLS.KeyFileRef == nil {
 		return ""
 	}
-	return path.Join("/etc/tls/datastores", s.Name, "client.key")
+	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSKeyFileName)
 }
 
 // GetTLSCaFileMountPath  returns the CA key mount path.
@@ -300,7 +306,7 @@ func (s *TemporalDatastoreSpec) GetTLSCaFileMountPath() string {
 	if s.TLS == nil || s.TLS.CaFileRef == nil {
 		return ""
 	}
-	return path.Join("/etc/tls/datastores", s.Name, "ca.pem")
+	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSCaFileName)
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.
@@ -523,22 +529,10 @@ type ServiceStatus struct {
 	Ready bool `json:"ready"`
 }
 
-// PersistenceStatus reports datastores schema versions.
-type PersistenceStatus struct {
-	// DefaultStoreSchemaVersion holds the current schema version for the default store.
-	DefaultStoreSchemaVersion string `json:"defaultStoreSchemaVersion"`
-	// VisibilityStoreSchemaVersion holds the current schema version for the visibility store.
-	VisibilityStoreSchemaVersion string `json:"visibilityStoreSchemaVersion"`
-	// AdvancedVisibilityStoreSchemaVersion holds the current schema version for the advanced visibility store.
-	AdvancedVisibilityStoreSchemaVersion string `json:"advancedVisibilityStoreSchemaVersion"`
-}
-
 // TemporalClusterStatus defines the observed state of TemporalCluster.
 type TemporalClusterStatus struct {
 	// Version holds the current temporal version.
 	Version string `json:"version,omitempty"`
-	// Persistence holds the persistence status.
-	Persistence PersistenceStatus `json:"persistence,omitempty"`
 	// Services holds all services statuses.
 	Services []ServiceStatus `json:"services,omitempty"`
 	// Conditions represent the latest available observations of the TemporalCluster state.

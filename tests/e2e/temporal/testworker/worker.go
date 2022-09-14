@@ -21,6 +21,7 @@ import (
 	"context"
 	"time"
 
+	"go.temporal.io/api/serviceerror"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -59,7 +60,10 @@ func (w *Worker) createDefaultNamespace() error {
 		WorkflowExecutionRetentionPeriod: &dur,
 	})
 	if err != nil {
-		return err
+		_, ok := err.(*serviceerror.NamespaceAlreadyExists)
+		if !ok {
+			return err
+		}
 	}
 	// sleep to wait for ns to be registered
 	time.Sleep(10 * time.Second)

@@ -601,8 +601,8 @@ spec:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct
                     use as an array at the field path .status.conditions.  For example,
-                    type FooStatus struct{ // Represents the observations of a foo's
-                    current state. // Known .status.conditions.type are: \"Available\",
+                    \n type FooStatus struct{ // Represents the observations of a
+                    foo's current state. // Known .status.conditions.type are: \"Available\",
                     \"Progressing\", and \"Degraded\" // +patchMergeKey=type // +patchStrategy=merge
                     // +listType=map // +listMapKey=type Conditions []metav1.Condition
                     `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\"
@@ -664,26 +664,6 @@ spec:
                   - type
                   type: object
                 type: array
-              persistence:
-                description: Persistence holds the persistence status.
-                properties:
-                  advancedVisibilityStoreSchemaVersion:
-                    description: AdvancedVisibilityStoreSchemaVersion holds the current
-                      schema version for the advanced visibility store.
-                    type: string
-                  defaultStoreSchemaVersion:
-                    description: DefaultStoreSchemaVersion holds the current schema
-                      version for the default store.
-                    type: string
-                  visibilityStoreSchemaVersion:
-                    description: VisibilityStoreSchemaVersion holds the current schema
-                      version for the visibility store.
-                    type: string
-                required:
-                - advancedVisibilityStoreSchemaVersion
-                - defaultStoreSchemaVersion
-                - visibilityStoreSchemaVersion
-                type: object
               services:
                 description: Services holds all services statuses.
                 items:

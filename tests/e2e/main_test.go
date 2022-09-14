@@ -35,6 +35,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
+	"sigs.k8s.io/e2e-framework/pkg/features"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
@@ -133,10 +134,10 @@ func TestMain(m *testing.M) {
 			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
 			envfuncs.DestroyKindCluster(kindClusterName),
 		).
-		BeforeEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+		BeforeEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 			return createNSForTest(ctx, cfg, t, runID)
 		}).
-		AfterEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+		AfterEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 			return deleteNSForTest(ctx, cfg, t, runID)
 		})
 

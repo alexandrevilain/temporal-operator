@@ -20,8 +20,8 @@ package cluster
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/certmanager"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"go.temporal.io/server/common"
 	"k8s.io/apimachinery/pkg/runtime"
 )

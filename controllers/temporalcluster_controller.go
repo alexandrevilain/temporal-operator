@@ -40,12 +40,12 @@ import (
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/alexandrevilain/temporal-operator/pkg/cluster"
-	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
@@ -61,24 +61,24 @@ type TemporalClusterReconciler struct {
 	client.Client
 	Scheme               *runtime.Scheme
 	Recorder             record.EventRecorder
-	PersistenceManager   *persistence.Manager
 	CertManagerAvailable bool
 	IstioAvailable       bool
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
 //+kubebuilder:rbac:groups="",resources=events,verbs=get;create;patch
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
 //+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="networking.istio.io",resources=destinationrules,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -131,15 +131,27 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	logger.Info("Retrieved desired cluster version", "version", clusterVersion.String())
 
-	appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionUnknown, appsv1alpha1.ProgressingReason, "")
-	err = r.updateTemporalClusterStatus(ctx, temporalCluster)
-	if err != nil {
-		return r.handleError(ctx, temporalCluster, "", err)
+	// Check the ready condition
+	cond, exists := appsv1alpha1.GetTemporalClusterReadyCondition(temporalCluster)
+	if !exists || cond.ObservedGeneration != temporalCluster.GetGeneration() {
+		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionUnknown, appsv1alpha1.ProgressingReason, "")
+		err := r.updateTemporalClusterStatus(ctx, temporalCluster)
+		if err != nil {
+			return r.handleError(ctx, temporalCluster, "", err)
+		}
 	}
 
-	if err := r.reconcilePersistence(ctx, temporalCluster, clusterVersion); err != nil {
-		logger.Error(err, "Can't reconcile persistence")
-		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.PersistenceReconciliationFailedReason, err, 2*time.Second)
+	if requeueAfter, err := r.reconcilePersistence(ctx, temporalCluster); err != nil || requeueAfter > 0 {
+		if err != nil {
+			logger.Error(err, "Can't reconcile persistence")
+			if requeueAfter == 0 {
+				requeueAfter = 2 * time.Second
+			}
+			return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.PersistenceReconciliationFailedReason, err, requeueAfter)
+		}
+		if requeueAfter > 0 {
+			return reconcile.Result{RequeueAfter: requeueAfter}, nil
+		}
 	}
 
 	if err := r.reconcileResources(ctx, temporalCluster); err != nil {
@@ -304,7 +316,7 @@ func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Cont
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}} {
+	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}, &batchv1.Job{}} {
 		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
 			return err
 		}
@@ -320,7 +332,8 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ServiceAccount{}).
-		Owns(&networkingv1.Ingress{})
+		Owns(&networkingv1.Ingress{}).
+		Owns(&batchv1.Job{})
 
 	if r.CertManagerAvailable {
 		controller = controller.
@@ -355,7 +368,8 @@ func addResourceToIndex(rawObj client.Object) []string {
 		*corev1.ConfigMap,
 		*corev1.Service,
 		*corev1.ServiceAccount,
-		*networkingv1.Ingress:
+		*networkingv1.Ingress,
+		*batchv1.Job:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:

@@ -13,7 +13,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.16.0
+  version: 1.17.5
   numHistoryShards: 1
   persistence:
     defaultStore: default
