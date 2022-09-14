@@ -39,7 +39,7 @@ func IsClusterReady(c *v1alpha1.TemporalCluster) bool {
 		return false
 	}
 	for _, serviceStatus := range c.Status.Services {
-		if !serviceStatus.Ready {
+		if !serviceStatus.Ready || serviceStatus.Version != c.Spec.Version {
 			return false
 		}
 	}

@@ -916,60 +916,6 @@ Useless if mTLS provider is not cert-manager.</p>
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.PersistenceStatus">PersistenceStatus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterStatus">TemporalClusterStatus</a>)
-</p>
-<p>PersistenceStatus reports datastores schema versions.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>defaultStoreSchemaVersion</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>DefaultStoreSchemaVersion holds the current schema version for the default store.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>visibilityStoreSchemaVersion</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>VisibilityStoreSchemaVersion holds the current schema version for the visibility store.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>advancedVisibilityStoreSchemaVersion</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>AdvancedVisibilityStoreSchemaVersion holds the current schema version for the advanced visibility store.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <h3 id="apps.alexandrevilain.dev/v1alpha1.SQLSpec">SQLSpec
 </h3>
 <p>
@@ -1652,19 +1598,6 @@ string
 </td>
 <td>
 <p>Version holds the current temporal version.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>persistence</code><br>
-<em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.PersistenceStatus">
-PersistenceStatus
-</a>
-</em>
-</td>
-<td>
-<p>Persistence holds the persistence status.</p>
 </td>
 </tr>
 <tr>

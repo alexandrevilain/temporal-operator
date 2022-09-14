@@ -142,6 +142,17 @@ rules:
   - patch
   - update
 - apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
   - cert-manager.io
   resources:
   - certificates

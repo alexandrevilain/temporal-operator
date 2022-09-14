@@ -119,7 +119,8 @@ status:
 			err := decoder.Decode(strings.NewReader(test.deployment), obj)
 			require.NoError(tt, err)
 
-			result := kubernetes.IsDeploymentReady(obj)
+			result, err := kubernetes.IsDeploymentReady(obj)
+			assert.NoError(tt, err)
 			assert.Equal(tt, test.expected, result)
 		})
 	}

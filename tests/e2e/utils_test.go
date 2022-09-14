@@ -21,15 +21,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/networking"
-	"github.com/anthhub/forwarder"
 	"go.temporal.io/server/common"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/transport/spdy"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"sigs.k8s.io/e2e-framework/klient"
@@ -41,14 +48,14 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace string) (*appsv1alpha1.TemporalCluster, error) {
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*appsv1alpha1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	connectAddr := fmt.Sprintf("postgres.%s", namespace) // create the temporal cluster
+	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 	temporalCluster := &appsv1alpha1.TemporalCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -56,6 +63,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		},
 		Spec: appsv1alpha1.TemporalClusterSpec{
 			NumHistoryShards: 1,
+			Version:          version,
 			MTLS: &appsv1alpha1.MTLSSpec{
 				Provider: appsv1alpha1.CertManagerMTLSProvider,
 				Internode: &appsv1alpha1.InternodeMTLSSpec{
@@ -129,7 +137,7 @@ func deployAndWaitForCassandra(ctx context.Context, cfg *envconf.Config, namespa
 		return err
 	}
 
-	pod := v1.Pod{
+	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-0", name), Namespace: namespace},
 	}
 
@@ -163,7 +171,7 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 	if err != nil {
 		return err
 	}
-	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*10))
+	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, corev1.ConditionTrue), wait.WithTimeout(time.Minute*10))
 }
 
 // waitForTemporalCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
@@ -186,6 +194,29 @@ func waitForTemporalClusterClient(ctx context.Context, cfg *envconf.Config, temp
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
+func forwardPortToPod(cfg *rest.Config, pod *corev1.Pod, port int, stopCh <-chan struct{}, readyCh chan struct{}) error {
+	stream := genericclioptions.IOStreams{
+		In:     os.Stdin,
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
+	}
+
+	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/portforward", pod.Namespace, pod.Name)
+	hostIP := strings.TrimLeft(cfg.Host, "htps:/")
+
+	transport, upgrader, err := spdy.RoundTripperFor(cfg)
+	if err != nil {
+		return err
+	}
+
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
+	fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", port, 7233)}, stopCh, readyCh, stream.Out, stream.ErrOut)
+	if err != nil {
+		return err
+	}
+	return fw.ForwardPorts()
+}
+
 func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
@@ -200,6 +231,11 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, tem
 					Operator: metav1.LabelSelectorOpIn,
 					Values:   []string{common.FrontendServiceName},
 				},
+				{
+					Key:      "app.kubernetes.io/version",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{temporalCluster.Spec.Version},
+				},
 			},
 		},
 	)
@@ -207,7 +243,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, tem
 		return "", nil, err
 	}
 
-	podList := &v1.PodList{}
+	podList := &corev1.PodList{}
 	err = cfg.Client().Resources(temporalCluster.GetNamespace()).List(ctx, podList, resources.WithLabelSelector(selector.String()))
 	if err != nil {
 		return "", nil, err
@@ -217,28 +253,29 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, tem
 		return "", nil, errors.New("No frontend port found")
 	}
 
-	port, err := networking.GetFreePort()
+	selectedPod := podList.Items[0]
+
+	localPort, err := networking.GetFreePort()
 	if err != nil {
 		return "", nil, err
 	}
 
-	ret, err := forwarder.WithRestConfig(ctx, []*forwarder.Option{
-		{
-			LocalPort:  port,
-			RemotePort: 7233,
-			Namespace:  podList.Items[0].GetNamespace(),
-			PodName:    podList.Items[0].GetName(),
-		},
-	}, cfg.Client().RESTConfig())
-	if err != nil {
-		return "", nil, err
-	}
-	_, err = ret.Ready()
-	if err != nil {
-		return "", nil, err
-	}
+	// stopCh control the port forwarding lifecycle. When it gets closed the
+	// port forward will terminate
+	stopCh := make(chan struct{}, 1)
+	// readyCh communicate when the port forward is ready to get traffic
+	readyCh := make(chan struct{})
 
-	connectAddr := fmt.Sprintf("localhost:%d", port)
+	go func() {
+		err := forwardPortToPod(cfg.Client().RESTConfig(), &selectedPod, localPort, stopCh, readyCh)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
-	return connectAddr, func() { ret.Close() }, nil
+	<-readyCh
+	println("Port forwarding is ready to get traffic.")
+
+	connectAddr := fmt.Sprintf("localhost:%d", localPort)
+	return connectAddr, func() { close(stopCh) }, nil
 }

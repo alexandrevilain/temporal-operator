@@ -59,6 +59,12 @@ func SetTemporalClusterReconcileError(c *TemporalCluster, status metav1.Conditio
 	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
 }
 
+// GetTemporalClusterReadyCondition returns the ready condition for the provided cluster if found.
+func GetTemporalClusterReadyCondition(c *TemporalCluster) (*metav1.Condition, bool) {
+	condition := apimeta.FindStatusCondition(c.Status.Conditions, ReadyCondition)
+	return condition, condition != nil
+}
+
 // SetTemporalClusterReady sets the ReadyCondition status for a temporal cluster.
 func SetTemporalClusterReady(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
