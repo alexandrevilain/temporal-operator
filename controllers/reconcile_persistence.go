@@ -55,8 +55,6 @@ func sanitizeVersionToName(version string) string {
 }
 
 // reconcilePersistence tries to reconcile the cluster persistence.
-// If first checks if the schema status field for both of the default and visibility stores are empty. If empty it tries to setup the stores' schemas.
-// Then it compares the current schema version (from the cluster's status) and determine if a schema upgrade is needed.
 func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) (time.Duration, error) {
 	logger := log.FromContext(ctx)
 
