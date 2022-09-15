@@ -12,9 +12,9 @@ require (
 	github.com/gosimple/slug v1.12.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/stretchr/testify v1.8.0
-	go.temporal.io/api v1.11.0
+	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.16.0
-	go.temporal.io/server v1.17.4
+	go.temporal.io/server v1.17.5
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20220826230418-763288e32b51
@@ -32,7 +32,7 @@ require (
 replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.25.0
 
 require (
-	cloud.google.com/go/compute v1.6.1 // indirect
+	cloud.google.com/go/compute v1.7.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
@@ -123,16 +123,16 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
-	golang.org/x/net v0.0.0-20220728181054-f92ba40d432d // indirect
-	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401 // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
+	golang.org/x/sys v0.0.0-20220909162455-aba9fc2a8ff2 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220725144611-272f38e5d71b // indirect
-	google.golang.org/grpc v1.48.0 // indirect
+	google.golang.org/genproto v0.0.0-20220909194730-69f6226f97e5 // indirect
+	google.golang.org/grpc v1.49.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
