@@ -21,22 +21,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
+	"testing"
 	"time"
 
 	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/networking"
+	kubernetesutil "github.com/alexandrevilain/temporal-operator/tests/e2e/util/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/tests/e2e/util/networking"
 	"go.temporal.io/server/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/portforward"
-	"k8s.io/client-go/transport/spdy"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"sigs.k8s.io/e2e-framework/klient"
@@ -194,30 +188,16 @@ func waitForTemporalClusterClient(ctx context.Context, cfg *envconf.Config, temp
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
-func forwardPortToPod(cfg *rest.Config, pod *corev1.Pod, port int, stopCh <-chan struct{}, readyCh chan struct{}) error {
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
-	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/portforward", pod.Namespace, pod.Name)
-	hostIP := strings.TrimLeft(cfg.Host, "htps:/")
-
-	transport, upgrader, err := spdy.RoundTripperFor(cfg)
-	if err != nil {
-		return err
-	}
-
-	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
-	fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", port, 7233)}, stopCh, readyCh, stream.Out, stream.ErrOut)
-	if err != nil {
-		return err
-	}
-	return fw.ForwardPorts()
+type testLogWriter struct {
+	t *testing.T
 }
 
-func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
+func (t *testLogWriter) Write(p []byte) (n int, err error) {
+	t.t.Logf("%s", p)
+	return len(p), nil
+}
+
+func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{
@@ -250,7 +230,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, tem
 	}
 
 	if len(podList.Items) == 0 {
-		return "", nil, errors.New("No frontend port found")
+		return "", nil, errors.New("no frontend port found")
 	}
 
 	selectedPod := podList.Items[0]
@@ -266,15 +246,17 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, tem
 	// readyCh communicate when the port forward is ready to get traffic
 	readyCh := make(chan struct{})
 
+	out := &testLogWriter{t}
+
 	go func() {
-		err := forwardPortToPod(cfg.Client().RESTConfig(), &selectedPod, localPort, stopCh, readyCh)
+		err := kubernetesutil.ForwardPortToPod(cfg.Client().RESTConfig(), &selectedPod, localPort, out, stopCh, readyCh)
 		if err != nil {
 			panic(err)
 		}
 	}()
 
 	<-readyCh
-	println("Port forwarding is ready to get traffic.")
+	t.Log("Port forwarding is ready to get traffic.")
 
 	connectAddr := fmt.Sprintf("localhost:%d", localPort)
 	return connectAddr, func() { close(stopCh) }, nil

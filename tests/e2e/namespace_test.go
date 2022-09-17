@@ -38,7 +38,7 @@ func TestNamespaceCreation(t *testing.T) {
 
 	namespaceFature := features.New("namespace creation using CRD").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
+			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
 			temporalCluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.17.5")
@@ -55,7 +55,7 @@ func TestNamespaceCreation(t *testing.T) {
 			return ctx
 		}).
 		Assess("Can create a temporal namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
+			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
 			temporalNamespace = &appsv1alpha1.TemporalNamespace{
@@ -75,7 +75,7 @@ func TestNamespaceCreation(t *testing.T) {
 			return ctx
 		}).
 		Assess("Namespace exists", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, temporalCluster)
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, temporalCluster)
 			if err != nil {
 				t.Fatal(err)
 			}
