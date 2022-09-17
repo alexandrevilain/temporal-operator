@@ -43,7 +43,7 @@ func NewMTLSBootstrapIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *r
 func (b *MTLSBootstrapIssuerBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Issuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("bootstrap-issuer"),
+			Name:      b.instance.ChildResourceName(bootstrapIssuer),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil

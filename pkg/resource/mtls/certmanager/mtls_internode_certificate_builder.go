@@ -44,7 +44,7 @@ func NewMTLSInternodeCertificateBuilder(instance *v1alpha1.TemporalCluster, sche
 func (b *MTLSInternodeCertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("internode-certificate"),
+			Name:      b.instance.ChildResourceName(InternodeCertificate),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
@@ -55,7 +55,7 @@ func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName("internode-certificate"),
+		SecretName: b.instance.ChildResourceName(InternodeCertificate),
 		CommonName: "Internode Certificate",
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.InternodeCertificate,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
@@ -68,7 +68,7 @@ func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
 			b.instance.Spec.MTLS.Internode.ServerName(b.instance.ServerName()),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("internode-intermediate-ca-issuer"),
+			Name: b.instance.ChildResourceName(internodeIntermediateCAIssuer),
 			Kind: certmanagerv1.IssuerKind,
 		},
 		Usages: []certmanagerv1.KeyUsage{

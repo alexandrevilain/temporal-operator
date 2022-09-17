@@ -25,7 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
-	certmanagermetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
@@ -171,9 +171,9 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			internodeMTLS = &v1alpha1.InternodeMTLSSpec{}
 		}
 
-		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), certmanagermetav1.TLSCAKey)
-		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.crt")
-		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), "tls.key")
+		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), certmanager.TLSCA)
+		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSCert)
+		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSKey)
 		internodeClientTLS := config.ClientTLS{
 			ServerName:              internodeMTLS.ServerName(b.instance.ServerName()),
 			DisableHostVerification: false,
@@ -197,12 +197,12 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 		if b.instance.Spec.MTLS.FrontendEnabled() {
 			frontendMTLS := b.instance.Spec.MTLS.Frontend
-			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), certmanagermetav1.TLSCAKey)
+			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), certmanager.TLSCA)
 
 			temporalCfg.Global.TLS.Frontend = config.GroupTLS{
 				Server: config.ServerTLS{
-					CertFile:          path.Join(frontendMTLS.GetCertificateMountPath(), "tls.crt"),
-					KeyFile:           path.Join(frontendMTLS.GetCertificateMountPath(), "tls.key"),
+					CertFile:          path.Join(frontendMTLS.GetCertificateMountPath(), certmanager.TLSCert),
+					KeyFile:           path.Join(frontendMTLS.GetCertificateMountPath(), certmanager.TLSKey),
 					RequireClientAuth: true,
 					ClientCAFiles: []string{
 						internodeIntermediateCAFilePath,
@@ -219,8 +219,8 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			}
 
 			temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
-				CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), "tls.crt"),
-				KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), "tls.key"),
+				CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSCert),
+				KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSKey),
 				Client: config.ClientTLS{
 					ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
 					DisableHostVerification: false,

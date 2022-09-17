@@ -31,8 +31,8 @@ func NewMTLSRootCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runt
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "root-ca-issuer",
-			secretName: "root-ca-certificate",
+			name:       rootCaIssuer,
+			secretName: rootCaCertificate,
 		},
 	}
 }

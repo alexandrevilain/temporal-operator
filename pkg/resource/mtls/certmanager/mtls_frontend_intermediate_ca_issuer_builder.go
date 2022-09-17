@@ -31,8 +31,8 @@ func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalClust
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "frontend-intermediate-ca-issuer",
-			secretName: "frontend-intermediate-ca-certificate",
+			name:       frontendIntermediateCAIssuer,
+			secretName: FrontendIntermediateCACertificate,
 		},
 	}
 }

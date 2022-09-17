@@ -35,8 +35,8 @@ func NewWorkerFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluste
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "worker-certificate",
-			secretName: "worker-certificate",
+			name:       WorkerCertificate,
+			secretName: WorkerCertificate,
 			commonName: "Worker client certificate",
 			dnsName:    fmt.Sprintf("worker.%s", instance.ServerName()),
 		},
