@@ -70,16 +70,16 @@ func (b *UIIngressBuilder) parseHost(host string) *url.URL {
 }
 
 func (b *UIIngressBuilder) Update(object client.Object) error {
-	service := object.(*networkingv1.Ingress)
-	service.Labels = object.GetLabels()
-	service.Annotations = metadata.Merge(object.GetAnnotations(), b.instance.Spec.UI.Ingress.Annotations)
-	service.Spec.IngressClassName = b.instance.Spec.UI.Ingress.IngressClassName
+	ingress := object.(*networkingv1.Ingress)
+	ingress.Labels = object.GetLabels()
+	ingress.Annotations = metadata.Merge(object.GetAnnotations(), b.instance.Spec.UI.Ingress.Annotations)
 
-	service.Spec.Rules = make([]networkingv1.IngressRule, 0, len(b.instance.Spec.UI.Ingress.Hosts))
+	rules := make([]networkingv1.IngressRule, 0, len(b.instance.Spec.UI.Ingress.Hosts))
+
 	for _, host := range b.instance.Spec.UI.Ingress.Hosts {
 		parsedURL := b.parseHost(host)
 		pathType := networkingv1.PathTypePrefix
-		service.Spec.Rules = append(service.Spec.Rules, networkingv1.IngressRule{
+		rules = append(rules, networkingv1.IngressRule{
 			Host: parsedURL.Host,
 			IngressRuleValue: networkingv1.IngressRuleValue{
 				HTTP: &networkingv1.HTTPIngressRuleValue{
@@ -102,9 +102,13 @@ func (b *UIIngressBuilder) Update(object client.Object) error {
 		})
 	}
 
-	service.Spec.TLS = b.instance.Spec.UI.Ingress.TLS
+	ingress.Spec = networkingv1.IngressSpec{
+		IngressClassName: b.instance.Spec.UI.Ingress.IngressClassName,
+		Rules:            rules,
+		TLS:              b.instance.Spec.UI.Ingress.TLS,
+	}
 
-	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(b.instance, ingress, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
 	return nil

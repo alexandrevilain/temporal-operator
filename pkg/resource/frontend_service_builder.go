@@ -46,7 +46,7 @@ func NewFrontendServiceBuilder(instance *v1alpha1.TemporalCluster, scheme *runti
 func (b *FrontendServiceBuilder) Build() (client.Object, error) {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("frontend"),
+			Name:      b.instance.ChildResourceName(FrontendService),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
@@ -56,14 +56,17 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 	service := object.(*corev1.Service)
 	service.Labels = object.GetLabels()
 	service.Annotations = object.GetAnnotations()
-	service.Spec.Type = corev1.ServiceTypeClusterIP
-	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, common.FrontendServiceName)
-	service.Spec.Ports = []corev1.ServicePort{
-		{
-			Name:       "grpc-rpc",
-			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(*b.instance.Spec.Services.Frontend.Port),
-			TargetPort: intstr.FromString("rpc"),
+
+	service.Spec = corev1.ServiceSpec{
+		Type:     corev1.ServiceTypeClusterIP,
+		Selector: metadata.LabelsSelector(b.instance.Name, common.FrontendServiceName),
+		Ports: []corev1.ServicePort{
+			{
+				Name:       "grpc-rpc",
+				Protocol:   corev1.ProtocolTCP,
+				Port:       int32(*b.instance.Spec.Services.Frontend.Port),
+				TargetPort: intstr.FromString("rpc"),
+			},
 		},
 	}
 

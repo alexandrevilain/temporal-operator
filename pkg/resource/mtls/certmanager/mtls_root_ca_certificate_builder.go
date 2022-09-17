@@ -44,7 +44,7 @@ func NewMTLSRootCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme 
 func (b *MTLSRootCACertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("root-ca-certificate"),
+			Name:      b.instance.ChildResourceName(rootCaCertificate),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
@@ -57,14 +57,14 @@ func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
 	certificate.Spec = certmanagerv1.CertificateSpec{
 		IsCA:       true,
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.RootCACertificate,
-		SecretName: b.instance.ChildResourceName("root-ca-certificate"),
+		SecretName: b.instance.ChildResourceName(rootCaCertificate),
 		CommonName: "Root CA certificate",
 		PrivateKey: caCertificatePrivateKey,
 		DNSNames: []string{
 			b.instance.ServerName(),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("bootstrap-issuer"),
+			Name: b.instance.ChildResourceName(bootstrapIssuer),
 			Kind: certmanagerv1.IssuerKind,
 		},
 		Usages: caCertificatesUsages,

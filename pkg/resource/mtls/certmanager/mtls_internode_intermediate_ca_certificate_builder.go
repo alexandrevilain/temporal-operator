@@ -44,7 +44,7 @@ func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.Tempora
 func (b *MTLSInternodeItermediateCACertificateBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+			Name:      b.instance.ChildResourceName(InternodeIntermediateCACertificate),
 			Namespace: b.instance.Namespace,
 		},
 	}, nil
@@ -56,7 +56,7 @@ func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Obje
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
 		IsCA:       true,
-		SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+		SecretName: b.instance.ChildResourceName(InternodeIntermediateCACertificate),
 		CommonName: "Internode intermediate CA certificate",
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
 		PrivateKey: caCertificatePrivateKey,
@@ -64,7 +64,7 @@ func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Obje
 			b.instance.ServerName(),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("root-ca-issuer"),
+			Name: b.instance.ChildResourceName(rootCaIssuer),
 			Kind: certmanagerv1.IssuerKind,
 		},
 		Usages: caCertificatesUsages,

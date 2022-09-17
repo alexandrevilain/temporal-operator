@@ -19,9 +19,11 @@ package resource
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,6 +33,10 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+)
+
+const (
+	uiCertsMountPath = "/etc/temporal/config/certs/client/ui"
 )
 
 type UIDeploymentBuilder struct {
@@ -67,67 +73,51 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
-	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
-	}
-	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: metadata.Merge(
-				istio.GetLabels(b.instance),
-				metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
-			),
-			Annotations: metadata.Merge(
-				linkerd.GetAnnotations(b.instance),
-				istio.GetAnnotations(b.instance),
-				metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
-			),
-		},
-	}
+	volumes := []corev1.Volume{}
+	volumeMounts := []corev1.VolumeMount{}
 
-	container := corev1.Container{
-		Name:                     "ui",
-		Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Version),
-		ImagePullPolicy:          corev1.PullAlways,
-		TerminationMessagePath:   "/dev/termination-log",
-		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-		Ports: []corev1.ContainerPort{
-			{
-				Name:          "http",
-				ContainerPort: int32(8080),
-				Protocol:      corev1.ProtocolTCP,
-			},
+	env := []corev1.EnvVar{
+		{
+			Name:  "TEMPORAL_ADDRESS",
+			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
 		},
-		Env: []corev1.EnvVar{
-			{
-				Name:  "TEMPORAL_ADDRESS",
-				Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
-			},
-			{
-				Name:  "TEMPORAL_CORS_ORIGINS",
-				Value: "",
-			},
+		{
+			Name:  "TEMPORAL_CORS_ORIGINS",
+			Value: "",
 		},
 	}
 
 	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
-		container.VolumeMounts = append(container.VolumeMounts,
+		volumeMounts = append(volumeMounts,
 			corev1.VolumeMount{
-				Name:      "ui-mtls-certificate",
-				MountPath: "/etc/temporal/config/certs/client/ui",
+				Name:      certmanager.UIFrontendClientCertificate,
+				MountPath: uiCertsMountPath,
 			},
 		)
-		container.Env = append(container.Env,
+
+		volumes = append(volumes,
+			corev1.Volume{
+				Name: certmanager.UIFrontendClientCertificate,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: b.instance.ChildResourceName(certmanager.UIFrontendClientCertificate),
+					},
+				},
+			},
+		)
+
+		env = append(env,
 			corev1.EnvVar{
 				Name:  "TEMPORAL_TLS_CA",
-				Value: "/etc/temporal/config/certs/client/ui/ca.crt",
+				Value: path.Join(uiCertsMountPath, certmanager.TLSCA),
 			},
 			corev1.EnvVar{
 				Name:  "TEMPORAL_TLS_CERT",
-				Value: "/etc/temporal/config/certs/client/ui/tls.crt",
+				Value: path.Join(uiCertsMountPath, certmanager.TLSCert),
 			},
 			corev1.EnvVar{
 				Name:  "TEMPORAL_TLS_KEY",
-				Value: "/etc/temporal/config/certs/client/ui/tls.key",
+				Value: path.Join(uiCertsMountPath, certmanager.TLSKey),
 			},
 			corev1.EnvVar{
 				Name:  "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION",
@@ -140,31 +130,50 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		)
 	}
 
-	deployment.Spec.Template.Spec = corev1.PodSpec{
-		ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
-		Containers: []corev1.Container{
-			container,
+	deployment.Spec = appsv1.DeploymentSpec{
+		Selector: &metav1.LabelSelector{
+			MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
 		},
-		RestartPolicy:                 corev1.RestartPolicyAlways,
-		TerminationGracePeriodSeconds: pointer.Int64(30),
-		DNSPolicy:                     corev1.DNSClusterFirst,
-		SchedulerName:                 "default-scheduler",
-		SecurityContext:               &corev1.PodSecurityContext{},
-	}
-
-	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
-		if b.instance.Spec.MTLS.InternodeEnabled() {
-			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
-				corev1.Volume{
-					Name: "ui-mtls-certificate",
-					VolumeSource: corev1.VolumeSource{
-						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("ui-mtls-certificate"),
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: metadata.Merge(
+					istio.GetLabels(b.instance),
+					metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
+				),
+				Annotations: metadata.Merge(
+					linkerd.GetAnnotations(b.instance),
+					istio.GetAnnotations(b.instance),
+					metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+				),
+			},
+			Spec: corev1.PodSpec{
+				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+				Containers: []corev1.Container{
+					{
+						Name:                     "ui",
+						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Version),
+						ImagePullPolicy:          corev1.PullAlways,
+						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+						Ports: []corev1.ContainerPort{
+							{
+								Name:          "http",
+								ContainerPort: int32(8080),
+								Protocol:      corev1.ProtocolTCP,
+							},
 						},
+						Env:          env,
+						VolumeMounts: volumeMounts,
 					},
 				},
-			)
-		}
+				Volumes:                       volumes,
+				RestartPolicy:                 corev1.RestartPolicyAlways,
+				TerminationGracePeriodSeconds: pointer.Int64(30),
+				DNSPolicy:                     corev1.DNSClusterFirst,
+				SchedulerName:                 corev1.DefaultSchedulerName,
+				SecurityContext:               &corev1.PodSecurityContext{},
+			},
+		},
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

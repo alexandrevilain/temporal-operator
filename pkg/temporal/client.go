@@ -25,6 +25,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	temporallog "github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	temporalclient "go.temporal.io/sdk/client"
 	corev1 "k8s.io/api/core/v1"
@@ -36,7 +37,7 @@ import (
 // GetTlSConfigFromSecret returns a tls.Config from the provided secret.
 // The secret should contain 3 keys: ca.crt, tls.crt and tls.key.
 func GetTlSConfigFromSecret(secret *corev1.Secret) (*tls.Config, error) {
-	caCrt, ok := secret.Data["ca.crt"]
+	caCrt, ok := secret.Data[certmanager.TLSCA]
 	if !ok {
 		return nil, errors.New("can't get ca.crt from client secret")
 	}
@@ -46,12 +47,12 @@ func GetTlSConfigFromSecret(secret *corev1.Secret) (*tls.Config, error) {
 		return nil, errors.New("failed to add server CA's certificate")
 	}
 
-	tlsCrt, ok := secret.Data["tls.crt"]
+	tlsCrt, ok := secret.Data[certmanager.TLSCert]
 	if !ok {
 		return nil, errors.New("can't get tls.crt from client secret")
 	}
 
-	tlsKey, ok := secret.Data["tls.key"]
+	tlsKey, ok := secret.Data[certmanager.TLSKey]
 	if !ok {
 		return nil, errors.New("can't get tls.key from client secret")
 	}
@@ -72,7 +73,7 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 	secret := &corev1.Secret{}
 
 	err := client.Get(ctx, types.NamespacedName{
-		Name:      cluster.ChildResourceName("frontend-certificate"),
+		Name:      cluster.ChildResourceName(certmanager.FrontendCertificate),
 		Namespace: cluster.GetNamespace(),
 	}, secret)
 	if err != nil {

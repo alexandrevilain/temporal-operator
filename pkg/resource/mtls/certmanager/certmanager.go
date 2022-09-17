@@ -17,7 +17,49 @@
 
 package certmanager
 
-import certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+import (
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+)
+
+// internal issuers and certificates names.
+const (
+	bootstrapIssuer               = "bootstrap-issuer"
+	frontendIntermediateCAIssuer  = "frontend-intermediate-ca-issuer"
+	internodeIntermediateCAIssuer = "internode-intermediate-ca-issuer"
+
+	rootCaIssuer      = "root-ca-issuer"
+	rootCaCertificate = "root-ca-certificate"
+)
+
+const (
+	// InternodeCertificate is the name of the certificate used for internode communications.
+	InternodeCertificate = "internode-certificate"
+	// FrontendCertificate is the name of the certificate used by the frontend.
+	FrontendCertificate = "frontend-certificate"
+	// WorkerCertificate is the name of the client certificate
+	// used for by the worker for authenticating against the frontend.
+	WorkerCertificate = "worker-certificate"
+
+	// InternodeIntermediateCACertificate is the name of the intermediate CA certificate used to issue
+	// internode certificates.
+	InternodeIntermediateCACertificate = "internode-intermediate-ca-certificate"
+	// FrontendIntermediateCACertificate is the name of the intermediate CA certificate used to issue
+	// frontend certificates.
+	FrontendIntermediateCACertificate = "frontend-intermediate-ca-certificate"
+
+	// AdmintoolsFrontendClientCertificate is the name of the client certificate
+	// used for by admin tools for authenticating against the frontend.
+	AdmintoolsFrontendClientCertificate = "admintools-mtls-certificate"
+	// UIFrontendClientCertificate is the name of the client certificate
+	// used for by UI for authenticating against the frontend.
+	UIFrontendClientCertificate = "ui-mtls-certificate"
+)
+
+const (
+	TLSCA   = "ca.crt"
+	TLSCert = "tls.crt"
+	TLSKey  = "tls.key"
+)
 
 var (
 	caCertificatesUsages = []certmanagerv1.KeyUsage{
