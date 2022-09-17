@@ -40,7 +40,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 
 	mTLSCertManagerFeature := features.New("mTLS enabled with cert-manager").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
+			namespace := GetNamespaceForFeature(ctx)
 
 			client, err := cfg.NewClient()
 			if err != nil {
@@ -113,11 +113,11 @@ func TestWithmTLSEnabled(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			return context.WithValue(ctx, "cluster", temporalCluster)
+			return context.WithValue(ctx, clusterKey, temporalCluster)
 		}).
 		Assess("Temporal cluster created", AssertClusterReady()).
 		Assess("Can create a temporal cluster namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
+			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
 			temporalClusterClient = &appsv1alpha1.TemporalClusterClient{
@@ -144,9 +144,9 @@ func TestWithmTLSEnabled(t *testing.T) {
 
 		}).
 		Assess("Temporal cluster can handle workflows", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForTest(ctx, t)
+			namespace := GetNamespaceForFeature(ctx)
 
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, temporalCluster)
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, temporalCluster)
 			if err != nil {
 				t.Fatal(err)
 			}
