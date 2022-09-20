@@ -26,8 +26,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -205,17 +203,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
 		},
 		Template: corev1.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: metadata.Merge(
-					istio.GetLabels(b.instance),
-					metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
-				),
-				Annotations: metadata.Merge(
-					linkerd.GetAnnotations(b.instance),
-					istio.GetAnnotations(b.instance),
-					metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
-				),
-			},
+			ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
 			Spec: corev1.PodSpec{
 				ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 				DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),

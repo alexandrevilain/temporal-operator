@@ -22,22 +22,25 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type GenericCAIssuerBuilder struct {
+type GenericItermediateCACertificateBuilder struct {
 	instance *v1alpha1.TemporalCluster
 	scheme   *runtime.Scheme
-
-	name       string
+	// name defines the name of the intermediate CA certificate
+	name string
+	// secretName is the name of the secrets holding the intermediate CA certificate
 	secretName string
+	commonName string
 }
 
-func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
-	return &certmanagerv1.Issuer{
+func (b *GenericItermediateCACertificateBuilder) Build() (client.Object, error) {
+	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(b.name),
 			Namespace: b.instance.Namespace,
@@ -45,15 +48,27 @@ func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
-func (b *GenericCAIssuerBuilder) Update(object client.Object) error {
-	issuer := object.(*certmanagerv1.Issuer)
-	issuer.Labels = object.GetLabels()
-	issuer.Annotations = object.GetAnnotations()
-	issuer.Spec.CA = &certmanagerv1.CAIssuer{
+func (b *GenericItermediateCACertificateBuilder) Update(object client.Object) error {
+	certificate := object.(*certmanagerv1.Certificate)
+	certificate.Labels = object.GetLabels()
+	certificate.Annotations = object.GetAnnotations()
+	certificate.Spec = certmanagerv1.CertificateSpec{
+		IsCA:       true,
 		SecretName: b.instance.ChildResourceName(b.secretName),
+		CommonName: b.commonName,
+		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
+		PrivateKey: caCertificatePrivateKey,
+		DNSNames: []string{
+			b.instance.ServerName(),
+		},
+		IssuerRef: certmanagermeta.ObjectReference{
+			Name: b.instance.ChildResourceName(rootCaIssuer),
+			Kind: certmanagerv1.IssuerKind,
+		},
+		Usages: caCertificatesUsages,
 	}
 
-	if err := controllerutil.SetControllerReference(b.instance, issuer, b.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
 	return nil

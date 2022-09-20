@@ -24,8 +24,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -135,17 +133,7 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 			MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
 		},
 		Template: corev1.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: metadata.Merge(
-					istio.GetLabels(b.instance),
-					metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
-				),
-				Annotations: metadata.Merge(
-					linkerd.GetAnnotations(b.instance),
-					istio.GetAnnotations(b.instance),
-					metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
-				),
-			},
+			ObjectMeta: buildPodObjectMeta(b.instance, "ui"),
 			Spec: corev1.PodSpec{
 				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 				Containers: []corev1.Container{
