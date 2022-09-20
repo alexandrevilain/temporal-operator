@@ -19,7 +19,6 @@ package resource
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
@@ -104,28 +103,7 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 			},
 		)
 
-		env = append(env,
-			corev1.EnvVar{
-				Name:  "TEMPORAL_TLS_CA",
-				Value: path.Join(uiCertsMountPath, certmanager.TLSCA),
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_TLS_CERT",
-				Value: path.Join(uiCertsMountPath, certmanager.TLSCert),
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_TLS_KEY",
-				Value: path.Join(uiCertsMountPath, certmanager.TLSKey),
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_TLS_ENABLE_HOST_VERIFICATION",
-				Value: "true",
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_TLS_SERVER_NAME",
-				Value: b.instance.Spec.MTLS.Frontend.ServerName(b.instance.ServerName()),
-			},
-		)
+		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL", uiCertsMountPath)...)
 	}
 
 	deployment.Spec = appsv1.DeploymentSpec{
