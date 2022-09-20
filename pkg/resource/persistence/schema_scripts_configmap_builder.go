@@ -287,7 +287,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 			baseData:       baseData,
 			Tool:           visibilityStoreTool,
 			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
-			KeyspaceName:   defaultStore.Cassandra.Keyspace,
+			KeyspaceName:   visibilityStore.Cassandra.Keyspace,
 		})
 		if err != nil {
 			return fmt.Errorf("can't render create-visibility-keyspace.sh: %w", err)
