@@ -25,6 +25,7 @@ import (
 )
 
 const (
+	CreateCassandraTemplate  = "create-cassandra.sh"
 	CreateDatabaseTemplate   = "create-database.sh"
 	SetupSchemaTemplate      = "setup-schema.sh"
 	UpdateSchemaTemplate     = "update-schema.sh"
@@ -36,6 +37,10 @@ var (
 	templates = map[string]*template.Template{}
 
 	templatesContent = map[string]string{
+		CreateCassandraTemplate: dedent.Dedent(`
+			#!/bin/bash
+			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
+		`),
 		CreateDatabaseTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }}  create-database -database {{ .DatabaseName }}
@@ -207,6 +212,13 @@ type (
 		Tool           string
 		ConnectionArgs string
 		DatabaseName   string
+	}
+
+	createKeyspace struct {
+		baseData
+		Tool           string
+		ConnectionArgs string
+		KeyspaceName   string
 	}
 
 	setupSchemaData struct {
