@@ -234,18 +234,6 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		return err
 	}
 
-	defaultStoreTool := "temporal-sql-tool"
-	if defaultStoreType == v1alpha1.CassandraDatastore {
-		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
-		// Which requires an env var set.
-		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
-	}
-
-	visibilityStoreTool := "temporal-sql-tool"
-	if visibilityStoreType == v1alpha1.CassandraDatastore {
-		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
-	}
-
 	defaultStoreArgs, err := b.getStoreArgs(defaultStore)
 	if err != nil {
 		return fmt.Errorf("can't create default store args: %w", err)
@@ -260,6 +248,60 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 	if b.instance.Spec.MTLS != nil {
 		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
+	}
+
+	defaultStoreTool := "temporal-sql-tool"
+	var renderedCreateDefaultDatabase bytes.Buffer
+	var renderedCreateVisibilityDatabase bytes.Buffer
+	if defaultStoreType == v1alpha1.CassandraDatastore {
+		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
+		// Which requires an env var set.
+		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
+
+		err = templates[CreateCassandraTemplate].Execute(&renderedCreateDefaultDatabase, createKeyspace{
+			baseData:       baseData,
+			Tool:           defaultStoreTool,
+			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
+			KeyspaceName:   defaultStore.Cassandra.Keyspace,
+		})
+		if err != nil {
+			return fmt.Errorf("can't render create-default-keyspace.sh: %w", err)
+		}
+	} else {
+		err = templates[CreateDatabaseTemplate].Execute(&renderedCreateDefaultDatabase, createDatabase{
+			baseData:       baseData,
+			Tool:           defaultStoreTool,
+			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
+			DatabaseName:   defaultStore.SQL.DatabaseName,
+		})
+		if err != nil {
+			return fmt.Errorf("can't render create-default-database.sh: %w", err)
+		}
+	}
+
+	visibilityStoreTool := "temporal-sql-tool"
+	if visibilityStoreType == v1alpha1.CassandraDatastore {
+		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
+
+		err = templates[CreateCassandraTemplate].Execute(&renderedCreateVisibilityDatabase, createKeyspace{
+			baseData:       baseData,
+			Tool:           visibilityStoreTool,
+			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
+			KeyspaceName:   visibilityStore.Cassandra.Keyspace,
+		})
+		if err != nil {
+			return fmt.Errorf("can't render create-visibility-keyspace.sh: %w", err)
+		}
+	} else {
+		err = templates[CreateDatabaseTemplate].Execute(&renderedCreateVisibilityDatabase, createDatabase{
+			baseData:       baseData,
+			Tool:           visibilityStoreTool,
+			ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
+			DatabaseName:   visibilityStore.SQL.DatabaseName,
+		})
+		if err != nil {
+			return fmt.Errorf("can't render create-visibility-database.sh: %w", err)
+		}
 	}
 
 	var renderedSetupDefaultSchema bytes.Buffer
@@ -307,10 +349,12 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	configMap.Data = map[string]string{
-		"setup-default-schema.sh":     renderedSetupDefaultSchema.String(),
-		"setup-visibility-schema.sh":  renderedSetupVisibilitySchema.String(),
-		"update-default-schema.sh":    renderedUpdateDefaultSchema.String(),
-		"update-visibility-schema.sh": renderedUpdateVisibilitySchema.String(),
+		"create-default-database.sh":    renderedCreateDefaultDatabase.String(),
+		"create-visibility-database.sh": renderedCreateVisibilityDatabase.String(),
+		"setup-default-schema.sh":       renderedSetupDefaultSchema.String(),
+		"setup-visibility-schema.sh":    renderedSetupVisibilitySchema.String(),
+		"update-default-schema.sh":      renderedUpdateDefaultSchema.String(),
+		"update-visibility-schema.sh":   renderedUpdateVisibilitySchema.String(),
 	}
 
 	advancedVisibilityStore, found := b.instance.GetAdvancedVisibilityDatastore()

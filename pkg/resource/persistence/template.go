@@ -25,6 +25,8 @@ import (
 )
 
 const (
+	CreateCassandraTemplate  = "create-cassandra.sh"
+	CreateDatabaseTemplate   = "create-database.sh"
 	SetupSchemaTemplate      = "setup-schema.sh"
 	UpdateSchemaTemplate     = "update-schema.sh"
 	SetupAdvancedVisibility  = "setup-advanced-visibility.sh"
@@ -35,6 +37,14 @@ var (
 	templates = map[string]*template.Template{}
 
 	templatesContent = map[string]string{
+		CreateCassandraTemplate: dedent.Dedent(`
+			#!/bin/bash
+			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
+		`),
+		CreateDatabaseTemplate: dedent.Dedent(`
+			#!/bin/bash
+			{{ .Tool }} {{ .ConnectionArgs }}  create-database -database {{ .DatabaseName }}
+		`),
 		SetupSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} setup-schema -v {{ .InitialVersion }}
@@ -195,6 +205,20 @@ var (
 type (
 	baseData struct {
 		MTLSProvider string
+	}
+
+	createDatabase struct {
+		baseData
+		Tool           string
+		ConnectionArgs string
+		DatabaseName   string
+	}
+
+	createKeyspace struct {
+		baseData
+		Tool           string
+		ConnectionArgs string
+		KeyspaceName   string
 	}
 
 	setupSchemaData struct {
