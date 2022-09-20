@@ -285,7 +285,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 		err = templates[CreateCassandraTemplate].Execute(&renderedCreateVisibilityDatabase, createKeyspace{
 			baseData:       baseData,
-			Tool:           defaultStoreTool,
+			Tool:           visibilityStoreTool,
 			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
 			KeyspaceName:   defaultStore.Cassandra.Keyspace,
 		})
