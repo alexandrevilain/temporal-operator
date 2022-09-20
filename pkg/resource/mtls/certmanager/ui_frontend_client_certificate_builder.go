@@ -35,8 +35,8 @@ func NewUIFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, s
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "ui-mtls-certificate",
-			secretName: "ui-mtls-certificate",
+			name:       UIFrontendClientCertificate,
+			secretName: UIFrontendClientCertificate,
 			commonName: "UI client certificate",
 			dnsName:    fmt.Sprintf("ui.%s", instance.ServerName()),
 		},

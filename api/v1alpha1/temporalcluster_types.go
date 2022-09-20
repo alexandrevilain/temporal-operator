@@ -276,9 +276,10 @@ func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
 }
 
 const (
-	DataStoreClientTLSCertFileName = "client.pem"
-	DataStoreClientTLSKeyFileName  = "client.key"
-	DataStoreClientTLSCaFileName   = "ca.pem"
+	dataStoreTLSCertificateBasePath = "/etc/tls/datastores"
+	DataStoreClientTLSCertFileName  = "client.pem"
+	DataStoreClientTLSKeyFileName   = "client.key"
+	DataStoreClientTLSCaFileName    = "ca.pem"
 )
 
 // GetTLSKeyFileMountPath returns the client TLS cert mount path.
@@ -288,7 +289,7 @@ func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
 		return ""
 	}
 
-	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSCertFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSCertFileName)
 }
 
 // GetTLSKeyFileMountPath returns the client TLS key mount path.
@@ -297,7 +298,7 @@ func (s *TemporalDatastoreSpec) GetTLSKeyFileMountPath() string {
 	if s.TLS == nil || s.TLS.KeyFileRef == nil {
 		return ""
 	}
-	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSKeyFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSKeyFileName)
 }
 
 // GetTLSCaFileMountPath  returns the CA key mount path.
@@ -306,7 +307,7 @@ func (s *TemporalDatastoreSpec) GetTLSCaFileMountPath() string {
 	if s.TLS == nil || s.TLS.CaFileRef == nil {
 		return ""
 	}
-	return path.Join("/etc/tls/datastores", s.Name, DataStoreClientTLSCaFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSCaFileName)
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.

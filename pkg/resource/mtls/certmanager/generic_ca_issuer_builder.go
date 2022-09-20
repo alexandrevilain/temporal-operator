@@ -36,13 +36,6 @@ type GenericCAIssuerBuilder struct {
 	secretName string
 }
 
-func NewGenericCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name, secretName string) *GenericCAIssuerBuilder {
-	return &GenericCAIssuerBuilder{
-		instance: instance,
-		scheme:   scheme,
-	}
-}
-
 func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
 	return &certmanagerv1.Issuer{
 		ObjectMeta: metav1.ObjectMeta{

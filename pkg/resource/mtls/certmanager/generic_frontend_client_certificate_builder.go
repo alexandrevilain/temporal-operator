@@ -77,7 +77,7 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 			b.dnsName,
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("frontend-intermediate-ca-issuer"),
+			Name: b.instance.ChildResourceName(frontendIntermediateCAIssuer),
 			Kind: certmanagerv1.IssuerKind,
 		},
 	}

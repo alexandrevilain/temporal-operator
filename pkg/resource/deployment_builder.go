@@ -25,8 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -125,29 +124,29 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			volumeMounts = append(volumeMounts,
 				corev1.VolumeMount{
-					Name:      "internode-intermediate-ca",
+					Name:      certmanager.InternodeIntermediateCACertificate,
 					MountPath: b.instance.Spec.MTLS.Internode.GetIntermediateCACertificateMountPath(),
 				},
 				corev1.VolumeMount{
-					Name:      "internode-certificate",
+					Name:      certmanager.InternodeCertificate,
 					MountPath: b.instance.Spec.MTLS.Internode.GetCertificateMountPath(),
 				},
 			)
 
 			volumes = append(volumes,
 				corev1.Volume{
-					Name: "internode-intermediate-ca",
+					Name: certmanager.InternodeIntermediateCACertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
+							SecretName: b.instance.ChildResourceName(certmanager.InternodeIntermediateCACertificate),
 						},
 					},
 				},
 				corev1.Volume{
-					Name: "internode-certificate",
+					Name: certmanager.InternodeCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("internode-certificate"),
+							SecretName: b.instance.ChildResourceName(certmanager.InternodeCertificate),
 						},
 					},
 				},
@@ -156,41 +155,41 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		if b.instance.Spec.MTLS.FrontendEnabled() {
 			volumeMounts = append(volumeMounts,
 				corev1.VolumeMount{
-					Name:      "frontend-intermediate-ca",
+					Name:      certmanager.FrontendIntermediateCACertificate,
 					MountPath: b.instance.Spec.MTLS.Frontend.GetIntermediateCACertificateMountPath(),
 				},
 				corev1.VolumeMount{
-					Name:      "frontend-certificate",
+					Name:      certmanager.FrontendCertificate,
 					MountPath: b.instance.Spec.MTLS.Frontend.GetCertificateMountPath(),
 				},
 				corev1.VolumeMount{
-					Name:      "worker-certificate",
+					Name:      certmanager.WorkerCertificate,
 					MountPath: b.instance.Spec.MTLS.Frontend.GetWorkerCertificateMountPath(),
 				},
 			)
 
 			volumes = append(volumes,
 				corev1.Volume{
-					Name: "frontend-intermediate-ca",
+					Name: certmanager.FrontendIntermediateCACertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("frontend-intermediate-ca-certificate"),
+							SecretName: b.instance.ChildResourceName(certmanager.FrontendIntermediateCACertificate),
 						},
 					},
 				},
 				corev1.Volume{
-					Name: "frontend-certificate",
+					Name: certmanager.FrontendCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("frontend-certificate"),
+							SecretName: b.instance.ChildResourceName(certmanager.FrontendCertificate),
 						},
 					},
 				},
 				corev1.Volume{
-					Name: "worker-certificate",
+					Name: certmanager.WorkerCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("worker-certificate"),
+							SecretName: b.instance.ChildResourceName(certmanager.WorkerCertificate),
 						},
 					},
 				},
@@ -204,17 +203,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
 		},
 		Template: corev1.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: metadata.Merge(
-					istio.GetLabels(b.instance),
-					metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
-				),
-				Annotations: metadata.Merge(
-					linkerd.GetAnnotations(b.instance),
-					istio.GetAnnotations(b.instance),
-					metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
-				),
-			},
+			ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
 			Spec: corev1.PodSpec{
 				ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 				DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
@@ -224,7 +213,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 						Name:                     b.serviceName,
 						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
 						ImagePullPolicy:          corev1.PullAlways,
-						TerminationMessagePath:   "/dev/termination-log",
+						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 						SecurityContext: &corev1.SecurityContext{
 							AllowPrivilegeEscalation: pointer.Bool(false),
@@ -264,7 +253,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				RestartPolicy:                 corev1.RestartPolicyAlways,
 				TerminationGracePeriodSeconds: pointer.Int64(30),
 				DNSPolicy:                     corev1.DNSClusterFirst,
-				SchedulerName:                 "default-scheduler",
+				SchedulerName:                 corev1.DefaultSchedulerName,
 				SecurityContext: &corev1.PodSecurityContext{
 					RunAsUser:    pointer.Int64(1000),
 					RunAsGroup:   pointer.Int64(1000),

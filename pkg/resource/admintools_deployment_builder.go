@@ -22,8 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,6 +30,10 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+)
+
+const (
+	admintoolsCertsMountPath = "/etc/temporal/config/certs/client/admintools"
 )
 
 type AdminToolsDeploymentBuilder struct {
@@ -67,108 +70,80 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
-	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, "admintools"),
-	}
-	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: metadata.Merge(
-				istio.GetLabels(b.instance),
-				metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
-			),
-			Annotations: metadata.Merge(
-				linkerd.GetAnnotations(b.instance),
-				istio.GetAnnotations(b.instance),
-				metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
-			),
+	env := []corev1.EnvVar{
+		{
+			Name:  "TEMPORAL_CLI_ADDRESS",
+			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
 		},
 	}
 
-	container := corev1.Container{
-		Name:                     "admintools",
-		Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
-		ImagePullPolicy:          corev1.PullAlways,
-		TerminationMessagePath:   "/dev/termination-log",
-		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-		Env: []corev1.EnvVar{
-			{
-				Name:  "TEMPORAL_CLI_ADDRESS",
-				Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
-			},
-		},
-		LivenessProbe: &corev1.Probe{
-			ProbeHandler: corev1.ProbeHandler{
-				Exec: &corev1.ExecAction{
-					Command: []string{"ls", "/"},
-				},
-			},
-			InitialDelaySeconds: 5,
-			TimeoutSeconds:      1,
-			PeriodSeconds:       5,
-			SuccessThreshold:    1,
-			FailureThreshold:    3,
-		},
-		SecurityContext: &corev1.SecurityContext{
-			AllowPrivilegeEscalation: pointer.Bool(false),
-		},
-	}
+	volumes := []corev1.Volume{}
+	volumeMounts := []corev1.VolumeMount{}
 
 	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
-		container.VolumeMounts = append(container.VolumeMounts,
+
+		volumeMounts = append(volumeMounts,
 			corev1.VolumeMount{
-				Name:      "admintools-mtls-certificate",
-				MountPath: "/etc/temporal/config/certs/client/admintools",
+				Name:      certmanager.AdmintoolsFrontendClientCertificate,
+				MountPath: admintoolsCertsMountPath,
 			},
 		)
-		container.Env = append(container.Env,
-			corev1.EnvVar{
-				Name:  "TEMPORAL_CLI_TLS_CA",
-				Value: "/etc/temporal/config/certs/client/admintools/ca.crt",
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_CLI_TLS_CERT",
-				Value: "/etc/temporal/config/certs/client/admintools/tls.crt",
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_CLI_TLS_KEY",
-				Value: "/etc/temporal/config/certs/client/admintools/tls.key",
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_CLI_TLS_ENABLE_HOST_VERIFICATION",
-				Value: "true",
-			},
-			corev1.EnvVar{
-				Name:  "TEMPORAL_CLI_TLS_SERVER_NAME",
-				Value: b.instance.Spec.MTLS.Frontend.ServerName(b.instance.ServerName()),
-			},
-		)
-	}
-
-	deployment.Spec.Template.Spec = corev1.PodSpec{
-		ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
-		Containers: []corev1.Container{
-			container,
-		},
-		RestartPolicy:                 corev1.RestartPolicyAlways,
-		TerminationGracePeriodSeconds: pointer.Int64(30),
-		DNSPolicy:                     corev1.DNSClusterFirst,
-		SecurityContext:               &corev1.PodSecurityContext{},
-		SchedulerName:                 "default-scheduler",
-	}
-
-	if b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled() {
-		if b.instance.Spec.MTLS.InternodeEnabled() {
-			deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes,
-				corev1.Volume{
-					Name: "admintools-mtls-certificate",
-					VolumeSource: corev1.VolumeSource{
-						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName("admintools-mtls-certificate"),
-						},
+		volumes = append(volumes,
+			corev1.Volume{
+				Name: certmanager.AdmintoolsFrontendClientCertificate,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: b.instance.ChildResourceName(certmanager.AdmintoolsFrontendClientCertificate),
 					},
 				},
-			)
-		}
+			},
+		)
+
+		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL_CLI", admintoolsCertsMountPath)...)
+	}
+
+	deployment.Spec = appsv1.DeploymentSpec{
+		Selector: &metav1.LabelSelector{
+			MatchLabels: metadata.LabelsSelector(b.instance.Name, "admintools"),
+		},
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: buildPodObjectMeta(b.instance, "admintools"),
+			Spec: corev1.PodSpec{
+				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+				Containers: []corev1.Container{
+					{
+						Name:                     "admintools",
+						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
+						ImagePullPolicy:          corev1.PullAlways,
+						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+						Env:                      env,
+						LivenessProbe: &corev1.Probe{
+							ProbeHandler: corev1.ProbeHandler{
+								Exec: &corev1.ExecAction{
+									Command: []string{"ls", "/"},
+								},
+							},
+							InitialDelaySeconds: 5,
+							TimeoutSeconds:      1,
+							PeriodSeconds:       5,
+							SuccessThreshold:    1,
+							FailureThreshold:    3,
+						},
+						SecurityContext: &corev1.SecurityContext{
+							AllowPrivilegeEscalation: pointer.Bool(false),
+						},
+						VolumeMounts: volumeMounts,
+					},
+				},
+				RestartPolicy:                 corev1.RestartPolicyAlways,
+				TerminationGracePeriodSeconds: pointer.Int64(30),
+				DNSPolicy:                     corev1.DNSClusterFirst,
+				SecurityContext:               &corev1.PodSecurityContext{},
+				SchedulerName:                 corev1.DefaultSchedulerName,
+				Volumes:                       volumes,
+			},
+		},
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

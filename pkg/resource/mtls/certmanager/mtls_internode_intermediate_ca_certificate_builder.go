@@ -18,60 +18,22 @@
 package certmanager
 
 import (
-	"fmt"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type MTLSInternodeItermediateCACertificateBuilder struct {
-	instance *v1alpha1.TemporalCluster
-	scheme   *runtime.Scheme
+	GenericItermediateCACertificateBuilder
 }
 
 func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
 	return &MTLSInternodeItermediateCACertificateBuilder{
-		instance: instance,
-		scheme:   scheme,
-	}
-}
-
-func (b *MTLSInternodeItermediateCACertificateBuilder) Build() (client.Object, error) {
-	return &certmanagerv1.Certificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
-			Namespace: b.instance.Namespace,
+		GenericItermediateCACertificateBuilder: GenericItermediateCACertificateBuilder{
+			instance:   instance,
+			scheme:     scheme,
+			name:       InternodeIntermediateCACertificate,
+			secretName: InternodeIntermediateCACertificate,
+			commonName: "Internode intermediate CA certificate",
 		},
-	}, nil
-}
-
-func (b *MTLSInternodeItermediateCACertificateBuilder) Update(object client.Object) error {
-	certificate := object.(*certmanagerv1.Certificate)
-	certificate.Labels = object.GetLabels()
-	certificate.Annotations = object.GetAnnotations()
-	certificate.Spec = certmanagerv1.CertificateSpec{
-		IsCA:       true,
-		SecretName: b.instance.ChildResourceName("internode-intermediate-ca-certificate"),
-		CommonName: "Internode intermediate CA certificate",
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
-		PrivateKey: caCertificatePrivateKey,
-		DNSNames: []string{
-			b.instance.ServerName(),
-		},
-		IssuerRef: certmanagermeta.ObjectReference{
-			Name: b.instance.ChildResourceName("root-ca-issuer"),
-			Kind: certmanagerv1.IssuerKind,
-		},
-		Usages: caCertificatesUsages,
 	}
-
-	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
-	}
-	return nil
 }

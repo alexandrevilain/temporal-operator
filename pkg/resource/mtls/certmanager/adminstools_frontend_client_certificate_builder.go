@@ -35,8 +35,8 @@ func NewAdminToolsFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCl
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,
 			scheme:     scheme,
-			name:       "admintools-mtls-certificate",
-			secretName: "admintools-mtls-certificate",
+			name:       AdmintoolsFrontendClientCertificate,
+			secretName: AdmintoolsFrontendClientCertificate,
 			commonName: "Admintools client certificate",
 			dnsName:    fmt.Sprintf("admintools.%s", instance.ServerName()),
 		},
