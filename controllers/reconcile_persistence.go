@@ -67,6 +67,14 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 	// Then for each stores actions, check if the corresponding job is created and has succesfully ran.
 	jobs := []job{
 		{
+			name:    "create-default-database",
+			command: []string{"/etc/scripts/create-default-database.sh"},
+		},
+		{
+			name:    "create-visibility-database",
+			command: []string{"/etc/scripts/create-visibility-database.sh"},
+		},
+		{
 			name:    "setup-default-schema",
 			command: []string{"/etc/scripts/setup-default-schema.sh"},
 		},

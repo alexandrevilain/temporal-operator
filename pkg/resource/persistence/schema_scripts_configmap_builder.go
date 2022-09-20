@@ -262,6 +262,17 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
 	}
 
+	var renderedCreateDefaultDatabase bytes.Buffer
+	err = templates[CreateDatabaseTemplate].Execute(&renderedCreateDefaultDatabase, createDatabase{
+		baseData:       baseData,
+		Tool:           defaultStoreTool,
+		ConnectionArgs: b.argsMapToString(defaultStoreArgs),
+		DatabaseName:   defaultStore.SQL.DatabaseName,
+	})
+	if err != nil {
+		return fmt.Errorf("can't render create-default-database.sh: %w", err)
+	}
+
 	var renderedSetupDefaultSchema bytes.Buffer
 	err = templates[SetupSchemaTemplate].Execute(&renderedSetupDefaultSchema, setupSchemaData{
 		baseData:       baseData,
@@ -282,6 +293,17 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	})
 	if err != nil {
 		return fmt.Errorf("can't render update-default-schema.sh: %w", err)
+	}
+
+	var renderedCreateVisibilityDatabase bytes.Buffer
+	err = templates[CreateDatabaseTemplate].Execute(&renderedCreateVisibilityDatabase, createDatabase{
+		baseData:       baseData,
+		Tool:           defaultStoreTool,
+		ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
+		DatabaseName:   visibilityStore.SQL.DatabaseName,
+	})
+	if err != nil {
+		return fmt.Errorf("can't render create-visibility-database.sh: %w", err)
 	}
 
 	var renderedSetupVisibilitySchema bytes.Buffer
@@ -307,10 +329,12 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	configMap.Data = map[string]string{
-		"setup-default-schema.sh":     renderedSetupDefaultSchema.String(),
-		"setup-visibility-schema.sh":  renderedSetupVisibilitySchema.String(),
-		"update-default-schema.sh":    renderedUpdateDefaultSchema.String(),
-		"update-visibility-schema.sh": renderedUpdateVisibilitySchema.String(),
+		"create-default-database.sh":    renderedCreateDefaultDatabase.String(),
+		"create-visibility-database.sh": renderedCreateVisibilityDatabase.String(),
+		"setup-default-schema.sh":       renderedSetupDefaultSchema.String(),
+		"setup-visibility-schema.sh":    renderedSetupVisibilitySchema.String(),
+		"update-default-schema.sh":      renderedUpdateDefaultSchema.String(),
+		"update-visibility-schema.sh":   renderedUpdateVisibilitySchema.String(),
 	}
 
 	advancedVisibilityStore, found := b.instance.GetAdvancedVisibilityDatastore()

@@ -25,6 +25,7 @@ import (
 )
 
 const (
+	CreateDatabaseTemplate   = "create-database.sh"
 	SetupSchemaTemplate      = "setup-schema.sh"
 	UpdateSchemaTemplate     = "update-schema.sh"
 	SetupAdvancedVisibility  = "setup-advanced-visibility.sh"
@@ -35,6 +36,10 @@ var (
 	templates = map[string]*template.Template{}
 
 	templatesContent = map[string]string{
+		CreateDatabaseTemplate: dedent.Dedent(`
+			#!/bin/bash
+			{{ .Tool }} {{ .ConnectionArgs }}  create-database -database {{ .DatabaseName }}
+		`),
 		SetupSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} setup-schema -v {{ .InitialVersion }}
@@ -195,6 +200,13 @@ var (
 type (
 	baseData struct {
 		MTLSProvider string
+	}
+
+	createDatabase struct {
+		baseData
+		Tool           string
+		ConnectionArgs string
+		DatabaseName   string
 	}
 
 	setupSchemaData struct {
