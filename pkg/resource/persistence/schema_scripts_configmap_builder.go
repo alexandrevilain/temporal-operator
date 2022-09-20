@@ -295,7 +295,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	} else {
 		err = templates[CreateDatabaseTemplate].Execute(&renderedCreateVisibilityDatabase, createDatabase{
 			baseData:       baseData,
-			Tool:           defaultStoreTool,
+			Tool:           visibilityStoreTool,
 			ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
 			DatabaseName:   visibilityStore.SQL.DatabaseName,
 		})
