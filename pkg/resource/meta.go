@@ -15,25 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package resource
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type MTLSInternodeItermediateCACertificateBuilder struct {
-	GenericItermediateCACertificateBuilder
-}
-
-func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
-	return &MTLSInternodeItermediateCACertificateBuilder{
-		GenericItermediateCACertificateBuilder: GenericItermediateCACertificateBuilder{
-			instance:   instance,
-			scheme:     scheme,
-			name:       InternodeIntermediateCACertificate,
-			secretName: InternodeIntermediateCACertificate,
-			commonName: "Internode intermediate CA certificate",
-		},
+// buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided TemporalCluster.
+func buildPodObjectMeta(instance *v1alpha1.TemporalCluster, service string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Labels: metadata.Merge(
+			istio.GetLabels(instance),
+			metadata.GetLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
+		),
+		Annotations: metadata.Merge(
+			linkerd.GetAnnotations(instance),
+			istio.GetAnnotations(instance),
+			metadata.GetAnnotations(instance.Name, instance.Annotations),
+		),
 	}
 }
