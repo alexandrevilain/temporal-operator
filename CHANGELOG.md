@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.1
+
+**Release date:** 2022-09-21
+
+Fixes:
+- Update templates and scripts to create default as well as visibility databases [#115](https://github.com/alexandrevilain/temporal-operator/pull/115)
+
+Improvements:
+- Clean e2e code base and run persistence tests in parallel [#113](https://github.com/alexandrevilain/temporal-operator/pull/113)
+- Clean resources code base [#119](https://github.com/alexandrevilain/temporal-operator/pull/119)
+
+Updates:
+- Bump go.temporal.io/api from 1.11.0 to 1.12.0 [#110](https://github.com/alexandrevilain/temporal-operator/pull/110)
+
+
 ## 0.6.0
 
 **Release date:** 2022-09-14
