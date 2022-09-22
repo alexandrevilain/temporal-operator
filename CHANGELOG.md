@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.6.2
+
+**Release date:** 2022-09-22
+
+Fixes:
+- Remove liveness probes from being configured for worker since it has no grpc endpoint [#123](https://github.com/alexandrevilain/temporal-operator/pull/123)
+
+Improvements:
+- Add manifests to build operator bundle for OLM and operatorhub [#123](https://github.com/alexandrevilain/temporal-operator/pull/123))
+
 ## 0.6.1
 
 **Release date:** 2022-09-21
