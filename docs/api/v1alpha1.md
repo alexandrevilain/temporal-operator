@@ -2,9 +2,9 @@
 <p>Package v1alpha1 contains API Schema definitions for the apps v1alpha1 API group</p>
 Resource Types:
 <ul class="simple"><li>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalCluster">TemporalCluster</a>
+<a href="#temporal.io/v1alpha1.TemporalCluster">TemporalCluster</a>
 </li></ul>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalCluster">TemporalCluster
+<h3 id="temporal.io/v1alpha1.TemporalCluster">TemporalCluster
 </h3>
 <p>TemporalCluster defines a temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">
@@ -22,7 +22,7 @@ Resource Types:
 <code>apiVersion</code><br>
 string</td>
 <td>
-<code>apps.alexandrevilain.dev/v1alpha1</code>
+<code>temporal.io/v1alpha1</code>
 </td>
 </tr>
 <tr>
@@ -52,7 +52,7 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">
 TemporalClusterSpec
 </a>
 </em>
@@ -102,7 +102,7 @@ This field is immutable.</p>
 <td>
 <code>services</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalServicesSpec">
+<a href="#temporal.io/v1alpha1.TemporalServicesSpec">
 TemporalServicesSpec
 </a>
 </em>
@@ -116,7 +116,7 @@ TemporalServicesSpec
 <td>
 <code>persistence</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalPersistenceSpec">
+<a href="#temporal.io/v1alpha1.TemporalPersistenceSpec">
 TemporalPersistenceSpec
 </a>
 </em>
@@ -129,7 +129,7 @@ TemporalPersistenceSpec
 <td>
 <code>datastores</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">
 []TemporalDatastoreSpec
 </a>
 </em>
@@ -158,7 +158,7 @@ to use for pulling temporal images from registries.</p>
 <td>
 <code>ui</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">
+<a href="#temporal.io/v1alpha1.TemporalUISpec">
 TemporalUISpec
 </a>
 </em>
@@ -172,7 +172,7 @@ TemporalUISpec
 <td>
 <code>admintools</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">
+<a href="#temporal.io/v1alpha1.TemporalAdminToolsSpec">
 TemporalAdminToolsSpec
 </a>
 </em>
@@ -186,7 +186,7 @@ TemporalAdminToolsSpec
 <td>
 <code>mTLS</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+<a href="#temporal.io/v1alpha1.MTLSSpec">
 MTLSSpec
 </a>
 </em>
@@ -203,7 +203,7 @@ MTLSSpec
 <td>
 <code>status</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterStatus">
+<a href="#temporal.io/v1alpha1.TemporalClusterStatus">
 TemporalClusterStatus
 </a>
 </em>
@@ -216,11 +216,11 @@ TemporalClusterStatus
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.CassandraConsistencySpec">CassandraConsistencySpec
+<h3 id="temporal.io/v1alpha1.CassandraConsistencySpec">CassandraConsistencySpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraSpec">CassandraSpec</a>)
+<a href="#temporal.io/v1alpha1.CassandraSpec">CassandraSpec</a>)
 </p>
 <p>CassandraConsistencySpec sets the consistency level for regular &amp; serial queries to Cassandra.</p>
 <div class="md-typeset__scrollwrap">
@@ -263,11 +263,11 @@ github.com/gocql/gocql.SerialConsistency
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.CassandraSpec">CassandraSpec
+<h3 id="temporal.io/v1alpha1.CassandraSpec">CassandraSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
 </p>
 <p>CassandraSpec contains cassandra datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -365,7 +365,7 @@ Kubernetes meta/v1.Duration
 <td>
 <code>consistency</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraConsistencySpec">
+<a href="#temporal.io/v1alpha1.CassandraConsistencySpec">
 CassandraConsistencySpec
 </a>
 </em>
@@ -391,11 +391,11 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">CertificatesDurationSpec
+<h3 id="temporal.io/v1alpha1.CertificatesDurationSpec">CertificatesDurationSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+<a href="#temporal.io/v1alpha1.MTLSSpec">MTLSSpec</a>)
 </p>
 <p>CertificatesDurationSpec defines parameters for the temporal mTLS certificates duration.</p>
 <div class="md-typeset__scrollwrap">
@@ -487,11 +487,11 @@ It defaults to 1 year.</p>
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec
+<h3 id="temporal.io/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
 </p>
 <p>DatastoreTLSSpec contains datastore TLS connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -519,7 +519,7 @@ bool
 <td>
 <code>certFileRef</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.SecretKeyReference">
+<a href="#temporal.io/v1alpha1.SecretKeyReference">
 SecretKeyReference
 </a>
 </em>
@@ -533,7 +533,7 @@ SecretKeyReference
 <td>
 <code>keyFileRef</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.SecretKeyReference">
+<a href="#temporal.io/v1alpha1.SecretKeyReference">
 SecretKeyReference
 </a>
 </em>
@@ -547,7 +547,7 @@ SecretKeyReference
 <td>
 <code>caFileRef</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.SecretKeyReference">
+<a href="#temporal.io/v1alpha1.SecretKeyReference">
 SecretKeyReference
 </a>
 </em>
@@ -584,13 +584,13 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.DatastoreType">DatastoreType
+<h3 id="temporal.io/v1alpha1.DatastoreType">DatastoreType
 (<code>string</code> alias)</h3>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.ElasticsearchIndices">ElasticsearchIndices
+<h3 id="temporal.io/v1alpha1.ElasticsearchIndices">ElasticsearchIndices
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">ElasticsearchSpec</a>)
+<a href="#temporal.io/v1alpha1.ElasticsearchSpec">ElasticsearchSpec</a>)
 </p>
 <p>ElasticsearchIndices holds index names.</p>
 <div class="md-typeset__scrollwrap">
@@ -630,11 +630,11 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">ElasticsearchSpec
+<h3 id="temporal.io/v1alpha1.ElasticsearchSpec">ElasticsearchSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
 </p>
 <p>ElasticsearchSpec contains Elasticsearch datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -684,7 +684,7 @@ string
 <td>
 <code>indices</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchIndices">
+<a href="#temporal.io/v1alpha1.ElasticsearchIndices">
 ElasticsearchIndices
 </a>
 </em>
@@ -747,11 +747,11 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">FrontendMTLSSpec
+<h3 id="temporal.io/v1alpha1.FrontendMTLSSpec">FrontendMTLSSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+<a href="#temporal.io/v1alpha1.MTLSSpec">MTLSSpec</a>)
 </p>
 <p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
@@ -780,11 +780,11 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">InternodeMTLSSpec
+<h3 id="temporal.io/v1alpha1.InternodeMTLSSpec">InternodeMTLSSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+<a href="#temporal.io/v1alpha1.MTLSSpec">MTLSSpec</a>)
 </p>
 <p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
@@ -813,18 +813,18 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSProvider">MTLSProvider
+<h3 id="temporal.io/v1alpha1.MTLSProvider">MTLSProvider
 (<code>string</code> alias)</h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec</a>)
+<a href="#temporal.io/v1alpha1.MTLSSpec">MTLSSpec</a>)
 </p>
 <p>MTLSProvider is the enum for support mTLS provider.</p>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.MTLSSpec">MTLSSpec
+<h3 id="temporal.io/v1alpha1.MTLSSpec">MTLSSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>MTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
@@ -841,7 +841,7 @@ bool
 <td>
 <code>provider</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSProvider">
+<a href="#temporal.io/v1alpha1.MTLSProvider">
 MTLSProvider
 </a>
 </em>
@@ -855,7 +855,7 @@ MTLSProvider
 <td>
 <code>internode</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.InternodeMTLSSpec">
+<a href="#temporal.io/v1alpha1.InternodeMTLSSpec">
 InternodeMTLSSpec
 </a>
 </em>
@@ -870,7 +870,7 @@ Useless if mTLS provider is not cert-manager.</p>
 <td>
 <code>frontend</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.FrontendMTLSSpec">
+<a href="#temporal.io/v1alpha1.FrontendMTLSSpec">
 FrontendMTLSSpec
 </a>
 </em>
@@ -885,7 +885,7 @@ Useless if mTLS provider is not cert-manager.</p>
 <td>
 <code>certificatesDuration</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.CertificatesDurationSpec">
+<a href="#temporal.io/v1alpha1.CertificatesDurationSpec">
 CertificatesDurationSpec
 </a>
 </em>
@@ -916,11 +916,11 @@ Useless if mTLS provider is not cert-manager.</p>
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.SQLSpec">SQLSpec
+<h3 id="temporal.io/v1alpha1.SQLSpec">SQLSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
 </p>
 <p>SQLSpec contains SQL datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1053,12 +1053,12 @@ int
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.SecretKeyReference">SecretKeyReference
+<h3 id="temporal.io/v1alpha1.SecretKeyReference">SecretKeyReference
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec</a>, 
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1alpha1.DatastoreTLSSpec">DatastoreTLSSpec</a>, 
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
 </p>
 <p>SecretKeyReference contains enough information to locate the referenced Kubernetes Secret object in the same
 namespace.</p>
@@ -1099,11 +1099,11 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.ServiceSpec">ServiceSpec
+<h3 id="temporal.io/v1alpha1.ServiceSpec">ServiceSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalServicesSpec">TemporalServicesSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalServicesSpec">TemporalServicesSpec</a>)
 </p>
 <p>ServiceSpec contains a temporal service specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1166,11 +1166,11 @@ int32
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.ServiceStatus">ServiceStatus
+<h3 id="temporal.io/v1alpha1.ServiceStatus">ServiceStatus
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterStatus">TemporalClusterStatus</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterStatus">TemporalClusterStatus</a>)
 </p>
 <p>ServiceStatus reports a service status.</p>
 <div class="md-typeset__scrollwrap">
@@ -1220,11 +1220,11 @@ bool
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">TemporalAdminToolsSpec
+<h3 id="temporal.io/v1alpha1.TemporalAdminToolsSpec">TemporalAdminToolsSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
 Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
@@ -1266,7 +1266,7 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient
+<h3 id="temporal.io/v1alpha1.TemporalClusterClient">TemporalClusterClient
 </h3>
 <p>TemporalClusterClient is the Schema for the temporalclusterclients API</p>
 <div class="md-typeset__scrollwrap">
@@ -1297,7 +1297,7 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientSpec">
+<a href="#temporal.io/v1alpha1.TemporalClusterClientSpec">
 TemporalClusterClientSpec
 </a>
 </em>
@@ -1326,7 +1326,7 @@ Kubernetes core/v1.LocalObjectReference
 <td>
 <code>status</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientStatus">
+<a href="#temporal.io/v1alpha1.TemporalClusterClientStatus">
 TemporalClusterClientStatus
 </a>
 </em>
@@ -1338,11 +1338,11 @@ TemporalClusterClientStatus
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientSpec">TemporalClusterClientSpec
+<h3 id="temporal.io/v1alpha1.TemporalClusterClientSpec">TemporalClusterClientSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
 </p>
 <p>TemporalClusterClientSpec defines the desired state of TemporalClusterClient</p>
 <div class="md-typeset__scrollwrap">
@@ -1372,11 +1372,11 @@ Kubernetes core/v1.LocalObjectReference
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterClientStatus">TemporalClusterClientStatus
+<h3 id="temporal.io/v1alpha1.TemporalClusterClientStatus">TemporalClusterClientStatus
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterClient">TemporalClusterClient</a>)
 </p>
 <p>TemporalClusterClientStatus defines the observed state of TemporalClusterClient</p>
 <div class="md-typeset__scrollwrap">
@@ -1417,11 +1417,11 @@ Kubernetes core/v1.LocalObjectReference
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec
+<h3 id="temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalCluster">TemporalCluster</a>)
+<a href="#temporal.io/v1alpha1.TemporalCluster">TemporalCluster</a>)
 </p>
 <p>TemporalClusterSpec defines the desired state of TemporalCluster.</p>
 <div class="md-typeset__scrollwrap">
@@ -1474,7 +1474,7 @@ This field is immutable.</p>
 <td>
 <code>services</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalServicesSpec">
+<a href="#temporal.io/v1alpha1.TemporalServicesSpec">
 TemporalServicesSpec
 </a>
 </em>
@@ -1488,7 +1488,7 @@ TemporalServicesSpec
 <td>
 <code>persistence</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalPersistenceSpec">
+<a href="#temporal.io/v1alpha1.TemporalPersistenceSpec">
 TemporalPersistenceSpec
 </a>
 </em>
@@ -1501,7 +1501,7 @@ TemporalPersistenceSpec
 <td>
 <code>datastores</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">
+<a href="#temporal.io/v1alpha1.TemporalDatastoreSpec">
 []TemporalDatastoreSpec
 </a>
 </em>
@@ -1530,7 +1530,7 @@ to use for pulling temporal images from registries.</p>
 <td>
 <code>ui</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">
+<a href="#temporal.io/v1alpha1.TemporalUISpec">
 TemporalUISpec
 </a>
 </em>
@@ -1544,7 +1544,7 @@ TemporalUISpec
 <td>
 <code>admintools</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalAdminToolsSpec">
+<a href="#temporal.io/v1alpha1.TemporalAdminToolsSpec">
 TemporalAdminToolsSpec
 </a>
 </em>
@@ -1558,7 +1558,7 @@ TemporalAdminToolsSpec
 <td>
 <code>mTLS</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.MTLSSpec">
+<a href="#temporal.io/v1alpha1.MTLSSpec">
 MTLSSpec
 </a>
 </em>
@@ -1572,11 +1572,11 @@ MTLSSpec
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalClusterStatus">TemporalClusterStatus
+<h3 id="temporal.io/v1alpha1.TemporalClusterStatus">TemporalClusterStatus
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalCluster">TemporalCluster</a>)
+<a href="#temporal.io/v1alpha1.TemporalCluster">TemporalCluster</a>)
 </p>
 <p>TemporalClusterStatus defines the observed state of TemporalCluster.</p>
 <div class="md-typeset__scrollwrap">
@@ -1604,7 +1604,7 @@ string
 <td>
 <code>services</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ServiceStatus">
+<a href="#temporal.io/v1alpha1.ServiceStatus">
 []ServiceStatus
 </a>
 </em>
@@ -1630,11 +1630,11 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec
+<h3 id="temporal.io/v1alpha1.TemporalDatastoreSpec">TemporalDatastoreSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalDatastoreSpec contains temporal datastore specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1663,7 +1663,7 @@ It should be unique and will be referenced within the persitence spec.</p>
 <td>
 <code>sql</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.SQLSpec">
+<a href="#temporal.io/v1alpha1.SQLSpec">
 SQLSpec
 </a>
 </em>
@@ -1677,7 +1677,7 @@ SQLSpec
 <td>
 <code>elasticsearch</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ElasticsearchSpec">
+<a href="#temporal.io/v1alpha1.ElasticsearchSpec">
 ElasticsearchSpec
 </a>
 </em>
@@ -1691,7 +1691,7 @@ ElasticsearchSpec
 <td>
 <code>cassandra</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.CassandraSpec">
+<a href="#temporal.io/v1alpha1.CassandraSpec">
 CassandraSpec
 </a>
 </em>
@@ -1705,7 +1705,7 @@ CassandraSpec
 <td>
 <code>passwordSecretRef</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.SecretKeyReference">
+<a href="#temporal.io/v1alpha1.SecretKeyReference">
 SecretKeyReference
 </a>
 </em>
@@ -1718,7 +1718,7 @@ SecretKeyReference
 <td>
 <code>tls</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.DatastoreTLSSpec">
+<a href="#temporal.io/v1alpha1.DatastoreTLSSpec">
 DatastoreTLSSpec
 </a>
 </em>
@@ -1732,7 +1732,7 @@ DatastoreTLSSpec
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace
+<h3 id="temporal.io/v1alpha1.TemporalNamespace">TemporalNamespace
 </h3>
 <p>TemporalNamespace is the Schema for the temporalnamespaces API</p>
 <div class="md-typeset__scrollwrap">
@@ -1763,7 +1763,7 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceSpec">
+<a href="#temporal.io/v1alpha1.TemporalNamespaceSpec">
 TemporalNamespaceSpec
 </a>
 </em>
@@ -1890,7 +1890,7 @@ Only applicable if the namespace is a global namespace.</p>
 <td>
 <code>status</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceStatus">
+<a href="#temporal.io/v1alpha1.TemporalNamespaceStatus">
 TemporalNamespaceStatus
 </a>
 </em>
@@ -1902,11 +1902,11 @@ TemporalNamespaceStatus
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceSpec">TemporalNamespaceSpec
+<h3 id="temporal.io/v1alpha1.TemporalNamespaceSpec">TemporalNamespaceSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
+<a href="#temporal.io/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
 </p>
 <p>TemporalNamespaceSpec defines the desired state of TemporalNamespace</p>
 <div class="md-typeset__scrollwrap">
@@ -2034,11 +2034,11 @@ Only applicable if the namespace is a global namespace.</p>
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalNamespaceStatus">TemporalNamespaceStatus
+<h3 id="temporal.io/v1alpha1.TemporalNamespaceStatus">TemporalNamespaceStatus
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
+<a href="#temporal.io/v1alpha1.TemporalNamespace">TemporalNamespace</a>)
 </p>
 <p>TemporalNamespaceStatus defines the observed state of TemporalNamespace</p>
 <div class="md-typeset__scrollwrap">
@@ -2068,11 +2068,11 @@ Only applicable if the namespace is a global namespace.</p>
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalPersistenceSpec">TemporalPersistenceSpec
+<h3 id="temporal.io/v1alpha1.TemporalPersistenceSpec">TemporalPersistenceSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalPersistenceSpec contains temporal persistence specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -2123,11 +2123,11 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalServicesSpec">TemporalServicesSpec
+<h3 id="temporal.io/v1alpha1.TemporalServicesSpec">TemporalServicesSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalServicesSpec contains all temporal services specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -2144,7 +2144,7 @@ string
 <td>
 <code>frontend</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ServiceSpec">
+<a href="#temporal.io/v1alpha1.ServiceSpec">
 ServiceSpec
 </a>
 </em>
@@ -2158,7 +2158,7 @@ ServiceSpec
 <td>
 <code>history</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ServiceSpec">
+<a href="#temporal.io/v1alpha1.ServiceSpec">
 ServiceSpec
 </a>
 </em>
@@ -2172,7 +2172,7 @@ ServiceSpec
 <td>
 <code>matching</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ServiceSpec">
+<a href="#temporal.io/v1alpha1.ServiceSpec">
 ServiceSpec
 </a>
 </em>
@@ -2186,7 +2186,7 @@ ServiceSpec
 <td>
 <code>worker</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.ServiceSpec">
+<a href="#temporal.io/v1alpha1.ServiceSpec">
 ServiceSpec
 </a>
 </em>
@@ -2200,11 +2200,11 @@ ServiceSpec
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalUIIngressSpec">TemporalUIIngressSpec
+<h3 id="temporal.io/v1alpha1.TemporalUIIngressSpec">TemporalUIIngressSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">TemporalUISpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalUISpec">TemporalUISpec</a>)
 </p>
 <p>TemporalUIIngressSpec contains all configurations options for the UI ingress.</p>
 <div class="md-typeset__scrollwrap">
@@ -2267,11 +2267,11 @@ string
 </table>
 </div>
 </div>
-<h3 id="apps.alexandrevilain.dev/v1alpha1.TemporalUISpec">TemporalUISpec
+<h3 id="temporal.io/v1alpha1.TemporalUISpec">TemporalUISpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
+<a href="#temporal.io/v1alpha1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalUISpec defines parameters for the temporal UI within a Temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">
@@ -2324,7 +2324,7 @@ string
 <td>
 <code>ingress</code><br>
 <em>
-<a href="#apps.alexandrevilain.dev/v1alpha1.TemporalUIIngressSpec">
+<a href="#temporal.io/v1alpha1.TemporalUIIngressSpec">
 TemporalUIIngressSpec
 </a>
 </em>

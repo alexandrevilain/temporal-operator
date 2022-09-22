@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalnamespaces.apps.alexandrevilain.dev
+  name: temporalnamespaces.temporal.io
 spec:
-  group: apps.alexandrevilain.dev
+  group: temporal.io
   names:
     kind: TemporalNamespace
     listKind: TemporalNamespaceList

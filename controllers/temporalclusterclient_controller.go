@@ -46,9 +46,9 @@ type TemporalClusterClientReconciler struct {
 	CertManagerAvailable bool
 }
 
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients/finalizers,verbs=update
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

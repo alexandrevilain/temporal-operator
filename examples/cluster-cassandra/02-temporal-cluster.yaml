@@ -7,7 +7,7 @@ type: Opaque
 data:
   PASSWORD: Y2Fzc2FuZHJh
 ---
-apiVersion: apps.alexandrevilain.dev/v1alpha1
+apiVersion: temporal.io/v1alpha1
 kind: TemporalCluster
 metadata:
   name: prod

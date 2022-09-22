@@ -421,7 +421,7 @@ spec:
                   - --leader-elect
                   command:
                   - /manager
-                  image: ghcr.io/alexandrevilain/temporal-operator:v0.6.2
+                  image: ghcr.io/alexandrevilain/temporal-operator:v0.6.0
                   livenessProbe:
                     httpGet:
                       path: /healthz
@@ -501,7 +501,7 @@ spec:
   - distributed
   links:
   - name: Temporal Operator
-    url: https://github.com/ktenzer/temporal-operator
+    url: https://github.com/alexandrevilain/temporal-operator
   maintainers:
   - email: alexandre.vilain@me.com 
     name: alexandrevilain
@@ -512,5 +512,5 @@ spec:
     name: Temporal Community
     url: https://temporal.io/
   minKubeVersion: 1.19.0
-  version: 0.6.1
+  version: 0.6.2
   replaces: temporal-operator.v0.1.0

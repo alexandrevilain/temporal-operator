@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalclusterclients.apps.alexandrevilain.dev
+  name: temporalclusterclients.temporal.io
 spec:
-  group: apps.alexandrevilain.dev
+  group: temporal.io
   names:
     kind: TemporalClusterClient
     listKind: TemporalClusterClientList
