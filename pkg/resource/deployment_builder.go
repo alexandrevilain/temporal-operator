@@ -76,6 +76,19 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
+	// worker has no grpc endpoint so omit liveness probe
+	var livenessProbe *corev1.Probe
+	if b.serviceName != "worker" {
+		livenessProbe = &corev1.Probe{
+			InitialDelaySeconds: 150,
+			ProbeHandler: corev1.ProbeHandler{
+				TCPSocket: &corev1.TCPSocketAction{
+					Port: intstr.FromString("rpc"),
+				},
+			},
+		}
+	}
+
 	envVars := []corev1.EnvVar{
 		{
 			Name: "POD_IP",
@@ -238,16 +251,10 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 								Protocol:      corev1.ProtocolTCP,
 							},
 						},
-						LivenessProbe: &corev1.Probe{
-							InitialDelaySeconds: 150,
-							ProbeHandler: corev1.ProbeHandler{
-								TCPSocket: &corev1.TCPSocketAction{
-									Port: intstr.FromString("rpc"),
-								},
-							},
-						},
-						Env:          envVars,
-						VolumeMounts: volumeMounts,
+
+						LivenessProbe: livenessProbe,
+						Env:           envVars,
+						VolumeMounts:  volumeMounts,
 					},
 				},
 				RestartPolicy:                 corev1.RestartPolicyAlways,

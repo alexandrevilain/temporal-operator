@@ -48,14 +48,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 			return nil, err
 		}
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
-
-		// worker does not expose grpc endpoint so need to remove liveness probes
-		if serviceName == "worker" {
-			builders = append(builders, resource.NewWorkerDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
-		} else {
-			builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
-		}
-
+		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1alpha1.IstioMTLSProvider {
 			builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, b.Instance, b.Scheme, specs))
