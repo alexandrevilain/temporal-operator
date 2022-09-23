@@ -1,4 +1,4 @@
-domain: alexandrevilain.dev
+domain: temporal.io
 layout:
 - go.kubebuilder.io/v3
 projectName: temporal-operator
@@ -8,27 +8,24 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: alexandrevilain.dev
-  group: apps
-  kind: TemporalCluster
-  path: github.com/alexandrevilain/temporal-operator/api/v1alpha1
-  version: v1alpha1
+  domain: temporal.io
+  kind: Cluster
+  path: github.com/alexandrevilain/temporal-operator/api/v1beta1
+  version: v1beta1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: alexandrevilain.dev
-  group: apps
-  kind: TemporalClusterClient
-  path: github.com/alexandrevilain/temporal-operator/api/v1alpha1
-  version: v1alpha1
+  domain: temporal.io
+  kind: ClusterClient
+  path: github.com/alexandrevilain/temporal-operator/api/v1beta1
+  version: v1beta1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: alexandrevilain.dev
-  group: apps
-  kind: TemporalNamespace
-  path: github.com/alexandrevilain/temporal-operator/api/v1alpha1
-  version: v1alpha1
+  domain: temporal.io
+  kind: Namespace
+  path: github.com/alexandrevilain/temporal-operator/api/v1beta1
+  version: v1beta1
 version: "3"

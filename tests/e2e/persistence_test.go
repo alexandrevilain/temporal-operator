@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"testing"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
@@ -36,59 +36,59 @@ var (
 func TestPersistence(t *testing.T) {
 	tests := map[string]struct {
 		deployDependencies func(ctx context.Context, cfg *envconf.Config, namespace string) error
-		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *appsv1alpha1.TemporalCluster
+		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster
 	}{
 		"postgresql persistence": {
 			deployDependencies: deployAndWaitForPostgres,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *appsv1alpha1.TemporalCluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
-				return &appsv1alpha1.TemporalCluster{
+				return &v1beta1.Cluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: appsv1alpha1.TemporalClusterSpec{
+					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards: 1,
 						Version:          initialClusterVersion,
-						MTLS: &appsv1alpha1.MTLSSpec{
-							Provider: appsv1alpha1.CertManagerMTLSProvider,
-							Internode: &appsv1alpha1.InternodeMTLSSpec{
+						MTLS: &v1beta1.MTLSSpec{
+							Provider: v1beta1.CertManagerMTLSProvider,
+							Internode: &v1beta1.InternodeMTLSSpec{
 								Enabled: true,
 							},
-							Frontend: &appsv1alpha1.FrontendMTLSSpec{
+							Frontend: &v1beta1.FrontendMTLSSpec{
 								Enabled: true,
 							},
 						},
-						Persistence: appsv1alpha1.TemporalPersistenceSpec{
+						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore:    "default",
 							VisibilityStore: "visibility",
 						},
-						Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+						Datastores: []v1beta1.TemporalDatastoreSpec{
 							{
 								Name: "default",
-								SQL: &appsv1alpha1.SQLSpec{
+								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "postgres",
 									DatabaseName:    "temporal",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
 							},
 							{
 								Name: "visibility",
-								SQL: &appsv1alpha1.SQLSpec{
+								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "postgres",
 									DatabaseName:    "temporal_visibility",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -100,25 +100,25 @@ func TestPersistence(t *testing.T) {
 		},
 		"mysql persistence": {
 			deployDependencies: deployAndWaitForMySQL,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *appsv1alpha1.TemporalCluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
-				return &appsv1alpha1.TemporalCluster{
+				return &v1beta1.Cluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: appsv1alpha1.TemporalClusterSpec{
+					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards: 1,
 						Version:          "1.16.3",
-						Persistence: appsv1alpha1.TemporalPersistenceSpec{
+						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore:    "default",
 							VisibilityStore: "visibility",
 						},
-						Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+						Datastores: []v1beta1.TemporalDatastoreSpec{
 							{
 								Name: "default",
-								SQL: &appsv1alpha1.SQLSpec{
+								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "mysql",
 									DatabaseName:    "temporal",
@@ -128,14 +128,14 @@ func TestPersistence(t *testing.T) {
 										"tx_isolation": "READ-COMMITTED",
 									},
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
 							},
 							{
 								Name: "visibility",
-								SQL: &appsv1alpha1.SQLSpec{
+								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "mysql",
 									DatabaseName:    "temporal_visibility",
@@ -145,7 +145,7 @@ func TestPersistence(t *testing.T) {
 										"tx_isolation": "READ-COMMITTED",
 									},
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
@@ -157,44 +157,44 @@ func TestPersistence(t *testing.T) {
 		},
 		"cassandra persistence": {
 			deployDependencies: deployAndWaitForCassandra,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *appsv1alpha1.TemporalCluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
 				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
 
-				return &appsv1alpha1.TemporalCluster{
+				return &v1beta1.Cluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: appsv1alpha1.TemporalClusterSpec{
+					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards: 1,
 						Version:          initialClusterVersion,
-						Persistence: appsv1alpha1.TemporalPersistenceSpec{
+						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore:    "default",
 							VisibilityStore: "visibility",
 						},
-						Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+						Datastores: []v1beta1.TemporalDatastoreSpec{
 							{
 								Name: "default",
-								Cassandra: &appsv1alpha1.CassandraSpec{
+								Cassandra: &v1beta1.CassandraSpec{
 									Hosts:      []string{connectAddr},
 									User:       "temporal",
 									Keyspace:   "temporal",
 									Datacenter: "datacenter1",
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "cassandra-password",
 									Key:  "PASSWORD",
 								},
 							},
 							{
 								Name: "visibility",
-								Cassandra: &appsv1alpha1.CassandraSpec{
+								Cassandra: &v1beta1.CassandraSpec{
 									Hosts:      []string{connectAddr},
 									User:       "temporal",
 									Keyspace:   "temporal_visibility",
 									Datacenter: "datacenter1",
 								},
-								PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "cassandra-password",
 									Key:  "PASSWORD",
 								},

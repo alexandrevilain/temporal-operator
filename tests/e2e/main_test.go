@@ -38,7 +38,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
 var testenv env.Environment
@@ -76,7 +76,7 @@ func TestMain(m *testing.M) {
 			if err != nil {
 				return ctx, err
 			}
-			appsv1alpha1.AddToScheme(r.GetScheme())
+			v1beta1.AddToScheme(r.GetScheme())
 			return ctx, nil
 		}).
 		// Deploy cert-manager.

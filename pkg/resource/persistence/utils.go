@@ -20,7 +20,7 @@ package persistence
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -29,7 +29,7 @@ const (
 )
 
 // GetDatastoresEnvironmentVariables returns needed env vars for the provided datastores list.
-func GetDatastoresEnvironmentVariables(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.EnvVar {
+func GetDatastoresEnvironmentVariables(datastores []v1beta1.TemporalDatastoreSpec) []corev1.EnvVar {
 	vars := []corev1.EnvVar{}
 	for _, datastore := range datastores {
 		key := datastore.PasswordSecretRef.Key
@@ -54,14 +54,14 @@ func GetDatastoresEnvironmentVariables(datastores []v1alpha1.TemporalDatastoreSp
 }
 
 // GetDatastoresVolumes returns needed volume for the provided datastores list.
-func GetDatastoresVolumes(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.Volume {
+func GetDatastoresVolumes(datastores []v1beta1.TemporalDatastoreSpec) []corev1.Volume {
 	volumes := []corev1.Volume{}
 	for _, datastore := range datastores {
 		if datastore.TLS != nil && datastore.TLS.Enabled {
 			if datastore.TLS.CaFileRef != nil {
 				key := datastore.TLS.CaFileRef.Key
 				if key == "" {
-					key = v1alpha1.DataStoreClientTLSCaFileName
+					key = v1beta1.DataStoreClientTLSCaFileName
 				}
 				volumes = append(volumes,
 					corev1.Volume{
@@ -83,7 +83,7 @@ func GetDatastoresVolumes(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.
 			if datastore.TLS.CertFileRef != nil {
 				key := datastore.TLS.CertFileRef.Key
 				if key == "" {
-					key = v1alpha1.DataStoreClientTLSCertFileName
+					key = v1beta1.DataStoreClientTLSCertFileName
 				}
 				volumes = append(volumes,
 					corev1.Volume{
@@ -106,7 +106,7 @@ func GetDatastoresVolumes(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.
 			if datastore.TLS.KeyFileRef != nil {
 				key := datastore.TLS.KeyFileRef.Key
 				if key == "" {
-					key = v1alpha1.DataStoreClientTLSKeyFileName
+					key = v1beta1.DataStoreClientTLSKeyFileName
 				}
 				volumes = append(volumes,
 					corev1.Volume{
@@ -132,7 +132,7 @@ func GetDatastoresVolumes(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.
 }
 
 // GetDatastoresVolumeMounts returns needed volume mounts for the provided datastores list.
-func GetDatastoresVolumeMounts(datastores []v1alpha1.TemporalDatastoreSpec) []corev1.VolumeMount {
+func GetDatastoresVolumeMounts(datastores []v1beta1.TemporalDatastoreSpec) []corev1.VolumeMount {
 	volumeMounts := []corev1.VolumeMount{}
 	for _, datastore := range datastores {
 		if datastore.TLS != nil && datastore.TLS.Enabled {

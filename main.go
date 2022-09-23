@@ -38,7 +38,7 @@ import (
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/istio"
 	//+kubebuilder:scaffold:imports
@@ -51,7 +51,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(appsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(v1beta1.AddToScheme(scheme))
 	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
 	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
 	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
@@ -82,7 +82,7 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "0cfcfa11.alexandrevilain.dev",
+		LeaderElectionID:       "0cfcfa11.temporal.io",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -119,31 +119,31 @@ func main() {
 		setupLog.Info("Found istio installation in the cluster, features requiring istio are enabled")
 	}
 
-	if err = (&controllers.TemporalClusterReconciler{
+	if err = (&controllers.ClusterReconciler{
 		Client:               mgr.GetClient(),
 		Scheme:               mgr.GetScheme(),
-		Recorder:             mgr.GetEventRecorderFor("temporacluster-controller"),
+		Recorder:             mgr.GetEventRecorderFor("cluster-controller"),
 		CertManagerAvailable: certManagerAvailable,
 		IstioAvailable:       istioAvailable,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TemporalCluster")
+		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
-	if err = (&controllers.TemporalClusterClientReconciler{
+	if err = (&controllers.ClusterClientReconciler{
 		Client:               mgr.GetClient(),
 		Scheme:               mgr.GetScheme(),
-		Recorder:             mgr.GetEventRecorderFor("temporaclusterclient-controller"),
+		Recorder:             mgr.GetEventRecorderFor("clusterclient-controller"),
 		CertManagerAvailable: certManagerAvailable,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TemporalClusterClient")
+		setupLog.Error(err, "unable to create controller", "controller", "ClusterClient")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TemporalNamespaceReconciler{
+	if err = (&controllers.NamespaceReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TemporalNamespace")
+		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

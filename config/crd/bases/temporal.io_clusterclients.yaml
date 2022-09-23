@@ -5,21 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalclusterclients.apps.alexandrevilain.dev
+  name: clusterclients.temporal.io
 spec:
-  group: apps.alexandrevilain.dev
+  group: temporal.io
   names:
-    kind: TemporalClusterClient
-    listKind: TemporalClusterClientList
-    plural: temporalclusterclients
-    singular: temporalclusterclient
+    kind: ClusterClient
+    listKind: ClusterClientList
+    plural: clusterclients
+    singular: clusterclient
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: TemporalClusterClient is the Schema for the temporalclusterclients
-          API
+        description: ClusterClient is the Schema for the ClusterClients API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,9 +33,9 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalClusterClientSpec defines the desired state of TemporalClusterClient
+            description: ClusterClientSpec defines the desired state of ClusterClient
             properties:
-              temporalClusterRef:
+              clusterRef:
                 description: Reference to the temporal cluster the client will get
                   access to.
                 properties:
@@ -46,11 +45,10 @@ spec:
                     type: string
                 type: object
             required:
-            - temporalClusterRef
+            - clusterRef
             type: object
           status:
-            description: TemporalClusterClientStatus defines the observed state of
-              TemporalClusterClient
+            description: ClusterClientStatus defines the observed state of ClusterClient
             properties:
               secretRef:
                 description: Reference to the Kubernetes Secret containing the certificate

@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"time"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 )
@@ -37,72 +37,72 @@ const (
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
 )
 
-func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) bool {
-	before := temporalCluster.DeepCopy()
+func (r *ClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.Cluster) bool {
+	before := cluster.DeepCopy()
 
-	if temporalCluster.Spec.Version == "" {
-		temporalCluster.Spec.Version = defaultTemporalVersion
+	if cluster.Spec.Version == "" {
+		cluster.Spec.Version = defaultTemporalVersion
 	}
-	if temporalCluster.Spec.Image == "" {
-		temporalCluster.Spec.Image = defaultTemporalImage
+	if cluster.Spec.Image == "" {
+		cluster.Spec.Image = defaultTemporalImage
 	}
-	if temporalCluster.Spec.Services == nil {
-		temporalCluster.Spec.Services = new(appsv1alpha1.TemporalServicesSpec)
+	if cluster.Spec.Services == nil {
+		cluster.Spec.Services = new(v1beta1.TemporalServicesSpec)
 	}
 	// Frontend specs
-	if temporalCluster.Spec.Services.Frontend == nil {
-		temporalCluster.Spec.Services.Frontend = new(appsv1alpha1.ServiceSpec)
+	if cluster.Spec.Services.Frontend == nil {
+		cluster.Spec.Services.Frontend = new(v1beta1.ServiceSpec)
 	}
-	if temporalCluster.Spec.Services.Frontend.Replicas == nil {
-		temporalCluster.Spec.Services.Frontend.Replicas = pointer.Int32(1)
+	if cluster.Spec.Services.Frontend.Replicas == nil {
+		cluster.Spec.Services.Frontend.Replicas = pointer.Int32(1)
 	}
-	if temporalCluster.Spec.Services.Frontend.Port == nil {
-		temporalCluster.Spec.Services.Frontend.Port = pointer.Int(7233)
+	if cluster.Spec.Services.Frontend.Port == nil {
+		cluster.Spec.Services.Frontend.Port = pointer.Int(7233)
 	}
-	if temporalCluster.Spec.Services.Frontend.MembershipPort == nil {
-		temporalCluster.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
+	if cluster.Spec.Services.Frontend.MembershipPort == nil {
+		cluster.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
 	}
 	// History specs
-	if temporalCluster.Spec.Services.History == nil {
-		temporalCluster.Spec.Services.History = new(appsv1alpha1.ServiceSpec)
+	if cluster.Spec.Services.History == nil {
+		cluster.Spec.Services.History = new(v1beta1.ServiceSpec)
 	}
-	if temporalCluster.Spec.Services.History.Replicas == nil {
-		temporalCluster.Spec.Services.History.Replicas = pointer.Int32(1)
+	if cluster.Spec.Services.History.Replicas == nil {
+		cluster.Spec.Services.History.Replicas = pointer.Int32(1)
 	}
-	if temporalCluster.Spec.Services.History.Port == nil {
-		temporalCluster.Spec.Services.History.Port = pointer.Int(7234)
+	if cluster.Spec.Services.History.Port == nil {
+		cluster.Spec.Services.History.Port = pointer.Int(7234)
 	}
-	if temporalCluster.Spec.Services.History.MembershipPort == nil {
-		temporalCluster.Spec.Services.History.MembershipPort = pointer.Int(6934)
+	if cluster.Spec.Services.History.MembershipPort == nil {
+		cluster.Spec.Services.History.MembershipPort = pointer.Int(6934)
 	}
 	// Matching specs
-	if temporalCluster.Spec.Services.Matching == nil {
-		temporalCluster.Spec.Services.Matching = new(appsv1alpha1.ServiceSpec)
+	if cluster.Spec.Services.Matching == nil {
+		cluster.Spec.Services.Matching = new(v1beta1.ServiceSpec)
 	}
-	if temporalCluster.Spec.Services.Matching.Replicas == nil {
-		temporalCluster.Spec.Services.Matching.Replicas = pointer.Int32(1)
+	if cluster.Spec.Services.Matching.Replicas == nil {
+		cluster.Spec.Services.Matching.Replicas = pointer.Int32(1)
 	}
-	if temporalCluster.Spec.Services.Matching.Port == nil {
-		temporalCluster.Spec.Services.Matching.Port = pointer.Int(7235)
+	if cluster.Spec.Services.Matching.Port == nil {
+		cluster.Spec.Services.Matching.Port = pointer.Int(7235)
 	}
-	if temporalCluster.Spec.Services.Matching.MembershipPort == nil {
-		temporalCluster.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
+	if cluster.Spec.Services.Matching.MembershipPort == nil {
+		cluster.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
 	}
 	// Worker specs
-	if temporalCluster.Spec.Services.Worker == nil {
-		temporalCluster.Spec.Services.Worker = new(appsv1alpha1.ServiceSpec)
+	if cluster.Spec.Services.Worker == nil {
+		cluster.Spec.Services.Worker = new(v1beta1.ServiceSpec)
 	}
-	if temporalCluster.Spec.Services.Worker.Replicas == nil {
-		temporalCluster.Spec.Services.Worker.Replicas = pointer.Int32(1)
+	if cluster.Spec.Services.Worker.Replicas == nil {
+		cluster.Spec.Services.Worker.Replicas = pointer.Int32(1)
 	}
-	if temporalCluster.Spec.Services.Worker.Port == nil {
-		temporalCluster.Spec.Services.Worker.Port = pointer.Int(7239)
+	if cluster.Spec.Services.Worker.Port == nil {
+		cluster.Spec.Services.Worker.Port = pointer.Int(7239)
 	}
-	if temporalCluster.Spec.Services.Worker.MembershipPort == nil {
-		temporalCluster.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
+	if cluster.Spec.Services.Worker.MembershipPort == nil {
+		cluster.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
 	}
 
-	for _, datastore := range temporalCluster.Spec.Datastores {
+	for _, datastore := range cluster.Spec.Datastores {
 		if datastore.SQL != nil {
 			if datastore.SQL.ConnectProtocol == "" {
 				datastore.SQL.ConnectProtocol = "tcp"
@@ -110,53 +110,53 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, tempo
 		}
 	}
 
-	if temporalCluster.Spec.Persistence.VisibilityStore == "" {
-		temporalCluster.Spec.Persistence.VisibilityStore = temporalCluster.Spec.Persistence.DefaultStore
+	if cluster.Spec.Persistence.VisibilityStore == "" {
+		cluster.Spec.Persistence.VisibilityStore = cluster.Spec.Persistence.DefaultStore
 	}
 
-	if temporalCluster.Spec.UI == nil {
-		temporalCluster.Spec.UI = new(appsv1alpha1.TemporalUISpec)
+	if cluster.Spec.UI == nil {
+		cluster.Spec.UI = new(v1beta1.TemporalUISpec)
 	}
 
-	if temporalCluster.Spec.UI.Version == "" {
-		temporalCluster.Spec.UI.Version = defaultTemporalUIVersion
+	if cluster.Spec.UI.Version == "" {
+		cluster.Spec.UI.Version = defaultTemporalUIVersion
 	}
 
-	if temporalCluster.Spec.UI.Image == "" {
-		temporalCluster.Spec.UI.Image = defaultTemporalUIImage
+	if cluster.Spec.UI.Image == "" {
+		cluster.Spec.UI.Image = defaultTemporalUIImage
 	}
 
-	if temporalCluster.Spec.AdminTools == nil {
-		temporalCluster.Spec.AdminTools = new(appsv1alpha1.TemporalAdminToolsSpec)
+	if cluster.Spec.AdminTools == nil {
+		cluster.Spec.AdminTools = new(v1beta1.TemporalAdminToolsSpec)
 	}
 
-	if temporalCluster.Spec.AdminTools.Image == "" {
-		temporalCluster.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
+	if cluster.Spec.AdminTools.Image == "" {
+		cluster.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
 	}
 
-	if temporalCluster.MTLSWithCertManagerEnabled() {
-		if temporalCluster.Spec.MTLS.RefreshInterval == nil {
-			temporalCluster.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
+	if cluster.MTLSWithCertManagerEnabled() {
+		if cluster.Spec.MTLS.RefreshInterval == nil {
+			cluster.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration = &appsv1alpha1.CertificatesDurationSpec{}
+		if cluster.Spec.MTLS.CertificatesDuration == nil {
+			cluster.Spec.MTLS.CertificatesDuration = &v1beta1.CertificatesDurationSpec{}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration.RootCACertificate == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration.RootCACertificate = &metav1.Duration{Duration: time.Hour * 87600}
+		if cluster.Spec.MTLS.CertificatesDuration.RootCACertificate == nil {
+			cluster.Spec.MTLS.CertificatesDuration.RootCACertificate = &metav1.Duration{Duration: time.Hour * 87600}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates = &metav1.Duration{Duration: time.Hour * 43830}
+		if cluster.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates == nil {
+			cluster.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates = &metav1.Duration{Duration: time.Hour * 43830}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration.ClientCertificates == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration.ClientCertificates = &metav1.Duration{Duration: time.Hour * 8766}
+		if cluster.Spec.MTLS.CertificatesDuration.ClientCertificates == nil {
+			cluster.Spec.MTLS.CertificatesDuration.ClientCertificates = &metav1.Duration{Duration: time.Hour * 8766}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration.FrontendCertificate == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration.FrontendCertificate = &metav1.Duration{Duration: time.Hour * 8766}
+		if cluster.Spec.MTLS.CertificatesDuration.FrontendCertificate == nil {
+			cluster.Spec.MTLS.CertificatesDuration.FrontendCertificate = &metav1.Duration{Duration: time.Hour * 8766}
 		}
-		if temporalCluster.Spec.MTLS.CertificatesDuration.InternodeCertificate == nil {
-			temporalCluster.Spec.MTLS.CertificatesDuration.InternodeCertificate = &metav1.Duration{Duration: time.Hour * 8766}
+		if cluster.Spec.MTLS.CertificatesDuration.InternodeCertificate == nil {
+			cluster.Spec.MTLS.CertificatesDuration.InternodeCertificate = &metav1.Duration{Duration: time.Hour * 8766}
 		}
 	}
 
-	return !reflect.DeepEqual(before.Spec, temporalCluster.Spec)
+	return !reflect.DeepEqual(before.Spec, cluster.Spec)
 }

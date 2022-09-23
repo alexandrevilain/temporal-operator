@@ -18,7 +18,7 @@
 package certmanager
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -26,7 +26,7 @@ type MTLSFrontendIntermediateCAIssuerBuilder struct {
 	GenericCAIssuerBuilder
 }
 
-func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
+func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
 	return &MTLSFrontendIntermediateCAIssuerBuilder{
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,

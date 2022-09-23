@@ -18,13 +18,13 @@
 package linkerd
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
-// GetAnnotations returns linkerd annotations to enable proxy injection if the provided TemporalCluster
+// GetAnnotations returns linkerd annotations to enable proxy injection if the provided Cluster
 // instance has mTLS enabled using linkerd.
-func GetAnnotations(instance *v1alpha1.TemporalCluster) map[string]string {
-	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1alpha1.LinkerdMTLSProvider {
+func GetAnnotations(instance *v1beta1.Cluster) map[string]string {
+	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.LinkerdMTLSProvider {
 		return map[string]string{
 			"linkerd.io/inject": "enabled",
 		}

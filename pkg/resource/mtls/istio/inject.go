@@ -18,13 +18,13 @@
 package istio
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
-// GetLabels returns istio labels to enable proxy injection if the provided TemporalCluster
+// GetLabels returns istio labels to enable proxy injection if the provided Cluster
 // instance has mTLS enabled using istio.
-func GetLabels(instance *v1alpha1.TemporalCluster) map[string]string {
-	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1alpha1.IstioMTLSProvider {
+func GetLabels(instance *v1beta1.Cluster) map[string]string {
+	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 		return map[string]string{
 			"sidecar.istio.io/inject": "true",
 		}
@@ -33,9 +33,9 @@ func GetLabels(instance *v1alpha1.TemporalCluster) map[string]string {
 }
 
 // GetAnnotations returns istio annotations to delay application startup until the pod proxy is ready to accept traffic.
-// Returned only if the provided TemporalCluster instance has mTLS enabled using istio.
-func GetAnnotations(instance *v1alpha1.TemporalCluster) map[string]string {
-	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1alpha1.IstioMTLSProvider {
+// Returned only if the provided Cluster instance has mTLS enabled using istio.
+func GetAnnotations(instance *v1beta1.Cluster) map[string]string {
+	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 		return map[string]string{
 			"proxy.istio.io/config": `{ "holdApplicationUntilProxyStarts": true }`,
 		}

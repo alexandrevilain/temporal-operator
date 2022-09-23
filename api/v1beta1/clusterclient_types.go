@@ -15,21 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v1alpha1
+package v1beta1
 
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TemporalClusterClientSpec defines the desired state of TemporalClusterClient
-type TemporalClusterClientSpec struct {
+// ClusterClientSpec defines the desired state of ClusterClient
+type ClusterClientSpec struct {
 	// Reference to the temporal cluster the client will get access to.
-	TemporalClusterRef corev1.LocalObjectReference `json:"temporalClusterRef"`
+	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
 }
 
-// TemporalClusterClientStatus defines the observed state of TemporalClusterClient
-type TemporalClusterClientStatus struct {
+// ClusterClientStatus defines the observed state of ClusterClient
+type ClusterClientStatus struct {
 	// ServerName is the hostname returned by the certificate.
 	ServerName string `json:"serverName"`
 	// Reference to the Kubernetes Secret containing the certificate for the client.
@@ -39,24 +39,24 @@ type TemporalClusterClientStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// TemporalClusterClient is the Schema for the temporalclusterclients API
-type TemporalClusterClient struct {
+// ClusterClient is the Schema for the ClusterClients API
+type ClusterClient struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TemporalClusterClientSpec   `json:"spec,omitempty"`
-	Status TemporalClusterClientStatus `json:"status,omitempty"`
+	Spec   ClusterClientSpec   `json:"spec,omitempty"`
+	Status ClusterClientStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// TemporalClusterClientList contains a list of TemporalClusterClient
-type TemporalClusterClientList struct {
+// ClusterClientList contains a list of ClusterClient
+type ClusterClientList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TemporalClusterClient `json:"items"`
+	Items           []ClusterClient `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&TemporalClusterClient{}, &TemporalClusterClientList{})
+	SchemeBuilder.Register(&ClusterClient{}, &ClusterClientList{})
 }

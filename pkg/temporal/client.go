@@ -24,7 +24,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	temporallog "github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	temporalclient "go.temporal.io/sdk/client"
@@ -69,7 +69,7 @@ func GetTlSConfigFromSecret(secret *corev1.Secret) (*tls.Config, error) {
 }
 
 // GetClusterClientTLSConfig returns the tls configuration for the provided temporal cluster.
-func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster) (*tls.Config, error) {
+func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluster *v1beta1.Cluster) (*tls.Config, error) {
 	secret := &corev1.Secret{}
 
 	err := client.Get(ctx, types.NamespacedName{
@@ -90,7 +90,7 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 
 }
 
-func buildClusterClientOptions(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.Options, error) {
+func buildClusterClientOptions(ctx context.Context, client client.Client, cluster *v1beta1.Cluster, overrides ...ClientOption) (temporalclient.Options, error) {
 	opts := temporalclient.Options{
 		HostPort: cluster.GetPublicClientAddress(),
 		Logger:   temporallog.NewTemporalSDKLogFromContext(ctx),
@@ -128,7 +128,7 @@ func WithHostPort(hostPort string) ClientOption {
 }
 
 // GetClusterClient returns a temporal sdk client for the provider temporal cluster.
-func GetClusterClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.Client, error) {
+func GetClusterClient(ctx context.Context, client client.Client, cluster *v1beta1.Cluster, overrides ...ClientOption) (temporalclient.Client, error) {
 	opts, err := buildClusterClientOptions(ctx, client, cluster, overrides...)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func GetClusterClient(ctx context.Context, client client.Client, cluster *v1alph
 }
 
 // GetClusterNamespaceClient returns a temporal sdk namespace client for the provider temporal cluster.
-func GetClusterNamespaceClient(ctx context.Context, client client.Client, cluster *v1alpha1.TemporalCluster, overrides ...ClientOption) (temporalclient.NamespaceClient, error) {
+func GetClusterNamespaceClient(ctx context.Context, client client.Client, cluster *v1beta1.Cluster, overrides ...ClientOption) (temporalclient.NamespaceClient, error) {
 	opts, err := buildClusterClientOptions(ctx, client, cluster, overrides...)
 	if err != nil {
 		return nil, err

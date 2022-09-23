@@ -20,23 +20,23 @@ package status_test
 import (
 	"testing"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 	tests := map[string]struct {
-		cluster  *appsv1alpha1.TemporalCluster
+		cluster  *v1beta1.Cluster
 		expected bool
 	}{
 		"all services matches the desired version": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Spec: appsv1alpha1.TemporalClusterSpec{
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: appsv1alpha1.TemporalClusterStatus{
-					Services: []appsv1alpha1.ServiceStatus{
+				Status: v1beta1.ClusterStatus{
+					Services: []v1beta1.ServiceStatus{
 						{
 							Name:    "test",
 							Version: "1.16.0",
@@ -51,12 +51,12 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 			expected: true,
 		},
 		"services does not match the desired version": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Spec: appsv1alpha1.TemporalClusterSpec{
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: appsv1alpha1.TemporalClusterStatus{
-					Services: []appsv1alpha1.ServiceStatus{
+				Status: v1beta1.ClusterStatus{
+					Services: []v1beta1.ServiceStatus{
 						{
 							Name:    "test",
 							Version: "1.15.0",
@@ -71,11 +71,11 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 			expected: false,
 		},
 		"empty status": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Spec: appsv1alpha1.TemporalClusterSpec{
+			cluster: &v1beta1.Cluster{
+				Spec: v1beta1.ClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: appsv1alpha1.TemporalClusterStatus{},
+				Status: v1beta1.ClusterStatus{},
 			},
 			expected: false,
 		},
@@ -90,13 +90,13 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 
 func TestIsClusterReady(t *testing.T) {
 	tests := map[string]struct {
-		cluster  *appsv1alpha1.TemporalCluster
+		cluster  *v1beta1.Cluster
 		expected bool
 	}{
 		"all services are ready": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Status: appsv1alpha1.TemporalClusterStatus{
-					Services: []appsv1alpha1.ServiceStatus{
+			cluster: &v1beta1.Cluster{
+				Status: v1beta1.ClusterStatus{
+					Services: []v1beta1.ServiceStatus{
 						{
 							Name:  "test",
 							Ready: true,
@@ -111,9 +111,9 @@ func TestIsClusterReady(t *testing.T) {
 			expected: true,
 		},
 		"one service not ready": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Status: appsv1alpha1.TemporalClusterStatus{
-					Services: []appsv1alpha1.ServiceStatus{
+			cluster: &v1beta1.Cluster{
+				Status: v1beta1.ClusterStatus{
+					Services: []v1beta1.ServiceStatus{
 						{
 							Name:  "test",
 							Ready: true,
@@ -128,8 +128,8 @@ func TestIsClusterReady(t *testing.T) {
 			expected: false,
 		},
 		"empty status": {
-			cluster: &appsv1alpha1.TemporalCluster{
-				Status: appsv1alpha1.TemporalClusterStatus{},
+			cluster: &v1beta1.Cluster{
+				Status: v1beta1.ClusterStatus{},
 			},
 			expected: false,
 		},

@@ -21,7 +21,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
@@ -32,8 +32,8 @@ import (
 
 func AssertClusterReady() features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1alpha1.TemporalCluster)
-		err := waitForTemporalCluster(ctx, cfg, cluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
+		err := waitForCluster(ctx, cfg, cluster)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -43,7 +43,7 @@ func AssertClusterReady() features.Func {
 
 func AssertClusterCanBeUpgraded(version string) features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1alpha1.TemporalCluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
 
 		err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			err := cfg.Client().Resources(cluster.GetNamespace()).Get(ctx, cluster.GetName(), cluster.GetNamespace(), cluster)
@@ -72,7 +72,7 @@ func AssertClusterCanBeUpgraded(version string) features.Func {
 
 func AssertClusterCanHandleWorkflows() features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1alpha1.TemporalCluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
 		connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
 		if err != nil {
 			t.Fatal(err)

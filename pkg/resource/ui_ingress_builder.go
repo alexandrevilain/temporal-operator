@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,11 +32,11 @@ import (
 )
 
 type UIIngressBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIIngressBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *UIIngressBuilder {
+func NewUIIngressBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIIngressBuilder {
 	return &UIIngressBuilder{
 		instance: instance,
 		scheme:   scheme,

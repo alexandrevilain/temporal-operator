@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
@@ -40,12 +40,12 @@ import (
 
 type DeploymentBuilder struct {
 	serviceName string
-	instance    *v1alpha1.TemporalCluster
+	instance    *v1beta1.Cluster
 	scheme      *runtime.Scheme
-	service     *v1alpha1.ServiceSpec
+	service     *v1beta1.ServiceSpec
 }
 
-func NewDeploymentBuilder(serviceName string, instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, service *v1alpha1.ServiceSpec) *DeploymentBuilder {
+func NewDeploymentBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DeploymentBuilder {
 	return &DeploymentBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -279,7 +279,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	return nil
 }
 
-func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1alpha1.ServiceStatus, error) {
+func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
 	deploy := &appsv1.Deployment{}
 	err := c.Get(ctx, types.NamespacedName{
 		Name:      b.instance.ChildResourceName(b.serviceName),
@@ -298,7 +298,7 @@ func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Cl
 		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
 	}
 
-	return &v1alpha1.ServiceStatus{
+	return &v1beta1.ServiceStatus{
 		Name:    b.serviceName,
 		Version: version,
 		Ready:   ready,

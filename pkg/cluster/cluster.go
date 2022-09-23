@@ -18,7 +18,7 @@
 package cluster
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
@@ -26,12 +26,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type TemporalClusterBuilder struct {
-	Instance *v1alpha1.TemporalCluster
+type ClusterBuilder struct {
+	Instance *v1beta1.Cluster
 	Scheme   *runtime.Scheme
 }
 
-func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
+func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 	builders := []resource.Builder{
 		resource.NewConfigmapBuilder(b.Instance, b.Scheme),
 		resource.NewFrontendServiceBuilder(b.Instance, b.Scheme),
@@ -50,7 +50,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
-		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1alpha1.IstioMTLSProvider {
+		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 			builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, b.Instance, b.Scheme, specs))
 			builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, b.Instance, b.Scheme, specs))
 		}
@@ -106,7 +106,7 @@ func (b *TemporalClusterBuilder) ResourceBuilders() ([]resource.Builder, error) 
 	return builders, nil
 }
 
-func (b *TemporalClusterBuilder) ResourcePruners() []resource.Pruner {
+func (b *ClusterBuilder) ResourcePruners() []resource.Pruner {
 	pruners := []resource.Pruner{}
 	if b.Instance.Spec.UI == nil || (b.Instance.Spec.UI != nil && !b.Instance.Spec.UI.Enabled) {
 		pruners = append(pruners, resource.NewUIDeploymentBuilder(b.Instance, b.Scheme))

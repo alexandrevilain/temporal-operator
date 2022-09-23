@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -32,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	schemaScriptConfigMapBuilder := persistence.NewSchemaScriptsConfigmapBuilder(temporalCluster, r.Scheme)
+func (r *ClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, cluster *v1beta1.Cluster) error {
+	schemaScriptConfigMapBuilder := persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme)
 	schemaScriptConfigMap, err := schemaScriptConfigMapBuilder.Build()
 	if err != nil {
 		return err
@@ -55,11 +55,11 @@ func sanitizeVersionToName(version string) string {
 }
 
 // reconcilePersistence tries to reconcile the cluster persistence.
-func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) (time.Duration, error) {
+func (r *ClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.Cluster) (time.Duration, error) {
 	logger := log.FromContext(ctx)
 
 	// First of all, ensure the configmap containing scripts is up-to-date
-	err := r.reconcileSchemaScriptsConfigmap(ctx, temporalCluster)
+	err := r.reconcileSchemaScriptsConfigmap(ctx, cluster)
 	if err != nil {
 		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)
 	}
@@ -83,29 +83,29 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, te
 			command: []string{"/etc/scripts/setup-visibility-schema.sh"},
 		},
 		{
-			name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+			name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-default-schema.sh"},
 		},
 		{
-			name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+			name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-visibility-schema.sh"},
 		},
 	}
-	if temporalCluster.Spec.Persistence.AdvancedVisibilityStore != "" {
+	if cluster.Spec.Persistence.AdvancedVisibilityStore != "" {
 		jobs = append(jobs,
 			job{
 				name:    "setup-advanced-visibility",
 				command: []string{"/etc/scripts/setup-advanced-visibility.sh"},
 			},
 			job{
-				name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(temporalCluster.Spec.Version)),
+				name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 				command: []string{"/etc/scripts/update-advanced-visibility.sh"},
 			})
 	}
 
 	for _, job := range jobs {
 		logger.Info("Checking for persistence job", "name", job.name)
-		expectedJobBuilder := persistence.NewSchemaJobBuilder(temporalCluster, r.Scheme, job.name, job.command)
+		expectedJobBuilder := persistence.NewSchemaJobBuilder(cluster, r.Scheme, job.name, job.command)
 
 		expectedJob, err := expectedJobBuilder.Build()
 		if err != nil {

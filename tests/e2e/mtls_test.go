@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
@@ -35,8 +35,8 @@ import (
 )
 
 func TestWithmTLSEnabled(t *testing.T) {
-	var temporalCluster *appsv1alpha1.TemporalCluster
-	var temporalClusterClient *appsv1alpha1.TemporalClusterClient
+	var cluster *v1beta1.Cluster
+	var clusterClient *v1beta1.ClusterClient
 
 	mTLSCertManagerFeature := features.New("mTLS enabled with cert-manager").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
@@ -56,51 +56,51 @@ func TestWithmTLSEnabled(t *testing.T) {
 			connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 
 			// create the temporal cluster
-			temporalCluster = &appsv1alpha1.TemporalCluster{
+			cluster = &v1beta1.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: namespace,
 				},
-				Spec: appsv1alpha1.TemporalClusterSpec{
+				Spec: v1beta1.ClusterSpec{
 					NumHistoryShards: 1,
-					MTLS: &appsv1alpha1.MTLSSpec{
-						Provider: appsv1alpha1.CertManagerMTLSProvider,
-						Internode: &appsv1alpha1.InternodeMTLSSpec{
+					MTLS: &v1beta1.MTLSSpec{
+						Provider: v1beta1.CertManagerMTLSProvider,
+						Internode: &v1beta1.InternodeMTLSSpec{
 							Enabled: true,
 						},
-						Frontend: &appsv1alpha1.FrontendMTLSSpec{
+						Frontend: &v1beta1.FrontendMTLSSpec{
 							Enabled: true,
 						},
 					},
-					Persistence: appsv1alpha1.TemporalPersistenceSpec{
+					Persistence: v1beta1.TemporalPersistenceSpec{
 						DefaultStore:    "default",
 						VisibilityStore: "visibility",
 					},
-					Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+					Datastores: []v1beta1.TemporalDatastoreSpec{
 						{
 							Name: "default",
-							SQL: &appsv1alpha1.SQLSpec{
+							SQL: &v1beta1.SQLSpec{
 								User:            "temporal",
 								PluginName:      "postgres",
 								DatabaseName:    "temporal",
 								ConnectAddr:     connectAddr,
 								ConnectProtocol: "tcp",
 							},
-							PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+							PasswordSecretRef: v1beta1.SecretKeyReference{
 								Name: "postgres-password",
 								Key:  "PASSWORD",
 							},
 						},
 						{
 							Name: "visibility",
-							SQL: &appsv1alpha1.SQLSpec{
+							SQL: &v1beta1.SQLSpec{
 								User:            "temporal",
 								PluginName:      "postgres",
 								DatabaseName:    "temporal_visibility",
 								ConnectAddr:     connectAddr,
 								ConnectProtocol: "tcp",
 							},
-							PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+							PasswordSecretRef: v1beta1.SecretKeyReference{
 								Name: "postgres-password",
 								Key:  "PASSWORD",
 							},
@@ -108,27 +108,27 @@ func TestWithmTLSEnabled(t *testing.T) {
 					},
 				},
 			}
-			err = client.Resources(namespace).Create(ctx, temporalCluster)
+			err = client.Resources(namespace).Create(ctx, cluster)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			return context.WithValue(ctx, clusterKey, temporalCluster)
+			return context.WithValue(ctx, clusterKey, cluster)
 		}).
 		Assess("Temporal cluster created", AssertClusterReady()).
 		Assess("Can create a temporal cluster namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
-			temporalClusterClient = &appsv1alpha1.TemporalClusterClient{
+			clusterClient = &v1beta1.ClusterClient{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: appsv1alpha1.TemporalClusterClientSpec{
-					TemporalClusterRef: corev1.LocalObjectReference{
-						Name: temporalCluster.GetName(),
+				Spec: v1beta1.ClusterClientSpec{
+					ClusterRef: corev1.LocalObjectReference{
+						Name: cluster.GetName(),
 					},
 				},
 			}
-			err := cfg.Client().Resources(namespace).Create(ctx, temporalClusterClient)
+			err := cfg.Client().Resources(namespace).Create(ctx, clusterClient)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -136,7 +136,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 			return ctx
 		}).
 		Assess("Temporal cluster client created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForTemporalClusterClient(ctx, cfg, temporalClusterClient)
+			err := waitForClusterClient(ctx, cfg, clusterClient)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -146,7 +146,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 		Assess("Temporal cluster can handle workflows", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, temporalCluster)
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -161,7 +161,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 
 			clientSecret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      temporalClusterClient.Status.SecretRef.Name,
+					Name:      clusterClient.Status.SecretRef.Name,
 					Namespace: namespace,
 				},
 			}
@@ -173,7 +173,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = cfg.Client().Resources(namespace).Get(ctx, temporalClusterClient.Status.SecretRef.Name, namespace, clientSecret)
+			err = cfg.Client().Resources(namespace).Get(ctx, clusterClient.Status.SecretRef.Name, namespace, clientSecret)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -182,9 +182,9 @@ func TestWithmTLSEnabled(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			tlsCfg.ServerName = temporalClusterClient.Status.ServerName
+			tlsCfg.ServerName = clusterClient.Status.ServerName
 
-			clusterClient, err := temporal.GetClusterClient(ctx, client, temporalCluster, temporal.WithHostPort(connectAddr), temporal.WithTLSConfig(tlsCfg))
+			clusterClient, err := temporal.GetClusterClient(ctx, client, cluster, temporal.WithHostPort(connectAddr), temporal.WithTLSConfig(tlsCfg))
 			if err != nil {
 				t.Fatal(err)
 			}

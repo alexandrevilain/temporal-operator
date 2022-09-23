@@ -5,20 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalnamespaces.apps.alexandrevilain.dev
+  name: namespaces.temporal.io
 spec:
-  group: apps.alexandrevilain.dev
+  group: temporal.io
   names:
-    kind: TemporalNamespace
-    listKind: TemporalNamespaceList
-    plural: temporalnamespaces
-    singular: temporalnamespace
+    kind: Namespace
+    listKind: NamespaceList
+    plural: namespaces
+    singular: namespace
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: TemporalNamespace is the Schema for the temporalnamespaces API
+        description: Namespace is the Schema for the Namespaces API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,7 +33,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalNamespaceSpec defines the desired state of TemporalNamespace
+            description: NamespaceSpec defines the desired state of Namespace
             properties:
               activeClusterName:
                 description: The name of active Temporal Cluster. Only applicable
@@ -65,7 +65,7 @@ spec:
                 type: string
               securityToken:
                 type: string
-              temporalClusterRef:
+              clusterRef:
                 description: Reference to the temporal cluster the namespace will
                   be created.
                 properties:
@@ -76,14 +76,14 @@ spec:
                 type: object
             required:
             - retentionPeriod
-            - temporalClusterRef
+            - clusterRef
             type: object
           status:
-            description: TemporalNamespaceStatus defines the observed state of TemporalNamespace
+            description: NamespaceStatus defines the observed state of Namespace
             properties:
               conditions:
                 description: Conditions represent the latest available observations
-                  of the TemporalNamespace state.
+                  of the Namespace state.
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct

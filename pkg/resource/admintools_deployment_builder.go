@@ -20,7 +20,7 @@ package resource
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
@@ -37,11 +37,11 @@ const (
 )
 
 type AdminToolsDeploymentBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewAdminToolsDeploymentBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
+func NewAdminToolsDeploymentBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
 	return &AdminToolsDeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,

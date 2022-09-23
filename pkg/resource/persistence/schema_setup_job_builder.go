@@ -20,7 +20,7 @@ package persistence
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
@@ -34,7 +34,7 @@ import (
 )
 
 type SchemaJobBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 	// name is the name of the job
 	name string
@@ -42,7 +42,7 @@ type SchemaJobBuilder struct {
 	command []string
 }
 
-func NewSchemaJobBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name string, command []string) *SchemaJobBuilder {
+func NewSchemaJobBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme, name string, command []string) *SchemaJobBuilder {
 	return &SchemaJobBuilder{
 		instance: instance,
 		scheme:   scheme,

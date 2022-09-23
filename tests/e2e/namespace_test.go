@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"go.temporal.io/api/serviceerror"
 	corev1 "k8s.io/api/core/v1"
@@ -33,22 +33,22 @@ import (
 )
 
 func TestNamespaceCreation(t *testing.T) {
-	var temporalCluster *appsv1alpha1.TemporalCluster
-	var temporalNamespace *appsv1alpha1.TemporalNamespace
+	var cluster *v1beta1.Cluster
+	var temporalNamespace *v1beta1.Namespace
 
 	namespaceFature := features.New("namespace creation using CRD").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
-			temporalCluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.17.5")
+			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.17.5")
 			if err != nil {
 				t.Fatal(err)
 			}
 			return ctx
 		}).
 		Assess("Temporal cluster created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForTemporalCluster(ctx, cfg, temporalCluster)
+			err := waitForCluster(ctx, cfg, cluster)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -58,11 +58,11 @@ func TestNamespaceCreation(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
-			temporalNamespace = &appsv1alpha1.TemporalNamespace{
+			temporalNamespace = &v1beta1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: appsv1alpha1.TemporalNamespaceSpec{
-					TemporalClusterRef: corev1.LocalObjectReference{
-						Name: temporalCluster.GetName(),
+				Spec: v1beta1.NamespaceSpec{
+					ClusterRef: corev1.LocalObjectReference{
+						Name: cluster.GetName(),
 					},
 					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
 				},
@@ -75,7 +75,7 @@ func TestNamespaceCreation(t *testing.T) {
 			return ctx
 		}).
 		Assess("Namespace exists", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, temporalCluster)
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -86,7 +86,7 @@ func TestNamespaceCreation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, temporalCluster, temporal.WithHostPort(connectAddr))
+			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
 			if err != nil {
 				t.Fatal(err)
 			}

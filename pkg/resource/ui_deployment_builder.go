@@ -20,7 +20,7 @@ package resource
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
@@ -37,11 +37,11 @@ const (
 )
 
 type UIDeploymentBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIDeploymentBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *UIDeploymentBuilder {
+func NewUIDeploymentBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIDeploymentBuilder {
 	return &UIDeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,

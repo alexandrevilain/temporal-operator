@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/elliotchance/orderedmap/v2"
 	"go.temporal.io/server/tools/common/schema"
@@ -58,11 +58,11 @@ const (
 )
 
 type SchemaScriptsConfigmapBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewSchemaScriptsConfigmapBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *SchemaScriptsConfigmapBuilder {
+func NewSchemaScriptsConfigmapBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *SchemaScriptsConfigmapBuilder {
 	return &SchemaScriptsConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,
@@ -80,17 +80,17 @@ func (b *SchemaScriptsConfigmapBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1alpha1.DatastoreType, targetSchema Schema) string {
+func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1beta1.DatastoreType, targetSchema Schema) string {
 	storeSchemaPath := ""
 	storeVersionSchemaPath := ""
 	switch storeType {
-	case v1alpha1.PostgresSQLDatastore:
+	case v1beta1.PostgresSQLDatastore:
 		storeSchemaPath = postgreSQLSchemaPath
 		storeVersionSchemaPath = postgreSQLVersionSchemaPath
-	case v1alpha1.MySQLDatastore:
+	case v1beta1.MySQLDatastore:
 		storeSchemaPath = mysqlSchemaPath
 		storeVersionSchemaPath = mysqlVersionSchemaPath
-	case v1alpha1.CassandraDatastore:
+	case v1beta1.CassandraDatastore:
 		storeSchemaPath = cassandraSchemaPath
 		storeVersionSchemaPath = cassandraVersionSchemaPath
 	}
@@ -115,7 +115,7 @@ func (b *SchemaScriptsConfigmapBuilder) argsMapToString(m *orderedmap.OrderedMap
 	return strings.Join(cmd, " ")
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1alpha1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	host, port, err := net.SplitHostPort(spec.SQL.ConnectAddr)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse host port: %w", err)
@@ -141,7 +141,7 @@ func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1alpha1.TemporalDatast
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1alpha1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	// schema.CLIOptReplicationFactor because it's set at the keyspace creation
 	// the script doesn't create the keyspace.
 	args := orderedmap.NewOrderedMap[string, string]()
@@ -164,7 +164,7 @@ func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1alpha1.Temporal
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1alpha1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	var args *orderedmap.OrderedMap[string, string]
 
 	storeType, err := spec.GetDatastoreType()
@@ -173,12 +173,12 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1alpha1.TemporalData
 	}
 
 	switch storeType {
-	case v1alpha1.CassandraDatastore:
+	case v1beta1.CassandraDatastore:
 		args, err = b.getCassandraArgs(spec)
 		if err != nil {
 			return nil, err
 		}
-	case v1alpha1.PostgresSQLDatastore, v1alpha1.MySQLDatastore:
+	case v1beta1.PostgresSQLDatastore, v1beta1.MySQLDatastore:
 		args, err = b.getSQLArgs(spec)
 		if err != nil {
 			return nil, err
@@ -253,7 +253,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	defaultStoreTool := "temporal-sql-tool"
 	var renderedCreateDefaultDatabase bytes.Buffer
 	var renderedCreateVisibilityDatabase bytes.Buffer
-	if defaultStoreType == v1alpha1.CassandraDatastore {
+	if defaultStoreType == v1beta1.CassandraDatastore {
 		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
 		// Which requires an env var set.
 		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
@@ -280,7 +280,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	visibilityStoreTool := "temporal-sql-tool"
-	if visibilityStoreType == v1alpha1.CassandraDatastore {
+	if visibilityStoreType == v1beta1.CassandraDatastore {
 		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
 
 		err = templates[CreateCassandraTemplate].Execute(&renderedCreateVisibilityDatabase, createKeyspace{

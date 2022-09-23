@@ -20,7 +20,7 @@ package resource
 import (
 	"context"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -46,7 +46,7 @@ type Pruner interface {
 }
 
 type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1alpha1.ServiceStatus, error)
+	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
 }
 
 // A Comparer provides a custom function to compare two resources returned

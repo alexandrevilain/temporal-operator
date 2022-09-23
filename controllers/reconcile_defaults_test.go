@@ -21,20 +21,20 @@ import (
 	"context"
 	"testing"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestReconcileDefaults(t *testing.T) {
-	c := &appsv1alpha1.TemporalCluster{
+	c := &v1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "test",
 		},
 	}
 
-	r := &TemporalClusterReconciler{}
+	r := &ClusterReconciler{}
 
 	ctx := context.Background()
 

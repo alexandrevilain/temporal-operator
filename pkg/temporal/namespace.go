@@ -18,12 +18,12 @@
 package temporal
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"go.temporal.io/api/replication/v1"
 	"go.temporal.io/api/workflowservice/v1"
 )
 
-func NamespaceToRegisterNamespaceRequest(namespace *v1alpha1.TemporalNamespace) *workflowservice.RegisterNamespaceRequest {
+func NamespaceToRegisterNamespaceRequest(namespace *v1beta1.Namespace) *workflowservice.RegisterNamespaceRequest {
 	re := &workflowservice.RegisterNamespaceRequest{
 		Namespace:     namespace.GetName(),
 		Description:   namespace.Spec.Description,

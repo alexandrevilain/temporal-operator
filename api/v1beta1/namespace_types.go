@@ -15,17 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package v1alpha1
+package v1beta1
 
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TemporalNamespaceSpec defines the desired state of TemporalNamespace
-type TemporalNamespaceSpec struct {
+// NamespaceSpec defines the desired state of Namespace
+type NamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
-	TemporalClusterRef corev1.LocalObjectReference `json:"temporalClusterRef"`
+	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
 	// Namespace description.
 	// +optional
 	Description string `json:"description,omitempty"`
@@ -52,33 +52,33 @@ type TemporalNamespaceSpec struct {
 	ActiveClusterName string `json:"activeClusterName,omitempty"`
 }
 
-// TemporalNamespaceStatus defines the observed state of TemporalNamespace
-type TemporalNamespaceStatus struct {
-	// Conditions represent the latest available observations of the TemporalNamespace state.
+// NamespaceStatus defines the observed state of Namespace
+type NamespaceStatus struct {
+	// Conditions represent the latest available observations of the Namespace state.
 	Conditions []metav1.Condition `json:"conditions"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// TemporalNamespace is the Schema for the temporalnamespaces API
-type TemporalNamespace struct {
+// Namespace is the Schema for the Namespaces API
+type Namespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TemporalNamespaceSpec   `json:"spec,omitempty"`
-	Status TemporalNamespaceStatus `json:"status,omitempty"`
+	Spec   NamespaceSpec   `json:"spec,omitempty"`
+	Status NamespaceStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// TemporalNamespaceList contains a list of TemporalNamespace
-type TemporalNamespaceList struct {
+// NamespaceList contains a list of Namespace
+type NamespaceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TemporalNamespace `json:"items"`
+	Items           []Namespace `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&TemporalNamespace{}, &TemporalNamespaceList{})
+	SchemeBuilder.Register(&Namespace{}, &NamespaceList{})
 }
