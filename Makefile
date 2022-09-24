@@ -104,10 +104,6 @@ run: manifests generate fmt vet ## Run a controller from your host.
 docker-build-dev: ## Build docker image with the manager.
 	docker build -t temporal-operator .
 
-.PHONY: bundle-build
-bundle-build: ## Build the bundle image.
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
-
 ##@ Deployment
 
 ifndef ignore-not-found
@@ -141,6 +137,11 @@ bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metada
 	$(OPERATOR_SDK) generate kustomize manifests -q
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --manifests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
+
+.PHONY: release
+release:
+	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/alexandrevilain/temporal-operator:v$(VERSION)
+	$(MAKE) bundle
 
 ##@ Build Dependencies
 
