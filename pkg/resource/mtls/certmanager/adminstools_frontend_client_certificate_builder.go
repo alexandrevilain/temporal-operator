@@ -20,7 +20,7 @@ package certmanager
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -30,7 +30,7 @@ type AdminToolsFrontendClientCertificateBuilder struct {
 	GenericFrontendClientCertificateBuilder
 }
 
-func NewAdminToolsFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
+func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
 	return &AdminToolsFrontendClientCertificateBuilder{
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,

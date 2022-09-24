@@ -1,9 +1,9 @@
-apiVersion: apps.alexandrevilain.dev/v1alpha1
-kind: TemporalClusterClient
+apiVersion: temporal.io/v1beta1
+kind: ClusterClient
 metadata:
   name: my-worker
   namespace: demo
 spec:
-  temporalClusterRef:
+  clusterRef:
     name: prod
   

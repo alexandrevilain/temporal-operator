@@ -18,7 +18,7 @@
 package certmanager
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -26,7 +26,7 @@ type MTLSInternodeItermediateCACertificateBuilder struct {
 	GenericItermediateCACertificateBuilder
 }
 
-func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
+func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSInternodeItermediateCACertificateBuilder {
 	return &MTLSInternodeItermediateCACertificateBuilder{
 		GenericItermediateCACertificateBuilder: GenericItermediateCACertificateBuilder{
 			instance:   instance,

@@ -20,7 +20,7 @@ package resource
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,11 +33,11 @@ import (
 const UIServicePort = 8080
 
 type UIServiceBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIServiceBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *UIServiceBuilder {
+func NewUIServiceBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIServiceBuilder {
 	return &UIServiceBuilder{
 		instance: instance,
 		scheme:   scheme,

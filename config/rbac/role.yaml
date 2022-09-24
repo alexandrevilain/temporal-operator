@@ -64,84 +64,6 @@ rules:
   - update
   - watch
 - apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusterclients
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusterclients/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusterclients/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusters
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusters/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalclusters/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalnamespaces
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalnamespaces/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - apps.alexandrevilain.dev
-  resources:
-  - temporalnamespaces/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - batch
   resources:
   - jobs
@@ -197,3 +119,81 @@ rules:
   - list
   - update
   - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusterclients
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusterclients/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusterclients/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - clusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - namespaces/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - namespaces/status
+  verbs:
+  - get
+  - patch
+  - update

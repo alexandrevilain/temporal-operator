@@ -20,7 +20,7 @@ package istio
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"google.golang.org/protobuf/proto"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
@@ -35,12 +35,12 @@ import (
 
 type PeerAuthenticationBuilder struct {
 	serviceName string
-	instance    *v1alpha1.TemporalCluster
+	instance    *v1beta1.Cluster
 	scheme      *runtime.Scheme
-	service     *v1alpha1.ServiceSpec
+	service     *v1beta1.ServiceSpec
 }
 
-func NewPeerAuthenticationBuilder(serviceName string, instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, service *v1alpha1.ServiceSpec) *PeerAuthenticationBuilder {
+func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *PeerAuthenticationBuilder {
 	return &PeerAuthenticationBuilder{
 		serviceName: serviceName,
 		instance:    instance,

@@ -18,7 +18,7 @@
 package certmanager
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,7 @@ import (
 )
 
 type GenericFrontendClientCertificateBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 	// name defines the name of the certificate
 	name string
@@ -39,7 +39,7 @@ type GenericFrontendClientCertificateBuilder struct {
 	commonName string
 }
 
-func NewGenericFrontendClientCertificateBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
+func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
 	return &GenericFrontendClientCertificateBuilder{
 		instance:   instance,
 		scheme:     scheme,

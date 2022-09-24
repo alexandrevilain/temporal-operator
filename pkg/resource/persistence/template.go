@@ -20,7 +20,7 @@ package persistence
 import (
 	"text/template"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/lithammer/dedent"
 )
 
@@ -110,7 +110,7 @@ var (
 						new_mapping='
 						{
 							"properties": {
-								"TemporalNamespaceDivision": {
+								"NamespaceDivision": {
 								"type": "keyword"
 								}
 							}
@@ -147,8 +147,8 @@ var (
 				fi
 			fi
 
-			# v2 does not have the "TemporalNamespaceDivision" property
-			is_v2=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision") | not')
+			# v2 does not have the "NamespaceDivision" property
+			is_v2=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("NamespaceDivision") | not')
 			if [ $is_v2 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -156,8 +156,8 @@ var (
 				fi
 			fi
 
-			# v3 has the "TemporalNamespaceDivision"
-			is_v3=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision")')
+			# v3 has the "NamespaceDivision"
+			is_v3=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("NamespaceDivision")')
 			if [ $is_v3 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -241,7 +241,7 @@ type (
 		URL            string
 		Username       string
 		PasswordEnvVar string
-		Indices        v1alpha1.ElasticsearchIndices
+		Indices        v1beta1.ElasticsearchIndices
 	}
 )
 

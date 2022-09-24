@@ -33,32 +33,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
-// TemporalClusterClientReconciler reconciles a TemporalClusterClient object
-type TemporalClusterClientReconciler struct {
+// ClusterClientReconciler reconciles a ClusterClient object
+type ClusterClientReconciler struct {
 	client.Client
 	Scheme               *runtime.Scheme
 	Recorder             record.EventRecorder
 	CertManagerAvailable bool
 }
 
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusterclients/finalizers,verbs=update
+//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
 
-	temporalClusterClient := &appsv1alpha1.TemporalClusterClient{}
-	err := r.Get(ctx, req.NamespacedName, temporalClusterClient)
+	clusterClient := &v1beta1.ClusterClient{}
+	err := r.Get(ctx, req.NamespacedName, clusterClient)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -67,26 +67,26 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	// Check if the resource has been marked for deletion
-	if !temporalClusterClient.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !clusterClient.ObjectMeta.DeletionTimestamp.IsZero() {
 		return reconcile.Result{}, nil
 	}
 
-	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: temporalClusterClient.Spec.TemporalClusterRef.Name}
-	temporalCluster := &appsv1alpha1.TemporalCluster{}
-	err = r.Get(ctx, namespacedName, temporalCluster)
+	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: clusterClient.Spec.ClusterRef.Name}
+	cluster := &v1beta1.Cluster{}
+	err = r.Get(ctx, namespacedName, cluster)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	if !(temporalCluster.MTLSWithCertManagerEnabled() && temporalCluster.Spec.MTLS.FrontendEnabled()) {
+	if !(cluster.MTLSWithCertManagerEnabled() && cluster.Spec.MTLS.FrontendEnabled()) {
 		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
 	}
 
-	dnsName := fmt.Sprintf("%s.%s", temporalClusterClient.GetName(), temporalCluster.ServerName())
-	commonName := fmt.Sprintf("%s Client", temporalClusterClient.GetName())
-	secretName := fmt.Sprintf("%s-mtls-certificate", temporalClusterClient.GetName())
+	dnsName := fmt.Sprintf("%s.%s", clusterClient.GetName(), cluster.ServerName())
+	commonName := fmt.Sprintf("%s Client", clusterClient.GetName())
+	secretName := fmt.Sprintf("%s-mtls-certificate", clusterClient.GetName())
 
-	builder := certmanager.NewGenericFrontendClientCertificateBuilder(temporalCluster, r.Scheme, temporalClusterClient.GetName(), secretName, dnsName, commonName)
+	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName(), secretName, dnsName, commonName)
 
 	res, err := builder.Build()
 	if err != nil {
@@ -98,7 +98,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		if err != nil {
 			return err
 		}
-		err = controllerutil.SetControllerReference(temporalClusterClient, res, r.Scheme)
+		err = controllerutil.SetControllerReference(clusterClient, res, r.Scheme)
 		if err != nil {
 			return fmt.Errorf("failed setting controller reference: %v", err)
 		}
@@ -110,19 +110,19 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 
 	certificate := res.(*certmanagerv1.Certificate)
 
-	temporalClusterClient.Status.ServerName = temporalCluster.Spec.MTLS.Frontend.ServerName(temporalCluster.ServerName())
-	temporalClusterClient.Status.SecretRef = corev1.LocalObjectReference{
+	clusterClient.Status.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
+	clusterClient.Status.SecretRef = corev1.LocalObjectReference{
 		Name: certificate.Spec.SecretName,
 	}
 
-	err = r.Client.Status().Update(ctx, temporalClusterClient)
+	err = r.Client.Status().Update(ctx, clusterClient)
 	return reconcile.Result{}, err
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	controller := ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1alpha1.TemporalClusterClient{})
+		For(&v1beta1.ClusterClient{})
 
 	if r.CertManagerAvailable {
 		controller = controller.

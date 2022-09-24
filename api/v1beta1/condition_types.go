@@ -1,4 +1,4 @@
-package v1alpha1
+package v1beta1
 
 import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -29,12 +29,12 @@ const (
 	PersistenceReconciliationFailedReason string = "PersistenceReconciliationFailed"
 	// ResourcesReconciliationFailedReason signals an error while reconciling cluster resources.
 	ResourcesReconciliationFailedReason string = "ResoucesReconciliationFailed"
-	// TemporalClusterValidationFailedReason signals an error while validation desired cluster version.
-	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
+	// ClusterValidationFailedReason signals an error while validation desired cluster version.
+	ClusterValidationFailedReason string = "ClusterValidationFailed"
 )
 
-// SetTemporalClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
-func SetTemporalClusterReconcileSuccess(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
+// SetClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
+func SetClusterReconcileSuccess(c *Cluster, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileSuccessCondition,
 		LastTransitionTime: metav1.Now(),
@@ -46,8 +46,8 @@ func SetTemporalClusterReconcileSuccess(c *TemporalCluster, status metav1.Condit
 	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
 }
 
-// SetTemporalClusterReconcileError sets the ReconcileErrorCondition status for a temporal cluster.
-func SetTemporalClusterReconcileError(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
+// SetClusterReconcileError sets the ReconcileErrorCondition status for a temporal cluster.
+func SetClusterReconcileError(c *Cluster, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileErrorCondition,
 		LastTransitionTime: metav1.Now(),
@@ -59,14 +59,14 @@ func SetTemporalClusterReconcileError(c *TemporalCluster, status metav1.Conditio
 	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
 }
 
-// GetTemporalClusterReadyCondition returns the ready condition for the provided cluster if found.
-func GetTemporalClusterReadyCondition(c *TemporalCluster) (*metav1.Condition, bool) {
+// GetClusterReadyCondition returns the ready condition for the provided cluster if found.
+func GetClusterReadyCondition(c *Cluster) (*metav1.Condition, bool) {
 	condition := apimeta.FindStatusCondition(c.Status.Conditions, ReadyCondition)
 	return condition, condition != nil
 }
 
-// SetTemporalClusterReady sets the ReadyCondition status for a temporal cluster.
-func SetTemporalClusterReady(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
+// SetClusterReady sets the ReadyCondition status for a temporal cluster.
+func SetClusterReady(c *Cluster, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReadyCondition,
 		LastTransitionTime: metav1.Now(),
@@ -78,28 +78,28 @@ func SetTemporalClusterReady(c *TemporalCluster, status metav1.ConditionStatus, 
 	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
 }
 
-// SetTemporalNamespaceReconcileSuccess sets the ReconcileSuccessCondition status for a temporal namespace.
-func SetTemporalNamespaceReconcileSuccess(c *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
+// SetNamespaceReconcileSuccess sets the ReconcileSuccessCondition status for a temporal namespace.
+func SetNamespaceReconcileSuccess(n *Namespace, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileSuccessCondition,
 		LastTransitionTime: metav1.Now(),
-		ObservedGeneration: c.GetGeneration(),
+		ObservedGeneration: n.GetGeneration(),
 		Reason:             reason,
 		Status:             status,
 		Message:            message,
 	}
-	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
 }
 
-// SetTemporalNamespaceReconcileError sets the ReconcileErrorCondition status for a temporal namespace.
-func SetTemporalNamespaceReconcileError(c *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
+// SetNamespaceReconcileError sets the ReconcileErrorCondition status for a temporal namespace.
+func SetNamespaceReconcileError(n *Namespace, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileErrorCondition,
 		LastTransitionTime: metav1.Now(),
-		ObservedGeneration: c.GetGeneration(),
+		ObservedGeneration: n.GetGeneration(),
 		Reason:             reason,
 		Status:             status,
 		Message:            message,
 	}
-	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
 }

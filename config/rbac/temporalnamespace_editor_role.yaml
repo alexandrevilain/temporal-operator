@@ -1,13 +1,13 @@
-# permissions for end users to edit temporalnamespaces.
+# permissions for end users to edit namespaces.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: temporalnamespace-editor-role
 rules:
 - apiGroups:
-  - apps.alexandrevilain.dev
+  - temporal.io
   resources:
-  - temporalnamespaces
+  - namespaces
   verbs:
   - create
   - delete
@@ -17,8 +17,8 @@ rules:
   - update
   - watch
 - apiGroups:
-  - apps.alexandrevilain.dev
+  - temporal.io
   resources:
-  - temporalnamespaces/status
+  - namespaces/status
   verbs:
   - get

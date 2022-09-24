@@ -5,14 +5,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalclusters.apps.alexandrevilain.dev
+  name: clusters.temporal.io
 spec:
-  group: apps.alexandrevilain.dev
+  group: temporal.io
   names:
-    kind: TemporalCluster
-    listKind: TemporalClusterList
-    plural: temporalclusters
-    singular: temporalcluster
+    kind: Cluster
+    listKind: ClusterList
+    plural: clusters
+    singular: cluster
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,10 +25,10 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: TemporalCluster defines a temporal cluster deployment.
+        description: Cluster defines a temporal cluster deployment.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -596,7 +596,7 @@ spec:
             properties:
               conditions:
                 description: Conditions represent the latest available observations
-                  of the TemporalCluster state.
+                  of the Cluster state.
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct

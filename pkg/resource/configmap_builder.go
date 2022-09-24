@@ -22,7 +22,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
@@ -39,11 +39,11 @@ import (
 )
 
 type ConfigmapBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewConfigmapBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *ConfigmapBuilder {
+func NewConfigmapBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *ConfigmapBuilder {
 	return &ConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,
@@ -73,13 +73,13 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 		cfg := config.DataStore{}
 		switch datastoreType {
-		case v1alpha1.MySQLDatastore, v1alpha1.PostgresSQLDatastore:
+		case v1beta1.MySQLDatastore, v1beta1.PostgresSQLDatastore:
 			cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(&store)
 			cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		case v1alpha1.CassandraDatastore:
+		case v1beta1.CassandraDatastore:
 			cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(&store)
 			cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		case v1alpha1.ElasticsearchDatastore:
+		case v1beta1.ElasticsearchDatastore:
 			esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(&store)
 			if err != nil {
 				return fmt.Errorf("can't get elasticsearch config: %w", err)
@@ -168,7 +168,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 		internodeMTLS := b.instance.Spec.MTLS.Internode
 		if internodeMTLS == nil {
-			internodeMTLS = &v1alpha1.InternodeMTLSSpec{}
+			internodeMTLS = &v1beta1.InternodeMTLSSpec{}
 		}
 
 		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), certmanager.TLSCA)

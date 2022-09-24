@@ -46,7 +46,7 @@ generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopy
 
 .PHONY: api-docs
 api-docs: gen-crd-api-reference-docs ## Generate API reference documentation
-	$(GEN_CRD_API_REFERENCE_DOCS) -api-dir=./api/v1alpha1 -config=./hack/api/config.json -template-dir=./hack/api/template -out-file=./docs/api/v1alpha1.md
+	$(GEN_CRD_API_REFERENCE_DOCS) -api-dir=./api/v1beta1 -config=./hack/api/config.json -template-dir=./hack/api/template -out-file=./docs/api/v1beta1.md
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.

@@ -20,7 +20,7 @@ package resource
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"go.temporal.io/server/common"
 	corev1 "k8s.io/api/core/v1"
@@ -32,11 +32,11 @@ import (
 )
 
 type FrontendServiceBuilder struct {
-	instance *v1alpha1.TemporalCluster
+	instance *v1beta1.Cluster
 	scheme   *runtime.Scheme
 }
 
-func NewFrontendServiceBuilder(instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme) *FrontendServiceBuilder {
+func NewFrontendServiceBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *FrontendServiceBuilder {
 	return &FrontendServiceBuilder{
 		instance: instance,
 		scheme:   scheme,

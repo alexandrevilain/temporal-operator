@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -53,11 +53,11 @@ import (
 
 const (
 	ownerKey  = ".metadata.controller"
-	ownerKind = "TemporalCluster"
+	ownerKind = "Cluster"
 )
 
-// TemporalClusterReconciler reconciles a TemporalCluster object
-type TemporalClusterReconciler struct {
+// ClusterReconciler reconciles a Cluster object
+type ClusterReconciler struct {
 	client.Client
 	Scheme               *runtime.Scheme
 	Recorder             record.EventRecorder
@@ -76,19 +76,19 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="networking.istio.io",resources=destinationrules,verbs=get;list;watch;create;update;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=apps.alexandrevilain.dev,resources=temporalclusters/finalizers,verbs=update
+//+kubebuilder:rbac:groups=temporal.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=temporal.io,resources=clusters/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=temporal.io,resources=clusters/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
 
-	temporalCluster := &appsv1alpha1.TemporalCluster{}
-	err := r.Get(ctx, req.NamespacedName, temporalCluster)
+	cluster := &v1beta1.Cluster{}
+	err := r.Get(ctx, req.NamespacedName, cluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -97,18 +97,18 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Check if the resource has been marked for deletion
-	if !temporalCluster.ObjectMeta.DeletionTimestamp.IsZero() {
-		logger.Info("Deleting temporal cluster", "name", temporalCluster.Name)
+	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
+		logger.Info("Deleting temporal cluster", "name", cluster.Name)
 		return reconcile.Result{}, nil
 	}
 
 	// Set defaults on unfiled fields.
-	updated := r.reconcileDefaults(ctx, temporalCluster)
+	updated := r.reconcileDefaults(ctx, cluster)
 	if updated {
-		err := r.Update(ctx, temporalCluster)
+		err := r.Update(ctx, cluster)
 		if err != nil {
 			logger.Error(err, "Can't set cluster defaults")
-			return r.handleError(ctx, temporalCluster, "", err)
+			return r.handleError(ctx, cluster, "", err)
 		}
 		// As we updated the instance, another reconcile will be triggered.
 		return reconcile.Result{}, nil
@@ -116,56 +116,56 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
 	// it can't process the request, return the error.
-	if temporalCluster.MTLSWithCertManagerEnabled() && !r.CertManagerAvailable {
+	if cluster.MTLSWithCertManagerEnabled() && !r.CertManagerAvailable {
 		err := errors.New("cert-manager is not available in the cluster")
 		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
-		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
+		return r.handleError(ctx, cluster, v1beta1.ClusterValidationFailedReason, err)
 	}
 
 	// Validate that the cluster version is a supported one.
-	clusterVersion, err := version.ParseAndValidateTemporalVersion(temporalCluster.Spec.Version)
+	clusterVersion, err := version.ParseAndValidateTemporalVersion(cluster.Spec.Version)
 	if err != nil {
 		logger.Error(err, "Can't validate temporal version")
-		return r.handleError(ctx, temporalCluster, appsv1alpha1.TemporalClusterValidationFailedReason, err)
+		return r.handleError(ctx, cluster, v1beta1.ClusterValidationFailedReason, err)
 	}
 
 	logger.Info("Retrieved desired cluster version", "version", clusterVersion.String())
 
 	// Check the ready condition
-	cond, exists := appsv1alpha1.GetTemporalClusterReadyCondition(temporalCluster)
-	if !exists || cond.ObservedGeneration != temporalCluster.GetGeneration() {
-		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionUnknown, appsv1alpha1.ProgressingReason, "")
-		err := r.updateTemporalClusterStatus(ctx, temporalCluster)
+	cond, exists := v1beta1.GetClusterReadyCondition(cluster)
+	if !exists || cond.ObservedGeneration != cluster.GetGeneration() {
+		v1beta1.SetClusterReady(cluster, metav1.ConditionUnknown, v1beta1.ProgressingReason, "")
+		err := r.updateClusterStatus(ctx, cluster)
 		if err != nil {
-			return r.handleError(ctx, temporalCluster, "", err)
+			return r.handleError(ctx, cluster, "", err)
 		}
 	}
 
-	if requeueAfter, err := r.reconcilePersistence(ctx, temporalCluster); err != nil || requeueAfter > 0 {
+	if requeueAfter, err := r.reconcilePersistence(ctx, cluster); err != nil || requeueAfter > 0 {
 		if err != nil {
 			logger.Error(err, "Can't reconcile persistence")
 			if requeueAfter == 0 {
 				requeueAfter = 2 * time.Second
 			}
-			return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.PersistenceReconciliationFailedReason, err, requeueAfter)
+			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
 	}
 
-	if err := r.reconcileResources(ctx, temporalCluster); err != nil {
+	if err := r.reconcileResources(ctx, cluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, temporalCluster, appsv1alpha1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
-	return r.handleSuccess(ctx, temporalCluster)
+	return r.handleSuccess(ctx, cluster)
 }
 
-func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
+func (r *ClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.Cluster) error {
 	logger := log.FromContext(ctx)
 
-	clusterBuilder := cluster.TemporalClusterBuilder{
+	clusterBuilder := cluster.ClusterBuilder{
 		Instance: temporalCluster,
 		Scheme:   r.Scheme,
 	}
@@ -238,47 +238,47 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 	}
 
 	if status.IsClusterReady(temporalCluster) {
-		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionTrue, appsv1alpha1.ServicesReadyReason, "")
+		v1beta1.SetClusterReady(temporalCluster, metav1.ConditionTrue, v1beta1.ServicesReadyReason, "")
 	} else {
-		appsv1alpha1.SetTemporalClusterReady(temporalCluster, metav1.ConditionFalse, appsv1alpha1.ServicesNotReadyReason, "")
+		v1beta1.SetClusterReady(temporalCluster, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return r.updateTemporalClusterStatus(ctx, temporalCluster)
+	return r.updateClusterStatus(ctx, temporalCluster)
 }
 
-func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) (ctrl.Result, error) {
-	return r.handleSuccessWithRequeue(ctx, temporalCluster, 0)
+func (r *ClusterReconciler) handleSuccess(ctx context.Context, cluster *v1beta1.Cluster) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(ctx, cluster, 0)
 }
 
-func (r *TemporalClusterReconciler) handleError(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, temporalCluster, reason, err, 0)
+func (r *ClusterReconciler) handleError(ctx context.Context, cluster *v1beta1.Cluster, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, cluster, reason, err, 0)
 }
 
-func (r *TemporalClusterReconciler) handleSuccessWithRequeue(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, requeueAfter time.Duration) (ctrl.Result, error) {
-	appsv1alpha1.SetTemporalClusterReconcileSuccess(temporalCluster, metav1.ConditionTrue, appsv1alpha1.ReconcileSuccessReason, "")
-	err := r.updateTemporalClusterStatus(ctx, temporalCluster)
+func (r *ClusterReconciler) handleSuccessWithRequeue(ctx context.Context, cluster *v1beta1.Cluster, requeueAfter time.Duration) (ctrl.Result, error) {
+	v1beta1.SetClusterReconcileSuccess(cluster, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
+	err := r.updateClusterStatus(ctx, cluster)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *TemporalClusterReconciler) handleErrorWithRequeue(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
-	r.Recorder.Event(temporalCluster, corev1.EventTypeWarning, "ProcessingError", err.Error())
+func (r *ClusterReconciler) handleErrorWithRequeue(ctx context.Context, cluster *v1beta1.Cluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+	r.Recorder.Event(cluster, corev1.EventTypeWarning, "ProcessingError", err.Error())
 	if reason == "" {
-		reason = appsv1alpha1.ReconcileErrorReason
+		reason = v1beta1.ReconcileErrorReason
 	}
-	appsv1alpha1.SetTemporalClusterReconcileError(temporalCluster, metav1.ConditionTrue, reason, err.Error())
-	err = r.updateTemporalClusterStatus(ctx, temporalCluster)
+	v1beta1.SetClusterReconcileError(cluster, metav1.ConditionTrue, reason, err.Error())
+	err = r.updateClusterStatus(ctx, cluster)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *TemporalClusterReconciler) updateTemporalClusterStatus(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	err := r.Status().Update(ctx, temporalCluster)
+func (r *ClusterReconciler) updateClusterStatus(ctx context.Context, cluster *v1beta1.Cluster) error {
+	err := r.Status().Update(ctx, cluster)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Context, temporalCluster *appsv1alpha1.TemporalCluster, resource runtime.Object, operationResult controllerutil.OperationResult, err error) {
+func (r *ClusterReconciler) logAndRecordOperationResult(ctx context.Context, cluster *v1beta1.Cluster, resource runtime.Object, operationResult controllerutil.OperationResult, err error) {
 	logger := log.FromContext(ctx)
 
 	var (
@@ -303,19 +303,19 @@ func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Cont
 		msg := fmt.Sprintf("%sd resource %s of type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
 		reason := fmt.Sprintf("%sSucess", reason)
 		logger.Info(msg)
-		r.Recorder.Event(temporalCluster, corev1.EventTypeNormal, reason, msg)
+		r.Recorder.Event(cluster, corev1.EventTypeNormal, reason, msg)
 	}
 
 	if err != nil {
 		msg := fmt.Sprintf("failed to %s resource %s of Type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
 		reason := fmt.Sprintf("%sError", reason)
 		logger.Error(err, msg)
-		r.Recorder.Event(temporalCluster, corev1.EventTypeWarning, reason, msg)
+		r.Recorder.Event(cluster, corev1.EventTypeWarning, reason, msg)
 	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}, &batchv1.Job{}} {
 		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
 			return err
@@ -323,7 +323,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	controller := ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1alpha1.TemporalCluster{}, builder.WithPredicates(predicate.Or(
+		For(&v1beta1.Cluster{}, builder.WithPredicates(predicate.Or(
 			predicate.GenerationChangedPredicate{},
 			predicate.LabelChangedPredicate{},
 			predicate.AnnotationChangedPredicate{},
@@ -403,7 +403,7 @@ func validateAndGetOwner(owner *metav1.OwnerReference) []string {
 	if owner == nil {
 		return nil
 	}
-	if owner.APIVersion != appsv1alpha1.GroupVersion.String() || owner.Kind != ownerKind {
+	if owner.APIVersion != v1beta1.GroupVersion.String() || owner.Kind != ownerKind {
 		return nil
 	}
 	return []string{owner.Name}

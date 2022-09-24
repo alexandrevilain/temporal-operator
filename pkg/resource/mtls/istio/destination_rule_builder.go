@@ -20,7 +20,7 @@ package istio
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"google.golang.org/protobuf/proto"
 	istioapinetworkingv1beta1 "istio.io/api/networking/v1beta1"
@@ -34,12 +34,12 @@ import (
 
 type DestinationRuleBuilder struct {
 	serviceName string
-	instance    *v1alpha1.TemporalCluster
+	instance    *v1beta1.Cluster
 	scheme      *runtime.Scheme
-	service     *v1alpha1.ServiceSpec
+	service     *v1beta1.ServiceSpec
 }
 
-func NewDestinationRuleBuilder(serviceName string, instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, service *v1alpha1.ServiceSpec) *DestinationRuleBuilder {
+func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DestinationRuleBuilder {
 	return &DestinationRuleBuilder{
 		serviceName: serviceName,
 		instance:    instance,

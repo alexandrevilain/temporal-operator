@@ -20,7 +20,7 @@ package resource
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,12 +32,12 @@ import (
 
 type HeadlessServiceBuilder struct {
 	serviceName string
-	instance    *v1alpha1.TemporalCluster
+	instance    *v1beta1.Cluster
 	scheme      *runtime.Scheme
-	service     *v1alpha1.ServiceSpec
+	service     *v1beta1.ServiceSpec
 }
 
-func NewHeadlessServiceBuilder(serviceName string, instance *v1alpha1.TemporalCluster, scheme *runtime.Scheme, service *v1alpha1.ServiceSpec) *HeadlessServiceBuilder {
+func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *HeadlessServiceBuilder {
 	return &HeadlessServiceBuilder{
 		serviceName: serviceName,
 		instance:    instance,

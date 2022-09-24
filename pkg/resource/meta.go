@@ -18,15 +18,15 @@
 package resource
 
 import (
-	"github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided TemporalCluster.
-func buildPodObjectMeta(instance *v1alpha1.TemporalCluster, service string) metav1.ObjectMeta {
+// buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
+func buildPodObjectMeta(instance *v1beta1.Cluster, service string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
 			istio.GetLabels(instance),

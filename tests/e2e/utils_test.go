@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	appsv1alpha1 "github.com/alexandrevilain/temporal-operator/api/v1alpha1"
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	kubernetesutil "github.com/alexandrevilain/temporal-operator/tests/e2e/util/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/util/networking"
 	"go.temporal.io/server/common"
@@ -42,7 +42,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*appsv1alpha1.TemporalCluster, error) {
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*v1beta1.Cluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
@@ -50,52 +50,52 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 	}
 
 	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
-	temporalCluster := &appsv1alpha1.TemporalCluster{
+	cluster := &v1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: namespace,
 		},
-		Spec: appsv1alpha1.TemporalClusterSpec{
+		Spec: v1beta1.ClusterSpec{
 			NumHistoryShards: 1,
 			Version:          version,
-			MTLS: &appsv1alpha1.MTLSSpec{
-				Provider: appsv1alpha1.CertManagerMTLSProvider,
-				Internode: &appsv1alpha1.InternodeMTLSSpec{
+			MTLS: &v1beta1.MTLSSpec{
+				Provider: v1beta1.CertManagerMTLSProvider,
+				Internode: &v1beta1.InternodeMTLSSpec{
 					Enabled: true,
 				},
-				Frontend: &appsv1alpha1.FrontendMTLSSpec{
+				Frontend: &v1beta1.FrontendMTLSSpec{
 					Enabled: true,
 				},
 			},
-			Persistence: appsv1alpha1.TemporalPersistenceSpec{
+			Persistence: v1beta1.TemporalPersistenceSpec{
 				DefaultStore:    "default",
 				VisibilityStore: "visibility",
 			},
-			Datastores: []appsv1alpha1.TemporalDatastoreSpec{
+			Datastores: []v1beta1.TemporalDatastoreSpec{
 				{
 					Name: "default",
-					SQL: &appsv1alpha1.SQLSpec{
+					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
 						PluginName:      "postgres",
 						DatabaseName:    "temporal",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
 					},
-					PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+					PasswordSecretRef: v1beta1.SecretKeyReference{
 						Name: "postgres-password",
 						Key:  "PASSWORD",
 					},
 				},
 				{
 					Name: "visibility",
-					SQL: &appsv1alpha1.SQLSpec{
+					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
 						PluginName:      "postgres",
 						DatabaseName:    "temporal_visibility",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
 					},
-					PasswordSecretRef: appsv1alpha1.SecretKeyReference{
+					PasswordSecretRef: v1beta1.SecretKeyReference{
 						Name: "postgres-password",
 						Key:  "PASSWORD",
 					},
@@ -103,12 +103,12 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 			},
 		},
 	}
-	err = cfg.Client().Resources(namespace).Create(ctx, temporalCluster)
+	err = cfg.Client().Resources(namespace).Create(ctx, cluster)
 	if err != nil {
 		return nil, err
 	}
 
-	return temporalCluster, nil
+	return cluster, nil
 
 }
 
@@ -168,11 +168,11 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 	return wait.For(conditions.New(cfg.Client().Resources()).DeploymentConditionMatch(dep, appsv1.DeploymentAvailable, corev1.ConditionTrue), wait.WithTimeout(time.Minute*10))
 }
 
-// waitForTemporalCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
-func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCluster *appsv1alpha1.TemporalCluster) error {
-	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalCluster, func(object k8s.Object) bool {
-		for _, condition := range object.(*appsv1alpha1.TemporalCluster).Status.Conditions {
-			if condition.Type == appsv1alpha1.ReadyCondition && condition.Status == metav1.ConditionTrue {
+// waitForCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
+func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.Cluster) error {
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(cluster, func(object k8s.Object) bool {
+		for _, condition := range object.(*v1beta1.Cluster).Status.Conditions {
+			if condition.Type == v1beta1.ReadyCondition && condition.Status == metav1.ConditionTrue {
 				return true
 			}
 		}
@@ -181,9 +181,9 @@ func waitForTemporalCluster(ctx context.Context, cfg *envconf.Config, temporalCl
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
-func waitForTemporalClusterClient(ctx context.Context, cfg *envconf.Config, temporalClusterClient *appsv1alpha1.TemporalClusterClient) error {
-	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalClusterClient, func(object k8s.Object) bool {
-		return object.(*appsv1alpha1.TemporalClusterClient).Status.SecretRef.Name != ""
+func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClient *v1beta1.ClusterClient) error {
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(clusterClient, func(object k8s.Object) bool {
+		return object.(*v1beta1.ClusterClient).Status.SecretRef.Name != ""
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
@@ -197,14 +197,14 @@ func (t *testLogWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, temporalCluster *appsv1alpha1.TemporalCluster) (string, func(), error) {
+func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, cluster *v1beta1.Cluster) (string, func(), error) {
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{
 				{
 					Key:      "app.kubernetes.io/name",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{temporalCluster.GetName()},
+					Values:   []string{cluster.GetName()},
 				},
 				{
 					Key:      "app.kubernetes.io/component",
@@ -214,7 +214,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 				{
 					Key:      "app.kubernetes.io/version",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{temporalCluster.Spec.Version},
+					Values:   []string{cluster.Spec.Version},
 				},
 			},
 		},
@@ -224,7 +224,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 	}
 
 	podList := &corev1.PodList{}
-	err = cfg.Client().Resources(temporalCluster.GetNamespace()).List(ctx, podList, resources.WithLabelSelector(selector.String()))
+	err = cfg.Client().Resources(cluster.GetNamespace()).List(ctx, podList, resources.WithLabelSelector(selector.String()))
 	if err != nil {
 		return "", nil, err
 	}
