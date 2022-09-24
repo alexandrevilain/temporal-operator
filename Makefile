@@ -8,6 +8,8 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+VERSION ?= "$(shell cat VERSION)"
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -102,6 +104,10 @@ run: manifests generate fmt vet ## Run a controller from your host.
 docker-build-dev: ## Build docker image with the manager.
 	docker build -t temporal-operator .
 
+.PHONY: bundle-build
+bundle-build: ## Build the bundle image.
+	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+
 ##@ Deployment
 
 ifndef ignore-not-found
@@ -130,6 +136,12 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/crd > ${RELEASE_PATH}/temporal-operator.crds.yaml
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
+.PHONY: bundle
+bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
+	$(OPERATOR_SDK) generate kustomize manifests -q
+	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --manifests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	$(OPERATOR_SDK) bundle validate ./bundle
+
 ##@ Build Dependencies
 
 RELEASE_PATH ?= $(shell pwd)/out/release/artifacts
@@ -141,6 +153,7 @@ $(LOCALBIN):
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
+OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GO_LICENSER ?= $(LOCALBIN)/go-licenser
@@ -149,6 +162,7 @@ GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
+OPERATOR_SDK_VERSION ?= 1.23.0
 CONTROLLER_TOOLS_VERSION ?= v0.9.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
@@ -158,7 +172,13 @@ KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/k
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+	test -s $(KUSTOMIZE) || curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+
+.PHONY: operator-sdk
+operator-sdk: $(OPERATOR_SDK)
+$(OPERATOR_SDK): $(LOCALBIN)
+	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
+	@chmod +x $(OPERATOR_SDK)
 
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCI_LINT)

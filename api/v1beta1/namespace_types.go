@@ -61,7 +61,7 @@ type NamespaceStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Namespace is the Schema for the Namespaces API
+// A Namespace creates a namespace in the targeted temporal cluster.
 type Namespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
