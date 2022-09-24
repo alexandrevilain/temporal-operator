@@ -1,0 +1,9 @@
+apiVersion: temporal.io/v1beta1
+kind: Namespace
+metadata:
+  name: accounting
+spec:
+  clusterRef:
+    name: prod
+  description: Accounting team namespace
+  retentionPeriod: 168h

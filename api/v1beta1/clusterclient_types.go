@@ -39,7 +39,7 @@ type ClusterClientStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// ClusterClient is the Schema for the ClusterClients API
+// A ClusterClient creates a new mTLS client in the targeted temporal cluster.
 type ClusterClient struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
