@@ -29,7 +29,7 @@ const (
 )
 
 // GetDatastoresEnvironmentVariables returns needed env vars for the provided datastores list.
-func GetDatastoresEnvironmentVariables(datastores []v1beta1.TemporalDatastoreSpec) []corev1.EnvVar {
+func GetDatastoresEnvironmentVariables(datastores []*v1beta1.DatastoreSpec) []corev1.EnvVar {
 	vars := []corev1.EnvVar{}
 	for _, datastore := range datastores {
 		key := datastore.PasswordSecretRef.Key
@@ -54,7 +54,7 @@ func GetDatastoresEnvironmentVariables(datastores []v1beta1.TemporalDatastoreSpe
 }
 
 // GetDatastoresVolumes returns needed volume for the provided datastores list.
-func GetDatastoresVolumes(datastores []v1beta1.TemporalDatastoreSpec) []corev1.Volume {
+func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 	volumes := []corev1.Volume{}
 	for _, datastore := range datastores {
 		if datastore.TLS != nil && datastore.TLS.Enabled {
@@ -132,7 +132,7 @@ func GetDatastoresVolumes(datastores []v1beta1.TemporalDatastoreSpec) []corev1.V
 }
 
 // GetDatastoresVolumeMounts returns needed volume mounts for the provided datastores list.
-func GetDatastoresVolumeMounts(datastores []v1beta1.TemporalDatastoreSpec) []corev1.VolumeMount {
+func GetDatastoresVolumeMounts(datastores []*v1beta1.DatastoreSpec) []corev1.VolumeMount {
 	volumeMounts := []corev1.VolumeMount{}
 	for _, datastore := range datastores {
 		if datastore.TLS != nil && datastore.TLS.Enabled {

@@ -7,12 +7,7 @@ spec:
   version: 1.16.0
   numHistoryShards: 1
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
-  mTLS:
-    provider: istio
-  datastores:
-    - name: default
+    defaultStore:
       sql:
         user: temporal
         pluginName: postgres
@@ -22,7 +17,7 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
-    - name: visibility
+    visibilityStore:
       sql:
         user: temporal
         pluginName: postgres
@@ -32,5 +27,7 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
+  mTLS:
+    provider: istio
   ui:
     enabled: true

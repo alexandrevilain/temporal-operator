@@ -102,8 +102,8 @@ This field is immutable.</p>
 <td>
 <code>services</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalServicesSpec">
-TemporalServicesSpec
+<a href="#temporal.io/v1beta1.ServicesSpec">
+ServicesSpec
 </a>
 </em>
 </td>
@@ -123,20 +123,6 @@ TemporalPersistenceSpec
 </td>
 <td>
 <p>Persistence defines temporal persistence configuration.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>datastores</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">
-[]TemporalDatastoreSpec
-</a>
-</em>
-</td>
-<td>
-<p>Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
-for the cluster&rsquo;s persistence layer.</p>
 </td>
 </tr>
 <tr>
@@ -267,7 +253,7 @@ github.com/gocql/gocql.SerialConsistency
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>)
 </p>
 <p>CassandraSpec contains cassandra datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -695,8 +681,8 @@ This field is immutable.</p>
 <td>
 <code>services</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalServicesSpec">
-TemporalServicesSpec
+<a href="#temporal.io/v1beta1.ServicesSpec">
+ServicesSpec
 </a>
 </em>
 </td>
@@ -716,20 +702,6 @@ TemporalPersistenceSpec
 </td>
 <td>
 <p>Persistence defines temporal persistence configuration.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>datastores</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">
-[]TemporalDatastoreSpec
-</a>
-</em>
-</td>
-<td>
-<p>Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
-for the cluster&rsquo;s persistence layer.</p>
 </td>
 </tr>
 <tr>
@@ -851,11 +823,116 @@ string
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.DatastoreSpec">DatastoreSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalPersistenceSpec">TemporalPersistenceSpec</a>)
+</p>
+<p>DatastoreSpec contains temporal datastore specifications.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Name is the name of the datatstore.
+It should be unique and will be referenced within the persitence spec.
+Defaults to &ldquo;default&rdquo; for default sore, &ldquo;visibility&rdquo; for visibility store and
+&ldquo;advancedVisibility&rdquo; for advanced visibility store.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>sql</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SQLSpec">
+SQLSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SQL holds all connection parameters for SQL datastores.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>elasticsearch</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ElasticsearchSpec">
+ElasticsearchSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Elasticsearch holds all connection parameters for Elasticsearch datastores.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>cassandra</code><br>
+<em>
+<a href="#temporal.io/v1beta1.CassandraSpec">
+CassandraSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Cassandra holds all connection parameters for Cassandra datastore.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>passwordSecretRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SecretKeyReference">
+SecretKeyReference
+</a>
+</em>
+</td>
+<td>
+<p>PasswordSecret is the reference to the secret holding the password.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tls</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreTLSSpec">
+DatastoreTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TLS is an optional option to connect to the datastore using TLS.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.DatastoreTLSSpec">DatastoreTLSSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>)
 </p>
 <p>DatastoreTLSSpec contains datastore TLS connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -998,7 +1075,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>)
 </p>
 <p>ElasticsearchSpec contains Elasticsearch datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1620,7 +1697,7 @@ Only applicable if the namespace is a global namespace.</p>
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>)
 </p>
 <p>SQLSpec contains SQL datastore connections specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1757,8 +1834,8 @@ int
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.DatastoreTLSSpec">DatastoreTLSSpec</a>, 
-<a href="#temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec</a>)
+<a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>, 
+<a href="#temporal.io/v1beta1.DatastoreTLSSpec">DatastoreTLSSpec</a>)
 </p>
 <p>SecretKeyReference contains enough information to locate the referenced Kubernetes Secret object in the same
 namespace.</p>
@@ -1803,7 +1880,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalServicesSpec">TemporalServicesSpec</a>)
+<a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>)
 </p>
 <p>ServiceSpec contains a temporal service specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -1920,216 +1997,13 @@ bool
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalAdminToolsSpec">TemporalAdminToolsSpec
+<h3 id="temporal.io/v1beta1.ServicesSpec">ServicesSpec
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
 </p>
-<p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
-Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>enabled</code><br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Enabled defines if the operator should deploy the admin tools alongside the cluster.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>image</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Image defines the temporal admin tools docker image the instance should run.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalDatastoreSpec">TemporalDatastoreSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
-</p>
-<p>TemporalDatastoreSpec contains temporal datastore specifications.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Name is the name of the datatstore.
-It should be unique and will be referenced within the persitence spec.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>sql</code><br>
-<em>
-<a href="#temporal.io/v1beta1.SQLSpec">
-SQLSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>SQL holds all connection parameters for SQL datastores.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>elasticsearch</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ElasticsearchSpec">
-ElasticsearchSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Elasticsearch holds all connection parameters for Elasticsearch datastores.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>cassandra</code><br>
-<em>
-<a href="#temporal.io/v1beta1.CassandraSpec">
-CassandraSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Cassandra holds all connection parameters for Cassandra datastore.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>passwordSecretRef</code><br>
-<em>
-<a href="#temporal.io/v1beta1.SecretKeyReference">
-SecretKeyReference
-</a>
-</em>
-</td>
-<td>
-<p>PasswordSecret is the reference to the secret holding the password.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>tls</code><br>
-<em>
-<a href="#temporal.io/v1beta1.DatastoreTLSSpec">
-DatastoreTLSSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>TLS is an optional option to connect to the datastore using TLS.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalPersistenceSpec">TemporalPersistenceSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
-</p>
-<p>TemporalPersistenceSpec contains temporal persistence specifications.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>defaultStore</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>DefaultStore is the name of the default data store to use.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>visibilityStore</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>VisibilityStore is the name of the datastore to be used for visibility records.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>advancedVisibilityStore</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>AdvancedVisibilityStore is the name of the datastore to be used for visibility records</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalServicesSpec">TemporalServicesSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
-</p>
-<p>TemporalServicesSpec contains all temporal services specifications.</p>
+<p>ServicesSpec contains all temporal services specifications.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2194,6 +2068,113 @@ ServiceSpec
 <td>
 <em>(Optional)</em>
 <p>Worker service custom specifications.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalAdminToolsSpec">TemporalAdminToolsSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+</p>
+<p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
+Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should deploy the admin tools alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image defines the temporal admin tools docker image the instance should run.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalPersistenceSpec">TemporalPersistenceSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+</p>
+<p>TemporalPersistenceSpec contains temporal persistence specifications.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>defaultStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreSpec">
+DatastoreSpec
+</a>
+</em>
+</td>
+<td>
+<p>DefaultStore holds the default datastore specs.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>visibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreSpec">
+DatastoreSpec
+</a>
+</em>
+</td>
+<td>
+<p>VisibilityStore holds the visibility datastore specs.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>advancedVisibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreSpec">
+DatastoreSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdvancedVisibilityStore holds the avanced visibility datastore specs.</p>
 </td>
 </tr>
 </tbody>

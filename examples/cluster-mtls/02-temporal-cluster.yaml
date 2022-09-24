@@ -7,8 +7,26 @@ spec:
   version: 1.16.0
   numHistoryShards: 1
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
+    defaultStore:
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal
+        connectAddr: postgres.demo.svc.cluster.local:5432
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+    visibilityStore:
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal_visibility
+        connectAddr: postgres.demo.svc.cluster.local:5432
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
   mTLS:
     provider: cert-manager
     internode:
@@ -22,27 +40,6 @@ spec:
       frontendCertificate: 1h
       internodeCertificate: 1h
     refreshInterval: 5m
-  datastores:
-    - name: default
-      sql:
-        user: temporal
-        pluginName: postgres
-        databaseName: temporal
-        connectAddr: postgres.demo.svc.cluster.local:5432
-        connectProtocol: tcp
-      passwordSecretRef:
-        name: postgres-password
-        key: PASSWORD
-    - name: visibility
-      sql:
-        user: temporal
-        pluginName: postgres
-        databaseName: temporal_visibility
-        connectAddr: postgres.demo.svc.cluster.local:5432
-        connectProtocol: tcp
-      passwordSecretRef:
-        name: postgres-password
-        key: PASSWORD
   ui:
     enabled: true
   admintools:
