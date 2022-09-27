@@ -49,8 +49,9 @@ func TestPersistence(t *testing.T) {
 						Namespace: namespace,
 					},
 					Spec: v1beta1.ClusterSpec{
-						NumHistoryShards: 1,
-						Version:          initialClusterVersion,
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: 300,
+						Version:                    initialClusterVersion,
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
 							Internode: &v1beta1.InternodeMTLSSpec{
@@ -109,8 +110,9 @@ func TestPersistence(t *testing.T) {
 						Namespace: namespace,
 					},
 					Spec: v1beta1.ClusterSpec{
-						NumHistoryShards: 1,
-						Version:          "1.16.3",
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: 300,
+						Version:                    "1.16.3",
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore:    "default",
 							VisibilityStore: "visibility",
@@ -166,8 +168,9 @@ func TestPersistence(t *testing.T) {
 						Namespace: namespace,
 					},
 					Spec: v1beta1.ClusterSpec{
-						NumHistoryShards: 1,
-						Version:          initialClusterVersion,
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: 300,
+						Version:                    initialClusterVersion,
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore:    "default",
 							VisibilityStore: "visibility",

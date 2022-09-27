@@ -88,6 +88,18 @@ This version impacts the underlying persistence schemas versions.</p>
 </tr>
 <tr>
 <td>
+<code>jobTtlSecondsAfterFinished</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+This field is immutable.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>numHistoryShards</code><br>
 <em>
 int32

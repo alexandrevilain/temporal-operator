@@ -93,6 +93,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{
+			TTLSecondsAfterFinished: &b.instance.Spec.JobTtlSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: metadata.Merge(
@@ -136,7 +137,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 
 func (b *SchemaJobBuilder) Update(object client.Object) error {
 	job := object.(*batchv1.Job)
-	if err := controllerutil.SetControllerReference(b.instance, job, b.scheme); err != nil {
+	if err := controllerutil.SetOwnerReference(b.instance, job, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
 	return nil
