@@ -105,7 +105,9 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	envVars = append(envVars, persistence.GetDatastoresEnvironmentVariables(b.instance.Spec.Datastores)...)
+	datastores := b.instance.Spec.Persistence.GetDatastores()
+
+	envVars = append(envVars, persistence.GetDatastoresEnvironmentVariables(datastores)...)
 
 	volumeMounts := []corev1.VolumeMount{
 		{
@@ -115,7 +117,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	volumeMounts = append(volumeMounts, persistence.GetDatastoresVolumeMounts(b.instance.Spec.Datastores)...)
+	volumeMounts = append(volumeMounts, persistence.GetDatastoresVolumeMounts(datastores)...)
 
 	volumes := []corev1.Volume{
 		{
@@ -131,7 +133,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	volumes = append(volumes, persistence.GetDatastoresVolumes(b.instance.Spec.Datastores)...)
+	volumes = append(volumes, persistence.GetDatastoresVolumes(datastores)...)
 
 	if b.instance.MTLSWithCertManagerEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {

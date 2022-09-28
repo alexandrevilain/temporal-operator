@@ -16,10 +16,7 @@ spec:
   version: 1.17.5
   numHistoryShards: 1
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
-  datastores:
-    - name: default
+    defaultStore:
       cassandra:
         hosts:
           - "cassandra.demo"
@@ -31,7 +28,7 @@ spec:
       passwordSecretRef:
         name: cassandra-password
         key: PASSWORD
-    - name: visibility
+    visibilityStore:
       cassandra:
         hosts:
           - "cassandra.demo"

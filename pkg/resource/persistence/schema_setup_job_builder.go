@@ -52,13 +52,15 @@ func NewSchemaJobBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme, name
 }
 
 func (b *SchemaJobBuilder) Build() (client.Object, error) {
+	datastores := b.instance.Spec.Persistence.GetDatastores()
+
 	envVars := []corev1.EnvVar{
 		{
 			Name:  "TEMPORAL_CLI_ADDRESS",
 			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
 		},
 	}
-	envVars = append(envVars, GetDatastoresEnvironmentVariables(b.instance.Spec.Datastores)...)
+	envVars = append(envVars, GetDatastoresEnvironmentVariables(datastores)...)
 
 	volumeMounts := []corev1.VolumeMount{
 		{
@@ -67,7 +69,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 		},
 	}
 
-	volumeMounts = append(volumeMounts, GetDatastoresVolumeMounts(b.instance.Spec.Datastores)...)
+	volumeMounts = append(volumeMounts, GetDatastoresVolumeMounts(datastores)...)
 
 	volumes := []corev1.Volume{
 		{
@@ -83,7 +85,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 		},
 	}
 
-	volumes = append(volumes, GetDatastoresVolumes(b.instance.Spec.Datastores)...)
+	volumes = append(volumes, GetDatastoresVolumes(datastores)...)
 
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{

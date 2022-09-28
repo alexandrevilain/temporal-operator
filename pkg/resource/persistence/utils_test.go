@@ -28,15 +28,15 @@ import (
 
 func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 	tests := map[string]struct {
-		datastores      []v1beta1.TemporalDatastoreSpec
+		datastores      []*v1beta1.DatastoreSpec
 		expectedEnvVars []corev1.EnvVar
 	}{
 		"empty datastore list": {
-			datastores:      []v1beta1.TemporalDatastoreSpec{},
+			datastores:      []*v1beta1.DatastoreSpec{},
 			expectedEnvVars: []corev1.EnvVar{},
 		},
 		"one datastore without secret key defined": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
 					PasswordSecretRef: v1beta1.SecretKeyReference{
@@ -59,7 +59,7 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 			},
 		},
 		"one datastore with secret key defined": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
 					PasswordSecretRef: v1beta1.SecretKeyReference{
@@ -83,7 +83,7 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 			},
 		},
 		"two datastores": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
 					PasswordSecretRef: v1beta1.SecretKeyReference{
@@ -136,15 +136,15 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 
 func TestGetDatastoresVolumes(t *testing.T) {
 	tests := map[string]struct {
-		datastores      []v1beta1.TemporalDatastoreSpec
+		datastores      []*v1beta1.DatastoreSpec
 		expectedEnvVars []corev1.Volume
 	}{
 		"empty datastore list": {
-			datastores:      []v1beta1.TemporalDatastoreSpec{},
+			datastores:      []*v1beta1.DatastoreSpec{},
 			expectedEnvVars: []corev1.Volume{},
 		},
 		"datastore list without TLS": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
 				},
@@ -155,13 +155,9 @@ func TestGetDatastoresVolumes(t *testing.T) {
 			expectedEnvVars: []corev1.Volume{},
 		},
 		"datastore list with ca file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CaFileRef: &v1beta1.SecretKeyReference{
@@ -170,11 +166,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 					},
 				},
 				{
-					Name:              "test2",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test2",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CaFileRef: &v1beta1.SecretKeyReference{
@@ -216,13 +208,9 @@ func TestGetDatastoresVolumes(t *testing.T) {
 			},
 		},
 		"datastore list with cert file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CertFileRef: &v1beta1.SecretKeyReference{
@@ -231,11 +219,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 					},
 				},
 				{
-					Name:              "test2",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test2",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CertFileRef: &v1beta1.SecretKeyReference{
@@ -277,13 +261,9 @@ func TestGetDatastoresVolumes(t *testing.T) {
 			},
 		},
 		"datastore list with key file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						KeyFileRef: &v1beta1.SecretKeyReference{
@@ -292,11 +272,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 					},
 				},
 				{
-					Name:              "test2",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test2",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						KeyFileRef: &v1beta1.SecretKeyReference{
@@ -349,15 +325,15 @@ func TestGetDatastoresVolumes(t *testing.T) {
 
 func TestGetDatastoresVolumeMounts(t *testing.T) {
 	tests := map[string]struct {
-		datastores      []v1beta1.TemporalDatastoreSpec
+		datastores      []*v1beta1.DatastoreSpec
 		expectedEnvVars []corev1.VolumeMount
 	}{
 		"empty datastore list": {
-			datastores:      []v1beta1.TemporalDatastoreSpec{},
+			datastores:      []*v1beta1.DatastoreSpec{},
 			expectedEnvVars: []corev1.VolumeMount{},
 		},
 		"datastore list without TLS": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
 				},
@@ -368,13 +344,9 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{},
 		},
 		"datastore list with ca file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CaFileRef: &v1beta1.SecretKeyReference{
@@ -391,13 +363,9 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			},
 		},
 		"datastore list with cert file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						CertFileRef: &v1beta1.SecretKeyReference{
@@ -414,13 +382,9 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			},
 		},
 		"datastore list with key file reference filed": {
-			datastores: []v1beta1.TemporalDatastoreSpec{
+			datastores: []*v1beta1.DatastoreSpec{
 				{
-					Name:              "test",
-					SQL:               &v1beta1.SQLSpec{},
-					Elasticsearch:     &v1beta1.ElasticsearchSpec{},
-					Cassandra:         &v1beta1.CassandraSpec{},
-					PasswordSecretRef: v1beta1.SecretKeyReference{},
+					Name: "test",
 					TLS: &v1beta1.DatastoreTLSSpec{
 						Enabled: true,
 						KeyFileRef: &v1beta1.SecretKeyReference{

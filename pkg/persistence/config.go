@@ -28,8 +28,8 @@ import (
 	esclient "go.temporal.io/server/common/persistence/visibility/store/elasticsearch/client"
 )
 
-// NewSQLconfigFromDatastoreSpec creates a new instance of a temporal SQL config from the provided TemporalDatastoreSpec.
-func NewSQLConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) *config.SQL {
+// NewSQLconfigFromDatastoreSpec creates a new instance of a temporal SQL config from the provided DatastoreSpec.
+func NewSQLConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *config.SQL {
 	return &config.SQL{
 		User:               spec.SQL.User,
 		Password:           "",
@@ -46,8 +46,8 @@ func NewSQLConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) *config.
 	}
 }
 
-// NewElasticsearchConfigFromDatastoreSpec creates a new instance of a temporal elasticsearch client config from the provided TemporalDatastoreSpec.
-func NewElasticsearchConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) (*esclient.Config, error) {
+// NewElasticsearchConfigFromDatastoreSpec creates a new instance of a temporal elasticsearch client config from the provided DatastoreSpec.
+func NewElasticsearchConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) (*esclient.Config, error) {
 	parsedURL, err := url.Parse(spec.Elasticsearch.URL)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse elasticsearch url: %w", err)
@@ -76,8 +76,8 @@ func elasticsearchIndicesToMap(indices v1beta1.ElasticsearchIndices) map[string]
 	return result
 }
 
-// NewCassandraConfigFromDatastoreSpec creates a new instance of a temporal cassandra config from the provided TemporalDatastoreSpec.
-func NewCassandraConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) *config.Cassandra {
+// NewCassandraConfigFromDatastoreSpec creates a new instance of a temporal cassandra config from the provided DatastoreSpec.
+func NewCassandraConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *config.Cassandra {
 	cfg := &config.Cassandra{
 		Hosts:                    strings.Join(spec.Cassandra.Hosts, ","),
 		Port:                     spec.Cassandra.Port,
@@ -111,7 +111,7 @@ func NewCassandraConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) *c
 	return cfg
 }
 
-func tlsConfigConfigFromDatastoreSpec(spec *v1beta1.TemporalDatastoreSpec) *auth.TLS {
+func tlsConfigConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *auth.TLS {
 	if spec.TLS == nil {
 		return nil
 	}

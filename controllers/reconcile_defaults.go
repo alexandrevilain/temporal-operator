@@ -37,6 +37,14 @@ const (
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
 )
 
+func (r *ClusterReconciler) reconcileDatastoreDefaults(ctx context.Context, datastore *v1beta1.DatastoreSpec) {
+	if datastore.SQL != nil {
+		if datastore.SQL.ConnectProtocol == "" {
+			datastore.SQL.ConnectProtocol = "tcp"
+		}
+	}
+}
+
 func (r *ClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.Cluster) bool {
 	before := cluster.DeepCopy()
 
@@ -47,7 +55,7 @@ func (r *ClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1be
 		cluster.Spec.Image = defaultTemporalImage
 	}
 	if cluster.Spec.Services == nil {
-		cluster.Spec.Services = new(v1beta1.TemporalServicesSpec)
+		cluster.Spec.Services = new(v1beta1.ServicesSpec)
 	}
 	// Frontend specs
 	if cluster.Spec.Services.Frontend == nil {
@@ -102,16 +110,25 @@ func (r *ClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1be
 		cluster.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
 	}
 
-	for _, datastore := range cluster.Spec.Datastores {
-		if datastore.SQL != nil {
-			if datastore.SQL.ConnectProtocol == "" {
-				datastore.SQL.ConnectProtocol = "tcp"
-			}
+	if cluster.Spec.Persistence.DefaultStore != nil {
+		if cluster.Spec.Persistence.DefaultStore.Name == "" {
+			cluster.Spec.Persistence.DefaultStore.Name = v1beta1.DefaultStoreName
 		}
+		r.reconcileDatastoreDefaults(ctx, cluster.Spec.Persistence.DefaultStore)
 	}
 
-	if cluster.Spec.Persistence.VisibilityStore == "" {
-		cluster.Spec.Persistence.VisibilityStore = cluster.Spec.Persistence.DefaultStore
+	if cluster.Spec.Persistence.VisibilityStore != nil {
+		if cluster.Spec.Persistence.VisibilityStore.Name == "" {
+			cluster.Spec.Persistence.VisibilityStore.Name = v1beta1.VisibilityStoreName
+		}
+		r.reconcileDatastoreDefaults(ctx, cluster.Spec.Persistence.VisibilityStore)
+	}
+
+	if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+		if cluster.Spec.Persistence.AdvancedVisibilityStore.Name == "" {
+			cluster.Spec.Persistence.AdvancedVisibilityStore.Name = v1beta1.AdvancedVisibilityStoreName
+		}
+		r.reconcileDatastoreDefaults(ctx, cluster.Spec.Persistence.AdvancedVisibilityStore)
 	}
 
 	if cluster.Spec.UI == nil {
