@@ -18,7 +18,6 @@
 package v1beta1
 
 import (
-	"errors"
 	"fmt"
 	"path"
 	"strings"
@@ -56,8 +55,8 @@ type ServiceSpec struct {
 	Replicas *int32 `json:"replicas"`
 }
 
-// TemporalServicesSpec contains all temporal services specifications.
-type TemporalServicesSpec struct {
+// ServicesSpec contains all temporal services specifications.
+type ServicesSpec struct {
 	// Frontend service custom specifications.
 	// +optional
 	Frontend *ServiceSpec `json:"frontend"`
@@ -73,7 +72,7 @@ type TemporalServicesSpec struct {
 }
 
 // GetServiceSpec returns service spec from its name.
-func (s *TemporalServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error) {
+func (s *ServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error) {
 	switch name {
 	case common.FrontendServiceName:
 		return s.Frontend, nil
@@ -232,13 +231,22 @@ const (
 	PostgresSQLDatastore   DatastoreType = "postgresql"
 	MySQLDatastore         DatastoreType = "mysql"
 	ElasticsearchDatastore DatastoreType = "elasticsearch"
+	UnknownDatastore       DatastoreType = "unknown"
 )
 
-// TemporalDatastoreSpec contains temporal datastore specifications.
-type TemporalDatastoreSpec struct {
+const (
+	DefaultStoreName            = "default"
+	VisibilityStoreName         = "visibility"
+	AdvancedVisibilityStoreName = "advancedVisibility"
+)
+
+// DatastoreSpec contains temporal datastore specifications.
+type DatastoreSpec struct {
 	// Name is the name of the datatstore.
 	// It should be unique and will be referenced within the persitence spec.
-	// +required
+	// Defaults to "default" for default sore, "visibility" for visibility store and
+	// "advancedVisibility" for advanced visibility store.
+	// +optional
 	Name string `json:"name"`
 	// SQL holds all connection parameters for SQL datastores.
 	// +optional
@@ -257,22 +265,22 @@ type TemporalDatastoreSpec struct {
 	TLS *DatastoreTLSSpec `json:"tls"`
 }
 
-func (s *TemporalDatastoreSpec) GetDatastoreType() (DatastoreType, error) {
+func (s *DatastoreSpec) GetType() DatastoreType {
 	if s.SQL != nil {
 		switch s.SQL.PluginName {
 		case "postgres":
-			return PostgresSQLDatastore, nil
+			return PostgresSQLDatastore
 		case "mysql":
-			return MySQLDatastore, nil
+			return MySQLDatastore
 		}
 	}
 	if s.Elasticsearch != nil {
-		return ElasticsearchDatastore, nil
+		return ElasticsearchDatastore
 	}
 	if s.Cassandra != nil {
-		return CassandraDatastore, nil
+		return CassandraDatastore
 	}
-	return DatastoreType(""), errors.New("can't get datastore type from current spec")
+	return UnknownDatastore
 }
 
 const (
@@ -284,7 +292,7 @@ const (
 
 // GetTLSKeyFileMountPath returns the client TLS cert mount path.
 // It returns empty if the tls config is nil or if no secret key ref has been specified.
-func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
+func (s *DatastoreSpec) GetTLSCertFileMountPath() string {
 	if s.TLS == nil || s.TLS.CertFileRef == nil {
 		return ""
 	}
@@ -294,7 +302,7 @@ func (s *TemporalDatastoreSpec) GetTLSCertFileMountPath() string {
 
 // GetTLSKeyFileMountPath returns the client TLS key mount path.
 // It returns empty if the tls config is nil or if no secret key ref has been specified.
-func (s *TemporalDatastoreSpec) GetTLSKeyFileMountPath() string {
+func (s *DatastoreSpec) GetTLSKeyFileMountPath() string {
 	if s.TLS == nil || s.TLS.KeyFileRef == nil {
 		return ""
 	}
@@ -303,7 +311,7 @@ func (s *TemporalDatastoreSpec) GetTLSKeyFileMountPath() string {
 
 // GetTLSCaFileMountPath  returns the CA key mount path.
 // It returns empty if the tls config is nil or if no secret key ref has been specified.
-func (s *TemporalDatastoreSpec) GetTLSCaFileMountPath() string {
+func (s *DatastoreSpec) GetTLSCaFileMountPath() string {
 	if s.TLS == nil || s.TLS.CaFileRef == nil {
 		return ""
 	}
@@ -311,7 +319,7 @@ func (s *TemporalDatastoreSpec) GetTLSCaFileMountPath() string {
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.
-func (s *TemporalDatastoreSpec) GetPasswordEnvVarName() string {
+func (s *DatastoreSpec) GetPasswordEnvVarName() string {
 	storeName := slug.Make(s.Name)
 	storeName = strings.ToUpper(storeName)
 	return fmt.Sprintf("TEMPORAL_%s_DATASTORE_PASSWORD", storeName)
@@ -319,13 +327,26 @@ func (s *TemporalDatastoreSpec) GetPasswordEnvVarName() string {
 
 // TemporalPersistenceSpec contains temporal persistence specifications.
 type TemporalPersistenceSpec struct {
-	// DefaultStore is the name of the default data store to use.
-	DefaultStore string `json:"defaultStore"`
-	// VisibilityStore is the name of the datastore to be used for visibility records.
-	VisibilityStore string `json:"visibilityStore"`
-	// AdvancedVisibilityStore is the name of the datastore to be used for visibility records
+	// DefaultStore holds the default datastore specs.
+	DefaultStore *DatastoreSpec `json:"defaultStore"`
+	// VisibilityStore holds the visibility datastore specs.
+	VisibilityStore *DatastoreSpec `json:"visibilityStore"`
+	// AdvancedVisibilityStore holds the avanced visibility datastore specs.
 	// +optional
-	AdvancedVisibilityStore string `json:"advancedVisibilityStore"`
+	AdvancedVisibilityStore *DatastoreSpec `json:"advancedVisibilityStore"`
+}
+
+func (p *TemporalPersistenceSpec) GetDatastores() []*DatastoreSpec {
+	stores := []*DatastoreSpec{
+		p.DefaultStore,
+		p.VisibilityStore,
+	}
+
+	if p.AdvancedVisibilityStore != nil {
+		stores = append(stores, p.AdvancedVisibilityStore)
+	}
+
+	return stores
 }
 
 // TemporalUIIngressSpec contains all configurations options for the UI ingress.
@@ -503,12 +524,9 @@ type ClusterSpec struct {
 	NumHistoryShards int32 `json:"numHistoryShards"`
 	// Services allows customizations for for each temporal services deployment.
 	// +optional
-	Services *TemporalServicesSpec `json:"services,omitempty"`
+	Services *ServicesSpec `json:"services,omitempty"`
 	// Persistence defines temporal persistence configuration.
 	Persistence TemporalPersistenceSpec `json:"persistence"`
-	// Datastores the cluster can use. Datastore names are then referenced in the PersistenceSpec to use them
-	// for the cluster's persistence layer.
-	Datastores []TemporalDatastoreSpec `json:"datastores"`
 	// An optional list of references to secrets in the same namespace
 	// to use for pulling temporal images from registries.
 	// +optional
@@ -588,30 +606,6 @@ func (c *Cluster) MTLSWithCertManagerEnabled() bool {
 	return c.Spec.MTLS != nil &&
 		(c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled()) &&
 		c.Spec.MTLS.Provider == CertManagerMTLSProvider
-}
-
-func (c *Cluster) getDatastoreByName(name string) (*TemporalDatastoreSpec, bool) {
-	for _, datastore := range c.Spec.Datastores {
-		if datastore.Name == name {
-			return &datastore, true
-		}
-	}
-	return nil, false
-}
-
-// GetDefaultDatastore returns the cluster's default datastore.
-func (c *Cluster) GetDefaultDatastore() (*TemporalDatastoreSpec, bool) {
-	return c.getDatastoreByName(c.Spec.Persistence.DefaultStore)
-}
-
-// GetVisibilityDatastore returns the cluster's visibility datastore.
-func (c *Cluster) GetVisibilityDatastore() (*TemporalDatastoreSpec, bool) {
-	return c.getDatastoreByName(c.Spec.Persistence.VisibilityStore)
-}
-
-// GetAdvancedVisibilityDatastore returns the cluster's advanced visibility datastore.
-func (c *Cluster) GetAdvancedVisibilityDatastore() (*TemporalDatastoreSpec, bool) {
-	return c.getDatastoreByName(c.Spec.Persistence.AdvancedVisibilityStore)
 }
 
 // ChildResourceName returns child resource name using the cluster's name.

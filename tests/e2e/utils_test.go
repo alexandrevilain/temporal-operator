@@ -69,12 +69,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 				},
 			},
 			Persistence: v1beta1.TemporalPersistenceSpec{
-				DefaultStore:    "default",
-				VisibilityStore: "visibility",
-			},
-			Datastores: []v1beta1.TemporalDatastoreSpec{
-				{
-					Name: "default",
+				DefaultStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
 						PluginName:      "postgres",
@@ -87,8 +82,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 						Key:  "PASSWORD",
 					},
 				},
-				{
-					Name: "visibility",
+				VisibilityStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
 						PluginName:      "postgres",

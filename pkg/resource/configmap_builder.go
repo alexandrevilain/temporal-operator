@@ -61,33 +61,56 @@ func (b *ConfigmapBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
+func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*config.DataStore, error) {
+	cfg := &config.DataStore{}
+	switch store.GetType() {
+	case v1beta1.MySQLDatastore, v1beta1.PostgresSQLDatastore:
+		cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(store)
+		cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+	case v1beta1.CassandraDatastore:
+		cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(store)
+		cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+	case v1beta1.ElasticsearchDatastore:
+		esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(store)
+		if err != nil {
+			return nil, fmt.Errorf("can't get elasticsearch config: %w", err)
+		}
+		cfg.Elasticsearch = esCfg
+		cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+	}
+	return cfg, nil
+}
+
+func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error) {
+	cfg := &config.Persistence{
+		NumHistoryShards: b.instance.Spec.NumHistoryShards,
+		DefaultStore:     b.instance.Spec.Persistence.DefaultStore.Name,
+		VisibilityStore:  b.instance.Spec.Persistence.VisibilityStore.Name,
+		DataStores:       map[string]config.DataStore{},
+	}
+
+	if b.instance.Spec.Persistence.AdvancedVisibilityStore != nil {
+		cfg.AdvancedVisibilityStore = v1beta1.AdvancedVisibilityStoreName
+	}
+
+	for _, store := range b.instance.Spec.Persistence.GetDatastores() {
+		storeConfig, err := b.buildDatastoreConfig(store)
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.DataStores[store.Name] = *storeConfig
+	}
+
+	return cfg, nil
+}
+
 func (b *ConfigmapBuilder) Update(object client.Object) error {
 	configMap := object.(*corev1.ConfigMap)
 
-	datastores := map[string]config.DataStore{}
-	for _, store := range b.instance.Spec.Datastores {
-		datastoreType, err := store.GetDatastoreType()
-		if err != nil {
-			return err
-		}
-
-		cfg := config.DataStore{}
-		switch datastoreType {
-		case v1beta1.MySQLDatastore, v1beta1.PostgresSQLDatastore:
-			cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(&store)
-			cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		case v1beta1.CassandraDatastore:
-			cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(&store)
-			cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		case v1beta1.ElasticsearchDatastore:
-			esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(&store)
-			if err != nil {
-				return fmt.Errorf("can't get elasticsearch config: %w", err)
-			}
-			cfg.Elasticsearch = esCfg
-			cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
-		}
-		datastores[store.Name] = cfg
+	persistenceConfig, err := b.buildPersistenceConfig()
+	if err != nil {
+		return fmt.Errorf("can't build persistence config: %w", err)
 	}
 
 	temporalCfg := config.Config{
@@ -97,13 +120,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
 			},
 		},
-		Persistence: config.Persistence{
-			DefaultStore:            b.instance.Spec.Persistence.DefaultStore,
-			VisibilityStore:         b.instance.Spec.Persistence.VisibilityStore,
-			AdvancedVisibilityStore: b.instance.Spec.Persistence.AdvancedVisibilityStore,
-			NumHistoryShards:        b.instance.Spec.NumHistoryShards,
-			DataStores:              datastores,
-		},
+		Persistence: *persistenceConfig,
 		Log: log.Config{
 			Stdout: true,
 			Level:  "info",

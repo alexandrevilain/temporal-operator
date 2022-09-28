@@ -74,12 +74,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 						},
 					},
 					Persistence: v1beta1.TemporalPersistenceSpec{
-						DefaultStore:    "default",
-						VisibilityStore: "visibility",
-					},
-					Datastores: []v1beta1.TemporalDatastoreSpec{
-						{
-							Name: "default",
+						DefaultStore: &v1beta1.DatastoreSpec{
 							SQL: &v1beta1.SQLSpec{
 								User:            "temporal",
 								PluginName:      "postgres",
@@ -92,8 +87,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 								Key:  "PASSWORD",
 							},
 						},
-						{
-							Name: "visibility",
+						VisibilityStore: &v1beta1.DatastoreSpec{
 							SQL: &v1beta1.SQLSpec{
 								User:            "temporal",
 								PluginName:      "postgres",

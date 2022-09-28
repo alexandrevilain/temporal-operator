@@ -17,10 +17,7 @@ spec:
   numHistoryShards: 1
   jobTtlSecondsAfterFinished: 300
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
-  datastores:
-    - name: default
+    defaultStore:
       cassandra:
         hosts:
           - "cassandra.demo"
@@ -32,7 +29,7 @@ spec:
       passwordSecretRef:
         name: cassandra-password
         key: PASSWORD
-    - name: visibility
+    visibilityStore:
       cassandra:
         hosts:
           - "cassandra.demo"

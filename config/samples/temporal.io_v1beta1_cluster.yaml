@@ -8,10 +8,7 @@ spec:
   numHistoryShards: 1
   jobTtlSecondsAfterFinished: 300
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
-  datastores:
-    - name: default
+    defaultStore:
       sql:
         user: temporal
         pluginName: postgres
@@ -21,7 +18,7 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
-    - name: visibility
+    visibilityStore:
       sql:
         user: temporal
         pluginName: postgres

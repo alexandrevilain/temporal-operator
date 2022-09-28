@@ -62,12 +62,7 @@ func TestPersistence(t *testing.T) {
 							},
 						},
 						Persistence: v1beta1.TemporalPersistenceSpec{
-							DefaultStore:    "default",
-							VisibilityStore: "visibility",
-						},
-						Datastores: []v1beta1.TemporalDatastoreSpec{
-							{
-								Name: "default",
+							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "postgres",
@@ -80,8 +75,7 @@ func TestPersistence(t *testing.T) {
 									Key:  "PASSWORD",
 								},
 							},
-							{
-								Name: "visibility",
+							VisibilityStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "postgres",
@@ -114,12 +108,7 @@ func TestPersistence(t *testing.T) {
 						JobTtlSecondsAfterFinished: 300,
 						Version:                    "1.16.3",
 						Persistence: v1beta1.TemporalPersistenceSpec{
-							DefaultStore:    "default",
-							VisibilityStore: "visibility",
-						},
-						Datastores: []v1beta1.TemporalDatastoreSpec{
-							{
-								Name: "default",
+							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "mysql",
@@ -135,8 +124,7 @@ func TestPersistence(t *testing.T) {
 									Key:  "PASSWORD",
 								},
 							},
-							{
-								Name: "visibility",
+							VisibilityStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
 									PluginName:      "mysql",
@@ -172,12 +160,7 @@ func TestPersistence(t *testing.T) {
 						JobTtlSecondsAfterFinished: 300,
 						Version:                    initialClusterVersion,
 						Persistence: v1beta1.TemporalPersistenceSpec{
-							DefaultStore:    "default",
-							VisibilityStore: "visibility",
-						},
-						Datastores: []v1beta1.TemporalDatastoreSpec{
-							{
-								Name: "default",
+							DefaultStore: &v1beta1.DatastoreSpec{
 								Cassandra: &v1beta1.CassandraSpec{
 									Hosts:      []string{connectAddr},
 									User:       "temporal",
@@ -189,8 +172,7 @@ func TestPersistence(t *testing.T) {
 									Key:  "PASSWORD",
 								},
 							},
-							{
-								Name: "visibility",
+							VisibilityStore: &v1beta1.DatastoreSpec{
 								Cassandra: &v1beta1.CassandraSpec{
 									Hosts:      []string{connectAddr},
 									User:       "temporal",

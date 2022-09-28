@@ -19,7 +19,6 @@ package persistence
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -115,7 +114,7 @@ func (b *SchemaScriptsConfigmapBuilder) argsMapToString(m *orderedmap.OrderedMap
 	return strings.Join(cmd, " ")
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.DatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	host, port, err := net.SplitHostPort(spec.SQL.ConnectAddr)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse host port: %w", err)
@@ -141,7 +140,7 @@ func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.TemporalDatasto
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.DatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	// schema.CLIOptReplicationFactor because it's set at the keyspace creation
 	// the script doesn't create the keyspace.
 	args := orderedmap.NewOrderedMap[string, string]()
@@ -164,15 +163,11 @@ func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.TemporalD
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.TemporalDatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
 	var args *orderedmap.OrderedMap[string, string]
+	var err error
 
-	storeType, err := spec.GetDatastoreType()
-	if err != nil {
-		return nil, err
-	}
-
-	switch storeType {
+	switch spec.GetType() {
 	case v1beta1.CassandraDatastore:
 		args, err = b.getCassandraArgs(spec)
 		if err != nil {
@@ -214,25 +209,11 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.TemporalDatas
 func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	configMap := object.(*corev1.ConfigMap)
 
-	defaultStore, found := b.instance.GetDefaultDatastore()
-	if !found {
-		return errors.New("default datastore not found")
-	}
+	defaultStore := b.instance.Spec.Persistence.DefaultStore
+	visibilityStore := b.instance.Spec.Persistence.VisibilityStore
 
-	visibilityStore, found := b.instance.GetVisibilityDatastore()
-	if !found {
-		return errors.New("visibility datastore not found")
-	}
-
-	defaultStoreType, err := defaultStore.GetDatastoreType()
-	if err != nil {
-		return err
-	}
-
-	visibilityStoreType, err := visibilityStore.GetDatastoreType()
-	if err != nil {
-		return err
-	}
+	defaultStoreType := defaultStore.GetType()
+	visibilityStoreType := visibilityStore.GetType()
 
 	defaultStoreArgs, err := b.getStoreArgs(defaultStore)
 	if err != nil {
@@ -357,8 +338,8 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		"update-visibility-schema.sh":   renderedUpdateVisibilitySchema.String(),
 	}
 
-	advancedVisibilityStore, found := b.instance.GetAdvancedVisibilityDatastore()
-	if found {
+	advancedVisibilityStore := b.instance.Spec.Persistence.AdvancedVisibilityStore
+	if advancedVisibilityStore != nil {
 		data := advancedVisibilityData{
 			baseData:       baseData,
 			Version:        advancedVisibilityStore.Elasticsearch.Version,

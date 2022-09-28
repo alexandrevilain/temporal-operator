@@ -91,7 +91,7 @@ func (r *ClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v
 			command: []string{"/etc/scripts/update-visibility-schema.sh"},
 		},
 	}
-	if cluster.Spec.Persistence.AdvancedVisibilityStore != "" {
+	if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
 		jobs = append(jobs,
 			job{
 				name:    "setup-advanced-visibility",
