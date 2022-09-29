@@ -95,7 +95,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{
-			TTLSecondsAfterFinished: &b.instance.Spec.JobTtlSecondsAfterFinished,
+			TTLSecondsAfterFinished: b.instance.Spec.JobTtlSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: metadata.Merge(
