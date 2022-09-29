@@ -32,7 +32,7 @@ spec:
       elasticsearch:
         version: v7
         username: admin
-        url: http://opensearch-cluster-master.demo:9200
+        url: http://elasticsearch-master.demo:9200
         indices:
           visibility: temporal_visibility_v1_dev
       passwordSecretRef:

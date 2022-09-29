@@ -9,6 +9,7 @@ metadata:
     heritage: Helm
     release: temporaltest
   name: elasticsearch-master
+  namespace: demo
 spec:
   podManagementPolicy: Parallel
   replicas: 3
@@ -188,6 +189,7 @@ metadata:
     heritage: Helm
     release: temporaltest
   name: elasticsearch-master
+  namespace: demo  
 spec:
   ports:
   - name: http
@@ -208,6 +210,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: elasticsearch-master-headless
+  namespace: demo  
   labels:
     app: elasticsearch-master
     app.kubernetes.io/managed-by: Helm
@@ -215,8 +218,7 @@ metadata:
     heritage: Helm
     release: temporaltest
 spec:
-  clusterIP: None # This is needed for statefulset hostnames like opensearch-0 to resolve
-  # Create endpoints also if the related pod isn't ready
+  clusterIP: None
   publishNotReadyAddresses: true
   selector:
     app: elasticsearch-master
