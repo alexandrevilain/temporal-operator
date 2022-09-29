@@ -50,7 +50,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: 300,
+						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    initialClusterVersion,
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
@@ -105,7 +105,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: 300,
+						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    "1.16.3",
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
@@ -157,7 +157,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.ClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: 300,
+						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    initialClusterVersion,
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
