@@ -517,7 +517,7 @@ type ClusterSpec struct {
 	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
-	JobTtlSecondsAfterFinished int32 `json:"jobTtlSecondsAfterFinished"`
+	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
