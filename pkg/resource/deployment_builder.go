@@ -40,12 +40,12 @@ import (
 
 type DeploymentBuilder struct {
 	serviceName string
-	instance    *v1beta1.Cluster
+	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
 }
 
-func NewDeploymentBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DeploymentBuilder {
+func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DeploymentBuilder {
 	return &DeploymentBuilder{
 		serviceName: serviceName,
 		instance:    instance,

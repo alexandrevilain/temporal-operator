@@ -119,7 +119,7 @@ func main() {
 		setupLog.Info("Found istio installation in the cluster, features requiring istio are enabled")
 	}
 
-	if err = (&controllers.ClusterReconciler{
+	if err = (&controllers.TemporalClusterReconciler{
 		Client:               mgr.GetClient(),
 		Scheme:               mgr.GetScheme(),
 		Recorder:             mgr.GetEventRecorderFor("cluster-controller"),
@@ -129,7 +129,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
-	if err = (&controllers.ClusterClientReconciler{
+	if err = (&controllers.TemporalClusterClientReconciler{
 		Client:               mgr.GetClient(),
 		Scheme:               mgr.GetScheme(),
 		Recorder:             mgr.GetEventRecorderFor("clusterclient-controller"),
@@ -139,7 +139,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.NamespaceReconciler{
+	if err = (&controllers.TemporalNamespaceReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

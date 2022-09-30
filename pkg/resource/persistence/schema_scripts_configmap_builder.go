@@ -57,11 +57,11 @@ const (
 )
 
 type SchemaScriptsConfigmapBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewSchemaScriptsConfigmapBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *SchemaScriptsConfigmapBuilder {
+func NewSchemaScriptsConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *SchemaScriptsConfigmapBuilder {
 	return &SchemaScriptsConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,

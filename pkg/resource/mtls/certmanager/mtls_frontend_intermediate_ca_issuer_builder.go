@@ -26,7 +26,7 @@ type MTLSFrontendIntermediateCAIssuerBuilder struct {
 	GenericCAIssuerBuilder
 }
 
-func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
+func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendIntermediateCAIssuerBuilder {
 	return &MTLSFrontendIntermediateCAIssuerBuilder{
 		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
 			instance:   instance,

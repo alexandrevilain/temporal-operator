@@ -30,7 +30,7 @@ type UIFrontendClientCertificateBuilder struct {
 	GenericFrontendClientCertificateBuilder
 }
 
-func NewUIFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
+func NewUIFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
 	return &UIFrontendClientCertificateBuilder{
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,

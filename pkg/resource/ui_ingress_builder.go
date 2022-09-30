@@ -32,11 +32,11 @@ import (
 )
 
 type UIIngressBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIIngressBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIIngressBuilder {
+func NewUIIngressBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIIngressBuilder {
 	return &UIIngressBuilder{
 		instance: instance,
 		scheme:   scheme,

@@ -37,11 +37,11 @@ const (
 )
 
 type AdminToolsDeploymentBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewAdminToolsDeploymentBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
+func NewAdminToolsDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
 	return &AdminToolsDeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,

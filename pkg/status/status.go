@@ -21,7 +21,7 @@ import "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 
 // ObservedVersionMatchesDesiredVersion returns true if all services status
 // versions are matching the desired cluster version.
-func ObservedVersionMatchesDesiredVersion(c *v1beta1.Cluster) bool {
+func ObservedVersionMatchesDesiredVersion(c *v1beta1.TemporalCluster) bool {
 	if len(c.Status.Services) == 0 {
 		return false
 	}
@@ -34,7 +34,7 @@ func ObservedVersionMatchesDesiredVersion(c *v1beta1.Cluster) bool {
 }
 
 // IsClusterReady returns true if all services status are in ready state.
-func IsClusterReady(c *v1beta1.Cluster) bool {
+func IsClusterReady(c *v1beta1.TemporalCluster) bool {
 	if len(c.Status.Services) == 0 {
 		return false
 	}

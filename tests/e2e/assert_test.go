@@ -32,7 +32,7 @@ import (
 
 func AssertClusterReady() features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.TemporalCluster)
 		err := waitForCluster(ctx, cfg, cluster)
 		if err != nil {
 			t.Fatal(err)
@@ -43,7 +43,7 @@ func AssertClusterReady() features.Func {
 
 func AssertClusterCanBeUpgraded(version string) features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.TemporalCluster)
 
 		err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			err := cfg.Client().Resources(cluster.GetNamespace()).Get(ctx, cluster.GetName(), cluster.GetNamespace(), cluster)
@@ -72,7 +72,7 @@ func AssertClusterCanBeUpgraded(version string) features.Func {
 
 func AssertClusterCanHandleWorkflows() features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		cluster := ctx.Value(clusterKey).(*v1beta1.Cluster)
+		cluster := ctx.Value(clusterKey).(*v1beta1.TemporalCluster)
 		connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
 		if err != nil {
 			t.Fatal(err)

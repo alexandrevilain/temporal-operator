@@ -27,7 +27,7 @@ import (
 )
 
 type GenericFrontendClientCertificateBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 	// name defines the name of the certificate
 	name string
@@ -39,7 +39,7 @@ type GenericFrontendClientCertificateBuilder struct {
 	commonName string
 }
 
-func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
+func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
 	return &GenericFrontendClientCertificateBuilder{
 		instance:   instance,
 		scheme:     scheme,

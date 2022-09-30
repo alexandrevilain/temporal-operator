@@ -32,11 +32,11 @@ import (
 )
 
 type FrontendServiceBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewFrontendServiceBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *FrontendServiceBuilder {
+func NewFrontendServiceBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *FrontendServiceBuilder {
 	return &FrontendServiceBuilder{
 		instance: instance,
 		scheme:   scheme,

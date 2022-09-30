@@ -30,7 +30,7 @@ type AdminToolsFrontendClientCertificateBuilder struct {
 	GenericFrontendClientCertificateBuilder
 }
 
-func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
+func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
 	return &AdminToolsFrontendClientCertificateBuilder{
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,

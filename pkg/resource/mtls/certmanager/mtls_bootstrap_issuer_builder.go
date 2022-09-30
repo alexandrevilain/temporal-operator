@@ -29,11 +29,11 @@ import (
 )
 
 type MTLSBootstrapIssuerBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewMTLSBootstrapIssuerBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSBootstrapIssuerBuilder {
+func NewMTLSBootstrapIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *MTLSBootstrapIssuerBuilder {
 	return &MTLSBootstrapIssuerBuilder{
 		instance: instance,
 		scheme:   scheme,

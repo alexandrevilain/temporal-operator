@@ -29,7 +29,7 @@ import (
 )
 
 type GenericCAIssuerBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 
 	name       string

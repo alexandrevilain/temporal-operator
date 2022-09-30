@@ -35,8 +35,8 @@ import (
 )
 
 func TestWithmTLSEnabled(t *testing.T) {
-	var cluster *v1beta1.Cluster
-	var clusterClient *v1beta1.ClusterClient
+	var cluster *v1beta1.TemporalCluster
+	var clusterClient *v1beta1.TemporalClusterClient
 
 	mTLSCertManagerFeature := features.New("mTLS enabled with cert-manager").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
@@ -56,12 +56,12 @@ func TestWithmTLSEnabled(t *testing.T) {
 			connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 
 			// create the temporal cluster
-			cluster = &v1beta1.Cluster{
+			cluster = &v1beta1.TemporalCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: namespace,
 				},
-				Spec: v1beta1.ClusterSpec{
+				Spec: v1beta1.TemporalClusterSpec{
 					NumHistoryShards:           1,
 					JobTtlSecondsAfterFinished: &jobTtl,
 					MTLS: &v1beta1.MTLSSpec{
@@ -115,9 +115,9 @@ func TestWithmTLSEnabled(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
-			clusterClient = &v1beta1.ClusterClient{
+			clusterClient = &v1beta1.TemporalClusterClient{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: v1beta1.ClusterClientSpec{
+				Spec: v1beta1.TemporalClusterClientSpec{
 					ClusterRef: corev1.LocalObjectReference{
 						Name: cluster.GetName(),
 					},

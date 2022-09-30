@@ -34,12 +34,12 @@ import (
 
 type DestinationRuleBuilder struct {
 	serviceName string
-	instance    *v1beta1.Cluster
+	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
 }
 
-func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DestinationRuleBuilder {
+func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DestinationRuleBuilder {
 	return &DestinationRuleBuilder{
 		serviceName: serviceName,
 		instance:    instance,

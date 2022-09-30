@@ -506,8 +506,8 @@ func (m *MTLSSpec) FrontendEnabled() bool {
 	return m.Frontend != nil && m.Frontend.Enabled
 }
 
-// ClusterSpec defines the desired state of Cluster.
-type ClusterSpec struct {
+// TemporalClusterSpec defines the desired state of Cluster.
+type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
 	// +optional
 	Image string `json:"image"`
@@ -552,8 +552,8 @@ type ServiceStatus struct {
 	Ready bool `json:"ready"`
 }
 
-// ClusterStatus defines the observed state of Cluster.
-type ClusterStatus struct {
+// TemporalClusterStatus defines the observed state of Cluster.
+type TemporalClusterStatus struct {
 	// Version holds the current temporal version.
 	Version string `json:"version,omitempty"`
 	// Services holds all services statuses.
@@ -563,7 +563,7 @@ type ClusterStatus struct {
 }
 
 // AddServiceStatus adds the provided service status to the cluster's status.
-func (s *ClusterStatus) AddServiceStatus(status *ServiceStatus) {
+func (s *TemporalClusterStatus) AddServiceStatus(status *ServiceStatus) {
 	found := false
 	for i, serviceStatus := range s.Services {
 		if serviceStatus.Name == status.Name {
@@ -585,47 +585,47 @@ func (s *ClusterStatus) AddServiceStatus(status *ServiceStatus) {
 // +kubebuilder:printcolumn:name="ReconcileSuccess",type="string",JSONPath=".status.conditions[?(@.type == 'ReconcileSuccess')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
-// Cluster defines a temporal cluster deployment.
-type Cluster struct {
+// TemporalCluster defines a temporal cluster deployment.
+type TemporalCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Specification of the desired behavior of the Temporal cluster.
-	Spec ClusterSpec `json:"spec,omitempty"`
+	Spec TemporalClusterSpec `json:"spec,omitempty"`
 	// Most recent observed status of the Temporal cluster.
-	Status ClusterStatus `json:"status,omitempty"`
+	Status TemporalClusterStatus `json:"status,omitempty"`
 }
 
 // ServerName returns cluster's server name.
-func (c *Cluster) ServerName() string {
+func (c *TemporalCluster) ServerName() string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", c.Name, c.Namespace)
 }
 
 // MTLSEnabled returns true if mTLS is enabled for internode or frontend using cert-manager.
-func (c *Cluster) MTLSWithCertManagerEnabled() bool {
+func (c *TemporalCluster) MTLSWithCertManagerEnabled() bool {
 	return c.Spec.MTLS != nil &&
 		(c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled()) &&
 		c.Spec.MTLS.Provider == CertManagerMTLSProvider
 }
 
 // ChildResourceName returns child resource name using the cluster's name.
-func (c *Cluster) ChildResourceName(resource string) string {
+func (c *TemporalCluster) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
 }
 
-func (c *Cluster) GetPublicClientAddress() string {
+func (c *TemporalCluster) GetPublicClientAddress() string {
 	return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
 }
 
 //+kubebuilder:object:root=true
 
 // ClusterList contains a list of Cluster
-type ClusterList struct {
+type TemporalClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Cluster `json:"items"`
+	Items           []TemporalCluster `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Cluster{}, &ClusterList{})
+	SchemeBuilder.Register(&TemporalCluster{}, &TemporalClusterList{})
 }

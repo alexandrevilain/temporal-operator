@@ -42,7 +42,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*v1beta1.Cluster, error) {
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*v1beta1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
@@ -50,12 +50,12 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 	}
 
 	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
-	cluster := &v1beta1.Cluster{
+	cluster := &v1beta1.TemporalCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: namespace,
 		},
-		Spec: v1beta1.ClusterSpec{
+		Spec: v1beta1.TemporalClusterSpec{
 			NumHistoryShards:           1,
 			JobTtlSecondsAfterFinished: &jobTtl,
 			Version:                    version,
@@ -164,9 +164,9 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 }
 
 // waitForCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
-func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.Cluster) error {
+func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.TemporalCluster) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(cluster, func(object k8s.Object) bool {
-		for _, condition := range object.(*v1beta1.Cluster).Status.Conditions {
+		for _, condition := range object.(*v1beta1.TemporalCluster).Status.Conditions {
 			if condition.Type == v1beta1.ReadyCondition && condition.Status == metav1.ConditionTrue {
 				return true
 			}
@@ -176,9 +176,9 @@ func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.C
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
-func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClient *v1beta1.ClusterClient) error {
+func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClient *v1beta1.TemporalClusterClient) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(clusterClient, func(object k8s.Object) bool {
-		return object.(*v1beta1.ClusterClient).Status.SecretRef.Name != ""
+		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
@@ -192,7 +192,7 @@ func (t *testLogWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, cluster *v1beta1.Cluster) (string, func(), error) {
+func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, cluster *v1beta1.TemporalCluster) (string, func(), error) {
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{

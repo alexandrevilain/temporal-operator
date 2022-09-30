@@ -27,15 +27,15 @@ import (
 
 func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 	tests := map[string]struct {
-		cluster  *v1beta1.Cluster
+		cluster  *v1beta1.TemporalCluster
 		expected bool
 	}{
 		"all services matches the desired version": {
-			cluster: &v1beta1.Cluster{
-				Spec: v1beta1.ClusterSpec{
+			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: v1beta1.ClusterStatus{
+				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
 							Name:    "test",
@@ -51,11 +51,11 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 			expected: true,
 		},
 		"services does not match the desired version": {
-			cluster: &v1beta1.Cluster{
-				Spec: v1beta1.ClusterSpec{
+			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: v1beta1.ClusterStatus{
+				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
 							Name:    "test",
@@ -71,11 +71,11 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 			expected: false,
 		},
 		"empty status": {
-			cluster: &v1beta1.Cluster{
-				Spec: v1beta1.ClusterSpec{
+			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
 					Version: "1.16.0",
 				},
-				Status: v1beta1.ClusterStatus{},
+				Status: v1beta1.TemporalClusterStatus{},
 			},
 			expected: false,
 		},
@@ -90,12 +90,12 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 
 func TestIsClusterReady(t *testing.T) {
 	tests := map[string]struct {
-		cluster  *v1beta1.Cluster
+		cluster  *v1beta1.TemporalCluster
 		expected bool
 	}{
 		"all services are ready": {
-			cluster: &v1beta1.Cluster{
-				Status: v1beta1.ClusterStatus{
+			cluster: &v1beta1.TemporalCluster{
+				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
 							Name:  "test",
@@ -111,8 +111,8 @@ func TestIsClusterReady(t *testing.T) {
 			expected: true,
 		},
 		"one service not ready": {
-			cluster: &v1beta1.Cluster{
-				Status: v1beta1.ClusterStatus{
+			cluster: &v1beta1.TemporalCluster{
+				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
 							Name:  "test",
@@ -128,8 +128,8 @@ func TestIsClusterReady(t *testing.T) {
 			expected: false,
 		},
 		"empty status": {
-			cluster: &v1beta1.Cluster{
-				Status: v1beta1.ClusterStatus{},
+			cluster: &v1beta1.TemporalCluster{
+				Status: v1beta1.TemporalClusterStatus{},
 			},
 			expected: false,
 		},

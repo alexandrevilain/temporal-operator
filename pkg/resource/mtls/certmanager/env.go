@@ -31,7 +31,7 @@ func addPrefix(prefix, name string) string {
 
 // GetTLSEnvironmentVariables returns needed env vars for enabling TLS connection for temporal tools.
 // To support the whole range of temporal tools, the caller should provide an envPrefix which prefixes all TLS env vars.
-func GetTLSEnvironmentVariables(instance *v1beta1.Cluster, envPrefix, certsMountPath string) []corev1.EnvVar {
+func GetTLSEnvironmentVariables(instance *v1beta1.TemporalCluster, envPrefix, certsMountPath string) []corev1.EnvVar {
 	return []corev1.EnvVar{
 		{
 			Name:  addPrefix(envPrefix, "TLS_CA"),

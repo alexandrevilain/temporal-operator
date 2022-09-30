@@ -2,11 +2,11 @@
 <p>Package v1beta1 contains API Schema definitions for the v1beta1 API group</p>
 Resource Types:
 <ul class="simple"><li>
-<a href="#temporal.io/v1beta1.Cluster">Cluster</a>
+<a href="#temporal.io/v1beta1.TemporalCluster">TemporalCluster</a>
 </li></ul>
-<h3 id="temporal.io/v1beta1.Cluster">Cluster
+<h3 id="temporal.io/v1beta1.TemporalCluster">TemporalCluster
 </h3>
-<p>Cluster defines a temporal cluster deployment.</p>
+<p>TemporalCluster defines a temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -31,7 +31,7 @@ string</td>
 string
 </td>
 <td>
-<code>Cluster</code>
+<code>TemporalCluster</code>
 </td>
 </tr>
 <tr>
@@ -52,8 +52,8 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br>
 <em>
-<a href="#temporal.io/v1beta1.ClusterSpec">
-ClusterSpec
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">
+TemporalClusterSpec
 </a>
 </em>
 </td>
@@ -201,8 +201,8 @@ MTLSSpec
 <td>
 <code>status</code><br>
 <em>
-<a href="#temporal.io/v1beta1.ClusterStatus">
-ClusterStatus
+<a href="#temporal.io/v1beta1.TemporalClusterStatus">
+TemporalClusterStatus
 </a>
 </em>
 </td>
@@ -479,356 +479,6 @@ Kubernetes meta/v1.Duration
 <em>(Optional)</em>
 <p>InternodeCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the internode certificate.
 It defaults to 1 year.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.ClusterClient">ClusterClient
-</h3>
-<p>ClusterClient is the Schema for the ClusterClients API</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ClusterClientSpec">
-ClusterClientSpec
-</a>
-</em>
-</td>
-<td>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>clusterRef</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<p>Reference to the temporal cluster the client will get access to.</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ClusterClientStatus">
-ClusterClientStatus
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.ClusterClientSpec">ClusterClientSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterClient">ClusterClient</a>)
-</p>
-<p>ClusterClientSpec defines the desired state of ClusterClient</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>clusterRef</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<p>Reference to the temporal cluster the client will get access to.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.ClusterClientStatus">ClusterClientStatus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterClient">ClusterClient</a>)
-</p>
-<p>ClusterClientStatus defines the observed state of ClusterClient</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>serverName</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>ServerName is the hostname returned by the certificate.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>secretRef</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<p>Reference to the Kubernetes Secret containing the certificate for the client.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.ClusterSpec">ClusterSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.Cluster">Cluster</a>)
-</p>
-<p>ClusterSpec defines the desired state of Cluster.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>image</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Image defines the temporal server docker image the cluster should use for each services.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>version</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Version defines the temporal version the cluster to be deployed.
-This version impacts the underlying persistence schemas versions.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>numHistoryShards</code><br>
-<em>
-int32
-</em>
-</td>
-<td>
-<p>NumHistoryShards is the desired number of history shards.
-This field is immutable.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>services</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ServicesSpec">
-ServicesSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Services allows customizations for for each temporal services deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>persistence</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalPersistenceSpec">
-TemporalPersistenceSpec
-</a>
-</em>
-</td>
-<td>
-<p>Persistence defines temporal persistence configuration.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>imagePullSecrets</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-[]Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>An optional list of references to secrets in the same namespace
-to use for pulling temporal images from registries.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>ui</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalUISpec">
-TemporalUISpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>admintools</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalAdminToolsSpec">
-TemporalAdminToolsSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>mTLS</code><br>
-<em>
-<a href="#temporal.io/v1beta1.MTLSSpec">
-MTLSSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.ClusterStatus">ClusterStatus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.Cluster">Cluster</a>)
-</p>
-<p>ClusterStatus defines the observed state of Cluster.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>version</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Version holds the current temporal version.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>services</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ServiceStatus">
-[]ServiceStatus
-</a>
-</em>
-</td>
-<td>
-<p>Services holds all services statuses.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>conditions</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
-[]Kubernetes meta/v1.Condition
-</a>
-</em>
-</td>
-<td>
-<p>Conditions represent the latest available observations of the Cluster state.</p>
 </td>
 </tr>
 </tbody>
@@ -1277,7 +927,7 @@ bool
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>MTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
@@ -1363,342 +1013,6 @@ Kubernetes meta/v1.Duration
 <p>RefreshInterval defines interval between refreshes of certificates in the cluster components.
 Defaults to 1 hour.
 Useless if mTLS provider is not cert-manager.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.Namespace">Namespace
-</h3>
-<p>Namespace is the Schema for the Namespaces API</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code><br>
-<em>
-<a href="#temporal.io/v1beta1.NamespaceSpec">
-NamespaceSpec
-</a>
-</em>
-</td>
-<td>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>clusterRef</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<p>Reference to the temporal cluster the namespace will be created.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>description</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Namespace description.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>ownerEmail</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Namespace owner email.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>retentionPeriod</code><br>
-<em>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
-Kubernetes meta/v1.Duration
-</a>
-</em>
-</td>
-<td>
-<p>RetentionPeriod to apply on closed workflow executions.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>data</code><br>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Data is a key-value map for any customized purpose.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>securityToken</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-</td>
-</tr>
-<tr>
-<td>
-<code>isGlobalNamespace</code><br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>clusters</code><br>
-<em>
-[]string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>List of clusters names to which the namespace can fail over.
-Only applicable if the namespace is a global namespace.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>activeClusterName</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>The name of active Temporal Cluster.
-Only applicable if the namespace is a global namespace.</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code><br>
-<em>
-<a href="#temporal.io/v1beta1.NamespaceStatus">
-NamespaceStatus
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.NamespaceSpec">NamespaceSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.Namespace">Namespace</a>)
-</p>
-<p>NamespaceSpec defines the desired state of Namespace</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>clusterRef</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
-</a>
-</em>
-</td>
-<td>
-<p>Reference to the temporal cluster the namespace will be created.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>description</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Namespace description.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>ownerEmail</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Namespace owner email.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>retentionPeriod</code><br>
-<em>
-<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
-Kubernetes meta/v1.Duration
-</a>
-</em>
-</td>
-<td>
-<p>RetentionPeriod to apply on closed workflow executions.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>data</code><br>
-<em>
-map[string]string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Data is a key-value map for any customized purpose.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>securityToken</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-</td>
-</tr>
-<tr>
-<td>
-<code>isGlobalNamespace</code><br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>clusters</code><br>
-<em>
-[]string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>List of clusters names to which the namespace can fail over.
-Only applicable if the namespace is a global namespace.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>activeClusterName</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>The name of active Temporal Cluster.
-Only applicable if the namespace is a global namespace.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.NamespaceStatus">NamespaceStatus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.Namespace">Namespace</a>)
-</p>
-<p>NamespaceStatus defines the observed state of Namespace</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>conditions</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
-[]Kubernetes meta/v1.Condition
-</a>
-</em>
-</td>
-<td>
-<p>Conditions represent the latest available observations of the Namespace state.</p>
 </td>
 </tr>
 </tbody>
@@ -1959,7 +1273,7 @@ int32
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterStatus">ClusterStatus</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterStatus">TemporalClusterStatus</a>)
 </p>
 <p>ServiceStatus reports a service status.</p>
 <div class="md-typeset__scrollwrap">
@@ -2013,7 +1327,7 @@ bool
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>ServicesSpec contains all temporal services specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -2090,7 +1404,7 @@ ServiceSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
 Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
@@ -2132,11 +1446,709 @@ string
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient
+</h3>
+<p>A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">
+TemporalClusterClientSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the client will get access to.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalClusterClientStatus">
+TemporalClusterClientStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient</a>)
+</p>
+<p>TemporalClusterClientSpec defines the desired state of ClusterClient</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the client will get access to.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalClusterClientStatus">TemporalClusterClientStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient</a>)
+</p>
+<p>TemporalClusterClientStatus defines the observed state of ClusterClient</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>serverName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>ServerName is the hostname returned by the certificate.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the Kubernetes Secret containing the certificate for the client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalCluster">TemporalCluster</a>)
+</p>
+<p>TemporalClusterSpec defines the desired state of Cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Image defines the temporal server docker image the cluster should use for each services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Version defines the temporal version the cluster to be deployed.
+This version impacts the underlying persistence schemas versions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jobTtlSecondsAfterFinished</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+This field is immutable.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>numHistoryShards</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>NumHistoryShards is the desired number of history shards.
+This field is immutable.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>services</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServicesSpec">
+ServicesSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Services allows customizations for for each temporal services deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>persistence</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalPersistenceSpec">
+TemporalPersistenceSpec
+</a>
+</em>
+</td>
+<td>
+<p>Persistence defines temporal persistence configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>An optional list of references to secrets in the same namespace
+to use for pulling temporal images from registries.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ui</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalUISpec">
+TemporalUISpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>UI allows configuration of the optional temporal web ui deployed alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>admintools</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalAdminToolsSpec">
+TemporalAdminToolsSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdminTools allows configuration of the optional admin tool pod deployed alongside the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>mTLS</code><br>
+<em>
+<a href="#temporal.io/v1beta1.MTLSSpec">
+MTLSSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalClusterStatus">TemporalClusterStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalCluster">TemporalCluster</a>)
+</p>
+<p>TemporalClusterStatus defines the observed state of Cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Version holds the current temporal version.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>services</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceStatus">
+[]ServiceStatus
+</a>
+</em>
+</td>
+<td>
+<p>Services holds all services statuses.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the Cluster state.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalNamespace">TemporalNamespace
+</h3>
+<p>A TemporalNamespace creates a namespace in the targeted temporal cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">
+TemporalNamespaceSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the namespace will be created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>description</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace description.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ownerEmail</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace owner email.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>retentionPeriod</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>RetentionPeriod to apply on closed workflow executions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>data</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Data is a key-value map for any customized purpose.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>securityToken</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>isGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusters</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>List of clusters names to which the namespace can fail over.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>activeClusterName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The name of active Temporal Cluster.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalNamespaceStatus">
+TemporalNamespaceStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalNamespace">TemporalNamespace</a>)
+</p>
+<p>TemporalNamespaceSpec defines the desired state of Namespace</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the namespace will be created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>description</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace description.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ownerEmail</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace owner email.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>retentionPeriod</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>RetentionPeriod to apply on closed workflow executions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>data</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Data is a key-value map for any customized purpose.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>securityToken</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>isGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IsGlobalNamespace defines whether the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusters</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>List of clusters names to which the namespace can fail over.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>activeClusterName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The name of active Temporal Cluster.
+Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalNamespaceStatus">TemporalNamespaceStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalNamespace">TemporalNamespace</a>)
+</p>
+<p>TemporalNamespaceStatus defines the observed state of Namespace</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the Namespace state.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.TemporalPersistenceSpec">TemporalPersistenceSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalPersistenceSpec contains temporal persistence specifications.</p>
 <div class="md-typeset__scrollwrap">
@@ -2264,7 +2276,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ClusterSpec">ClusterSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>TemporalUISpec defines parameters for the temporal UI within a Temporal cluster deployment.</p>
 <div class="md-typeset__scrollwrap">

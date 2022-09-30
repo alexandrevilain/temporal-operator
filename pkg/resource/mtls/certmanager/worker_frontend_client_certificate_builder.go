@@ -30,7 +30,7 @@ type WorkerFrontendClientCertificateBuilder struct {
 	GenericFrontendClientCertificateBuilder
 }
 
-func NewWorkerFrontendClientCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *WorkerFrontendClientCertificateBuilder {
+func NewWorkerFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *WorkerFrontendClientCertificateBuilder {
 	return &WorkerFrontendClientCertificateBuilder{
 		GenericFrontendClientCertificateBuilder{
 			instance:   instance,

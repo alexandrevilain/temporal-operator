@@ -38,26 +38,26 @@ import (
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
-// ClusterClientReconciler reconciles a ClusterClient object
-type ClusterClientReconciler struct {
+// TemporalClusterClientReconciler reconciles a ClusterClient object
+type TemporalClusterClientReconciler struct {
 	client.Client
 	Scheme               *runtime.Scheme
 	Recorder             record.EventRecorder
 	CertManagerAvailable bool
 }
 
-//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=temporal.io,resources=clusterclients/finalizers,verbs=update
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *ClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
 
-	clusterClient := &v1beta1.ClusterClient{}
+	clusterClient := &v1beta1.TemporalClusterClient{}
 	err := r.Get(ctx, req.NamespacedName, clusterClient)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -72,7 +72,7 @@ func (r *ClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: clusterClient.Spec.ClusterRef.Name}
-	cluster := &v1beta1.Cluster{}
+	cluster := &v1beta1.TemporalCluster{}
 	err = r.Get(ctx, namespacedName, cluster)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -120,9 +120,9 @@ func (r *ClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	controller := ctrl.NewControllerManagedBy(mgr).
-		For(&v1beta1.ClusterClient{})
+		For(&v1beta1.TemporalClusterClient{})
 
 	if r.CertManagerAvailable {
 		controller = controller.

@@ -5,20 +5,21 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: namespaces.temporal.io
+  name: temporalnamespaces.temporal.io
 spec:
   group: temporal.io
   names:
-    kind: Namespace
-    listKind: NamespaceList
-    plural: namespaces
-    singular: namespace
+    kind: TemporalNamespace
+    listKind: TemporalNamespaceList
+    plural: temporalnamespaces
+    singular: temporalnamespace
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Namespace creates a namespace in the targeted temporal cluster.
+        description: A TemporalNamespace creates a namespace in the targeted temporal
+          cluster.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,7 +34,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: NamespaceSpec defines the desired state of Namespace
+            description: TemporalNamespaceSpec defines the desired state of Namespace
             properties:
               activeClusterName:
                 description: The name of active Temporal Cluster. Only applicable
@@ -79,7 +80,7 @@ spec:
             - retentionPeriod
             type: object
           status:
-            description: NamespaceStatus defines the observed state of Namespace
+            description: TemporalNamespaceStatus defines the observed state of Namespace
             properties:
               conditions:
                 description: Conditions represent the latest available observations

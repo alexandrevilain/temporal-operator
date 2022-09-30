@@ -34,7 +34,7 @@ import (
 )
 
 type SchemaJobBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 	// name is the name of the job
 	name string
@@ -42,7 +42,7 @@ type SchemaJobBuilder struct {
 	command []string
 }
 
-func NewSchemaJobBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme, name string, command []string) *SchemaJobBuilder {
+func NewSchemaJobBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, name string, command []string) *SchemaJobBuilder {
 	return &SchemaJobBuilder{
 		instance: instance,
 		scheme:   scheme,

@@ -23,7 +23,7 @@ import (
 
 // GetLabels returns istio labels to enable proxy injection if the provided Cluster
 // instance has mTLS enabled using istio.
-func GetLabels(instance *v1beta1.Cluster) map[string]string {
+func GetLabels(instance *v1beta1.TemporalCluster) map[string]string {
 	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 		return map[string]string{
 			"sidecar.istio.io/inject": "true",
@@ -34,7 +34,7 @@ func GetLabels(instance *v1beta1.Cluster) map[string]string {
 
 // GetAnnotations returns istio annotations to delay application startup until the pod proxy is ready to accept traffic.
 // Returned only if the provided Cluster instance has mTLS enabled using istio.
-func GetAnnotations(instance *v1beta1.Cluster) map[string]string {
+func GetAnnotations(instance *v1beta1.TemporalCluster) map[string]string {
 	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 		return map[string]string{
 			"proxy.istio.io/config": `{ "holdApplicationUntilProxyStarts": true }`,

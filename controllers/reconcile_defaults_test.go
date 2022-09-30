@@ -27,14 +27,14 @@ import (
 )
 
 func TestReconcileDefaults(t *testing.T) {
-	c := &v1beta1.Cluster{
+	c := &v1beta1.TemporalCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "test",
 		},
 	}
 
-	r := &ClusterReconciler{}
+	r := &TemporalClusterReconciler{}
 
 	ctx := context.Background()
 

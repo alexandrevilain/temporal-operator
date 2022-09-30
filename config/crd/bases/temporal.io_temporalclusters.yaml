@@ -5,14 +5,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: clusters.temporal.io
+  name: temporalclusters.temporal.io
 spec:
   group: temporal.io
   names:
-    kind: Cluster
-    listKind: ClusterList
-    plural: clusters
-    singular: cluster
+    kind: TemporalCluster
+    listKind: TemporalClusterList
+    plural: temporalclusters
+    singular: temporalcluster
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -28,7 +28,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Cluster defines a temporal cluster deployment.
+        description: TemporalCluster defines a temporal cluster deployment.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -75,6 +75,12 @@ spec:
                       type: string
                   type: object
                 type: array
+              jobTtlSecondsAfterFinished:
+                description: JobTtlSecondsAfterFinished is amount of time to keep
+                  job pods after jobs are completed. This field is immutable.
+                format: int32
+                minimum: 1
+                type: integer
               mTLS:
                 description: MTLS allows configuration of the network traffic encryption
                   for the cluster.
@@ -139,12 +145,6 @@ spec:
                       Useless if mTLS provider is not cert-manager.
                     type: string
                 type: object
-              jobTtlSecondsAfterFinished:
-                description: JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
-                  This field is immutable.
-                format: int32
-                minimum: 1
-                type: integer                   
               numHistoryShards:
                 description: NumHistoryShards is the desired number of history shards.
                   This field is immutable.
@@ -1095,6 +1095,7 @@ spec:
                   versions.
                 type: string
             required:
+            - jobTtlSecondsAfterFinished
             - numHistoryShards
             - persistence
             - version

@@ -22,8 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// NamespaceSpec defines the desired state of Namespace
-type NamespaceSpec struct {
+// TemporalNamespaceSpec defines the desired state of Namespace
+type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
 	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
 	// Namespace description.
@@ -52,8 +52,8 @@ type NamespaceSpec struct {
 	ActiveClusterName string `json:"activeClusterName,omitempty"`
 }
 
-// NamespaceStatus defines the observed state of Namespace
-type NamespaceStatus struct {
+// TemporalNamespaceStatus defines the observed state of Namespace
+type TemporalNamespaceStatus struct {
 	// Conditions represent the latest available observations of the Namespace state.
 	Conditions []metav1.Condition `json:"conditions"`
 }
@@ -61,24 +61,24 @@ type NamespaceStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// A Namespace creates a namespace in the targeted temporal cluster.
-type Namespace struct {
+// A TemporalNamespace creates a namespace in the targeted temporal cluster.
+type TemporalNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   NamespaceSpec   `json:"spec,omitempty"`
-	Status NamespaceStatus `json:"status,omitempty"`
+	Spec   TemporalNamespaceSpec   `json:"spec,omitempty"`
+	Status TemporalNamespaceStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// NamespaceList contains a list of Namespace
-type NamespaceList struct {
+// TemporalNamespaceList contains a list of Namespace
+type TemporalNamespaceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Namespace `json:"items"`
+	Items           []TemporalNamespace `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Namespace{}, &NamespaceList{})
+	SchemeBuilder.Register(&TemporalNamespace{}, &TemporalNamespaceList{})
 }
