@@ -62,7 +62,8 @@ func TestWithmTLSEnabled(t *testing.T) {
 					Namespace: namespace,
 				},
 				Spec: v1beta1.ClusterSpec{
-					NumHistoryShards: 1,
+					NumHistoryShards:           1,
+					JobTtlSecondsAfterFinished: &jobTtl,
 					MTLS: &v1beta1.MTLSSpec{
 						Provider: v1beta1.CertManagerMTLSProvider,
 						Internode: &v1beta1.InternodeMTLSSpec{

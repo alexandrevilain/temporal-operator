@@ -42,6 +42,7 @@ import (
 )
 
 var testenv env.Environment
+var jobTtl int32 = 60
 
 func TestMain(m *testing.M) {
 	kindVersion := os.Getenv("KUBERNETES_VERSION")

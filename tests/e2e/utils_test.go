@@ -56,8 +56,9 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 			Namespace: namespace,
 		},
 		Spec: v1beta1.ClusterSpec{
-			NumHistoryShards: 1,
-			Version:          version,
+			NumHistoryShards:           1,
+			JobTtlSecondsAfterFinished: &jobTtl,
+			Version:                    version,
 			MTLS: &v1beta1.MTLSSpec{
 				Provider: v1beta1.CertManagerMTLSProvider,
 				Internode: &v1beta1.InternodeMTLSSpec{

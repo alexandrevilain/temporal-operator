@@ -57,6 +57,7 @@ spec:
     spec:
       version: 1.17.5
       numHistoryShards: 512
+      jobTtlSecondsAfterFinished: 300
       persistence:
         defaultStore: default
         visibilityStore: visibility

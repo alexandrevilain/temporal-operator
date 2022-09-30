@@ -139,6 +139,12 @@ spec:
                       Useless if mTLS provider is not cert-manager.
                     type: string
                 type: object
+              jobTtlSecondsAfterFinished:
+                description: JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+                  This field is immutable.
+                format: int32
+                minimum: 1
+                type: integer                   
               numHistoryShards:
                 description: NumHistoryShards is the desired number of history shards.
                   This field is immutable.
