@@ -4,21 +4,21 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: clusterclients.temporal.io
+  name: temporalclusterclients.temporal.io
 spec:
   group: temporal.io
   names:
-    kind: ClusterClient
-    listKind: ClusterClientList
-    plural: clusterclients
-    singular: clusterclient
+    kind: TemporalClusterClient
+    listKind: TemporalClusterClientList
+    plural: temporalclusterclients
+    singular: temporalclusterclient
   scope: Namespaced
   versions:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A ClusterClient creates a new mTLS client in the targeted temporal
-          cluster.
+        description: A TemporalClusterClient creates a new mTLS client in the targeted
+          temporal cluster.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,7 +33,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ClusterClientSpec defines the desired state of ClusterClient
+            description: TemporalClusterClientSpec defines the desired state of ClusterClient
             properties:
               clusterRef:
                 description: Reference to the temporal cluster the client will get
@@ -48,7 +48,8 @@ spec:
             - clusterRef
             type: object
           status:
-            description: ClusterClientStatus defines the observed state of ClusterClient
+            description: TemporalClusterClientStatus defines the observed state of
+              ClusterClient
             properties:
               secretRef:
                 description: Reference to the Kubernetes Secret containing the certificate

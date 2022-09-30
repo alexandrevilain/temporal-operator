@@ -42,7 +42,7 @@ kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-oper
 Finish by creating your first temporal cluster:
 ```yaml
 apiVersion: temporal.io/v1beta1
-kind: Cluster
+kind: TemporalCluster
 metadata:
   name: prod
   namespace: demo

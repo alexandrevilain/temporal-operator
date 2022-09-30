@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *ClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, cluster *v1beta1.Cluster) error {
+func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, cluster *v1beta1.TemporalCluster) error {
 	schemaScriptConfigMapBuilder := persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme)
 	schemaScriptConfigMap, err := schemaScriptConfigMapBuilder.Build()
 	if err != nil {
@@ -55,7 +55,7 @@ func sanitizeVersionToName(version string) string {
 }
 
 // reconcilePersistence tries to reconcile the cluster persistence.
-func (r *ClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.Cluster) (time.Duration, error) {
+func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	logger := log.FromContext(ctx)
 
 	// First of all, ensure the configmap containing scripts is up-to-date

@@ -6,29 +6,16 @@ metadata:
       [
         {
           "apiVersion": "temporal.io/v1beta1",
-          "kind": "Namespace",
-          "metadata": {
-            "name": "accounting"
-          },
-          "spec": {
-            "clusterRef": {
-              "name": "prod"
-            },
-            "description": "Accounting team namespace",
-            "retentionPeriod": "168h"
-          }
-        },
-        {
-          "apiVersion": "temporal.io/v1beta1",
-          "kind": "Cluster",
+          "kind": "TemporalCluster",
           "metadata": {
             "name": "prod",
             "namespace": "demo"
           },
           "spec": {
-            "datastores": [
-              {
-                "name": "default",
+            "jobTtlSecondsAfterFinished": 300,
+            "numHistoryShards": 1,
+            "persistence": {
+              "defaultStore": {
                 "passwordSecretRef": {
                   "key": "PASSWORD",
                   "name": "postgres-password"
@@ -41,8 +28,7 @@ metadata:
                   "user": "temporal"
                 }
               },
-              {
-                "name": "visibility",
+              "visibilityStore": {
                 "passwordSecretRef": {
                   "key": "PASSWORD",
                   "name": "postgres-password"
@@ -55,12 +41,6 @@ metadata:
                   "user": "temporal"
                 }
               }
-            ],
-            "numHistoryShards": 1,
-            "jobTtlSecondsAfterFinished": 300
-            "persistence": {
-              "defaultStore": "default",
-              "visibilityStore": "visibility"
             },
             "ui": {
               "enabled": true
@@ -70,7 +50,7 @@ metadata:
         },
         {
           "apiVersion": "temporal.io/v1beta1",
-          "kind": "ClusterClient",
+          "kind": "TemporalClusterClient",
           "metadata": {
             "name": "my-worker",
             "namespace": "demo"
@@ -79,6 +59,20 @@ metadata:
             "clusterRef": {
               "name": "prod"
             }
+          }
+        },
+        {
+          "apiVersion": "temporal.io/v1beta1",
+          "kind": "TemporalNamespace",
+          "metadata": {
+            "name": "accounting"
+          },
+          "spec": {
+            "clusterRef": {
+              "name": "prod"
+            },
+            "description": "Accounting team namespace",
+            "retentionPeriod": "168h"
           }
         }
       ]
@@ -93,21 +87,22 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: A ClusterClient creates a new mTLS client in the targeted temporal
+    - description: A TemporalClusterClient creates a new mTLS client in the targeted
+        temporal cluster.
+      displayName: Temporal Cluster Client
+      kind: TemporalClusterClient
+      name: temporalclusterclients.temporal.io
+      version: v1beta1
+    - description: TemporalCluster defines a temporal cluster deployment.
+      displayName: Temporal Cluster
+      kind: TemporalCluster
+      name: temporalclusters.temporal.io
+      version: v1beta1
+    - description: A TemporalNamespace creates a namespace in the targeted temporal
         cluster.
-      displayName: Cluster Client
-      kind: ClusterClient
-      name: clusterclients.temporal.io
-      version: v1beta1
-    - description: Cluster defines a temporal cluster deployment.
-      displayName: Cluster
-      kind: Cluster
-      name: clusters.temporal.io
-      version: v1beta1
-    - description: A Namespace creates a namespace in the targeted temporal cluster.
-      displayName: Namespace
-      kind: Namespace
-      name: namespaces.temporal.io
+      displayName: Temporal Namespace
+      kind: TemporalNamespace
+      name: temporalnamespaces.temporal.io
       version: v1beta1
   description: |
     ## Temporal
@@ -293,7 +288,7 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - clusterclients
+          - temporalclusterclients
           verbs:
           - create
           - delete
@@ -305,13 +300,13 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - clusterclients/finalizers
+          - temporalclusterclients/finalizers
           verbs:
           - update
         - apiGroups:
           - temporal.io
           resources:
-          - clusterclients/status
+          - temporalclusterclients/status
           verbs:
           - get
           - patch
@@ -319,7 +314,7 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - clusters
+          - temporalclusters
           verbs:
           - create
           - delete
@@ -331,13 +326,13 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - clusters/finalizers
+          - temporalclusters/finalizers
           verbs:
           - update
         - apiGroups:
           - temporal.io
           resources:
-          - clusters/status
+          - temporalclusters/status
           verbs:
           - get
           - patch
@@ -345,7 +340,7 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - namespaces
+          - temporalnamespaces
           verbs:
           - create
           - delete
@@ -357,13 +352,13 @@ spec:
         - apiGroups:
           - temporal.io
           resources:
-          - namespaces/finalizers
+          - temporalnamespaces/finalizers
           verbs:
           - update
         - apiGroups:
           - temporal.io
           resources:
-          - namespaces/status
+          - temporalnamespaces/status
           verbs:
           - get
           - patch

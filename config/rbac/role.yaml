@@ -122,7 +122,7 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - clusterclients
+  - temporalclusterclients
   verbs:
   - create
   - delete
@@ -134,13 +134,13 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - clusterclients/finalizers
+  - temporalclusterclients/finalizers
   verbs:
   - update
 - apiGroups:
   - temporal.io
   resources:
-  - clusterclients/status
+  - temporalclusterclients/status
   verbs:
   - get
   - patch
@@ -148,7 +148,7 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - clusters
+  - temporalclusters
   verbs:
   - create
   - delete
@@ -160,13 +160,13 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - clusters/finalizers
+  - temporalclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - temporal.io
   resources:
-  - clusters/status
+  - temporalclusters/status
   verbs:
   - get
   - patch
@@ -174,7 +174,7 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - namespaces
+  - temporalnamespaces
   verbs:
   - create
   - delete
@@ -186,13 +186,13 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - namespaces/finalizers
+  - temporalnamespaces/finalizers
   verbs:
   - update
 - apiGroups:
   - temporal.io
   resources:
-  - namespaces/status
+  - temporalnamespaces/status
   verbs:
   - get
   - patch

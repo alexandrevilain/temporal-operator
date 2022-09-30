@@ -22,14 +22,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ClusterClientSpec defines the desired state of ClusterClient
-type ClusterClientSpec struct {
+// TemporalClusterClientSpec defines the desired state of ClusterClient
+type TemporalClusterClientSpec struct {
 	// Reference to the temporal cluster the client will get access to.
 	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
 }
 
-// ClusterClientStatus defines the observed state of ClusterClient
-type ClusterClientStatus struct {
+// TemporalClusterClientStatus defines the observed state of ClusterClient
+type TemporalClusterClientStatus struct {
 	// ServerName is the hostname returned by the certificate.
 	ServerName string `json:"serverName"`
 	// Reference to the Kubernetes Secret containing the certificate for the client.
@@ -39,24 +39,24 @@ type ClusterClientStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// A ClusterClient creates a new mTLS client in the targeted temporal cluster.
-type ClusterClient struct {
+// A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.
+type TemporalClusterClient struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ClusterClientSpec   `json:"spec,omitempty"`
-	Status ClusterClientStatus `json:"status,omitempty"`
+	Spec   TemporalClusterClientSpec   `json:"spec,omitempty"`
+	Status TemporalClusterClientStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
 // ClusterClientList contains a list of ClusterClient
-type ClusterClientList struct {
+type TemporalClusterClientList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ClusterClient `json:"items"`
+	Items           []TemporalClusterClient `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&ClusterClient{}, &ClusterClientList{})
+	SchemeBuilder.Register(&TemporalClusterClient{}, &TemporalClusterClientList{})
 }

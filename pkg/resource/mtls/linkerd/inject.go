@@ -23,7 +23,7 @@ import (
 
 // GetAnnotations returns linkerd annotations to enable proxy injection if the provided Cluster
 // instance has mTLS enabled using linkerd.
-func GetAnnotations(instance *v1beta1.Cluster) map[string]string {
+func GetAnnotations(instance *v1beta1.TemporalCluster) map[string]string {
 	if instance.Spec.MTLS != nil && instance.Spec.MTLS.Provider == v1beta1.LinkerdMTLSProvider {
 		return map[string]string{
 			"linkerd.io/inject": "enabled",

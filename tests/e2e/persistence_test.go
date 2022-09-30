@@ -36,19 +36,19 @@ var (
 func TestPersistence(t *testing.T) {
 	tests := map[string]struct {
 		deployDependencies func(ctx context.Context, cfg *envconf.Config, namespace string) error
-		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster
+		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster
 	}{
 		"postgresql persistence": {
 			deployDependencies: deployAndWaitForPostgres,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
-				return &v1beta1.Cluster{
+				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: v1beta1.ClusterSpec{
+					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    initialClusterVersion,
@@ -95,15 +95,15 @@ func TestPersistence(t *testing.T) {
 		},
 		"mysql persistence": {
 			deployDependencies: deployAndWaitForMySQL,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
-				return &v1beta1.Cluster{
+				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: v1beta1.ClusterSpec{
+					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    "1.16.3",
@@ -147,15 +147,15 @@ func TestPersistence(t *testing.T) {
 		},
 		"cassandra persistence": {
 			deployDependencies: deployAndWaitForCassandra,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.Cluster {
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
 
-				return &v1beta1.Cluster{
+				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
 						Namespace: namespace,
 					},
-					Spec: v1beta1.ClusterSpec{
+					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
 						Version:                    initialClusterVersion,

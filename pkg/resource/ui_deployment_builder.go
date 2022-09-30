@@ -37,11 +37,11 @@ const (
 )
 
 type UIDeploymentBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIDeploymentBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIDeploymentBuilder {
+func NewUIDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIDeploymentBuilder {
 	return &UIDeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,

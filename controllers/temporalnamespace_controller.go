@@ -38,24 +38,24 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 )
 
-// NamespaceReconciler reconciles a Namespace object
-type NamespaceReconciler struct {
+// TemporalNamespaceReconciler reconciles a Namespace object
+type TemporalNamespaceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=temporal.io,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=temporal.io,resources=namespaces/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=temporal.io,resources=namespaces/finalizers,verbs=update
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalnamespaces,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalnamespaces/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=temporal.io,resources=temporalnamespaces/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
 
-	namespace := &v1beta1.Namespace{}
+	namespace := &v1beta1.TemporalNamespace{}
 	err := r.Get(ctx, req.NamespacedName, namespace)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -65,7 +65,7 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: namespace.Spec.ClusterRef.Name}
-	cluster := &v1beta1.Cluster{}
+	cluster := &v1beta1.TemporalCluster{}
 	err = r.Get(ctx, namespacedName, cluster)
 	if err != nil {
 		return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
@@ -99,30 +99,30 @@ func (r *NamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return r.handleSuccess(ctx, namespace)
 }
 
-func (r *NamespaceReconciler) handleSuccess(ctx context.Context, namespace *v1beta1.Namespace) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) handleSuccess(ctx context.Context, namespace *v1beta1.TemporalNamespace) (ctrl.Result, error) {
 	return r.handleSuccessWithRequeue(ctx, namespace, 0)
 }
 
-func (r *NamespaceReconciler) handleError(ctx context.Context, namespace *v1beta1.Namespace, reason string, err error) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) handleError(ctx context.Context, namespace *v1beta1.TemporalNamespace, reason string, err error) (ctrl.Result, error) {
 	return r.handleErrorWithRequeue(ctx, namespace, reason, err, 0)
 }
 
-func (r *NamespaceReconciler) handleSuccessWithRequeue(ctx context.Context, namespace *v1beta1.Namespace, requeueAfter time.Duration) (ctrl.Result, error) {
-	v1beta1.SetNamespaceReconcileSuccess(namespace, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
+func (r *TemporalNamespaceReconciler) handleSuccessWithRequeue(ctx context.Context, namespace *v1beta1.TemporalNamespace, requeueAfter time.Duration) (ctrl.Result, error) {
+	v1beta1.SetTemporalNamespaceReconcileSuccess(namespace, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
 	err := r.updateNamespaceStatus(ctx, namespace)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *NamespaceReconciler) handleErrorWithRequeue(ctx context.Context, namespace *v1beta1.Namespace, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) handleErrorWithRequeue(ctx context.Context, namespace *v1beta1.TemporalNamespace, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
-	v1beta1.SetNamespaceReconcileError(namespace, metav1.ConditionTrue, reason, err.Error())
+	v1beta1.SetTemporalNamespaceReconcileError(namespace, metav1.ConditionTrue, reason, err.Error())
 	err = r.updateNamespaceStatus(ctx, namespace)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *NamespaceReconciler) updateNamespaceStatus(ctx context.Context, namespace *v1beta1.Namespace) error {
+func (r *TemporalNamespaceReconciler) updateNamespaceStatus(ctx context.Context, namespace *v1beta1.TemporalNamespace) error {
 	err := r.Status().Update(ctx, namespace)
 	if err != nil {
 		return err
@@ -131,9 +131,9 @@ func (r *NamespaceReconciler) updateNamespaceStatus(ctx context.Context, namespa
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *NamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *TemporalNamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1beta1.Namespace{}, builder.WithPredicates(predicate.Or(
+		For(&v1beta1.TemporalNamespace{}, builder.WithPredicates(predicate.Or(
 			predicate.GenerationChangedPredicate{},
 			predicate.LabelChangedPredicate{},
 			predicate.AnnotationChangedPredicate{},

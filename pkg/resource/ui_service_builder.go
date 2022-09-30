@@ -33,11 +33,11 @@ import (
 const UIServicePort = 8080
 
 type UIServiceBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIServiceBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *UIServiceBuilder {
+func NewUIServiceBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIServiceBuilder {
 	return &UIServiceBuilder{
 		instance: instance,
 		scheme:   scheme,

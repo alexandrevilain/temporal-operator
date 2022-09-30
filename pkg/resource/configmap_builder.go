@@ -39,11 +39,11 @@ import (
 )
 
 type ConfigmapBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewConfigmapBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *ConfigmapBuilder {
+func NewConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *ConfigmapBuilder {
 	return &ConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,

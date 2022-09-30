@@ -35,12 +35,12 @@ import (
 
 type PeerAuthenticationBuilder struct {
 	serviceName string
-	instance    *v1beta1.Cluster
+	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
 }
 
-func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *PeerAuthenticationBuilder {
+func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *PeerAuthenticationBuilder {
 	return &PeerAuthenticationBuilder{
 		serviceName: serviceName,
 		instance:    instance,

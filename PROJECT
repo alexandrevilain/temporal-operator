@@ -9,7 +9,7 @@ resources:
     namespaced: true
   controller: true
   domain: temporal.io
-  kind: Cluster
+  kind: TemporalCluster
   path: github.com/alexandrevilain/temporal-operator/api/v1beta1
   version: v1beta1
 - api:
@@ -17,7 +17,7 @@ resources:
     namespaced: true
   controller: true
   domain: temporal.io
-  kind: ClusterClient
+  kind: TemporalClusterClient
   path: github.com/alexandrevilain/temporal-operator/api/v1beta1
   version: v1beta1
 - api:
@@ -25,7 +25,7 @@ resources:
     namespaced: true
   controller: true
   domain: temporal.io
-  kind: Namespace
+  kind: TemporalNamespace
   path: github.com/alexandrevilain/temporal-operator/api/v1beta1
   version: v1beta1
 version: "3"

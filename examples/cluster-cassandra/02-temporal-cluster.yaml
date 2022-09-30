@@ -8,7 +8,7 @@ data:
   PASSWORD: Y2Fzc2FuZHJh
 ---
 apiVersion: temporal.io/v1beta1
-kind: Cluster
+kind: TemporalCluster
 metadata:
   name: prod
   namespace: demo

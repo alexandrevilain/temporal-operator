@@ -26,7 +26,7 @@ import (
 )
 
 // buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
-func buildPodObjectMeta(instance *v1beta1.Cluster, service string) metav1.ObjectMeta {
+func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
 			istio.GetLabels(instance),

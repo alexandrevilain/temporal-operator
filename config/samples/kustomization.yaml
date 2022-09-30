@@ -1,6 +1,6 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- temporal.io_v1beta1_cluster.yaml
-- temporal.io_v1beta1_namespace.yaml
-- temporal.io_v1beta1_clusterclient.yaml
+- temporal.io_v1beta1_temporalcluster.yaml
+- temporal.io_v1beta1_temporalnamespace.yaml
+- temporal.io_v1beta1_temporalclusterclient.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

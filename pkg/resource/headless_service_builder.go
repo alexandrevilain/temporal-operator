@@ -32,12 +32,12 @@ import (
 
 type HeadlessServiceBuilder struct {
 	serviceName string
-	instance    *v1beta1.Cluster
+	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
 }
 
-func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *HeadlessServiceBuilder {
+func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *HeadlessServiceBuilder {
 	return &HeadlessServiceBuilder{
 		serviceName: serviceName,
 		instance:    instance,

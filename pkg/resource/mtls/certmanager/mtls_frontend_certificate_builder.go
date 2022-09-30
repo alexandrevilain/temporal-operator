@@ -30,11 +30,11 @@ import (
 )
 
 type MTLSFrontendCertificateBuilder struct {
-	instance *v1beta1.Cluster
+	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewMTLSFrontendCertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSFrontendCertificateBuilder {
+func NewMTLSFrontendCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendCertificateBuilder {
 	return &MTLSFrontendCertificateBuilder{
 		instance: instance,
 		scheme:   scheme,

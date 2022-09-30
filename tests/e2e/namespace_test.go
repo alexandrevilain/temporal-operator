@@ -33,8 +33,8 @@ import (
 )
 
 func TestNamespaceCreation(t *testing.T) {
-	var cluster *v1beta1.Cluster
-	var temporalNamespace *v1beta1.Namespace
+	var cluster *v1beta1.TemporalCluster
+	var temporalNamespace *v1beta1.TemporalNamespace
 
 	namespaceFature := features.New("namespace creation using CRD").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
@@ -58,9 +58,9 @@ func TestNamespaceCreation(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
-			temporalNamespace = &v1beta1.Namespace{
+			temporalNamespace = &v1beta1.TemporalNamespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: v1beta1.NamespaceSpec{
+				Spec: v1beta1.TemporalNamespaceSpec{
 					ClusterRef: corev1.LocalObjectReference{
 						Name: cluster.GetName(),
 					},

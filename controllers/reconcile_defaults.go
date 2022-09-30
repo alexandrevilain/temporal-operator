@@ -37,7 +37,7 @@ const (
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
 )
 
-func (r *ClusterReconciler) reconcileDatastoreDefaults(ctx context.Context, datastore *v1beta1.DatastoreSpec) {
+func (r *TemporalClusterReconciler) reconcileDatastoreDefaults(ctx context.Context, datastore *v1beta1.DatastoreSpec) {
 	if datastore.SQL != nil {
 		if datastore.SQL.ConnectProtocol == "" {
 			datastore.SQL.ConnectProtocol = "tcp"
@@ -45,7 +45,7 @@ func (r *ClusterReconciler) reconcileDatastoreDefaults(ctx context.Context, data
 	}
 }
 
-func (r *ClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.Cluster) bool {
+func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.TemporalCluster) bool {
 	before := cluster.DeepCopy()
 
 	if cluster.Spec.Version == "" {

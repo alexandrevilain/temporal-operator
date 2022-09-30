@@ -27,7 +27,7 @@ import (
 )
 
 type ClusterBuilder struct {
-	Instance *v1beta1.Cluster
+	Instance *v1beta1.TemporalCluster
 	Scheme   *runtime.Scheme
 }
 

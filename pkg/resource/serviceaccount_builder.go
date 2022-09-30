@@ -31,12 +31,12 @@ import (
 
 type ServiceAccountBuilder struct {
 	serviceName string
-	instance    *v1beta1.Cluster
+	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
 }
 
-func NewServiceAccountBuilder(serviceName string, instance *v1beta1.Cluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceAccountBuilder {
+func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceAccountBuilder {
 	return &ServiceAccountBuilder{
 		serviceName: serviceName,
 		instance:    instance,

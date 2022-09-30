@@ -13,21 +13,22 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: A ClusterClient creates a new mTLS client in the targeted temporal
+    - description: A TemporalClusterClient creates a new mTLS client in the targeted
+        temporal cluster.
+      displayName: Temporal Cluster Client
+      kind: TemporalClusterClient
+      name: temporalclusterclients.temporal.io
+      version: v1beta1
+    - description: TemporalCluster defines a temporal cluster deployment.
+      displayName: Temporal Cluster
+      kind: TemporalCluster
+      name: temporalclusters.temporal.io
+      version: v1beta1
+    - description: A TemporalNamespace creates a namespace in the targeted temporal
         cluster.
-      displayName: Cluster Client
-      kind: ClusterClient
-      name: clusterclients.temporal.io
-      version: v1beta1
-    - description: Cluster defines a temporal cluster deployment.
-      displayName: Cluster
-      kind: Cluster
-      name: clusters.temporal.io
-      version: v1beta1
-    - description: A Namespace creates a namespace in the targeted temporal cluster.
-      displayName: Namespace
-      kind: Namespace
-      name: namespaces.temporal.io
+      displayName: Temporal Namespace
+      kind: TemporalNamespace
+      name: temporalnamespaces.temporal.io
       version: v1beta1
   description: |
     ## Temporal

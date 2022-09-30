@@ -26,7 +26,7 @@ type MTLSFrontendItermediateCACertificateBuilder struct {
 	GenericItermediateCACertificateBuilder
 }
 
-func NewMTLSFrontendIntermediateCACertificateBuilder(instance *v1beta1.Cluster, scheme *runtime.Scheme) *MTLSFrontendItermediateCACertificateBuilder {
+func NewMTLSFrontendIntermediateCACertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *MTLSFrontendItermediateCACertificateBuilder {
 	return &MTLSFrontendItermediateCACertificateBuilder{
 		GenericItermediateCACertificateBuilder: GenericItermediateCACertificateBuilder{
 			instance:   instance,

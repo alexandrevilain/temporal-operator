@@ -1,5 +1,5 @@
 apiVersion: temporal.io/v1beta1
-kind: Namespace
+kind: TemporalNamespace
 metadata:
   name: accounting
 spec:
