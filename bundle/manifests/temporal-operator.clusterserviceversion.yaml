@@ -128,7 +128,7 @@ spec:
     kind: TemporalCluster
     metadata:
       name: prod
-      namespace: temporal
+      namespace: demo
     spec:
       version: 1.17.0
       numHistoryShards: 1
