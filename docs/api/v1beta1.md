@@ -194,6 +194,19 @@ MTLSSpec
 <p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>metrics</code><br>
+<em>
+<a href="#temporal.io/v1beta1.MetricsSpec">
+MetricsSpec
+</a>
+</em>
+</td>
+<td>
+<p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -1019,6 +1032,83 @@ Useless if mTLS provider is not cert-manager.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.MetricsSpec">MetricsSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>MetricsSpec determines parameters for configuring metrics endpoints</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled defines if the operator should configure metrics</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>prometheus</code><br>
+<em>
+<a href="#temporal.io/v1beta1.PrometheusSpec">
+PrometheusSpec
+</a>
+</em>
+</td>
+<td>
+<p>Prometheus Configuration</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.PrometheusSpec">PrometheusSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.MetricsSpec">MetricsSpec</a>)
+</p>
+<p>Prometheus is the configuration for prometheus reporter</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>listenAddress</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Address for prometheus to serve metrics from.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.SQLSpec">SQLSpec
 </h3>
 <p>
@@ -1744,6 +1834,19 @@ MTLSSpec
 <td>
 <em>(Optional)</em>
 <p>MTLS allows configuration of the network traffic encryption for the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>metrics</code><br>
+<em>
+<a href="#temporal.io/v1beta1.MetricsSpec">
+MetricsSpec
+</a>
+</em>
+</td>
+<td>
+<p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
 </td>
 </tr>
 </tbody>

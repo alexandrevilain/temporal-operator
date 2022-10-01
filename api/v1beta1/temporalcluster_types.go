@@ -498,6 +498,24 @@ type MTLSSpec struct {
 	RefreshInterval *metav1.Duration `json:"refreshInterval"`
 }
 
+// Prometheus is the configuration for prometheus reporter
+type PrometheusSpec struct {
+	// Address for prometheus to serve metrics from.
+	ListenAddress *string `json:"listenAddress"`
+}
+
+// MetricsSpec determines parameters for configuring metrics endpoints
+type MetricsSpec struct {
+	// Enabled defines if the operator should configure metrics
+	Enabled bool `json:"enabled"`
+	// Prometheus Configuration
+	Prometheus *PrometheusSpec `json:"prometheus"`
+}
+
+func (m *MetricsSpec) MetricsEnabled() bool {
+	return m != nil && m.Enabled
+}
+
 func (m *MTLSSpec) InternodeEnabled() bool {
 	return m.Internode != nil && m.Internode.Enabled
 }
@@ -540,6 +558,8 @@ type TemporalClusterSpec struct {
 	// MTLS allows configuration of the network traffic encryption for the cluster.
 	// +optional
 	MTLS *MTLSSpec `json:"mTLS,omitempty"`
+	// Metrics allows configuration of scraping endpoints for stats. prometheus or m3.
+	Metrics *MetricsSpec `json:"metrics,omitempty"`
 }
 
 // ServiceStatus reports a service status.

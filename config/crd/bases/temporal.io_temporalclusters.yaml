@@ -45,6 +45,22 @@ spec:
           spec:
             description: Specification of the desired behavior of the Temporal cluster.
             properties:
+              metrics:
+                description: Metrics allows configuration of the optional prometheus
+                        endpoints for temporal services.                    
+                properties:
+                  enabled:
+                    description: Enabled defines if the operator configures prometheus
+                      endpoints for temporal services.                     
+                    type: boolean    
+                  prometheus:
+                    description: Prometheues sets the desired prometheus configuration
+                    properties:
+                      listenAddress:
+                        description: The IP address and port for scrapping prometheus metrics
+                        type: string     
+                    type: object    
+                type: object                                      
               admintools:
                 description: AdminTools allows configuration of the optional admin
                   tool pod deployed alongside the cluster.

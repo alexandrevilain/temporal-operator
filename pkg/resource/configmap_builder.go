@@ -30,6 +30,7 @@ import (
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/metrics"
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -175,6 +176,18 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		PublicClient: config.PublicClient{
 			HostPort: b.instance.GetPublicClientAddress(),
 		},
+	}
+
+	if b.instance.Spec.Metrics.MetricsEnabled() {
+		temporalCfg.Global.Metrics = &metrics.Config{
+			ClientConfig: metrics.ClientConfig{
+				Tags: map[string]string{"type": "{{ .Env.SERVICES }}"},
+			},
+			Prometheus: &metrics.PrometheusConfig{
+				ListenAddress: *b.instance.Spec.Metrics.Prometheus.ListenAddress,
+				TimerType:     "histogram",
+			},
+		}
 	}
 
 	if b.instance.MTLSWithCertManagerEnabled() {

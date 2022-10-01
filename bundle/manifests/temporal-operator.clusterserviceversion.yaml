@@ -128,18 +128,24 @@ spec:
     kind: TemporalCluster
     metadata:
       name: prod
-      namespace: demo
+      namespace: temporal
     spec:
-      version: 1.17.5
-      numHistoryShards: 512
+      version: 1.17.0
+      numHistoryShards: 1
       jobTtlSecondsAfterFinished: 300
+      services:
+        frontend:
+          replicas: 1
+        matching:
+          replicas: 1
+        history:
+          replicas: 2
+        worker:
+          replicas: 1
       persistence:
-        defaultStore: default
-        visibilityStore: visibility
-      datastores:
-        - name: default
+        defaultStore:
           sql:
-            user: temporal
+            user: postgres
             pluginName: postgres
             databaseName: temporal
             connectAddr: postgres.demo.svc.cluster.local:5432
@@ -147,9 +153,9 @@ spec:
           passwordSecretRef:
             name: postgres-password
             key: PASSWORD
-        - name: visibility
+        visibilityStore:
           sql:
-            user: temporal
+            user: postgres
             pluginName: postgres
             databaseName: temporal_visibility
             connectAddr: postgres.demo.svc.cluster.local:5432
@@ -157,11 +163,29 @@ spec:
           passwordSecretRef:
             name: postgres-password
             key: PASSWORD
+        advancedVisibilityStore:
+          elasticsearch:
+            version: v7
+            username: admin
+            url: http://elasticsearch-master.temporal:9200
+            indices:
+              visibility: temporal_visibility_v1_dev
+          passwordSecretRef:
+            name: es-password
+            key: PASSWORD
+      ui:
+        enabled: true
+      admintools:
+        enabled: true
+      metrics:
+        enabled: true
+        prometheus:
+          listenAddress: 0.0.0.0:9090
     </pre>
 
     ### Apply TemporalCluster CustomResource
     <pre>
-    $ kubectl apply -f temporal.yaml -n demo
+    $ kubectl apply -f temporalcluster.yaml -n demo
     </pre>
   displayName: Temporal Operator
   icon:
