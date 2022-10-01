@@ -68,13 +68,13 @@ test: manifests generate fmt vet ## Run tests.
 
 .PHONY: test-e2e
 test-e2e: artifacts ## Run end2end tests.
-	go test ./tests/e2e -v -timeout 30m
+	go test ./tests/e2e -v -timeout 60m
 
 .PHONY: test-e2e-dev
 test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
 	docker build -t temporal-operator .
 	docker save temporal-operator > /tmp/temporal-operator.tar
-	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 30m -args "--v=4"
+	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 60m -args "--v=4"
 
 .PHONY: ensure-license
 ensure-license: go-licenser

@@ -42,3 +42,7 @@ spec:
     enabled: true
   admintools:
     enabled: true
+  metrics:
+    enabled: true
+    prometheus:
+      listenAddress: "0.0.0.0:9090"    
