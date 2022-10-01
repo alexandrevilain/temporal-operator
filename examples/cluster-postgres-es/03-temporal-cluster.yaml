@@ -44,5 +44,5 @@ spec:
     enabled: true
   metrics:
     enabled: true
-    prometheusConfig:
+    prometheus:
       listenAddress: "0.0.0.0:9090"    
