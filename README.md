@@ -49,7 +49,6 @@ metadata:
 spec:
   version: 1.16.0
   numHistoryShards: 1
-  jobTtlSecondsAfterFinished: 300
   persistence:
     defaultStore: default
     visibilityStore: visibility

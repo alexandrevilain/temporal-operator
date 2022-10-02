@@ -94,8 +94,9 @@ int32
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
-This field is immutable.</p>
+Defaults to 300 seconds.</p>
 </td>
 </tr>
 <tr>
@@ -204,6 +205,7 @@ MetricsSpec
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
 </td>
 </tr>
@@ -248,7 +250,9 @@ TemporalClusterStatus
 <td>
 <code>consistency</code><br>
 <em>
+<a href="https://pkg.go.dev/github.com/gocql/gocql#Consistency">
 github.com/gocql/gocql.Consistency
+</a>
 </em>
 </td>
 <td>
@@ -261,7 +265,9 @@ Values identical to gocql Consistency values. (defaults to LOCAL_QUORUM if not s
 <td>
 <code>serialConsistency</code><br>
 <em>
+<a href="https://pkg.go.dev/github.com/gocql/gocql#SerialConsistencyy">
 github.com/gocql/gocql.SerialConsistency
+</a>
 </em>
 </td>
 <td>
@@ -597,6 +603,60 @@ DatastoreTLSSpec
 <td>
 <em>(Optional)</em>
 <p>TLS is an optional option to connect to the datastore using TLS.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.DatastoreStatus">DatastoreStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalPersistenceStatus">TemporalPersistenceStatus</a>)
+</p>
+<p>DatastoreStatus contains the current status of a datastore.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>created</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Created indicates if the database or keyspace has been created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>setup</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Setup indicates if tables have been set up.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schemaVersion</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>SchemaVersion report the current schema version.</p>
 </td>
 </tr>
 </tbody>
@@ -1222,7 +1282,9 @@ int
 <td>
 <code>maxConnLifetime</code><br>
 <em>
-time.Duration
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
 </em>
 </td>
 <td>
@@ -1736,8 +1798,9 @@ int32
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
-This field is immutable.</p>
+Defaults to 300 seconds.</p>
 </td>
 </tr>
 <tr>
@@ -1846,6 +1909,7 @@ MetricsSpec
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
 </td>
 </tr>
@@ -1892,6 +1956,19 @@ string
 </td>
 <td>
 <p>Services holds all services statuses.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>persistence</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalPersistenceStatus">
+TemporalPersistenceStatus
+</a>
+</em>
+</td>
+<td>
+<p>Persistence holds all datastores statuses.</p>
 </td>
 </tr>
 <tr>
@@ -2302,6 +2379,67 @@ DatastoreSpec
 <td>
 <em>(Optional)</em>
 <p>AdvancedVisibilityStore holds the avanced visibility datastore specs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalPersistenceStatus">TemporalPersistenceStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterStatus">TemporalClusterStatus</a>)
+</p>
+<p>TemporalPersistenceStatus contains temporal persistence status.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>defaultStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreStatus">
+DatastoreStatus
+</a>
+</em>
+</td>
+<td>
+<p>DefaultStore holds the default datastore status.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>visibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreStatus">
+DatastoreStatus
+</a>
+</em>
+</td>
+<td>
+<p>VisibilityStore holds the visibility datastore status.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>advancedVisibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreStatus">
+DatastoreStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AdvancedVisibilityStore holds the avanced visibility datastore status.</p>
 </td>
 </tr>
 </tbody>

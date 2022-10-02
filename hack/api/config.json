@@ -14,6 +14,14 @@
         {
             "typeMatchPrefix": "^k8s\\.io/(api|apimachinery/pkg/apis)/",
             "docsURLTemplate": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#{{lower .TypeIdentifier}}-{{arrIndex .PackageSegments -1}}-{{arrIndex .PackageSegments -2}}"
+        },
+        {
+            "typeMatchPrefix": "^github.com/gocql/gocql\\.Consistency$",
+            "docsURLTemplate": "https://pkg.go.dev/github.com/gocql/gocql#Consistency"
+        },
+        {
+            "typeMatchPrefix": "^github.com/gocql/gocql\\.SerialConsistency$",
+            "docsURLTemplate": "https://pkg.go.dev/github.com/gocql/gocql#SerialConsistencyy"
         }
     ],
     "typeDisplayNamePrefixOverrides": {
