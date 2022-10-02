@@ -9,7 +9,7 @@ This is a **breaking 💣** release.
 **Release date:** 2022-10-02
 
 Features:
-- (breaking 💣) move GroupVersion to temporal.io and remove "Temporal" prefix in kind [#130](https://github.com/alexandrevilain/temporal-operator/pull/130)
+- (breaking 💣) Move GroupVersion to temporal.io and remove "Temporal" prefix in kind [#130](https://github.com/alexandrevilain/temporal-operator/pull/130)
 - Add jobTtlSecondsAfterFinished param to spec to control time until jobs are deleted, changed job owner reference from controller to job making it independent. [#135](https://github.com/alexandrevilain/temporal-operator/pull/135)
 - Add prometheus scraping endpoint via spec [#141](https://github.com/alexandrevilain/temporal-operator/pull/141)
 
