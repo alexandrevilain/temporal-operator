@@ -175,5 +175,21 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, clust
 		}
 	}
 
+	if cluster.Status.Persistence == nil {
+		cluster.Status.Persistence = new(v1beta1.TemporalPersistenceStatus)
+	}
+
+	if cluster.Status.Persistence.DefaultStore == nil {
+		cluster.Status.Persistence.DefaultStore = new(v1beta1.DatastoreStatus)
+	}
+
+	if cluster.Status.Persistence.VisibilityStore == nil {
+		cluster.Status.Persistence.VisibilityStore = new(v1beta1.DatastoreStatus)
+	}
+
+	if cluster.Status.Persistence.AdvancedVisibilityStore == nil && cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+		cluster.Status.Persistence.AdvancedVisibilityStore = new(v1beta1.DatastoreStatus)
+	}
+
 	return !reflect.DeepEqual(before.Spec, cluster.Spec)
 }

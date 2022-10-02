@@ -40,7 +40,7 @@ func NewSQLConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *config.SQL {
 		ConnectAttributes:  spec.SQL.ConnectAttributes,
 		MaxConns:           spec.SQL.MaxConns,
 		MaxIdleConns:       spec.SQL.MaxIdleConns,
-		MaxConnLifetime:    spec.SQL.MaxConnLifetime,
+		MaxConnLifetime:    spec.SQL.MaxConnLifetime.Duration,
 		TaskScanPartitions: spec.SQL.TaskScanPartitions,
 		TLS:                tlsConfigConfigFromDatastoreSpec(spec),
 	}

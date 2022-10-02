@@ -6,7 +6,6 @@ metadata:
 spec:
   version: 1.17.4
   numHistoryShards: 1
-  jobTtlSecondsAfterFinished: 300  
   persistence:
     defaultStore:
       sql:

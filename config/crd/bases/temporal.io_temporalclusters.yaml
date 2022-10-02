@@ -45,22 +45,6 @@ spec:
           spec:
             description: Specification of the desired behavior of the Temporal cluster.
             properties:
-              metrics:
-                description: Metrics allows configuration of the optional prometheus
-                        endpoints for temporal services.                    
-                properties:
-                  enabled:
-                    description: Enabled defines if the operator configures prometheus
-                      endpoints for temporal services.                     
-                    type: boolean    
-                  prometheus:
-                    description: Prometheues sets the desired prometheus configuration
-                    properties:
-                      listenAddress:
-                        description: The IP address and port for scrapping prometheus metrics
-                        type: string     
-                    type: object    
-                type: object                                      
               admintools:
                 description: AdminTools allows configuration of the optional admin
                   tool pod deployed alongside the cluster.
@@ -92,8 +76,9 @@ spec:
                   type: object
                 type: array
               jobTtlSecondsAfterFinished:
+                default: 300
                 description: JobTtlSecondsAfterFinished is amount of time to keep
-                  job pods after jobs are completed. This field is immutable.
+                  job pods after jobs are completed. Defaults to 300 seconds.
                 format: int32
                 minimum: 1
                 type: integer
@@ -160,6 +145,27 @@ spec:
                       of certificates in the cluster components. Defaults to 1 hour.
                       Useless if mTLS provider is not cert-manager.
                     type: string
+                type: object
+              metrics:
+                description: Metrics allows configuration of scraping endpoints for
+                  stats. prometheus or m3.
+                properties:
+                  enabled:
+                    description: Enabled defines if the operator should configure
+                      metrics
+                    type: boolean
+                  prometheus:
+                    description: Prometheus Configuration
+                    properties:
+                      listenAddress:
+                        description: Address for prometheus to serve metrics from.
+                        type: string
+                    required:
+                    - listenAddress
+                    type: object
+                required:
+                - enabled
+                - prometheus
                 type: object
               numHistoryShards:
                 description: NumHistoryShards is the desired number of history shards.
@@ -342,8 +348,7 @@ spec:
                           maxConnLifetime:
                             description: MaxConnLifetime is the maximum time a connection
                               can be alive
-                            format: int64
-                            type: integer
+                            type: string
                           maxConns:
                             description: MaxConns the max number of connections to
                               this datastore.
@@ -600,8 +605,7 @@ spec:
                           maxConnLifetime:
                             description: MaxConnLifetime is the maximum time a connection
                               can be alive
-                            format: int64
-                            type: integer
+                            type: string
                           maxConns:
                             description: MaxConns the max number of connections to
                               this datastore.
@@ -858,8 +862,7 @@ spec:
                           maxConnLifetime:
                             description: MaxConnLifetime is the maximum time a connection
                               can be alive
-                            format: int64
-                            type: integer
+                            type: string
                           maxConns:
                             description: MaxConns the max number of connections to
                               this datastore.
@@ -1111,7 +1114,6 @@ spec:
                   versions.
                 type: string
             required:
-            - jobTtlSecondsAfterFinished
             - numHistoryShards
             - persistence
             - version
@@ -1189,6 +1191,68 @@ spec:
                   - type
                   type: object
                 type: array
+              persistence:
+                description: Persistence holds all datastores statuses.
+                properties:
+                  advancedVisibilityStore:
+                    description: AdvancedVisibilityStore holds the avanced visibility
+                      datastore status.
+                    properties:
+                      created:
+                        description: Created indicates if the database or keyspace
+                          has been created.
+                        type: boolean
+                      schemaVersion:
+                        description: SchemaVersion report the current schema version.
+                        type: string
+                      setup:
+                        description: Setup indicates if tables have been set up.
+                        type: boolean
+                    required:
+                    - created
+                    - schemaVersion
+                    - setup
+                    type: object
+                  defaultStore:
+                    description: DefaultStore holds the default datastore status.
+                    properties:
+                      created:
+                        description: Created indicates if the database or keyspace
+                          has been created.
+                        type: boolean
+                      schemaVersion:
+                        description: SchemaVersion report the current schema version.
+                        type: string
+                      setup:
+                        description: Setup indicates if tables have been set up.
+                        type: boolean
+                    required:
+                    - created
+                    - schemaVersion
+                    - setup
+                    type: object
+                  visibilityStore:
+                    description: VisibilityStore holds the visibility datastore status.
+                    properties:
+                      created:
+                        description: Created indicates if the database or keyspace
+                          has been created.
+                        type: boolean
+                      schemaVersion:
+                        description: SchemaVersion report the current schema version.
+                        type: string
+                      setup:
+                        description: Setup indicates if tables have been set up.
+                        type: boolean
+                    required:
+                    - created
+                    - schemaVersion
+                    - setup
+                    type: object
+                required:
+                - defaultStore
+                - visibilityStore
+                type: object
               services:
                 description: Services holds all services statuses.
                 items:

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
@@ -122,7 +121,7 @@ type SQLSpec struct {
 	MaxIdleConns int `json:"maxIdleConns"`
 	// MaxConnLifetime is the maximum time a connection can be alive
 	// +optional
-	MaxConnLifetime time.Duration `json:"maxConnLifetime"`
+	MaxConnLifetime metav1.Duration `json:"maxConnLifetime"`
 	// TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
 	// +optional
 	TaskScanPartitions int `json:"taskScanPartitions"`
@@ -533,7 +532,9 @@ type TemporalClusterSpec struct {
 	// This version impacts the underlying persistence schemas versions.
 	Version string `json:"version"`
 	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
-	// This field is immutable.
+	// Defaults to 300 seconds.
+	// +optional
+	//+kubebuilder:default:=300
 	//+kubebuilder:validation:Minimum=1
 	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
 	// NumHistoryShards is the desired number of history shards.
@@ -559,6 +560,7 @@ type TemporalClusterSpec struct {
 	// +optional
 	MTLS *MTLSSpec `json:"mTLS,omitempty"`
 	// Metrics allows configuration of scraping endpoints for stats. prometheus or m3.
+	// +optional
 	Metrics *MetricsSpec `json:"metrics,omitempty"`
 }
 
@@ -572,12 +574,35 @@ type ServiceStatus struct {
 	Ready bool `json:"ready"`
 }
 
+// DatastoreStatus contains the current status of a datastore.
+type DatastoreStatus struct {
+	// Created indicates if the database or keyspace has been created.
+	Created bool `json:"created"`
+	// Setup indicates if tables have been set up.
+	Setup bool `json:"setup"`
+	// SchemaVersion report the current schema version.
+	SchemaVersion string `json:"schemaVersion"`
+}
+
+// TemporalPersistenceStatus contains temporal persistence status.
+type TemporalPersistenceStatus struct {
+	// DefaultStore holds the default datastore status.
+	DefaultStore *DatastoreStatus `json:"defaultStore"`
+	// VisibilityStore holds the visibility datastore status.
+	VisibilityStore *DatastoreStatus `json:"visibilityStore"`
+	// AdvancedVisibilityStore holds the avanced visibility datastore status.
+	// +optional
+	AdvancedVisibilityStore *DatastoreStatus `json:"advancedVisibilityStore,omitempty"`
+}
+
 // TemporalClusterStatus defines the observed state of Cluster.
 type TemporalClusterStatus struct {
 	// Version holds the current temporal version.
 	Version string `json:"version,omitempty"`
 	// Services holds all services statuses.
 	Services []ServiceStatus `json:"services,omitempty"`
+	// Persistence holds all datastores statuses.
+	Persistence *TemporalPersistenceStatus `json:"persistence,omitempty"`
 	// Conditions represent the latest available observations of the Cluster state.
 	Conditions []metav1.Condition `json:"conditions"`
 }

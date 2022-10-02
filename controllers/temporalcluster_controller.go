@@ -150,6 +150,10 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
+			err := r.updateClusterStatus(ctx, cluster)
+			if err != nil {
+				return r.handleError(ctx, cluster, "", err)
+			}
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
 	}

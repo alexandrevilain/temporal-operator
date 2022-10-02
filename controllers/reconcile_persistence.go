@@ -46,8 +46,10 @@ func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.
 }
 
 type job struct {
-	name    string
-	command []string
+	name          string
+	command       []string
+	skip          func(c *v1beta1.TemporalCluster) bool
+	reportSuccess func(c *v1beta1.TemporalCluster) error
 }
 
 func sanitizeVersionToName(version string) string {
@@ -69,26 +71,68 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		{
 			name:    "create-default-database",
 			command: []string{"/etc/scripts/create-default-database.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.DefaultStore.Created
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.DefaultStore.Created = true
+				return nil
+			},
 		},
 		{
 			name:    "create-visibility-database",
 			command: []string{"/etc/scripts/create-visibility-database.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.VisibilityStore.Created
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.VisibilityStore.Created = true
+				return nil
+			},
 		},
 		{
 			name:    "setup-default-schema",
 			command: []string{"/etc/scripts/setup-default-schema.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.DefaultStore.Setup
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.DefaultStore.Setup = true
+				return nil
+			},
 		},
 		{
 			name:    "setup-visibility-schema",
 			command: []string{"/etc/scripts/setup-visibility-schema.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.VisibilityStore.Setup
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.VisibilityStore.Setup = true
+				return nil
+			},
 		},
 		{
 			name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-default-schema.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.DefaultStore.SchemaVersion == c.Spec.Version
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.DefaultStore.SchemaVersion = c.Spec.Version
+				return nil
+			},
 		},
 		{
 			name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-visibility-schema.sh"},
+			skip: func(c *v1beta1.TemporalCluster) bool {
+				return c.Status.Persistence.VisibilityStore.SchemaVersion == c.Spec.Version
+			},
+			reportSuccess: func(c *v1beta1.TemporalCluster) error {
+				c.Status.Persistence.VisibilityStore.SchemaVersion = c.Spec.Version
+				return nil
+			},
 		},
 	}
 	if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
@@ -96,14 +140,32 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			job{
 				name:    "setup-advanced-visibility",
 				command: []string{"/etc/scripts/setup-advanced-visibility.sh"},
+				skip: func(c *v1beta1.TemporalCluster) bool {
+					return c.Status.Persistence.AdvancedVisibilityStore.Setup
+				},
+				reportSuccess: func(c *v1beta1.TemporalCluster) error {
+					c.Status.Persistence.AdvancedVisibilityStore.Setup = true
+					return nil
+				},
 			},
 			job{
 				name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 				command: []string{"/etc/scripts/update-advanced-visibility.sh"},
+				skip: func(c *v1beta1.TemporalCluster) bool {
+					return c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion == c.Spec.Version
+				},
+				reportSuccess: func(c *v1beta1.TemporalCluster) error {
+					c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion = c.Spec.Version
+					return nil
+				},
 			})
 	}
 
 	for _, job := range jobs {
+		if job.skip(cluster) {
+			continue
+		}
+
 		logger.Info("Checking for persistence job", "name", job.name)
 		expectedJobBuilder := persistence.NewSchemaJobBuilder(cluster, r.Scheme, job.name, job.command)
 
@@ -136,6 +198,11 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		}
 
 		logger.Info("Persistence job is finished", "name", job.name)
+
+		err = job.reportSuccess(cluster)
+		if err != nil {
+			return 0, fmt.Errorf("can't report job success: %w", err)
+		}
 	}
 
 	return 0, nil
