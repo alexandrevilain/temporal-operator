@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.7.0
+
+This is a **breaking 💣** release.
+
+**Release date:** 2022-10-02
+
+Features:
+- (breaking 💣) move GroupVersion to temporal.io and remove "Temporal" prefix in kind [#130](https://github.com/alexandrevilain/temporal-operator/pull/130)
+- Add jobTtlSecondsAfterFinished param to spec to control time until jobs are deleted, changed job owner reference from controller to job making it independent. [#135](https://github.com/alexandrevilain/temporal-operator/pull/135)
+- Add prometheus scraping endpoint via spec [#141](https://github.com/alexandrevilain/temporal-operator/pull/141)
+
+Fixes:
+- Revert kind names to add Temporal prefix [#140](https://github.com/alexandrevilain/temporal-operator/pull/140)
+- Don't start new persistence jobs when they have been garbage collected [#142](https://github.com/alexandrevilain/temporal-operator/pull/142)
+
+Improvements:
+- Automate the operatorhub bundle creation [#131](https://github.com/alexandrevilain/temporal-operator/pull/131)
+- (breaking 💣) Refactor persistence specs to avoid datastores map [#132](https://github.com/alexandrevilain/temporal-operator/pull/132)
+
+Updates:
+- Bump helm/kind-action from 1.3.0 to 1.4.0 [#127](https://github.com/alexandrevilain/temporal-operator/pull/127)
+- Bump k8s dependencies to v0.25.2 and istio client-go to 1.15.1 [#143](https://github.com/alexandrevilain/temporal-operator/pull/143)
+
 ## 0.6.2
 
 **Release date:** 2022-09-22
