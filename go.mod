@@ -9,7 +9,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/gocql/gocql v1.2.1
 	github.com/google/uuid v1.3.0
-	github.com/gosimple/slug v1.12.0
+	github.com/gosimple/slug v1.13.1
 	github.com/lithammer/dedent v1.1.0
 	github.com/stretchr/testify v1.8.0
 	go.temporal.io/api v1.12.0
