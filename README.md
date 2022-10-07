@@ -47,13 +47,10 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.16.0
+  version: 1.17.4
   numHistoryShards: 1
   persistence:
-    defaultStore: default
-    visibilityStore: visibility
-  datastores:
-    - name: default
+    defaultStore:
       sql:
         user: temporal
         pluginName: postgres
@@ -63,7 +60,7 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
-    - name: visibility
+    visibilityStore:
       sql:
         user: temporal
         pluginName: postgres
