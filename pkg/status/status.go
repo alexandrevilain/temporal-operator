@@ -26,7 +26,7 @@ func ObservedVersionMatchesDesiredVersion(c *v1beta1.TemporalCluster) bool {
 		return false
 	}
 	for _, serviceStatus := range c.Status.Services {
-		if serviceStatus.Version != c.Spec.Version {
+		if serviceStatus.Version != c.Spec.Version.String() {
 			return false
 		}
 	}
@@ -39,7 +39,7 @@ func IsClusterReady(c *v1beta1.TemporalCluster) bool {
 		return false
 	}
 	for _, serviceStatus := range c.Status.Services {
-		if !serviceStatus.Ready || serviceStatus.Version != c.Spec.Version {
+		if !serviceStatus.Ready || serviceStatus.Version != c.Spec.Version.String() {
 			return false
 		}
 	}

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	kubernetesutil "github.com/alexandrevilain/temporal-operator/tests/e2e/util/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/util/networking"
 	"go.temporal.io/server/common"
@@ -42,7 +43,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, version string) (*v1beta1.TemporalCluster, error) {
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, v string) (*v1beta1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
@@ -58,7 +59,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		Spec: v1beta1.TemporalClusterSpec{
 			NumHistoryShards:           1,
 			JobTtlSecondsAfterFinished: &jobTtl,
-			Version:                    version,
+			Version:                    version.MustNewVersionFromString(v),
 			Metrics: &v1beta1.MetricsSpec{
 				Enabled: true,
 				Prometheus: &v1beta1.PrometheusSpec{
@@ -215,7 +216,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 				{
 					Key:      "app.kubernetes.io/version",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{cluster.Spec.Version},
+					Values:   []string{cluster.Spec.Version.String()},
 				},
 			},
 		},

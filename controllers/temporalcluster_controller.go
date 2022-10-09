@@ -123,13 +123,23 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Validate that the cluster version is a supported one.
-	clusterVersion, err := version.ParseAndValidateTemporalVersion(cluster.Spec.Version)
+	err = cluster.Spec.Version.Validate()
 	if err != nil {
 		logger.Error(err, "Can't validate temporal version")
 		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
 	}
 
-	logger.Info("Retrieved desired cluster version", "version", clusterVersion.String())
+	// Ensure ElasticSearch v6 is not used with cluster >= 1.18.0
+	// TODO(alexandrevilain): this should be moved to a validating webhook.
+	if cluster.Spec.Version.GreaterOrEqual(version.V1_18_0) &&
+		cluster.Spec.Persistence.AdvancedVisibilityStore != nil &&
+		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch != nil &&
+		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch.Version == "v6" {
+		err := errors.New("temporal cluster version >= 1.18.0 doesn't support ElasticSearch v6")
+		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
+	}
+
+	logger.Info("Retrieved desired cluster version", "version", cluster.Spec.Version.String())
 
 	// Check the ready condition
 	cond, exists := v1beta1.GetTemporalClusterReadyCondition(cluster)
@@ -238,7 +248,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 	}
 
 	if status.ObservedVersionMatchesDesiredVersion(temporalCluster) {
-		temporalCluster.Status.Version = temporalCluster.Spec.Version
+		temporalCluster.Status.Version = temporalCluster.Spec.Version.String()
 	}
 
 	if status.IsClusterReady(temporalCluster) {

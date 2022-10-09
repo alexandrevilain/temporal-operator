@@ -78,10 +78,11 @@ string
 <td>
 <code>version</code><br>
 <em>
-string
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Version defines the temporal version the cluster to be deployed.
 This version impacts the underlying persistence schemas versions.</p>
 </td>
@@ -652,10 +653,11 @@ bool
 <td>
 <code>schemaVersion</code><br>
 <em>
-string
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>SchemaVersion report the current schema version.</p>
 </td>
 </tr>
@@ -1782,10 +1784,11 @@ string
 <td>
 <code>version</code><br>
 <em>
-string
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Version defines the temporal version the cluster to be deployed.
 This version impacts the underlying persistence schemas versions.</p>
 </td>

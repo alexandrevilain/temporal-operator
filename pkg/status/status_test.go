@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +34,7 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 		"all services matches the desired version": {
 			cluster: &v1beta1.TemporalCluster{
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: "1.16.0",
+					Version: version.MustNewVersionFromString("1.16.0"),
 				},
 				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
@@ -53,7 +54,7 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 		"services does not match the desired version": {
 			cluster: &v1beta1.TemporalCluster{
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: "1.16.0",
+					Version: version.MustNewVersionFromString("1.16.0"),
 				},
 				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
@@ -73,7 +74,7 @@ func TestObservedVersionMatchesDesiredVersion(t *testing.T) {
 		"empty status": {
 			cluster: &v1beta1.TemporalCluster{
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: "1.16.0",
+					Version: version.MustNewVersionFromString("1.16.0"),
 				},
 				Status: v1beta1.TemporalClusterStatus{},
 			},
