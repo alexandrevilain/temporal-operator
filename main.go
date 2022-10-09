@@ -39,6 +39,7 @@ import (
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/istio"
 	//+kubebuilder:scaffold:imports
@@ -55,6 +56,7 @@ func init() {
 	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
 	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
 	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
+	utilruntime.Must(temporaliov1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -127,6 +129,14 @@ func main() {
 		IstioAvailable:       istioAvailable,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
+		os.Exit(1)
+	}
+	if err = (&controllers.TemporalAppWorkerReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("appworker-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AppWorker")
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalClusterClientReconciler{

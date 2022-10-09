@@ -43,6 +43,8 @@ import (
 
 var testenv env.Environment
 var jobTtl int32 = 60
+var replicas int32 = 1
+var port int = 7233
 var listAddress string = "0.0.0.0:9090"
 
 func TestMain(m *testing.M) {

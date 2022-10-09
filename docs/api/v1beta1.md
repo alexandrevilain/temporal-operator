@@ -1598,6 +1598,115 @@ string
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker
+</h3>
+<p>TemporalAppWorker is the Schema for the temporalappworkers API</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalAppWorkerSpec">
+TemporalAppWorkerSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>foo</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Foo is an example field of TemporalAppWorker. Edit temporalappworker_types.go to remove/update</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalAppWorkerStatus">
+TemporalAppWorkerStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalAppWorkerSpec">TemporalAppWorkerSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker</a>)
+</p>
+<p>TemporalAppWorkerSpec defines the desired state of TemporalAppWorker</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>foo</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Foo is an example field of TemporalAppWorker. Edit temporalappworker_types.go to remove/update</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalAppWorkerStatus">TemporalAppWorkerStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker</a>)
+</p>
+<p>TemporalAppWorkerStatus defines the observed state of TemporalAppWorker</p>
 <h3 id="temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient
 </h3>
 <p>A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.</p>

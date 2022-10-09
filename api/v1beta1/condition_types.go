@@ -103,3 +103,29 @@ func SetTemporalNamespaceReconcileError(n *TemporalNamespace, status metav1.Cond
 	}
 	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
 }
+
+// SetTemporalAppWorkerReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
+func SetTemporalAppWorkerReconcileSuccess(c *TemporalAppWorker, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileSuccessCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: c.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+}
+
+// SetTemporalAppWorkerReconcileError sets the ReconcileErrorCondition status for a temporal cluster.
+func SetTemporalAppWorkerReconcileError(c *TemporalAppWorker, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileErrorCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: c.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+}
