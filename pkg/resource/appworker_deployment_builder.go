@@ -31,10 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const (
-	appworkerCertsMountPath = "/etc/temporal/config/certs/client/appworker"
-)
-
 type AppWorkerDeploymentBuilder struct {
 	instance *v1beta1.TemporalAppWorker
 	scheme   *runtime.Scheme

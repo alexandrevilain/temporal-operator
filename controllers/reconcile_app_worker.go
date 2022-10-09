@@ -24,11 +24,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
-const (
-	defaultAppWorkerVersion = "latest"
-	defaultAppWorkerImage   = "ktenzer/helloworld-worker"
-)
-
 func (r *TemporalAppWorkerReconciler) reconcileDefaults(ctx context.Context, appworker *v1beta1.TemporalAppWorker) bool {
 	before := appworker.DeepCopy()
 
