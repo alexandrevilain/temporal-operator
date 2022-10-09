@@ -57,7 +57,7 @@ type TemporalConnectionSpec struct {
 
 // TemporalAppWorkerStatus defines the observed state of TemporalAppWorker
 type TemporalAppWorkerStatus struct {
-	// Conditions represent the latest available observations of the Cluster state.
+	// Conditions represent the latest available observations of the worker state.
 	Conditions []metav1.Condition `json:"conditions"`
 	// Number of desired replicas. Default to 1.
 	// +kubebuilder:validation:Minimum=1
