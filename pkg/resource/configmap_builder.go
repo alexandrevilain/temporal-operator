@@ -26,6 +26,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
@@ -173,9 +174,12 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				},
 			},
 		},
-		PublicClient: config.PublicClient{
+	}
+
+	if !b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
+		temporalCfg.PublicClient = config.PublicClient{
 			HostPort: b.instance.GetPublicClientAddress(),
-		},
+		}
 	}
 
 	if b.instance.Spec.Metrics.MetricsEnabled() {

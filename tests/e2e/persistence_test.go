@@ -23,14 +23,16 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
 var (
-	initialClusterVersion = "1.16.0"
-	upgradeClusterVersion = "1.17.5"
+	initialClusterVersion       = "1.16.0"
+	firstUpgradeClusterVersion  = "1.17.5"
+	secondUpgradeClusterVersion = "1.18.0"
 )
 
 func TestPersistence(t *testing.T) {
@@ -51,7 +53,7 @@ func TestPersistence(t *testing.T) {
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
-						Version:                    initialClusterVersion,
+						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
 							Internode: &v1beta1.InternodeMTLSSpec{
@@ -106,7 +108,7 @@ func TestPersistence(t *testing.T) {
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
-						Version:                    "1.16.3",
+						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
@@ -158,7 +160,7 @@ func TestPersistence(t *testing.T) {
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTtlSecondsAfterFinished: &jobTtl,
-						Version:                    initialClusterVersion,
+						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								Cassandra: &v1beta1.CassandraSpec{
@@ -218,7 +220,10 @@ func TestPersistence(t *testing.T) {
 			}).
 			Assess("Temporal cluster created", AssertClusterReady()).
 			Assess("Temporal cluster can handle workflows", AssertClusterCanHandleWorkflows()).
-			Assess("Upgrade cluster", AssertClusterCanBeUpgraded(upgradeClusterVersion)).
+			Assess("Upgrade cluster to 1.17.x", AssertClusterCanBeUpgraded(firstUpgradeClusterVersion)).
+			Assess("Temporal cluster ready after upgrade", AssertClusterReady()).
+			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
+			Assess("Upgrade cluster to 1.18.x", AssertClusterCanBeUpgraded(secondUpgradeClusterVersion)).
 			Assess("Temporal cluster ready after upgrade", AssertClusterReady()).
 			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
 			Feature()
