@@ -5,14 +5,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: temporalappworkers.temporal.io
+  name: temporalworkerprocesses.temporal.io
 spec:
   group: temporal.io
   names:
-    kind: TemporalAppWorker
-    listKind: TemporalAppWorkerList
-    plural: temporalappworkers
-    singular: temporalappworker
+    kind: TemporalWorkerProcess
+    listKind: TemporalWorkerProcessList
+    plural: temporalworkerprocesses
+    singular: temporalworkerprocess
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -28,7 +28,8 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: TemporalAppWorker is the Schema for the temporalappworkers API
+        description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -43,10 +44,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalAppWorkerSpec defines the desired state of TemporalAppWorker
+            description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
             properties:
               image:
-                description: Image defines the temporal ui docker image the instance
+                description: Image defines the temporal worker docker image the instance
                   should run.
                 type: string
               imagePullSecrets:
@@ -93,11 +94,12 @@ spec:
             - version
             type: object
           status:
-            description: TemporalAppWorkerStatus defines the observed state of TemporalAppWorker
+            description: TemporalWorkerProcessStatus defines the observed state of
+              TemporalWorkerProcess
             properties:
               conditions:
                 description: Conditions represent the latest available observations
-                  of the Cluster state.
+                  of the worker state.
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct

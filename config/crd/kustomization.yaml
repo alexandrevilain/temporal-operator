@@ -4,7 +4,7 @@ resources:
 - bases/temporal.io_temporalclusters.yaml
 - bases/temporal.io_temporalclusterclients.yaml
 - bases/temporal.io_temporalnamespaces.yaml
-- bases/temporal.io_temporalappworkers.yaml
+- bases/temporal.io_temporalworkerprocesses.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 configurations:
 - kustomizeconfig.yaml
@@ -15,7 +15,7 @@ patchesStrategicMerge:
 #- patches/webhook_in_clusters.yaml
 #- patches/webhook_in_clusterclients.yaml
 #- patches/webhook_in_namespaces.yaml
-#- patches/webhook_in_temporalappworkers.yaml
+#- patches/webhook_in_temporalworkerprocesses.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
@@ -23,7 +23,7 @@ patchesStrategicMerge:
 #- patches/cainjection_in_clusters.yaml
 #- patches/cainjection_in_clusterclients.yaml
 #- patches/cainjection_in_namespaces.yaml
-#- patches/cainjection_in_temporalappworkers.yaml
+#- patches/cainjection_in_temporalworkerprocesses.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 

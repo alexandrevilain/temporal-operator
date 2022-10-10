@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package appworker
+package workerprocess
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -24,13 +24,13 @@ import (
 )
 
 type ClusterBuilder struct {
-	Instance *v1beta1.TemporalAppWorker
+	Instance *v1beta1.TemporalWorkerProcess
 	Scheme   *runtime.Scheme
 }
 
 func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 	builders := []resource.Builder{
-		resource.NewAppWorkerDeploymentBuilder(b.Instance, b.Scheme),
+		resource.NewWorkerProcessDeploymentBuilder(b.Instance, b.Scheme),
 	}
 
 	return builders, nil

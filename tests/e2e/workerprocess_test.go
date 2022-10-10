@@ -31,11 +31,11 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
-func TestAppWorker(t *testing.T) {
+func TestWorkerProcess(t *testing.T) {
 	var cluster *v1beta1.TemporalCluster
-	var appworker *v1beta1.TemporalAppWorker
+	var worker *v1beta1.TemporalWorkerProcess
 
-	appWorkerFeature := features.New("Deploy and test app workers").
+	appWorkerFeature := features.New("Deploy and test worker process").
 		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
@@ -103,9 +103,9 @@ func TestAppWorker(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
-			appworker = &v1beta1.TemporalAppWorker{
+			worker = &v1beta1.TemporalWorkerProcess{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: v1beta1.TemporalAppWorkerSpec{
+				Spec: v1beta1.TemporalWorkerProcessSpec{
 					Version:  "latest",
 					Replicas: &replicas,
 					Image:    "ktenzer/helloworld-worker",
@@ -116,7 +116,7 @@ func TestAppWorker(t *testing.T) {
 					},
 				},
 			}
-			err := cfg.Client().Resources(namespace).Create(ctx, appworker)
+			err := cfg.Client().Resources(namespace).Create(ctx, worker)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -124,7 +124,7 @@ func TestAppWorker(t *testing.T) {
 			return ctx
 		}).
 		Assess("Temporal app worker created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForAppWorker(ctx, cfg, appworker)
+			err := waitForWorkerProcess(ctx, cfg, worker)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -155,7 +155,7 @@ func TestAppWorker(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Log("Starting test worker")
+			t.Log("Starting test worker process")
 			w.Start()
 			defer w.Stop()
 

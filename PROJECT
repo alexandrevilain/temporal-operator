@@ -33,7 +33,7 @@ resources:
     namespaced: true
   controller: true
   domain: temporal.io
-  kind: TemporalAppWorker
+  kind: TemporalWorkerProcess
   path: github.com/alexandrevilain/temporal-operator/api/v1beta1
   version: v1beta1
 version: "3"

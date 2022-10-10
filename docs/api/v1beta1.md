@@ -1598,9 +1598,9 @@ string
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess
 </h3>
-<p>TemporalAppWorker is the Schema for the temporalappworkers API</p>
+<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -1629,8 +1629,8 @@ Refer to the Kubernetes API documentation for the fields of the
 <td>
 <code>spec</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalAppWorkerSpec">
-TemporalAppWorkerSpec
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">
+TemporalWorkerProcessSpec
 </a>
 </em>
 </td>
@@ -1646,7 +1646,7 @@ string
 </em>
 </td>
 <td>
-<p>Foo is an example field of TemporalAppWorker. Edit temporalappworker_types.go to remove/update</p>
+<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
 </td>
 </tr>
 </table>
@@ -1656,8 +1656,8 @@ string
 <td>
 <code>status</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalAppWorkerStatus">
-TemporalAppWorkerStatus
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessStatus">
+TemporalWorkerProcessStatus
 </a>
 </em>
 </td>
@@ -1668,13 +1668,13 @@ TemporalAppWorkerStatus
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalAppWorkerSpec">TemporalAppWorkerSpec
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker</a>)
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
 </p>
-<p>TemporalAppWorkerSpec defines the desired state of TemporalAppWorker</p>
+<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -1693,20 +1693,20 @@ string
 </em>
 </td>
 <td>
-<p>Foo is an example field of TemporalAppWorker. Edit temporalappworker_types.go to remove/update</p>
+<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalAppWorkerStatus">TemporalAppWorkerStatus
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessStatus">TemporalWorkerProcessStatus
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalAppWorker">TemporalAppWorker</a>)
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
 </p>
-<p>TemporalAppWorkerStatus defines the observed state of TemporalAppWorker</p>
+<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess</p>
 <h3 id="temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient
 </h3>
 <p>A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.</p>

@@ -51,7 +51,7 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
 
-		if serviceName != "worker" {
+		if serviceName != common.WorkerServiceName {
 			builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 		}
 

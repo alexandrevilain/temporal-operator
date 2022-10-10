@@ -31,34 +31,34 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type AppWorkerDeploymentBuilder struct {
-	instance *v1beta1.TemporalAppWorker
+type WorkerProcessDeploymentBuilder struct {
+	instance *v1beta1.TemporalWorkerProcess
 	scheme   *runtime.Scheme
 }
 
-func NewAppWorkerDeploymentBuilder(instance *v1beta1.TemporalAppWorker, scheme *runtime.Scheme) *AppWorkerDeploymentBuilder {
-	return &AppWorkerDeploymentBuilder{
+func NewWorkerProcessDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme) *WorkerProcessDeploymentBuilder {
+	return &WorkerProcessDeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *AppWorkerDeploymentBuilder) Build() (client.Object, error) {
+func (b *WorkerProcessDeploymentBuilder) Build() (client.Object, error) {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        b.instance.ChildResourceName("appworker"),
+			Name:        b.instance.ChildResourceName("worker"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, "appworker", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
 }
 
-func (b *AppWorkerDeploymentBuilder) Update(object client.Object) error {
+func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetLabels(b.instance.Name, "appworker", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
@@ -82,15 +82,15 @@ func (b *AppWorkerDeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec = appsv1.DeploymentSpec{
 		Replicas: b.instance.Spec.Replicas,
 		Selector: &metav1.LabelSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, "appworker"),
+			MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker"),
 		},
 		Template: corev1.PodTemplateSpec{
-			ObjectMeta: buildAppWorkerPodObjectMeta(b.instance, "appworker"),
+			ObjectMeta: buildWorkerProcessPodObjectMeta(b.instance, "worker"),
 			Spec: corev1.PodSpec{
 				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 				Containers: []corev1.Container{
 					{
-						Name:                     "appworker",
+						Name:                     "worker",
 						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
 						ImagePullPolicy:          corev1.PullAlways,
 						TerminationMessagePath:   corev1.TerminationMessagePathDefault,

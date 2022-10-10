@@ -122,32 +122,6 @@ rules:
 - apiGroups:
   - temporal.io
   resources:
-  - temporalappworkers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - temporal.io
-  resources:
-  - temporalappworkers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - temporal.io
-  resources:
-  - temporalappworkers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - temporal.io
-  resources:
   - temporalclusterclients
   verbs:
   - create
@@ -219,6 +193,32 @@ rules:
   - temporal.io
   resources:
   - temporalnamespaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalworkerprocesses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalworkerprocesses/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalworkerprocesses/status
   verbs:
   - get
   - patch

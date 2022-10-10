@@ -131,12 +131,12 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
-	if err = (&controllers.TemporalAppWorkerReconciler{
+	if err = (&controllers.TemporalWorkerProcessReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("appworker-controller"),
+		Recorder: mgr.GetEventRecorderFor("workerprocess-controller"),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AppWorker")
+		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalClusterClientReconciler{

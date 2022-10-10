@@ -1,6 +1,6 @@
 apiVersion: temporal.io/v1beta1
-kind: TemporalAppWorker
+kind: TemporalWorkerProcess
 metadata:
-  name: temporalappworker-sample
+  name: temporalworkerprocess-sample
 spec:
   # TODO(user): Add fields here
