@@ -22,9 +22,6 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -99,7 +96,7 @@ func TestWorkerProcess(t *testing.T) {
 			return context.WithValue(ctx, clusterKey, cluster)
 		}).
 		Assess("Temporal cluster created", AssertClusterReady()).
-		Assess("Can create a temporal cluster namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Can create a temporal worker process", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
@@ -130,42 +127,6 @@ func TestWorkerProcess(t *testing.T) {
 			}
 			return ctx
 
-		}).
-		Assess("Temporal cluster can handle workflows", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer closePortForward()
-
-			t.Logf("Temporal frontend addr: %s", connectAddr)
-
-			client, err := klientToControllerRuntimeClient(cfg.Client())
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			clusterClient, err := temporal.GetClusterClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			w, err := testworker.NewWorker(clusterClient)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			t.Log("Starting test worker process")
-			w.Start()
-			defer w.Stop()
-
-			t.Logf("Starting workflow")
-			err = teststarter.NewStarter(clusterClient).StartGreetingWorkflow()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			return ctx
 		}).
 		Feature()
 
