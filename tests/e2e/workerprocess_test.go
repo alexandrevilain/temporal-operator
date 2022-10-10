@@ -120,7 +120,7 @@ func TestWorkerProcess(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Temporal app worker created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Temporal worker process created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			err := waitForWorkerProcess(ctx, cfg, worker)
 			if err != nil {
 				t.Fatal(err)

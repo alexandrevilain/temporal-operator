@@ -26,7 +26,7 @@ import (
 
 // TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
 type TemporalWorkerProcessSpec struct {
-	// Version defines the app worker version.
+	// Version defines the worker process version.
 	Version string `json:"version"`
 	// Image defines the temporal worker docker image the instance should run.
 	Image string `json:"image"`
@@ -86,7 +86,7 @@ type TemporalWorkerProcessList struct {
 	Items           []TemporalWorkerProcess `json:"items"`
 }
 
-// ChildResourceName returns child resource name using the app worker's name.
+// ChildResourceName returns child resource name using the worker processes name.
 func (c *TemporalWorkerProcess) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
 }

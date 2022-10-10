@@ -90,7 +90,7 @@ spec:
                 - url
                 type: object
               version:
-                description: Version defines the app worker version.
+                description: Version defines the worker process version.
                 type: string
             required:
             - image
