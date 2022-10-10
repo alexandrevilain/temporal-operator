@@ -63,6 +63,10 @@ spec:
                       type: string
                   type: object
                 type: array
+              pullPolicy:
+                description: Image pull policy for determining how to pull worker
+                  process images.
+                type: string
               replicas:
                 description: Number of desired replicas. Default to 1.
                 format: int32

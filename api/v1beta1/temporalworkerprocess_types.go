@@ -34,6 +34,8 @@ type TemporalWorkerProcessSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Replicas *int32 `json:"replicas"`
+	// Image pull policy for determining how to pull worker process images.
+	PullPolicy string `json:"pullPolicy,omitempty"`
 	// An optional list of references to secrets in the same namespace
 	// to use for pulling temporal images from registries.
 	// +optional
