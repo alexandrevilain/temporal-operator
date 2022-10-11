@@ -23,6 +23,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
 	"k8s.io/client-go/util/retry"
@@ -41,7 +42,7 @@ func AssertClusterReady() features.Func {
 	}
 }
 
-func AssertClusterCanBeUpgraded(version string) features.Func {
+func AssertClusterCanBeUpgraded(v string) features.Func {
 	return func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 		cluster := ctx.Value(clusterKey).(*v1beta1.TemporalCluster)
 
@@ -52,7 +53,7 @@ func AssertClusterCanBeUpgraded(version string) features.Func {
 			}
 
 			// Set the new version
-			cluster.Spec.Version = version
+			cluster.Spec.Version = version.MustNewVersionFromString(v)
 
 			err = cfg.Client().Resources(cluster.GetNamespace()).Update(ctx, cluster)
 			if err != nil {

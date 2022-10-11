@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 )
@@ -48,8 +49,8 @@ func (r *TemporalClusterReconciler) reconcileDatastoreDefaults(ctx context.Conte
 func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.TemporalCluster) bool {
 	before := cluster.DeepCopy()
 
-	if cluster.Spec.Version == "" {
-		cluster.Spec.Version = defaultTemporalVersion
+	if cluster.Spec.Version == nil {
+		cluster.Spec.Version = version.MustNewVersionFromString(defaultTemporalVersion)
 	}
 	if cluster.Spec.Image == "" {
 		cluster.Spec.Image = defaultTemporalImage

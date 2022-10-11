@@ -111,7 +111,7 @@ var (
 						{
 							"properties": {
 								"NamespaceDivision": {
-								"type": "keyword"
+								  "type": "keyword"
 								}
 							}
 						}

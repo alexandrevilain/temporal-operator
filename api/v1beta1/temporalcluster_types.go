@@ -22,6 +22,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
 	"go.temporal.io/server/common"
@@ -530,7 +531,8 @@ type TemporalClusterSpec struct {
 	Image string `json:"image"`
 	// Version defines the temporal version the cluster to be deployed.
 	// This version impacts the underlying persistence schemas versions.
-	Version string `json:"version"`
+	// +optional
+	Version *version.Version `json:"version"`
 	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// Defaults to 300 seconds.
 	// +optional
@@ -581,7 +583,8 @@ type DatastoreStatus struct {
 	// Setup indicates if tables have been set up.
 	Setup bool `json:"setup"`
 	// SchemaVersion report the current schema version.
-	SchemaVersion string `json:"schemaVersion"`
+	// +optional
+	SchemaVersion *version.Version `json:"schemaVersion,omitempty"`
 }
 
 // TemporalPersistenceStatus contains temporal persistence status.

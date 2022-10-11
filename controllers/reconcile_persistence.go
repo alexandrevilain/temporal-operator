@@ -25,6 +25,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -52,8 +53,8 @@ type job struct {
 	reportSuccess func(c *v1beta1.TemporalCluster) error
 }
 
-func sanitizeVersionToName(version string) string {
-	return strings.ReplaceAll(version, ".", "-")
+func sanitizeVersionToName(version *version.Version) string {
+	return strings.ReplaceAll(version.String(), ".", "-")
 }
 
 // reconcilePersistence tries to reconcile the cluster persistence.
@@ -116,10 +117,13 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-default-schema.sh"},
 			skip: func(c *v1beta1.TemporalCluster) bool {
-				return c.Status.Persistence.DefaultStore.SchemaVersion == c.Spec.Version
+				if c.Status.Persistence.DefaultStore.SchemaVersion == nil {
+					return false
+				}
+				return c.Status.Persistence.DefaultStore.SchemaVersion.GreaterOrEqual(cluster.Spec.Version)
 			},
 			reportSuccess: func(c *v1beta1.TemporalCluster) error {
-				c.Status.Persistence.DefaultStore.SchemaVersion = c.Spec.Version
+				c.Status.Persistence.DefaultStore.SchemaVersion = c.Spec.Version.DeepCopy()
 				return nil
 			},
 		},
@@ -127,10 +131,13 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 			command: []string{"/etc/scripts/update-visibility-schema.sh"},
 			skip: func(c *v1beta1.TemporalCluster) bool {
-				return c.Status.Persistence.VisibilityStore.SchemaVersion == c.Spec.Version
+				if c.Status.Persistence.VisibilityStore.SchemaVersion == nil {
+					return false
+				}
+				return c.Status.Persistence.VisibilityStore.SchemaVersion.GreaterOrEqual(c.Spec.Version)
 			},
 			reportSuccess: func(c *v1beta1.TemporalCluster) error {
-				c.Status.Persistence.VisibilityStore.SchemaVersion = c.Spec.Version
+				c.Status.Persistence.VisibilityStore.SchemaVersion = c.Spec.Version.DeepCopy()
 				return nil
 			},
 		},
@@ -152,10 +159,13 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
 				command: []string{"/etc/scripts/update-advanced-visibility.sh"},
 				skip: func(c *v1beta1.TemporalCluster) bool {
-					return c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion == c.Spec.Version
+					if c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion == nil {
+						return false
+					}
+					return c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion.GreaterOrEqual(c.Spec.Version)
 				},
 				reportSuccess: func(c *v1beta1.TemporalCluster) error {
-					c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion = c.Spec.Version
+					c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion = c.Spec.Version.DeepCopy()
 					return nil
 				},
 			})
