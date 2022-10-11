@@ -26,6 +26,8 @@ import (
 
 // TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
 type TemporalWorkerProcessSpec struct {
+	// Reference to the temporal cluster the namespace will be created.
+	ClusterRef *TemporalClusterReference `json:"clusterRef"`
 	// Version defines the worker process version.
 	Version string `json:"version"`
 	// Image defines the temporal worker docker image the instance should run.
@@ -40,18 +42,18 @@ type TemporalWorkerProcessSpec struct {
 	// to use for pulling temporal images from registries.
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
-	// TemporalServer connection details.
-	TemporalConnection *TemporalConnectionSpec `json:"temporalConnection"`
+	// TemporalNamespace that worker will poll.
+	TemporalNamespace string `json:"temporalNamespace"`
 }
 
-// TemporalConnectionSpec defines the attributes for connecting to a Temporal server.
-type TemporalConnectionSpec struct {
-	// FQDN of the temporal frontend service endpoint.
-	URL string `json:"url"`
-	// Port where the temporal frontend service is listening.
-	Port *int `json:"port"`
-	// Namespace that worker will poll.
-	Namespace string `json:"namespace"`
+// Reference to TemporalCluster
+type TemporalClusterReference struct {
+	// The name of the TemporalCluster to reference.
+	Name string `json:"name,omitempty"`
+	// The namespace of the TemporalCluster to reference.
+	// Defaults to the namespace of the requested resource if omitted.
+	// +kubebuilder:validation:Optional
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess

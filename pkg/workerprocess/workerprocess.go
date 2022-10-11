@@ -23,14 +23,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type ClusterBuilder struct {
+type Builder struct {
 	Instance *v1beta1.TemporalWorkerProcess
 	Scheme   *runtime.Scheme
+	Cluster  *v1beta1.TemporalCluster
 }
 
-func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
+func (b *Builder) ResourceBuilders() ([]resource.Builder, error) {
 	builders := []resource.Builder{
-		resource.NewWorkerProcessDeploymentBuilder(b.Instance, b.Scheme),
+		resource.NewWorkerProcessDeploymentBuilder(b.Instance, b.Cluster, b.Scheme),
 	}
 
 	return builders, nil

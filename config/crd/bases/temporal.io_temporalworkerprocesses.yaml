@@ -46,6 +46,18 @@ spec:
           spec:
             description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
             properties:
+              clusterRef:
+                description: Reference to the temporal cluster the namespace will
+                  be created.
+                properties:
+                  name:
+                    description: The name of the TemporalCluster to reference.
+                    type: string
+                  namespace:
+                    description: The namespace of the TemporalCluster to reference.
+                      Defaults to the namespace of the requested resource if omitted.
+                    type: string
+                type: object
               image:
                 description: Image defines the temporal worker docker image the instance
                   should run.
@@ -72,29 +84,16 @@ spec:
                 format: int32
                 minimum: 1
                 type: integer
-              temporalConnection:
-                description: TemporalServer connection details.
-                properties:
-                  namespace:
-                    description: Namespace that worker will poll.
-                    type: string
-                  port:
-                    description: Port where the temporal frontend service is listening.
-                    type: integer
-                  url:
-                    description: FQDN of the temporal frontend service endpoint.
-                    type: string
-                required:
-                - namespace
-                - port
-                - url
-                type: object
+              temporalNamespace:
+                description: TemporalNamespace that worker will poll.
+                type: string
               version:
                 description: Version defines the worker process version.
                 type: string
             required:
+            - clusterRef
             - image
-            - temporalConnection
+            - temporalNamespace
             - version
             type: object
           status:

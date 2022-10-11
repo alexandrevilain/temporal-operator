@@ -27,6 +27,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -74,15 +75,22 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, err
 	}
 
+	namespacedName := types.NamespacedName{Namespace: worker.Spec.ClusterRef.Namespace, Name: worker.Spec.ClusterRef.Name}
+	cluster := &v1beta1.TemporalCluster{}
+	err = r.Get(ctx, namespacedName, cluster)
+	if err != nil {
+		return r.handleError(ctx, worker, cluster, v1beta1.ReconcileErrorReason, err)
+	}
+
 	// Check if the resource has been marked for deletion
 	if !worker.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("Deleting temporal worker process", "name", worker.Name)
 		return reconcile.Result{}, nil
 	}
 
-	if err := r.reconcileResources(ctx, worker); err != nil {
+	if err := r.reconcileResources(ctx, worker, cluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		return r.handleErrorWithRequeue(ctx, worker, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
 	return r.handleSuccess(ctx, worker)
@@ -95,7 +103,7 @@ func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) err
 		Complete(r)
 }
 
-func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
@@ -104,8 +112,8 @@ func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Con
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, worker, reason, err, 0)
+func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, worker, cluster, reason, err, 0)
 }
 
 func (r *TemporalWorkerProcessReconciler) updateClusterStatus(ctx context.Context, cluster *v1beta1.TemporalWorkerProcess) error {
@@ -116,11 +124,12 @@ func (r *TemporalWorkerProcessReconciler) updateClusterStatus(ctx context.Contex
 	return nil
 }
 
-func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess) error {
+func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) error {
 	logger := log.FromContext(ctx)
 
-	workerProcessBuilder := workerprocess.ClusterBuilder{
+	workerProcessBuilder := workerprocess.Builder{
 		Instance: temporalWorkerProcess,
+		Cluster:  temporalCluster,
 		Scheme:   r.Scheme,
 	}
 

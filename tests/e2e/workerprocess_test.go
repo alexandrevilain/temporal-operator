@@ -106,9 +106,8 @@ func TestWorkerProcess(t *testing.T) {
 					Version:  "latest",
 					Replicas: &replicas,
 					Image:    "ktenzer/helloworld-worker",
-					TemporalConnection: &v1beta1.TemporalConnectionSpec{
-						URL:       "test-frontend",
-						Port:      &port,
+					ClusterRef: &v1beta1.TemporalClusterReference{
+						Name:      "test",
 						Namespace: namespace,
 					},
 				},

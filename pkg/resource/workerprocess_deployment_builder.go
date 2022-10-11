@@ -33,12 +33,14 @@ import (
 
 type WorkerProcessDeploymentBuilder struct {
 	instance *v1beta1.TemporalWorkerProcess
+	cluster  *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewWorkerProcessDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme) *WorkerProcessDeploymentBuilder {
+func NewWorkerProcessDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, scheme *runtime.Scheme) *WorkerProcessDeploymentBuilder {
 	return &WorkerProcessDeploymentBuilder{
 		instance: instance,
+		cluster:  cluster,
 		scheme:   scheme,
 	}
 }
@@ -68,11 +70,11 @@ func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 	env := []corev1.EnvVar{
 		{
 			Name:  "TEMPORAL_HOST_URL",
-			Value: fmt.Sprintf("%s:%d", b.instance.Spec.TemporalConnection.URL, *b.instance.Spec.TemporalConnection.Port),
+			Value: b.cluster.GetPublicClientAddress(),
 		},
 		{
 			Name:  "TEMPORAL_NAMESPACE",
-			Value: b.instance.Spec.TemporalConnection.Namespace,
+			Value: b.instance.Spec.TemporalNamespace,
 		},
 	}
 
