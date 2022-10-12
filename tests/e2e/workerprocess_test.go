@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -103,9 +104,9 @@ func TestWorkerProcess(t *testing.T) {
 			worker = &v1beta1.TemporalWorkerProcess{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalWorkerProcessSpec{
-					Version:  "latest",
+					Version:  version.MustNewVersionFromString("1.0.0"),
 					Replicas: &replicas,
-					Image:    "ktenzer/helloworld-worker",
+					Image:    "ktenzer/helloworld-worker:latest",
 					ClusterRef: &v1beta1.TemporalClusterReference{
 						Name:      "test",
 						Namespace: namespace,

@@ -94,7 +94,6 @@ spec:
             - clusterRef
             - image
             - temporalNamespace
-            - version
             type: object
           status:
             description: TemporalWorkerProcessStatus defines the observed state of

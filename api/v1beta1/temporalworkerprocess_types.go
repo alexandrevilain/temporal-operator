@@ -20,6 +20,7 @@ package v1beta1
 import (
 	"fmt"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +30,8 @@ type TemporalWorkerProcessSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
 	ClusterRef *TemporalClusterReference `json:"clusterRef"`
 	// Version defines the worker process version.
-	Version string `json:"version"`
+	// +optional
+	Version *version.Version `json:"version,omitempty"`
 	// Image defines the temporal worker docker image the instance should run.
 	Image string `json:"image"`
 	// Number of desired replicas. Default to 1.

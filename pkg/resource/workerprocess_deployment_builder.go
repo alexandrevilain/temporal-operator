@@ -93,7 +93,7 @@ func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 				Containers: []corev1.Container{
 					{
 						Name:                     "worker",
-						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
+						Image:                    b.instance.Spec.Image,
 						ImagePullPolicy:          corev1.PullPolicy(b.instance.Spec.PullPolicy),
 						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
