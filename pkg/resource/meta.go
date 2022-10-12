@@ -44,7 +44,7 @@ func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 func buildWorkerProcessPodObjectMeta(instance *v1beta1.TemporalWorkerProcess, service string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
-			metadata.GetLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
+			metadata.GetVersionStringLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
 		),
 		Annotations: metadata.Merge(
 			metadata.GetAnnotations(instance.Name, instance.Annotations),

@@ -22,7 +22,6 @@ import (
 	"reflect"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/version"
 )
 
 const (
@@ -34,10 +33,6 @@ func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context,
 
 	if worker.Spec.PullPolicy == "" {
 		worker.Spec.PullPolicy = defaultPullPolicy
-	}
-
-	if worker.Spec.Version == nil {
-		worker.Spec.Version = version.MustNewVersionFromString("1.0.0")
 	}
 
 	return !reflect.DeepEqual(before.Spec, worker.Spec)

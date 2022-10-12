@@ -37,3 +37,13 @@ func GetLabels(name, service string, version *version.Version, labels map[string
 	}
 	return l
 }
+
+// GetLabels returns a Labels for a temporal service using string Version.
+func GetVersionStringLabels(name, service string, version string, labels map[string]string) map[string]string {
+	l := LabelsSelector(name, service)
+	l["app.kubernetes.io/version"] = version
+	for k, v := range labels {
+		l[k] = v
+	}
+	return l
+}

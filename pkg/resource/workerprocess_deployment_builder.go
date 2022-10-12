@@ -50,7 +50,7 @@ func (b *WorkerProcessDeploymentBuilder) Build() (client.Object, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("worker"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
@@ -58,9 +58,10 @@ func (b *WorkerProcessDeploymentBuilder) Build() (client.Object, error) {
 
 func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
+
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetVersionStringLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
