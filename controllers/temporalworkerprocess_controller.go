@@ -19,10 +19,10 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -31,13 +31,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/workerprocess"
@@ -101,19 +102,42 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
-	if !worker.Status.Ready {
-		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ServicesNotReadyReason, errors.New("Deployment status not ready"), 2*time.Second)
-	}
-
 	return r.handleSuccess(ctx, worker)
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&temporaliov1beta1.TemporalWorkerProcess{}).
-		Complete(r)
+	controller := ctrl.NewControllerManagedBy(mgr).
+		For(&v1beta1.TemporalWorkerProcess{}, builder.WithPredicates(predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+		))).
+		Owns(&appsv1.Deployment{})
+
+	return controller.Complete(r)
 }
+
+// SetupWithManager sets up the controller with the Manager.
+/*
+func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
+	for _, resource := range []client.Object{&appsv1.Deployment{}} {
+		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
+			return err
+		}
+	}
+
+	controller := ctrl.NewControllerManagedBy(mgr).
+		For(&v1beta1.TemporalWorkerProcess{}, builder.WithPredicates(predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+		))).
+		Owns(&appsv1.Deployment{})
+
+	return controller.Complete(r)
+}*/
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
