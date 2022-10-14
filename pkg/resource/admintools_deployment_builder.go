@@ -102,47 +102,48 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL_CLI", admintoolsCertsMountPath)...)
 	}
 
-	deployment.Spec = appsv1.DeploymentSpec{
-		Selector: &metav1.LabelSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, "admintools"),
-		},
-		Template: corev1.PodTemplateSpec{
-			ObjectMeta: buildPodObjectMeta(b.instance, "admintools"),
-			Spec: corev1.PodSpec{
-				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
-				Containers: []corev1.Container{
-					{
-						Name:                     "admintools",
-						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
-						ImagePullPolicy:          corev1.PullAlways,
-						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-						Env:                      env,
-						LivenessProbe: &corev1.Probe{
-							ProbeHandler: corev1.ProbeHandler{
-								Exec: &corev1.ExecAction{
-									Command: []string{"ls", "/"},
-								},
+	deployment.Spec.Replicas = pointer.Int32(1)
+
+	deployment.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: metadata.LabelsSelector(b.instance.Name, "admintools"),
+	}
+
+	deployment.Spec.Template = corev1.PodTemplateSpec{
+		ObjectMeta: buildPodObjectMeta(b.instance, "admintools"),
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+			Containers: []corev1.Container{
+				{
+					Name:                     "admintools",
+					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
+					ImagePullPolicy:          corev1.PullAlways,
+					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+					Env:                      env,
+					LivenessProbe: &corev1.Probe{
+						ProbeHandler: corev1.ProbeHandler{
+							Exec: &corev1.ExecAction{
+								Command: []string{"ls", "/"},
 							},
-							InitialDelaySeconds: 5,
-							TimeoutSeconds:      1,
-							PeriodSeconds:       5,
-							SuccessThreshold:    1,
-							FailureThreshold:    3,
 						},
-						SecurityContext: &corev1.SecurityContext{
-							AllowPrivilegeEscalation: pointer.Bool(false),
-						},
-						VolumeMounts: volumeMounts,
+						InitialDelaySeconds: 5,
+						TimeoutSeconds:      1,
+						PeriodSeconds:       5,
+						SuccessThreshold:    1,
+						FailureThreshold:    3,
 					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: pointer.Bool(false),
+					},
+					VolumeMounts: volumeMounts,
 				},
-				RestartPolicy:                 corev1.RestartPolicyAlways,
-				TerminationGracePeriodSeconds: pointer.Int64(30),
-				DNSPolicy:                     corev1.DNSClusterFirst,
-				SecurityContext:               &corev1.PodSecurityContext{},
-				SchedulerName:                 corev1.DefaultSchedulerName,
-				Volumes:                       volumes,
 			},
+			RestartPolicy:                 corev1.RestartPolicyAlways,
+			TerminationGracePeriodSeconds: pointer.Int64(30),
+			DNSPolicy:                     corev1.DNSClusterFirst,
+			SecurityContext:               &corev1.PodSecurityContext{},
+			SchedulerName:                 corev1.DefaultSchedulerName,
+			Volumes:                       volumes,
 		},
 	}
 

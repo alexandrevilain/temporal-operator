@@ -81,6 +81,10 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	if b.serviceName != "worker" {
 		livenessProbe = &corev1.Probe{
 			InitialDelaySeconds: 150,
+			TimeoutSeconds:      1,
+			PeriodSeconds:       10,
+			SuccessThreshold:    1,
+			FailureThreshold:    3,
 			ProbeHandler: corev1.ProbeHandler{
 				TCPSocket: &corev1.TCPSocketAction{
 					Port: intstr.FromString("rpc"),
@@ -212,65 +216,65 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		}
 	}
 
-	deployment.Spec = appsv1.DeploymentSpec{
-		Replicas: b.service.Replicas,
-		Selector: &metav1.LabelSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
-		},
-		Template: corev1.PodTemplateSpec{
-			ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
-			Spec: corev1.PodSpec{
-				ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
-				DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
-				ImagePullSecrets:         b.instance.Spec.ImagePullSecrets,
-				Containers: []corev1.Container{
-					{
-						Name:                     b.serviceName,
-						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
-						ImagePullPolicy:          corev1.PullAlways,
-						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-						SecurityContext: &corev1.SecurityContext{
-							AllowPrivilegeEscalation: pointer.Bool(false),
-							Capabilities: &corev1.Capabilities{
-								Drop: []corev1.Capability{"ALL"},
-							},
-						},
-						Ports: []corev1.ContainerPort{
-							{
-								Name:          "rpc",
-								ContainerPort: int32(*b.service.Port),
-								Protocol:      corev1.ProtocolTCP,
-							},
-							{
-								Name:          "membership",
-								ContainerPort: int32(*b.service.MembershipPort),
-								Protocol:      corev1.ProtocolTCP,
-							},
-							{
-								Name:          "metrics",
-								ContainerPort: 9090,
-								Protocol:      corev1.ProtocolTCP,
-							},
-						},
+	deployment.Spec.Replicas = b.service.Replicas
 
-						LivenessProbe: livenessProbe,
-						Env:           envVars,
-						VolumeMounts:  volumeMounts,
+	deployment.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
+	}
+
+	deployment.Spec.Template = corev1.PodTemplateSpec{
+		ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
+		Spec: corev1.PodSpec{
+			ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
+			DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
+			ImagePullSecrets:         b.instance.Spec.ImagePullSecrets,
+			Containers: []corev1.Container{
+				{
+					Name:                     b.serviceName,
+					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
+					ImagePullPolicy:          corev1.PullAlways,
+					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: pointer.Bool(false),
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{"ALL"},
+						},
 					},
+					Ports: []corev1.ContainerPort{
+						{
+							Name:          "rpc",
+							ContainerPort: int32(*b.service.Port),
+							Protocol:      corev1.ProtocolTCP,
+						},
+						{
+							Name:          "membership",
+							ContainerPort: int32(*b.service.MembershipPort),
+							Protocol:      corev1.ProtocolTCP,
+						},
+						{
+							Name:          "metrics",
+							ContainerPort: 9090,
+							Protocol:      corev1.ProtocolTCP,
+						},
+					},
+
+					LivenessProbe: livenessProbe,
+					Env:           envVars,
+					VolumeMounts:  volumeMounts,
 				},
-				RestartPolicy:                 corev1.RestartPolicyAlways,
-				TerminationGracePeriodSeconds: pointer.Int64(30),
-				DNSPolicy:                     corev1.DNSClusterFirst,
-				SchedulerName:                 corev1.DefaultSchedulerName,
-				SecurityContext: &corev1.PodSecurityContext{
-					RunAsUser:    pointer.Int64(1000),
-					RunAsGroup:   pointer.Int64(1000),
-					FSGroup:      pointer.Int64(1000),
-					RunAsNonRoot: pointer.Bool(true),
-				},
-				Volumes: volumes,
 			},
+			RestartPolicy:                 corev1.RestartPolicyAlways,
+			TerminationGracePeriodSeconds: pointer.Int64(30),
+			DNSPolicy:                     corev1.DNSClusterFirst,
+			SchedulerName:                 corev1.DefaultSchedulerName,
+			SecurityContext: &corev1.PodSecurityContext{
+				RunAsUser:    pointer.Int64(1000),
+				RunAsGroup:   pointer.Int64(1000),
+				FSGroup:      pointer.Int64(1000),
+				RunAsNonRoot: pointer.Bool(true),
+			},
+			Volumes: volumes,
 		},
 	}
 

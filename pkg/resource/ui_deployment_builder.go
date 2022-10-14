@@ -106,39 +106,38 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL", uiCertsMountPath)...)
 	}
 
-	deployment.Spec = appsv1.DeploymentSpec{
-		Selector: &metav1.LabelSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
-		},
-		Template: corev1.PodTemplateSpec{
-			ObjectMeta: buildPodObjectMeta(b.instance, "ui"),
-			Spec: corev1.PodSpec{
-				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
-				Containers: []corev1.Container{
-					{
-						Name:                     "ui",
-						Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Version),
-						ImagePullPolicy:          corev1.PullAlways,
-						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-						Ports: []corev1.ContainerPort{
-							{
-								Name:          "http",
-								ContainerPort: int32(8080),
-								Protocol:      corev1.ProtocolTCP,
-							},
+	deployment.Spec.Replicas = pointer.Int32(1)
+	deployment.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
+	}
+	deployment.Spec.Template = corev1.PodTemplateSpec{
+		ObjectMeta: buildPodObjectMeta(b.instance, "ui"),
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+			Containers: []corev1.Container{
+				{
+					Name:                     "ui",
+					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Version),
+					ImagePullPolicy:          corev1.PullAlways,
+					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+					Ports: []corev1.ContainerPort{
+						{
+							Name:          "http",
+							ContainerPort: int32(8080),
+							Protocol:      corev1.ProtocolTCP,
 						},
-						Env:          env,
-						VolumeMounts: volumeMounts,
 					},
+					Env:          env,
+					VolumeMounts: volumeMounts,
 				},
-				Volumes:                       volumes,
-				RestartPolicy:                 corev1.RestartPolicyAlways,
-				TerminationGracePeriodSeconds: pointer.Int64(30),
-				DNSPolicy:                     corev1.DNSClusterFirst,
-				SchedulerName:                 corev1.DefaultSchedulerName,
-				SecurityContext:               &corev1.PodSecurityContext{},
 			},
+			Volumes:                       volumes,
+			RestartPolicy:                 corev1.RestartPolicyAlways,
+			TerminationGracePeriodSeconds: pointer.Int64(30),
+			DNSPolicy:                     corev1.DNSClusterFirst,
+			SchedulerName:                 corev1.DefaultSchedulerName,
+			SecurityContext:               &corev1.PodSecurityContext{},
 		},
 	}
 
