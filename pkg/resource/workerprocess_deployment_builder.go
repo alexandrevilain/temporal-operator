@@ -18,14 +18,17 @@
 package resource
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -132,4 +135,22 @@ func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 	}
 
 	return nil
+}
+
+func (b *WorkerProcessDeploymentBuilder) ReportWorkerDeploymentStatus(ctx context.Context, c client.Client) (bool, error) {
+	deploy := &appsv1.Deployment{}
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      b.instance.ChildResourceName("worker"),
+		Namespace: b.instance.Namespace,
+	}, deploy)
+	if err != nil {
+		return false, err
+	}
+
+	ready, err := kubernetes.IsDeploymentReady(deploy)
+	if err != nil {
+		return false, fmt.Errorf("can't determine if deployment is ready: %w", err)
+	}
+
+	return ready, nil
 }

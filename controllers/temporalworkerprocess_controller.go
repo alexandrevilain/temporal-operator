@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -38,6 +39,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/workerprocess"
 )
 
@@ -75,22 +77,32 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, err
 	}
 
-	namespacedName := types.NamespacedName{Namespace: worker.Spec.ClusterRef.Namespace, Name: worker.Spec.ClusterRef.Name}
+	// Check if the resource has been marked for deletion
+	if !worker.ObjectMeta.DeletionTimestamp.IsZero() {
+		logger.Info("Deleting worker process", "name", worker.Name)
+		return reconcile.Result{}, nil
+	}
+
+	// Set namespace based on ClusterRef
+	namespace := worker.Spec.ClusterRef.Namespace
+	if namespace == "" {
+		namespace = req.Namespace
+	}
+
+	namespacedName := types.NamespacedName{Namespace: namespace, Name: worker.Spec.ClusterRef.Name}
 	cluster := &v1beta1.TemporalCluster{}
 	err = r.Get(ctx, namespacedName, cluster)
 	if err != nil {
-		return r.handleError(ctx, worker, cluster, v1beta1.ReconcileErrorReason, err)
-	}
-
-	// Check if the resource has been marked for deletion
-	if !worker.ObjectMeta.DeletionTimestamp.IsZero() {
-		logger.Info("Deleting temporal worker process", "name", worker.Name)
-		return reconcile.Result{}, nil
+		return r.handleError(ctx, worker, v1beta1.ReconcileErrorReason, err)
 	}
 
 	if err := r.reconcileResources(ctx, worker, cluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, worker, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+	}
+
+	if !worker.Status.Ready {
+		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ServicesNotReadyReason, errors.New("Deployment status not ready"), 2*time.Second)
 	}
 
 	return r.handleSuccess(ctx, worker)
@@ -103,21 +115,21 @@ func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) err
 		Complete(r)
 }
 
-func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
 	v1beta1.SetTemporalWorkerProcessReconcileError(worker, metav1.ConditionTrue, reason, err.Error())
-	err = r.updateClusterStatus(ctx, worker)
+	err = r.updateWorkerProcessStatus(ctx, worker)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, worker, cluster, reason, err, 0)
+func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, worker, reason, err, 0)
 }
 
-func (r *TemporalWorkerProcessReconciler) updateClusterStatus(ctx context.Context, cluster *v1beta1.TemporalWorkerProcess) error {
-	err := r.Status().Update(ctx, cluster)
+func (r *TemporalWorkerProcessReconciler) updateWorkerProcessStatus(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) error {
+	err := r.Status().Update(ctx, worker)
 	if err != nil {
 		return err
 	}
@@ -160,9 +172,28 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 		if err != nil {
 			return err
 		}
+
+		reporter, ok := builder.(resource.WorkerProcessDeploymentReporter)
+		if !ok {
+			continue
+		}
+
+		isWorkerDeploymentReady, err := reporter.ReportWorkerDeploymentStatus(ctx, r.Client)
+		if err != nil {
+			return err
+		}
+
+		logger.Info("Reporting worker process status")
+		temporalWorkerProcess.Status.Ready = isWorkerDeploymentReady
 	}
 
-	return r.updateClusterStatus(ctx, temporalWorkerProcess)
+	if status.IsWorkerProcessReady(temporalWorkerProcess) {
+		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionTrue, v1beta1.ServicesReadyReason, "")
+	} else {
+		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
+	}
+
+	return r.updateWorkerProcessStatus(ctx, temporalWorkerProcess)
 }
 
 func (r *TemporalWorkerProcessReconciler) logAndRecordOperationResult(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, resource runtime.Object, operationResult controllerutil.OperationResult, err error) {
@@ -207,6 +238,6 @@ func (r *TemporalWorkerProcessReconciler) handleSuccess(ctx context.Context, wor
 
 func (r *TemporalWorkerProcessReconciler) handleSuccessWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalWorkerProcessReconcileSuccess(worker, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
-	err := r.updateClusterStatus(ctx, worker)
+	err := r.updateWorkerProcessStatus(ctx, worker)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }

@@ -59,8 +59,17 @@ type TemporalClusterReference struct {
 
 // TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess
 type TemporalWorkerProcessStatus struct {
-	// Conditions represent the latest available observations of the worker state.
+	// Ready defines if the worker process is ready.
+	Ready bool `json:"ready"`
+	// Number of observed replicas.
+	//Replicas *int32 `json:"replicas"`
+	// Conditions represent the latest available observations of the worker process state.
 	Conditions []metav1.Condition `json:"conditions"`
+}
+
+// AddWorkerProcessStatus adds the provided worker process status.
+func (s *TemporalWorkerProcessStatus) AddWorkerDeploymentStatus(status *TemporalWorkerProcessStatus) {
+	s.Ready = status.Ready
 }
 
 // +genclient

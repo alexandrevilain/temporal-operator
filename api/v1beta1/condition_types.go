@@ -104,28 +104,47 @@ func SetTemporalNamespaceReconcileError(n *TemporalNamespace, status metav1.Cond
 	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
 }
 
-// SetTemporalWorkerProcessReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
-func SetTemporalWorkerProcessReconcileSuccess(c *TemporalWorkerProcess, status metav1.ConditionStatus, reason, message string) {
+// GetTemporalWorkerProcessReadyCondition returns the ready condition for the provided worker process if found.
+func GetTemporalWorkerProcessReadyCondition(w *TemporalWorkerProcess) (*metav1.Condition, bool) {
+	condition := apimeta.FindStatusCondition(w.Status.Conditions, ReadyCondition)
+	return condition, condition != nil
+}
+
+// SetTemporalWorkerProcessReady sets the ReadyCondition status for a temporal worker process.
+func SetTemporalWorkerProcessReady(w *TemporalWorkerProcess, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReadyCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: w.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&w.Status.Conditions, condition)
+}
+
+// SetTemporalWorkerProcessReconcileSuccess sets the ReconcileSuccessCondition status for a temporal worker process.
+func SetTemporalWorkerProcessReconcileSuccess(w *TemporalWorkerProcess, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileSuccessCondition,
 		LastTransitionTime: metav1.Now(),
-		ObservedGeneration: c.GetGeneration(),
+		ObservedGeneration: w.GetGeneration(),
 		Reason:             reason,
 		Status:             status,
 		Message:            message,
 	}
-	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+	apimeta.SetStatusCondition(&w.Status.Conditions, condition)
 }
 
-// SetTemporalWorkerProcessReconcileError sets the ReconcileErrorCondition status for a temporal cluster.
-func SetTemporalWorkerProcessReconcileError(c *TemporalWorkerProcess, status metav1.ConditionStatus, reason, message string) {
+// SetTemporalWorkerProcessReconcileError sets the ReconcileErrorCondition status for a temporal worker process.
+func SetTemporalWorkerProcessReconcileError(w *TemporalWorkerProcess, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReconcileErrorCondition,
 		LastTransitionTime: metav1.Now(),
-		ObservedGeneration: c.GetGeneration(),
+		ObservedGeneration: w.GetGeneration(),
 		Reason:             reason,
 		Status:             status,
 		Message:            message,
 	}
-	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+	apimeta.SetStatusCondition(&w.Status.Conditions, condition)
 }

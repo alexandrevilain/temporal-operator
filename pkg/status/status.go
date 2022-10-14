@@ -17,7 +17,9 @@
 
 package status
 
-import "github.com/alexandrevilain/temporal-operator/api/v1beta1"
+import (
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+)
 
 // ObservedVersionMatchesDesiredVersion returns true if all services status
 // versions are matching the desired cluster version.
@@ -43,5 +45,14 @@ func IsClusterReady(c *v1beta1.TemporalCluster) bool {
 			return false
 		}
 	}
+	return true
+}
+
+// IsWorkerProcessReady returns true if status is in ready state.
+func IsWorkerProcessReady(w *v1beta1.TemporalWorkerProcess) bool {
+	if !w.Status.Ready {
+		return false
+	}
+
 	return true
 }
