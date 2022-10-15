@@ -56,17 +56,14 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 	service := object.(*corev1.Service)
 	service.Labels = object.GetLabels()
 	service.Annotations = object.GetAnnotations()
-
-	service.Spec = corev1.ServiceSpec{
-		Type:     corev1.ServiceTypeClusterIP,
-		Selector: metadata.LabelsSelector(b.instance.Name, common.FrontendServiceName),
-		Ports: []corev1.ServicePort{
-			{
-				Name:       "grpc-rpc",
-				Protocol:   corev1.ProtocolTCP,
-				Port:       int32(*b.instance.Spec.Services.Frontend.Port),
-				TargetPort: intstr.FromString("rpc"),
-			},
+	service.Spec.Type = corev1.ServiceTypeClusterIP
+	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, common.FrontendServiceName)
+	service.Spec.Ports = []corev1.ServicePort{
+		{
+			Name:       "grpc-rpc",
+			Protocol:   corev1.ProtocolTCP,
+			Port:       int32(*b.instance.Spec.Services.Frontend.Port),
+			TargetPort: intstr.FromString("rpc"),
 		},
 	}
 

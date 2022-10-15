@@ -57,17 +57,14 @@ func (b *UIServiceBuilder) Update(object client.Object) error {
 	service := object.(*corev1.Service)
 	service.Labels = object.GetLabels()
 	service.Annotations = object.GetAnnotations()
-
-	service.Spec = corev1.ServiceSpec{
-		Type:     corev1.ServiceTypeClusterIP,
-		Selector: metadata.LabelsSelector(b.instance.Name, "ui"),
-		Ports: []corev1.ServicePort{
-			{
-				Name:       "http",
-				TargetPort: intstr.FromString("http"),
-				Protocol:   corev1.ProtocolTCP,
-				Port:       int32(UIServicePort),
-			},
+	service.Spec.Type = corev1.ServiceTypeClusterIP
+	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, "ui")
+	service.Spec.Ports = []corev1.ServicePort{
+		{
+			Name:       "http",
+			TargetPort: intstr.FromString("http"),
+			Protocol:   corev1.ProtocolTCP,
+			Port:       int32(UIServicePort),
 		},
 	}
 

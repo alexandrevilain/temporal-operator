@@ -27,6 +27,10 @@ import (
 
 // buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
 func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav1.ObjectMeta {
+	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, v string) bool {
+		return k != "kubectl.kubernetes.io/last-applied-configuration"
+	})
+
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
 			istio.GetLabels(instance),
@@ -35,7 +39,7 @@ func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 		Annotations: metadata.Merge(
 			linkerd.GetAnnotations(instance),
 			istio.GetAnnotations(instance),
-			metadata.GetAnnotations(instance.Name, instance.Annotations),
+			metadata.GetAnnotations(instance.Name, instanceAnnotations),
 		),
 	}
 }

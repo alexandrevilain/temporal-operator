@@ -21,3 +21,15 @@ package metadata
 func GetAnnotations(_ string, annotations ...map[string]string) map[string]string {
 	return Merge(annotations...)
 }
+
+// FilterAnnotations filters the provided annotations using fn(k,v).
+// Maps elements are kept if fn returns true.
+func FilterAnnotations(annotations map[string]string, fn func(k, v string) bool) map[string]string {
+	result := make(map[string]string)
+	for k, v := range annotations {
+		if fn(k, v) {
+			result[k] = v
+		}
+	}
+	return result
+}
