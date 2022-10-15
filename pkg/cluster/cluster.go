@@ -47,9 +47,14 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
-		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
+
+		if serviceName != common.WorkerServiceName {
+			builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
+		}
+
 		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 			builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, b.Instance, b.Scheme, specs))
 			builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, b.Instance, b.Scheme, specs))

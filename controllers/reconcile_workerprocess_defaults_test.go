@@ -15,46 +15,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package controllers
 
 import (
 	"context"
+	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Service components.
-const (
-	FrontendService = "frontend"
-	ServiceConfig   = "config"
-)
+func TestReconcileWorkerProcessDefaults(t *testing.T) {
+	c := &v1beta1.TemporalCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+	}
 
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
+	r := &TemporalClusterReconciler{}
 
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
-}
+	ctx := context.Background()
 
-type Pruner interface {
-	Build() (client.Object, error)
-}
+	updated := r.reconcileDefaults(ctx, c)
+	assert.True(t, updated)
 
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
-}
-
-type WorkerProcessDeploymentReporter interface {
-	ReportWorkerDeploymentStatus(context.Context, client.Client) (bool, error)
-}
-
-// A Comparer provides a custom function to compare two resources returned
-// by a Builder.
-type Comparer interface {
-	Equal()
+	updated = r.reconcileDefaults(ctx, c)
+	assert.False(t, updated)
 }

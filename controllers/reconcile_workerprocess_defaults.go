@@ -15,46 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package controllers
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service components.
 const (
-	FrontendService = "frontend"
-	ServiceConfig   = "config"
+	defaultPullPolicy = "Always"
 )
 
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
+func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) bool {
+	before := worker.DeepCopy()
 
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
-}
+	if worker.Spec.PullPolicy == "" {
+		worker.Spec.PullPolicy = defaultPullPolicy
+	}
 
-type Pruner interface {
-	Build() (client.Object, error)
-}
-
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
-}
-
-type WorkerProcessDeploymentReporter interface {
-	ReportWorkerDeploymentStatus(context.Context, client.Client) (bool, error)
-}
-
-// A Comparer provides a custom function to compare two resources returned
-// by a Builder.
-type Comparer interface {
-	Equal()
+	return !reflect.DeepEqual(before.Spec, worker.Spec)
 }

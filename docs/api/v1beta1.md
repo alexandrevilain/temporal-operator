@@ -1600,6 +1600,115 @@ string
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess
+</h3>
+<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">
+TemporalWorkerProcessSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>foo</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessStatus">
+TemporalWorkerProcessStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
+</p>
+<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>foo</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessStatus">TemporalWorkerProcessStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
+</p>
+<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess</p>
 <h3 id="temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient
 </h3>
 <p>A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.</p>

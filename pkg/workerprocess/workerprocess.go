@@ -15,46 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package workerprocess
 
 import (
-	"context"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// Service components.
-const (
-	FrontendService = "frontend"
-	ServiceConfig   = "config"
-)
-
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
-
-type Builder interface {
-	Build() (client.Object, error)
-	Update(client.Object) error
+type Builder struct {
+	Instance *v1beta1.TemporalWorkerProcess
+	Scheme   *runtime.Scheme
+	Cluster  *v1beta1.TemporalCluster
 }
 
-type Pruner interface {
-	Build() (client.Object, error)
-}
+func (b *Builder) ResourceBuilders() ([]resource.Builder, error) {
+	builders := []resource.Builder{
+		resource.NewWorkerProcessDeploymentBuilder(b.Instance, b.Cluster, b.Scheme),
+	}
 
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
-}
-
-type WorkerProcessDeploymentReporter interface {
-	ReportWorkerDeploymentStatus(context.Context, client.Client) (bool, error)
-}
-
-// A Comparer provides a custom function to compare two resources returned
-// by a Builder.
-type Comparer interface {
-	Equal()
+	return builders, nil
 }

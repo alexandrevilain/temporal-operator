@@ -190,6 +190,13 @@ func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClien
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
+func waitForWorkerProcess(ctx context.Context, cfg *envconf.Config, worker *v1beta1.TemporalWorkerProcess) error {
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(worker, func(object k8s.Object) bool {
+		return object.(*v1beta1.TemporalWorkerProcess).Status.Conditions != nil
+	})
+	return wait.For(cond, wait.WithTimeout(time.Minute*10))
+}
+
 type testLogWriter struct {
 	t *testing.T
 }

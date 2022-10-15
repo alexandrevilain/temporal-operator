@@ -1,0 +1,24 @@
+# permissions for end users to edit temporalworkerprocesses.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: temporalworkerprocesses-editor-role
+rules:
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalworkerprocesses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalworkerprocesses/status
+  verbs:
+  - get
