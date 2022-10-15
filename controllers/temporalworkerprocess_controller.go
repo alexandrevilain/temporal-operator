@@ -57,13 +57,6 @@ type TemporalWorkerProcessReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the TemporalWorkerProcess object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
 func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
@@ -81,6 +74,18 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 	// Check if the resource has been marked for deletion
 	if !worker.ObjectMeta.DeletionTimestamp.IsZero() {
 		logger.Info("Deleting worker process", "name", worker.Name)
+		return reconcile.Result{}, nil
+	}
+
+	// Set defaults on unfiled fields.
+	updated := r.reconcileDefaults(ctx, worker)
+	if updated {
+		err := r.Update(ctx, worker)
+		if err != nil {
+			logger.Error(err, "Can't set worker defaults")
+			return r.handleError(ctx, worker, "", err)
+		}
+		// As we updated the instance, another reconcile will be triggered.
 		return reconcile.Result{}, nil
 	}
 
@@ -117,27 +122,6 @@ func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) err
 
 	return controller.Complete(r)
 }
-
-// SetupWithManager sets up the controller with the Manager.
-/*
-func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
-	for _, resource := range []client.Object{&appsv1.Deployment{}} {
-		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
-			return err
-		}
-	}
-
-	controller := ctrl.NewControllerManagedBy(mgr).
-		For(&v1beta1.TemporalWorkerProcess{}, builder.WithPredicates(predicate.Or(
-			predicate.GenerationChangedPredicate{},
-			predicate.LabelChangedPredicate{},
-			predicate.AnnotationChangedPredicate{},
-		))).
-		Owns(&appsv1.Deployment{})
-
-	return controller.Complete(r)
-}*/
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {

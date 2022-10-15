@@ -82,51 +82,45 @@ func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	volumes := []corev1.Volume{}
-	volumeMounts := []corev1.VolumeMount{}
+	deployment.Spec.Replicas = b.instance.Spec.Replicas
+	deployment.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker"),
+	}
 
-	deployment.Spec = appsv1.DeploymentSpec{
-		Replicas: b.instance.Spec.Replicas,
-		Selector: &metav1.LabelSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker"),
-		},
-		Template: corev1.PodTemplateSpec{
-			ObjectMeta: buildWorkerProcessPodObjectMeta(b.instance, "worker"),
-			Spec: corev1.PodSpec{
-				ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
-				Containers: []corev1.Container{
-					{
-						Name:                     "worker",
-						Image:                    b.instance.Spec.Image,
-						ImagePullPolicy:          corev1.PullPolicy(b.instance.Spec.PullPolicy),
-						TerminationMessagePath:   corev1.TerminationMessagePathDefault,
-						TerminationMessagePolicy: corev1.TerminationMessageReadFile,
-						Env:                      env,
-						LivenessProbe: &corev1.Probe{
-							ProbeHandler: corev1.ProbeHandler{
-								Exec: &corev1.ExecAction{
-									Command: []string{"ls", "/"},
-								},
+	deployment.Spec.Template = corev1.PodTemplateSpec{
+		ObjectMeta: buildWorkerProcessPodObjectMeta(b.instance, "worker"),
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+			Containers: []corev1.Container{
+				{
+					Name:                     "worker",
+					Image:                    b.instance.Spec.Image,
+					ImagePullPolicy:          b.instance.Spec.PullPolicy,
+					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
+					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
+					Env:                      env,
+					LivenessProbe: &corev1.Probe{
+						ProbeHandler: corev1.ProbeHandler{
+							Exec: &corev1.ExecAction{
+								Command: []string{"ls", "/"},
 							},
-							InitialDelaySeconds: 5,
-							TimeoutSeconds:      1,
-							PeriodSeconds:       5,
-							SuccessThreshold:    1,
-							FailureThreshold:    3,
 						},
-						SecurityContext: &corev1.SecurityContext{
-							AllowPrivilegeEscalation: pointer.Bool(false),
-						},
-						VolumeMounts: volumeMounts,
+						InitialDelaySeconds: 5,
+						TimeoutSeconds:      1,
+						PeriodSeconds:       5,
+						SuccessThreshold:    1,
+						FailureThreshold:    3,
+					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: pointer.Bool(false),
 					},
 				},
-				RestartPolicy:                 corev1.RestartPolicyAlways,
-				TerminationGracePeriodSeconds: pointer.Int64(30),
-				DNSPolicy:                     corev1.DNSClusterFirst,
-				SecurityContext:               &corev1.PodSecurityContext{},
-				SchedulerName:                 corev1.DefaultSchedulerName,
-				Volumes:                       volumes,
 			},
+			RestartPolicy:                 corev1.RestartPolicyAlways,
+			TerminationGracePeriodSeconds: pointer.Int64(30),
+			DNSPolicy:                     corev1.DNSClusterFirst,
+			SecurityContext:               &corev1.PodSecurityContext{},
+			SchedulerName:                 corev1.DefaultSchedulerName,
 		},
 	}
 
