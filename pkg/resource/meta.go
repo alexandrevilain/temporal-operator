@@ -40,7 +40,7 @@ func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 	}
 }
 
-// buildPodObjectMeta return ObjectMeta for worker processes.
+// buildWorkerProcessPodObjectMeta return ObjectMeta for worker processes.
 func buildWorkerProcessPodObjectMeta(instance *v1beta1.TemporalWorkerProcess, service string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(

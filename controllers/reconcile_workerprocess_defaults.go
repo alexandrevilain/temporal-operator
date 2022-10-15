@@ -22,17 +22,14 @@ import (
 	"reflect"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-)
-
-const (
-	defaultPullPolicy = "Always"
+	v1 "k8s.io/api/core/v1"
 )
 
 func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) bool {
 	before := worker.DeepCopy()
 
 	if worker.Spec.PullPolicy == "" {
-		worker.Spec.PullPolicy = defaultPullPolicy
+		worker.Spec.PullPolicy = v1.PullAlways
 	}
 
 	return !reflect.DeepEqual(before.Spec, worker.Spec)

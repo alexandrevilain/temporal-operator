@@ -26,7 +26,7 @@ import (
 
 // TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
 type TemporalWorkerProcessSpec struct {
-	// Reference to the temporal cluster the namespace will be created.
+	// Reference to the temporal cluster the worker will connect to.
 	ClusterRef *TemporalClusterReference `json:"clusterRef"`
 	// Version defines the worker process version.
 	// +optional
@@ -38,7 +38,7 @@ type TemporalWorkerProcessSpec struct {
 	// +optional
 	Replicas *int32 `json:"replicas"`
 	// Image pull policy for determining how to pull worker process images.
-	PullPolicy string `json:"pullPolicy,omitempty"`
+	PullPolicy corev1.PullPolicy `json:"pullPolicy,omitempty"`
 	// An optional list of references to secrets in the same namespace
 	// to use for pulling temporal images from registries.
 	// +optional
