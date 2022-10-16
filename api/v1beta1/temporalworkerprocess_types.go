@@ -32,13 +32,13 @@ type TemporalWorkerProcessSpec struct {
 	// +optional
 	Version string `json:"version"`
 	// Image defines the temporal worker docker image the instance should run.
+	Image string `json:"image"`
 	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// Defaults to 300 seconds.
 	// +optional
 	//+kubebuilder:default:=300
 	//+kubebuilder:validation:Minimum=1
 	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
-	Image                      string `json:"image"`
 	// Number of desired replicas. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional

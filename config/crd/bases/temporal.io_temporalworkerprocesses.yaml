@@ -112,6 +112,8 @@ spec:
                     type: string
                 type: object
               image:
+                description: Image defines the temporal worker docker image the instance
+                  should run.
                 type: string
               imagePullSecrets:
                 description: An optional list of references to secrets in the same
@@ -128,8 +130,7 @@ spec:
                 type: array
               jobTtlSecondsAfterFinished:
                 default: 300
-                description: Image defines the temporal worker docker image the instance
-                  should run. JobTtlSecondsAfterFinished is amount of time to keep
+                description: JobTtlSecondsAfterFinished is amount of time to keep
                   job pods after jobs are completed. Defaults to 300 seconds.
                 format: int32
                 minimum: 1
