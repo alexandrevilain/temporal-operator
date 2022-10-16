@@ -80,22 +80,51 @@ type TemporalWorkerProcessStatus struct {
 type TemporalWorkerProcessBuilder struct {
 	// Enabled defines if the operator should build the temporal worker process.
 	Enabled bool `json:"enabled"`
-	// BuildRepo is the fqdn to the image repo.
-	BuildRepo string `json:"buildRepo"`
-	// BuildRepoUsername is the username for the docker repo.
-	BuildRepoUsername string `json:"user"`
-	// Image is the image that will be used to build worker image.
-	// +required
-	Image string `json:"image"`
 	// Version is the version of the image that will be used to build worker image.
 	// +required
 	Version string `json:"version"`
-	// GitRepo is the location of the source we will be building.
+	// Image is the image that will be used to build worker image.
 	// +required
-	GitRepo string `json:"gitRepo"`
+	Image string `json:"image"`
 	//BuildDir is the location of where the sources will be built.
 	// +required
 	BuildDir string `json:"buildDir"`
+	// GitRepository specifies how to connect to Git source control.
+	// +required
+	GitRepository *GitRepositorySpec `json:"gitRepository"`
+	// ContainerRegistry specifies how to connect to container registry.
+	// +required
+	ContainerRegistry *ContainerRegistryConfig `json:"containerRegistry"`
+}
+
+// GitRepositorySpec specifies the required configuration to produce an
+// Artifact for a Git repository.
+type GitRepositorySpec struct {
+	// URL specifies the Git repository URL, it can be an HTTP/S or SSH address.
+	// +kubebuilder:validation:Pattern="^(http|https|ssh)://.*$"
+	// +required
+	URL string `json:"url"`
+	// Reference specifies the Git reference to resolve and monitor for
+	// changes, defaults to the 'master' branch.
+	// +optional
+	Reference *GitRepositoryRef `json:"reference,omitempty"`
+}
+
+// GitRepositoryRef specifies the Git reference to resolve and checkout.
+type GitRepositoryRef struct {
+	// Branch to check out, defaults to 'main' if no other field is defined.
+	// +optional
+	Branch string `json:"branch,omitempty"`
+}
+
+// ContainerRegistryConfig specifies the parameters to connect with desired container repository.
+type ContainerRegistryConfig struct {
+	// BuildRepo is the fqdn to the image repo.
+	// +required
+	BuildRepo string `json:"buildRepo"`
+	// BuildRepoUsername is the username for the docker repo.
+	// +required
+	BuildRepoUsername string `json:"user"`
 	// PasswordSecret is the reference to the secret holding the docker repo password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`

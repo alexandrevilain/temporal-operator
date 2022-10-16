@@ -57,9 +57,9 @@ func (b *WorkerProcessJobBuilder) Build() (client.Object, error) {
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: b.instance.Spec.Builder.PasswordSecretRef.Name,
+						Name: b.instance.Spec.Builder.ContainerRegistry.PasswordSecretRef.Name,
 					},
-					Key: b.instance.Spec.Builder.PasswordSecretRef.Key,
+					Key: b.instance.Spec.Builder.ContainerRegistry.PasswordSecretRef.Key,
 				},
 			},
 		},

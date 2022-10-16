@@ -15,27 +15,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package controllers
+package resource
 
 import (
-	"context"
-	"reflect"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	v1 "k8s.io/api/core/v1"
 )
 
-func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) bool {
-	before := worker.DeepCopy()
-	if worker.Spec.Builder.GitRepository.Reference == nil {
-		worker.Spec.Builder.GitRepository.Reference = new(v1beta1.GitRepositoryRef)
-	}
-	if worker.Spec.Builder.GitRepository.Reference.Branch == "" {
-		worker.Spec.Builder.GitRepository.Reference.Branch = "main"
-	}
-	if worker.Spec.PullPolicy == "" {
-		worker.Spec.PullPolicy = v1.PullAlways
+// WorkerProcessJob contains jobs needed to build a worker process image.
+type WorkerProcessJob struct {
+	Name          string
+	Command       []string
+	Skip          func(c *v1beta1.TemporalWorkerProcess) bool
+	ReportSuccess func(c *v1beta1.TemporalWorkerProcess) error
+}
+
+func GetWorkerProcessJobs() []WorkerProcessJob {
+	jobs := []WorkerProcessJob{
+		{
+			Name:    "build-worker-process",
+			Command: []string{"/etc/scripts/build-worker-process.sh"},
+			Skip: func(w *v1beta1.TemporalWorkerProcess) bool {
+				return w.Status.Created
+			},
+			ReportSuccess: func(w *v1beta1.TemporalWorkerProcess) error {
+				w.Status.Created = true
+				return nil
+			},
+		},
 	}
 
-	return !reflect.DeepEqual(before.Spec, worker.Spec)
+	return jobs
 }

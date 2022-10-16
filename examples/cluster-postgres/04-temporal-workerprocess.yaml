@@ -1,8 +1,7 @@
 apiVersion: temporal.io/v1beta1
 kind: TemporalWorkerProcess
 metadata:
-  name: prod
-  namespace: worker
+  name: test
 spec:
   version: latest
   replicas: 3
@@ -10,16 +9,20 @@ spec:
   pullPolicy: "Always"
   clusterRef:
     name: prod
-    namespace: demo
+    namespace: temporal
   temporalNamespace: default
   builder:
     enabled: true
-    buildRepo: docker.io
-    buildDir: samples-go/helloworld
-    image: quay.io/podman/stable
     version: latest
-    gitRepo: https://github.com/ktenzer/samples-go.git
-    user: ktenzer
-    passwordSecretRef:
-      key: PASSWORD
-      name: docker-password
+    image: quay.io/podman/stable
+    buildDir: samples-go/helloworld
+    gitRepository:
+      url: https://github.com/ktenzer/samples-go.git
+      reference:
+        branch: main
+    containerRegistry:
+      buildRepo: docker.io
+      user: ktenzer
+      passwordSecretRef:
+        key: PASSWORD
+        name: docker-password

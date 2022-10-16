@@ -29,6 +29,7 @@ const (
 
 type createWorkerBuilder struct {
 	GitRepo                 string
+	GitBranch               string
 	BuildDir                string
 	Image                   string
 	BuildRepo               string
@@ -45,7 +46,7 @@ var (
 			dnf install -y git
 			mkdir -p /app
 			cd app
-			git clone {{ .GitRepo }}
+			git clone --single-branch --branch {{ .GitBranch }} {{ .GitRepo }}
 			cd {{ .BuildDir }}
 			podman build -t {{ .BuildRepo }}/{{ .Image }} .
 			podman login {{ .BuildRepo }} --username {{ .BuildRepoUsername }} --password ${{ .BuildRepoPasswordEnvVar }}

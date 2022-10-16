@@ -53,37 +53,63 @@ spec:
                     description: BuildDir is the location of where the sources will
                       be built.
                     type: string
-                  buildRepo:
-                    description: BuildRepo is the fqdn to the image repo.
-                    type: string
+                  containerRegistry:
+                    description: ContainerRegistry specifies how to connect to container
+                      registry.
+                    properties:
+                      buildRepo:
+                        description: BuildRepo is the fqdn to the image repo.
+                        type: string
+                      passwordSecretRef:
+                        description: PasswordSecret is the reference to the secret
+                          holding the docker repo password.
+                        properties:
+                          key:
+                            description: Key in the Secret.
+                            type: string
+                          name:
+                            description: Name of the Secret.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      user:
+                        description: BuildRepoUsername is the username for the docker
+                          repo.
+                        type: string
+                    required:
+                    - buildRepo
+                    - passwordSecretRef
+                    - user
+                    type: object
                   enabled:
-                    description: Enabled defines if the operator should configure
-                      metrics
+                    description: Enabled defines if the operator should build the
+                      temporal worker process.
                     type: boolean
-                  gitRepo:
-                    description: GitRepo is the location of the source we will be
-                      building.
-                    type: string
+                  gitRepository:
+                    description: GitRepository specifies how to connect to Git source
+                      control.
+                    properties:
+                      reference:
+                        description: Reference specifies the Git reference to resolve
+                          and monitor for changes, defaults to the 'master' branch.
+                        properties:
+                          branch:
+                            description: Branch to check out, defaults to 'main' if
+                              no other field is defined.
+                            type: string
+                        type: object
+                      url:
+                        description: URL specifies the Git repository URL, it can
+                          be an HTTP/S or SSH address.
+                        pattern: ^(http|https|ssh)://.*$
+                        type: string
+                    required:
+                    - url
+                    type: object
                   image:
                     description: Image is the image that will be used to build worker
                       image.
-                    type: string
-                  passwordSecretRef:
-                    description: PasswordSecret is the reference to the secret holding
-                      the docker repo password.
-                    properties:
-                      key:
-                        description: Key in the Secret.
-                        type: string
-                      name:
-                        description: Name of the Secret.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  user:
-                    description: BuildRepoUsername is the username for the docker
-                      repo.
                     type: string
                   version:
                     description: Version is the version of the image that will be
@@ -91,12 +117,10 @@ spec:
                     type: string
                 required:
                 - buildDir
-                - buildRepo
+                - containerRegistry
                 - enabled
-                - gitRepo
+                - gitRepository
                 - image
-                - passwordSecretRef
-                - user
                 - version
                 type: object
               clusterRef:

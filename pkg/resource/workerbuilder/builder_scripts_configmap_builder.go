@@ -60,11 +60,12 @@ func (b *WorkerBuilderScriptsConfigmapBuilder) Update(object client.Object) erro
 
 	var renderedWorkerBuilder bytes.Buffer
 	err := templates[DefaultWorkerBuilderTemplate].Execute(&renderedWorkerBuilder, createWorkerBuilder{
-		GitRepo:                 b.instance.Spec.Builder.GitRepo,
+		GitRepo:                 b.instance.Spec.Builder.GitRepository.URL,
+		GitBranch:               b.instance.Spec.Builder.GitRepository.Reference.Branch,
 		BuildDir:                b.instance.Spec.Builder.BuildDir,
 		Image:                   fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
-		BuildRepo:               b.instance.Spec.Builder.BuildRepo,
-		BuildRepoUsername:       b.instance.Spec.Builder.BuildRepoUsername,
+		BuildRepo:               b.instance.Spec.Builder.ContainerRegistry.BuildRepo,
+		BuildRepoUsername:       b.instance.Spec.Builder.ContainerRegistry.BuildRepoUsername,
 		BuildRepoPasswordEnvVar: b.instance.Spec.Builder.GetBuildRepoPasswordEnvVarName(),
 	})
 	if err != nil {
