@@ -43,6 +43,7 @@ import (
 
 var testenv env.Environment
 var jobTtl int32 = 60
+var workerProcessJobTtl int32 = 300
 var replicas int32 = 1
 var port int = 7233
 var listAddress string = "0.0.0.0:9090"

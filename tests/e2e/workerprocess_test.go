@@ -103,12 +103,23 @@ func TestWorkerProcess(t *testing.T) {
 			worker = &v1beta1.TemporalWorkerProcess{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalWorkerProcessSpec{
-					Version:  "latest",
-					Replicas: &replicas,
-					Image:    "ktenzer/helloworld-worker",
+					Version:                    "latest",
+					JobTtlSecondsAfterFinished: &workerProcessJobTtl,
+					Replicas:                   &replicas,
+					Image:                      "ktenzer/helloworld-worker",
 					ClusterRef: &v1beta1.TemporalClusterReference{
 						Name:      "test",
 						Namespace: namespace,
+					},
+					Builder: &v1beta1.TemporalWorkerProcessBuilder{
+						Version:           "test",
+						BuildRepo:         "docker.io",
+						BuildRepoUsername: "ktenzer",
+						Image:             "ktenzer/helloworld",
+						PasswordSecretRef: v1beta1.SecretKeyReference{
+							Name: "docker-password",
+							Key:  "PASSWORD",
+						},
 					},
 				},
 			}
