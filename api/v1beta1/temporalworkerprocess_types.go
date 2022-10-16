@@ -78,7 +78,7 @@ type TemporalWorkerProcessStatus struct {
 }
 
 type TemporalWorkerProcessBuilder struct {
-	// Enabled defines if the operator should configure metrics
+	// Enabled defines if the operator should build the temporal worker process.
 	Enabled bool `json:"enabled"`
 	// BuildRepo is the fqdn to the image repo.
 	BuildRepo string `json:"buildRepo"`
