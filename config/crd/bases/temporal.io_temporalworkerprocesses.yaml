@@ -53,13 +53,10 @@ spec:
                     description: BuildDir is the location of where the sources will
                       be built.
                     type: string
-                  containerRegistry:
-                    description: ContainerRegistry specifies how to connect to container
+                  buildRegistry:
+                    description: BuildRegistry specifies how to connect to container
                       registry.
                     properties:
-                      buildRepo:
-                        description: BuildRepo is the fqdn to the image repo.
-                        type: string
                       passwordSecretRef:
                         description: PasswordSecret is the reference to the secret
                           holding the docker repo password.
@@ -73,14 +70,16 @@ spec:
                         required:
                         - name
                         type: object
-                      user:
-                        description: BuildRepoUsername is the username for the docker
-                          repo.
+                      repository:
+                        description: Repository is the fqdn to the image repo.
+                        type: string
+                      username:
+                        description: Username is the username for the container repo.
                         type: string
                     required:
-                    - buildRepo
                     - passwordSecretRef
-                    - user
+                    - repository
+                    - username
                     type: object
                   enabled:
                     description: Enabled defines if the operator should build the
@@ -117,7 +116,7 @@ spec:
                     type: string
                 required:
                 - buildDir
-                - containerRegistry
+                - buildRegistry
                 - enabled
                 - gitRepository
                 - image

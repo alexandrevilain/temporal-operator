@@ -64,8 +64,8 @@ func (b *WorkerBuilderScriptsConfigmapBuilder) Update(object client.Object) erro
 		GitBranch:               b.instance.Spec.Builder.GitRepository.Reference.Branch,
 		BuildDir:                b.instance.Spec.Builder.BuildDir,
 		Image:                   fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
-		BuildRepo:               b.instance.Spec.Builder.ContainerRegistry.BuildRepo,
-		BuildRepoUsername:       b.instance.Spec.Builder.ContainerRegistry.BuildRepoUsername,
+		BuildRepo:               b.instance.Spec.Builder.BuildRegistry.Repository,
+		BuildRepoUsername:       b.instance.Spec.Builder.BuildRegistry.Username,
 		BuildRepoPasswordEnvVar: b.instance.Spec.Builder.GetBuildRepoPasswordEnvVarName(),
 	})
 	if err != nil {

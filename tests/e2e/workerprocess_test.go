@@ -117,9 +117,9 @@ func TestWorkerProcess(t *testing.T) {
 						GitRepository: &v1beta1.GitRepositorySpec{
 							URL: "https://github.com/ktenzer/samples-go.git",
 						},
-						ContainerRegistry: &v1beta1.ContainerRegistryConfig{
-							BuildRepo:         "docker.io",
-							BuildRepoUsername: "ktenzer",
+						BuildRegistry: &v1beta1.ContainerRegistryConfig{
+							Repository: "docker.io",
+							Username:   "ktenzer",
 
 							PasswordSecretRef: v1beta1.SecretKeyReference{
 								Name: "docker-password",

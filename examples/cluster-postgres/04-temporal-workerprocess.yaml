@@ -20,9 +20,9 @@ spec:
       url: https://github.com/ktenzer/samples-go.git
       reference:
         branch: main
-    containerRegistry:
-      buildRepo: docker.io
-      user: ktenzer
+    buildRegistry:
+      repository: docker.io
+      username: ktenzer
       passwordSecretRef:
         key: PASSWORD
         name: docker-password

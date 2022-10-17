@@ -92,9 +92,9 @@ type TemporalWorkerProcessBuilder struct {
 	// GitRepository specifies how to connect to Git source control.
 	// +required
 	GitRepository *GitRepositorySpec `json:"gitRepository"`
-	// ContainerRegistry specifies how to connect to container registry.
+	// BuildRegistry specifies how to connect to container registry.
 	// +required
-	ContainerRegistry *ContainerRegistryConfig `json:"containerRegistry"`
+	BuildRegistry *ContainerRegistryConfig `json:"buildRegistry"`
 }
 
 // GitRepositorySpec specifies the required configuration to produce an
@@ -119,12 +119,12 @@ type GitRepositoryRef struct {
 
 // ContainerRegistryConfig specifies the parameters to connect with desired container repository.
 type ContainerRegistryConfig struct {
-	// BuildRepo is the fqdn to the image repo.
+	// Repository is the fqdn to the image repo.
 	// +required
-	BuildRepo string `json:"buildRepo"`
-	// BuildRepoUsername is the username for the docker repo.
+	Repository string `json:"repository"`
+	// Username is the username for the container repo.
 	// +required
-	BuildRepoUsername string `json:"user"`
+	Username string `json:"username"`
 	// PasswordSecret is the reference to the secret holding the docker repo password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
