@@ -33,6 +33,12 @@ type TemporalWorkerProcessSpec struct {
 	Version string `json:"version"`
 	// Image defines the temporal worker docker image the instance should run.
 	Image string `json:"image"`
+	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+	// Defaults to 300 seconds.
+	// +optional
+	//+kubebuilder:default:=300
+	//+kubebuilder:validation:Minimum=1
+	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
 	// Number of desired replicas. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -45,6 +51,8 @@ type TemporalWorkerProcessSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// TemporalNamespace that worker will poll.
 	TemporalNamespace string `json:"temporalNamespace"`
+	// Builder is the configuration for building a TemporalWorkerProcess
+	Builder *TemporalWorkerProcessBuilder `json:"builder,omitempty"`
 }
 
 // Reference to TemporalCluster
@@ -59,12 +67,67 @@ type TemporalClusterReference struct {
 
 // TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess
 type TemporalWorkerProcessStatus struct {
+	// Created indicates if the worker process image was created.
+	Created bool `json:"created"`
 	// Ready defines if the worker process is ready.
 	Ready bool `json:"ready"`
 	// Number of observed replicas.
 	//Replicas *int32 `json:"replicas"`
 	// Conditions represent the latest available observations of the worker process state.
 	Conditions []metav1.Condition `json:"conditions"`
+}
+
+type TemporalWorkerProcessBuilder struct {
+	// Enabled defines if the operator should build the temporal worker process.
+	Enabled bool `json:"enabled"`
+	// Version is the version of the image that will be used to build worker image.
+	// +required
+	Version string `json:"version"`
+	// Image is the image that will be used to build worker image.
+	// +required
+	Image string `json:"image"`
+	//BuildDir is the location of where the sources will be built.
+	// +required
+	BuildDir string `json:"buildDir"`
+	// GitRepository specifies how to connect to Git source control.
+	// +required
+	GitRepository *GitRepositorySpec `json:"gitRepository"`
+	// BuildRegistry specifies how to connect to container registry.
+	// +required
+	BuildRegistry *ContainerRegistryConfig `json:"buildRegistry"`
+}
+
+// GitRepositorySpec specifies the required configuration to produce an
+// Artifact for a Git repository.
+type GitRepositorySpec struct {
+	// URL specifies the Git repository URL, it can be an HTTP/S or SSH address.
+	// +kubebuilder:validation:Pattern="^(http|https|ssh)://.*$"
+	// +required
+	URL string `json:"url"`
+	// Reference specifies the Git reference to resolve and monitor for
+	// changes, defaults to the 'master' branch.
+	// +optional
+	Reference *GitRepositoryRef `json:"reference,omitempty"`
+}
+
+// GitRepositoryRef specifies the Git reference to resolve and checkout.
+type GitRepositoryRef struct {
+	// Branch to check out, defaults to 'main' if no other field is defined.
+	// +optional
+	Branch string `json:"branch,omitempty"`
+}
+
+// ContainerRegistryConfig specifies the parameters to connect with desired container repository.
+type ContainerRegistryConfig struct {
+	// Repository is the fqdn to the image repo.
+	// +required
+	Repository string `json:"repository"`
+	// Username is the username for the container repo.
+	// +required
+	Username string `json:"username"`
+	// PasswordSecret is the reference to the secret holding the docker repo password.
+	// +required
+	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
 }
 
 // AddWorkerProcessStatus adds the provided worker process status.
@@ -98,9 +161,18 @@ type TemporalWorkerProcessList struct {
 	Items           []TemporalWorkerProcess `json:"items"`
 }
 
+// GetPasswordEnvVarName crafts the environment variable name for the datastore.
+func (s *TemporalWorkerProcessBuilder) GetBuildRepoPasswordEnvVarName() string {
+	return fmt.Sprintf("TEMPORAL_WORKER_BUILDER_REPO_PASSWORD")
+}
+
+func (w *TemporalWorkerProcessBuilder) BuilderEnabled() bool {
+	return w != nil && w.Enabled
+}
+
 // ChildResourceName returns child resource name using the worker processes name.
-func (c *TemporalWorkerProcess) ChildResourceName(resource string) string {
-	return fmt.Sprintf("%s-%s", c.Name, resource)
+func (w *TemporalWorkerProcess) ChildResourceName(resource string) string {
+	return fmt.Sprintf("%s-%s", w.Name, resource)
 }
 
 func init() {

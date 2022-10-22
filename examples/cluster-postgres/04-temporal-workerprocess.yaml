@@ -1,0 +1,28 @@
+apiVersion: temporal.io/v1beta1
+kind: TemporalWorkerProcess
+metadata:
+  name: test
+spec:
+  version: latest
+  replicas: 3
+  image: ktenzer/helloworld-worker
+  pullPolicy: "Always"
+  clusterRef:
+    name: prod
+    namespace: temporal
+  temporalNamespace: default
+  builder:
+    enabled: true
+    version: latest
+    image: quay.io/podman/stable
+    buildDir: samples-go/helloworld
+    gitRepository:
+      url: https://github.com/ktenzer/samples-go.git
+      reference:
+        branch: main
+    buildRegistry:
+      repository: docker.io
+      username: ktenzer
+      passwordSecretRef:
+        key: PASSWORD
+        name: docker-password

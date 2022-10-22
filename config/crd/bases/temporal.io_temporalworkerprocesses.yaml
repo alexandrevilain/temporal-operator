@@ -46,9 +46,85 @@ spec:
           spec:
             description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
             properties:
+              builder:
+                description: Builder is the configuration for building a TemporalWorkerProcess
+                properties:
+                  buildDir:
+                    description: BuildDir is the location of where the sources will
+                      be built.
+                    type: string
+                  buildRegistry:
+                    description: BuildRegistry specifies how to connect to container
+                      registry.
+                    properties:
+                      passwordSecretRef:
+                        description: PasswordSecret is the reference to the secret
+                          holding the docker repo password.
+                        properties:
+                          key:
+                            description: Key in the Secret.
+                            type: string
+                          name:
+                            description: Name of the Secret.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      repository:
+                        description: Repository is the fqdn to the image repo.
+                        type: string
+                      username:
+                        description: Username is the username for the container repo.
+                        type: string
+                    required:
+                    - passwordSecretRef
+                    - repository
+                    - username
+                    type: object
+                  enabled:
+                    description: Enabled defines if the operator should build the
+                      temporal worker process.
+                    type: boolean
+                  gitRepository:
+                    description: GitRepository specifies how to connect to Git source
+                      control.
+                    properties:
+                      reference:
+                        description: Reference specifies the Git reference to resolve
+                          and monitor for changes, defaults to the 'master' branch.
+                        properties:
+                          branch:
+                            description: Branch to check out, defaults to 'main' if
+                              no other field is defined.
+                            type: string
+                        type: object
+                      url:
+                        description: URL specifies the Git repository URL, it can
+                          be an HTTP/S or SSH address.
+                        pattern: ^(http|https|ssh)://.*$
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  image:
+                    description: Image is the image that will be used to build worker
+                      image.
+                    type: string
+                  version:
+                    description: Version is the version of the image that will be
+                      used to build worker image.
+                    type: string
+                required:
+                - buildDir
+                - buildRegistry
+                - enabled
+                - gitRepository
+                - image
+                - version
+                type: object
               clusterRef:
-                description: Reference to the temporal cluster the namespace will
-                  be created.
+                description: Reference to the temporal cluster the worker will connect
+                  to.
                 properties:
                   name:
                     description: The name of the TemporalCluster to reference.
@@ -75,6 +151,13 @@ spec:
                       type: string
                   type: object
                 type: array
+              jobTtlSecondsAfterFinished:
+                default: 300
+                description: JobTtlSecondsAfterFinished is amount of time to keep
+                  job pods after jobs are completed. Defaults to 300 seconds.
+                format: int32
+                minimum: 1
+                type: integer
               pullPolicy:
                 description: Image pull policy for determining how to pull worker
                   process images.
@@ -170,11 +253,15 @@ spec:
                   - type
                   type: object
                 type: array
+              created:
+                description: Created indicates if the worker process image was created.
+                type: boolean
               ready:
                 description: Ready defines if the worker process is ready.
                 type: boolean
             required:
             - conditions
+            - created
             - ready
             type: object
         type: object

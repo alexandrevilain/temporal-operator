@@ -2,6 +2,7 @@ apiVersion: temporal.io/v1beta1
 kind: TemporalNamespace
 metadata:
   name: accounting
+  namespace: demo
 spec:
   clusterRef:
     name: prod

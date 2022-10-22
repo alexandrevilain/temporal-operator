@@ -23,6 +23,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -40,6 +41,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/workerbuilder"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/workerprocess"
 )
@@ -89,6 +91,60 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, nil
 	}
 
+	if worker.Spec.Builder.BuilderEnabled() {
+		// First of all, ensure the configmap containing scripts is up-to-date
+		err = r.reconcileWorkerScriptsConfigmap(ctx, worker)
+		if err != nil {
+			return r.handleErrorWithRequeue(ctx, worker, "can't reconcile schema script configmap", err, 2*time.Second)
+		}
+
+		// Optionally build worker process using job
+		jobs := resource.GetWorkerProcessJobs()
+		for _, job := range jobs {
+			if job.Skip(worker) {
+				continue
+			}
+
+			logger.Info("Checking for worker process builder job", "name", job.Name)
+			expectedJobBuilder := workerbuilder.NewWorkerProcessJobBuilder(worker, r.Scheme, job.Name, job.Command)
+
+			expectedJob, err := expectedJobBuilder.Build()
+			if err != nil {
+				return r.handleSuccessWithRequeue(ctx, worker, 2*time.Second)
+			}
+
+			matchingJob := &batchv1.Job{}
+			err = r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
+			if err != nil {
+				if apierrors.IsNotFound(err) {
+					// The job is not found, create it
+					_, err := controllerutil.CreateOrUpdate(ctx, r.Client, expectedJob, func() error {
+						return expectedJobBuilder.Update(expectedJob)
+					})
+					if err != nil {
+						return r.handleSuccessWithRequeue(ctx, worker, 2*time.Second)
+					}
+				} else {
+					return r.handleErrorWithRequeue(ctx, worker, "can't get job", err, 2*time.Second)
+				}
+			}
+
+			if matchingJob.Status.Succeeded != 1 {
+				logger.Info("Waiting for worker process build job to complete", "name", job.Name)
+
+				// Requeue after 10 seconds
+				return r.handleSuccessWithRequeue(ctx, worker, 2*time.Second)
+			}
+
+			logger.Info("Worker process build job is finished", "name", job.Name)
+
+			err = job.ReportSuccess(worker)
+			if err != nil {
+				return r.handleErrorWithRequeue(ctx, worker, "can't report job success", err, 2*time.Second)
+			}
+		}
+	}
+
 	// Set namespace based on ClusterRef
 	namespace := worker.Spec.ClusterRef.Namespace
 	if namespace == "" {
@@ -121,6 +177,20 @@ func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) err
 		Owns(&appsv1.Deployment{})
 
 	return controller.Complete(r)
+}
+
+// Reconcile worker process builder config maps
+func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) error {
+	workerScriptConfigMapBuilder := workerbuilder.NewBuilderScriptsConfigmapBuilder(worker, r.Scheme)
+	schemaScriptConfigMap, err := workerScriptConfigMapBuilder.Build()
+	if err != nil {
+		return err
+	}
+
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, schemaScriptConfigMap, func() error {
+		return workerScriptConfigMapBuilder.Update(schemaScriptConfigMap)
+	})
+	return err
 }
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
