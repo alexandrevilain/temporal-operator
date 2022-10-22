@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package cluster
+package resourceset
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"

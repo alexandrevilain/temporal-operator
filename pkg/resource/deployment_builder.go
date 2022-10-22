@@ -29,6 +29,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -286,27 +287,35 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 }
 
 func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
+	status := &v1beta1.ServiceStatus{
+		Name: b.serviceName,
+	}
+
 	deploy := &appsv1.Deployment{}
-	err := c.Get(ctx, types.NamespacedName{
+
+	namespacedName := types.NamespacedName{
 		Name:      b.instance.ChildResourceName(b.serviceName),
 		Namespace: b.instance.Namespace,
-	}, deploy)
-	if err != nil {
-		return nil, err
 	}
-	version, ok := deploy.Labels["app.kubernetes.io/version"]
+
+	err := c.Get(ctx, namespacedName, deploy)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return status, nil
+		}
+		return status, err
+	}
+
+	var ok bool
+	status.Version, ok = deploy.Labels["app.kubernetes.io/version"]
 	if !ok {
 		return nil, errors.New("can't determine service version from deployment labels")
 	}
 
-	ready, err := kubernetes.IsDeploymentReady(deploy)
+	status.Ready, err = kubernetes.IsDeploymentReady(deploy)
 	if err != nil {
 		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
 	}
 
-	return &v1beta1.ServiceStatus{
-		Name:    b.serviceName,
-		Version: version,
-		Ready:   ready,
-	}, nil
+	return status, nil
 }

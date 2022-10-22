@@ -15,34 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package resourceset
 
-import (
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-)
+import "github.com/alexandrevilain/temporal-operator/pkg/resource"
 
-// WorkerProcessJob contains jobs needed to build a worker process image.
-type WorkerProcessJob struct {
-	Name          string
-	Command       []string
-	Skip          func(c *v1beta1.TemporalWorkerProcess) bool
-	ReportSuccess func(c *v1beta1.TemporalWorkerProcess) error
-}
-
-func GetWorkerProcessJobs() []WorkerProcessJob {
-	jobs := []WorkerProcessJob{
-		{
-			Name:    "build-worker-process",
-			Command: []string{"/etc/scripts/build-worker-process.sh"},
-			Skip: func(w *v1beta1.TemporalWorkerProcess) bool {
-				return w.Status.Created
-			},
-			ReportSuccess: func(w *v1beta1.TemporalWorkerProcess) error {
-				w.Status.Created = true
-				return nil
-			},
-		},
-	}
-
-	return jobs
+type Builder interface {
+	ResourceBuilders() ([]resource.Builder, error)
+	ResourcePruners() []resource.Pruner
 }

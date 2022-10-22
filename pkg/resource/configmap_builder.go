@@ -24,8 +24,8 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cluster"

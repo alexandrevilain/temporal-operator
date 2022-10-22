@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package workerbuilder
+package workerprocessbuilder
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type WorkerProcessJobBuilder struct {
+type JobBuilder struct {
 	instance *v1beta1.TemporalWorkerProcess
 	scheme   *runtime.Scheme
 	// name is the name of the job
@@ -40,8 +40,8 @@ type WorkerProcessJobBuilder struct {
 	command []string
 }
 
-func NewWorkerProcessJobBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme, name string, command []string) *WorkerProcessJobBuilder {
-	return &WorkerProcessJobBuilder{
+func NewJobBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme, name string, command []string) *JobBuilder {
+	return &JobBuilder{
 		instance: instance,
 		scheme:   scheme,
 		name:     name,
@@ -49,8 +49,7 @@ func NewWorkerProcessJobBuilder(instance *v1beta1.TemporalWorkerProcess, scheme 
 	}
 }
 
-func (b *WorkerProcessJobBuilder) Build() (client.Object, error) {
-
+func (b *JobBuilder) Build() (client.Object, error) {
 	envVars := []corev1.EnvVar{
 		{
 			Name: b.instance.Spec.Builder.GetBuildRepoPasswordEnvVarName(),
@@ -125,7 +124,7 @@ func (b *WorkerProcessJobBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
-func (b *WorkerProcessJobBuilder) Update(object client.Object) error {
+func (b *JobBuilder) Update(object client.Object) error {
 	job := object.(*batchv1.Job)
 	if err := controllerutil.SetOwnerReference(b.instance, job, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)

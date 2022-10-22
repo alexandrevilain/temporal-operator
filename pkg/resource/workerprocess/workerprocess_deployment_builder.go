@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package workerprocess
 
 import (
 	"context"
@@ -26,6 +26,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,21 +35,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type WorkerProcessDeploymentBuilder struct {
+type DeploymentBuilder struct {
 	instance *v1beta1.TemporalWorkerProcess
 	cluster  *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewWorkerProcessDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, scheme *runtime.Scheme) *WorkerProcessDeploymentBuilder {
-	return &WorkerProcessDeploymentBuilder{
+func NewDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, scheme *runtime.Scheme) *DeploymentBuilder {
+	return &DeploymentBuilder{
 		instance: instance,
 		cluster:  cluster,
 		scheme:   scheme,
 	}
 }
 
-func (b *WorkerProcessDeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() (client.Object, error) {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("worker"),
@@ -59,7 +60,7 @@ func (b *WorkerProcessDeploymentBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
-func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
+func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 
 	deployment.Labels = metadata.Merge(
@@ -131,20 +132,31 @@ func (b *WorkerProcessDeploymentBuilder) Update(object client.Object) error {
 	return nil
 }
 
-func (b *WorkerProcessDeploymentBuilder) ReportWorkerDeploymentStatus(ctx context.Context, c client.Client) (bool, error) {
+func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
+	status := &v1beta1.ServiceStatus{
+		Name:    b.instance.ChildResourceName("worker"),
+		Version: "", // TODO(): implement me
+	}
+
 	deploy := &appsv1.Deployment{}
-	err := c.Get(ctx, types.NamespacedName{
+
+	namespacedName := types.NamespacedName{
 		Name:      b.instance.ChildResourceName("worker"),
 		Namespace: b.instance.Namespace,
-	}, deploy)
-	if err != nil {
-		return false, err
 	}
 
-	ready, err := kubernetes.IsDeploymentReady(deploy)
+	err := c.Get(ctx, namespacedName, deploy)
 	if err != nil {
-		return false, fmt.Errorf("can't determine if deployment is ready: %w", err)
+		if apierrors.IsNotFound(err) {
+			return status, nil
+		}
+		return nil, err
 	}
 
-	return ready, nil
+	status.Ready, err = kubernetes.IsDeploymentReady(deploy)
+	if err != nil {
+		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
+	}
+
+	return status, nil
 }

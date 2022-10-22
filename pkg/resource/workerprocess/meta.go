@@ -15,32 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package controllers
+package workerprocess
 
 import (
-	"context"
-	"testing"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/stretchr/testify/assert"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func TestReconcileWorkerProcessDefaults(t *testing.T) {
-	c := &v1beta1.TemporalCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "test",
-		},
+// buildWorkerProcessPodObjectMeta return ObjectMeta for worker processes.
+func buildWorkerProcessPodObjectMeta(instance *v1beta1.TemporalWorkerProcess, service string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Labels: metadata.Merge(
+			metadata.GetVersionStringLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
+		),
+		Annotations: metadata.Merge(
+			metadata.GetAnnotations(instance.Name, instance.Annotations),
+		),
 	}
-
-	r := &TemporalClusterReconciler{}
-
-	ctx := context.Background()
-
-	updated := r.reconcileDefaults(ctx, c)
-	assert.True(t, updated)
-
-	updated = r.reconcileDefaults(ctx, c)
-	assert.False(t, updated)
 }
