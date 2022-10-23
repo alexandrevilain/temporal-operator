@@ -42,6 +42,7 @@ import (
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -122,9 +123,11 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Client:               mgr.GetClient(),
-		Scheme:               mgr.GetScheme(),
-		Recorder:             mgr.GetEventRecorderFor("cluster-controller"),
+		Base: reconciler.Base{
+			Client:   mgr.GetClient(),
+			Scheme:   mgr.GetScheme(),
+			Recorder: mgr.GetEventRecorderFor("cluster-controller"),
+		},
 		CertManagerAvailable: certManagerAvailable,
 		IstioAvailable:       istioAvailable,
 	}).SetupWithManager(mgr); err != nil {
@@ -132,9 +135,11 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalWorkerProcessReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("workerprocess-controller"),
+		Base: reconciler.Base{
+			Client:   mgr.GetClient(),
+			Scheme:   mgr.GetScheme(),
+			Recorder: mgr.GetEventRecorderFor("workerprocess-controller"),
+		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)

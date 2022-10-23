@@ -20,17 +20,12 @@ package controllers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -45,8 +40,8 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/cluster"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
+	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 )
@@ -58,9 +53,8 @@ const (
 
 // TemporalClusterReconciler reconciles a Cluster object
 type TemporalClusterReconciler struct {
-	client.Client
-	Scheme               *runtime.Scheme
-	Recorder             record.EventRecorder
+	reconciler.Base
+
 	CertManagerAvailable bool
 	IstioAvailable       bool
 }
@@ -105,7 +99,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Set defaults on unfiled fields.
 	updated := r.reconcileDefaults(ctx, cluster)
 	if updated {
-		err := r.Update(ctx, cluster)
+		err := r.Client.Update(ctx, cluster)
 		if err != nil {
 			logger.Error(err, "Can't set cluster defaults")
 			return r.handleError(ctx, cluster, "", err)
@@ -177,74 +171,18 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) error {
-	logger := log.FromContext(ctx)
-
-	clusterBuilder := cluster.ClusterBuilder{
+	clusterBuilder := &resourceset.ClusterBuilder{
 		Instance: temporalCluster,
 		Scheme:   r.Scheme,
 	}
 
-	builders, err := clusterBuilder.ResourceBuilders()
+	statuses, err := r.ReconcileResources(ctx, temporalCluster, clusterBuilder)
 	if err != nil {
 		return err
 	}
 
-	logger.Info("Retrieved builders", "count", len(builders))
-
-	for _, builder := range builders {
-		if comparer, ok := builder.(resource.Comparer); ok {
-			err := equality.Semantic.AddFunc(comparer.Equal)
-			if err != nil {
-				return err
-			}
-		}
-
-		res, err := builder.Build()
-		if err != nil {
-			return err
-		}
-
-		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, res, func() error {
-			return builder.Update(res)
-		})
-		r.logAndRecordOperationResult(ctx, temporalCluster, res, operationResult, err)
-		if err != nil {
-			return err
-		}
-	}
-
-	pruners := clusterBuilder.ResourcePruners()
-
-	logger.Info("Retrieved pruners", "count", len(pruners))
-
-	for _, pruner := range pruners {
-		resource, err := pruner.Build()
-		if err != nil {
-			return err
-		}
-		err = r.Delete(ctx, resource)
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-		}
-		r.logAndRecordOperationResult(ctx, temporalCluster, resource, controllerutil.OperationResult("deleted"), err)
-	}
-
-	for _, builder := range builders {
-		reporter, ok := builder.(resource.StatusReporter)
-		if !ok {
-			continue
-		}
-
-		serviceStatus, err := reporter.ReportServiceStatus(ctx, r.Client)
-		if err != nil {
-			return err
-		}
-
-		logger.Info("Reporting service status", "service", serviceStatus.Name)
-
-		temporalCluster.Status.AddServiceStatus(serviceStatus)
+	for _, status := range statuses {
+		temporalCluster.Status.AddServiceStatus(status)
 	}
 
 	if status.ObservedVersionMatchesDesiredVersion(temporalCluster) {
@@ -290,42 +228,6 @@ func (r *TemporalClusterReconciler) updateClusterStatus(ctx context.Context, clu
 		return err
 	}
 	return nil
-}
-
-func (r *TemporalClusterReconciler) logAndRecordOperationResult(ctx context.Context, cluster *v1beta1.TemporalCluster, resource runtime.Object, operationResult controllerutil.OperationResult, err error) {
-	logger := log.FromContext(ctx)
-
-	var (
-		action string
-		reason string
-	)
-	switch operationResult {
-	case controllerutil.OperationResultCreated:
-		action = "create"
-		reason = "RessourceCreate"
-	case controllerutil.OperationResultUpdated:
-		action = "update"
-		reason = "ResourceUpdate"
-	case controllerutil.OperationResult("deleted"):
-		action = "delete"
-		reason = "ResourceDelete"
-	default:
-		return
-	}
-
-	if err == nil {
-		msg := fmt.Sprintf("%sd resource %s of type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
-		reason := fmt.Sprintf("%sSucess", reason)
-		logger.Info(msg)
-		r.Recorder.Event(cluster, corev1.EventTypeNormal, reason, msg)
-	}
-
-	if err != nil {
-		msg := fmt.Sprintf("failed to %s resource %s of Type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
-		reason := fmt.Sprintf("%sError", reason)
-		logger.Error(err, msg)
-		r.Recorder.Event(cluster, corev1.EventTypeWarning, reason, msg)
-	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

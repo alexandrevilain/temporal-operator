@@ -50,9 +50,5 @@ func IsClusterReady(c *v1beta1.TemporalCluster) bool {
 
 // IsWorkerProcessReady returns true if status is in ready state.
 func IsWorkerProcessReady(w *v1beta1.TemporalWorkerProcess) bool {
-	if !w.Status.Ready {
-		return false
-	}
-
-	return true
+	return w.Status.Ready
 }

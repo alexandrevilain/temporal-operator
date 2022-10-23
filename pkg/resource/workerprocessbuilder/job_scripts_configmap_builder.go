@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package workerbuilder
+package workerprocessbuilder
 
 import (
 	"bytes"
@@ -32,19 +32,19 @@ import (
 
 type Schema string
 
-type WorkerBuilderScriptsConfigmapBuilder struct {
+type JobScriptsConfigmapBuilder struct {
 	instance *v1beta1.TemporalWorkerProcess
 	scheme   *runtime.Scheme
 }
 
-func NewBuilderScriptsConfigmapBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme) *WorkerBuilderScriptsConfigmapBuilder {
-	return &WorkerBuilderScriptsConfigmapBuilder{
+func NewJobScriptsConfigmapBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Scheme) *JobScriptsConfigmapBuilder {
+	return &JobScriptsConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *WorkerBuilderScriptsConfigmapBuilder) Build() (client.Object, error) {
+func (b *JobScriptsConfigmapBuilder) Build() (client.Object, error) {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("builder-scripts"),
@@ -55,7 +55,7 @@ func (b *WorkerBuilderScriptsConfigmapBuilder) Build() (client.Object, error) {
 	}, nil
 }
 
-func (b *WorkerBuilderScriptsConfigmapBuilder) Update(object client.Object) error {
+func (b *JobScriptsConfigmapBuilder) Update(object client.Object) error {
 	configMap := object.(*corev1.ConfigMap)
 
 	var renderedWorkerBuilder bytes.Buffer

@@ -15,27 +15,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package controllers
+package resourceset
 
 import (
-	"context"
-	"reflect"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	v1 "k8s.io/api/core/v1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	workerprocessresource "github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocess"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) bool {
-	before := worker.DeepCopy()
-	if worker.Spec.Builder.GitRepository.Reference == nil {
-		worker.Spec.Builder.GitRepository.Reference = new(v1beta1.GitRepositoryRef)
-	}
-	if worker.Spec.Builder.GitRepository.Reference.Branch == "" {
-		worker.Spec.Builder.GitRepository.Reference.Branch = "main"
-	}
-	if worker.Spec.PullPolicy == "" {
-		worker.Spec.PullPolicy = v1.PullAlways
+type WorkerProcessBuilder struct {
+	Instance *v1beta1.TemporalWorkerProcess
+	Scheme   *runtime.Scheme
+	Cluster  *v1beta1.TemporalCluster
+}
+
+func (b *WorkerProcessBuilder) ResourceBuilders() ([]resource.Builder, error) {
+	builders := []resource.Builder{
+		workerprocessresource.NewDeploymentBuilder(b.Instance, b.Cluster, b.Scheme),
 	}
 
-	return !reflect.DeepEqual(before.Spec, worker.Spec)
+	return builders, nil
+}
+
+func (b *WorkerProcessBuilder) ResourcePruners() []resource.Pruner {
+	return []resource.Pruner{}
 }

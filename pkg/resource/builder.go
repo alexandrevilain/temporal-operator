@@ -49,10 +49,6 @@ type StatusReporter interface {
 	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
 }
 
-type WorkerProcessDeploymentReporter interface {
-	ReportWorkerDeploymentStatus(context.Context, client.Client) (bool, error)
-}
-
 // A Comparer provides a custom function to compare two resources returned
 // by a Builder.
 type Comparer interface {
