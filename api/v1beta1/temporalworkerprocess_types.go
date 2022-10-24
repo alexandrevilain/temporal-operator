@@ -71,8 +71,8 @@ type TemporalWorkerProcessStatus struct {
 	Created bool `json:"created"`
 	// Ready defines if the worker process is ready.
 	Ready bool `json:"ready"`
-	// Number of observed replicas.
-	//Replicas *int32 `json:"replicas"`
+	// Version is the version of the image that will be used to build worker image.
+	Version string `json:"version"`
 	// Conditions represent the latest available observations of the worker process state.
 	Conditions []metav1.Condition `json:"conditions"`
 }
