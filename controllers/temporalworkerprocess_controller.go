@@ -98,6 +98,10 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 				Name:    "build-worker-process",
 				Command: []string{"/etc/scripts/build-worker-process.sh"},
 				Skip: func(owner runtime.Object) bool {
+
+					if owner.(*v1beta1.TemporalWorkerProcess).Status.Version != owner.(*v1beta1.TemporalWorkerProcess).Spec.Version {
+						return false
+					}
 					return owner.(*v1beta1.TemporalWorkerProcess).Status.Created
 				},
 				ReportSuccess: func(owner runtime.Object) error {
@@ -201,6 +205,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 
 	if status.IsWorkerProcessReady(temporalWorkerProcess) {
 		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionTrue, v1beta1.ServicesReadyReason, "")
+		temporalWorkerProcess.Status.Version = temporalWorkerProcess.Spec.Version
 	} else {
 		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}

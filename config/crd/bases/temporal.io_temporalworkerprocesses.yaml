@@ -183,9 +183,8 @@ spec:
               TemporalWorkerProcess
             properties:
               conditions:
-                description: Number of observed replicas. Replicas *int32 `json:"replicas"`
-                  Conditions represent the latest available observations of the worker
-                  process state.
+                description: Conditions represent the latest available observations
+                  of the worker process state.
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource. --- This struct is intended for direct
@@ -259,10 +258,15 @@ spec:
               ready:
                 description: Ready defines if the worker process is ready.
                 type: boolean
+              version:
+                description: Version is the version of the image that will be used
+                  to build worker image.
+                type: string
             required:
             - conditions
             - created
             - ready
+            - version
             type: object
         type: object
     served: true
