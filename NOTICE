@@ -1,5 +1,2 @@
 Temporal operator
 Copyright 2022 Alexandre VILAIN.
-
-The source code in internal/forked/go.temporal.io/server/tools/common/schema
-was created by Temporal Technologies Inc. and Uber Technologies, Inc. under MIT License (https://github.com/temporalio/temporal/tree/master/tools/common/schema).
