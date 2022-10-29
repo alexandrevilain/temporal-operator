@@ -49,6 +49,11 @@ spec:
               builder:
                 description: Builder is the configuration for building a TemporalWorkerProcess
                 properties:
+                  attempt:
+                    description: BuildAttempt is the build attempt number of a given
+                      version
+                    format: int32
+                    type: integer
                   buildDir:
                     description: BuildDir is the location of where the sources will
                       be built.
@@ -115,12 +120,7 @@ spec:
                       used to build worker image.
                     type: string
                 required:
-                - buildDir
-                - buildRegistry
                 - enabled
-                - gitRepository
-                - image
-                - version
                 type: object
               clusterRef:
                 description: Reference to the temporal cluster the worker will connect
@@ -182,6 +182,10 @@ spec:
             description: TemporalWorkerProcessStatus defines the observed state of
               TemporalWorkerProcess
             properties:
+              attempt:
+                description: BuildAttempt is the build attempt number of a given version
+                format: int32
+                type: integer
               conditions:
                 description: Conditions represent the latest available observations
                   of the worker process state.
@@ -263,6 +267,7 @@ spec:
                   to build worker image.
                 type: string
             required:
+            - attempt
             - conditions
             - created
             - ready

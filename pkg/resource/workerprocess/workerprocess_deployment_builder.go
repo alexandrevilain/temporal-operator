@@ -20,6 +20,7 @@ package workerprocess
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
@@ -67,6 +68,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		object.GetLabels(),
 		metadata.GetVersionStringLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
 	)
+	deployment.Labels["app.kubernetes.io/build"] = strconv.Itoa(int(*b.instance.Spec.Builder.BuildAttempt))
+
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
 		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),

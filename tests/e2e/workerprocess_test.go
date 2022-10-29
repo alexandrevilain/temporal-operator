@@ -112,10 +112,15 @@ func TestWorkerProcess(t *testing.T) {
 						Namespace: namespace,
 					},
 					Builder: &v1beta1.TemporalWorkerProcessBuilder{
-						Version: "test",
-						Image:   "ktenzer/helloworld",
+						Version:      "test",
+						Image:        "ktenzer/helloworld",
+						BuildAttempt: &buildAttempt,
+						BuildDir:     "samples-go/helloworld",
 						GitRepository: &v1beta1.GitRepositorySpec{
 							URL: "https://github.com/ktenzer/samples-go.git",
+							Reference: &v1beta1.GitRepositoryRef{
+								Branch: "main",
+							},
 						},
 						BuildRegistry: &v1beta1.ContainerRegistryConfig{
 							Repository: "docker.io",
