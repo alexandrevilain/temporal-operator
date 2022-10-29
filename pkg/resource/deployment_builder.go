@@ -27,6 +27,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
+	"go.temporal.io/server/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -79,7 +80,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	// worker has no grpc endpoint so omit liveness probe
 	var livenessProbe *corev1.Probe
-	if b.serviceName != "worker" {
+	if b.serviceName != common.WorkerServiceName {
 		livenessProbe = &corev1.Probe{
 			InitialDelaySeconds: 150,
 			TimeoutSeconds:      1,
@@ -231,7 +232,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			ImagePullSecrets:         b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{
 				{
-					Name:                     b.serviceName,
+					Name:                     "service", // name "service" is here to simplify overrides
 					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
 					ImagePullPolicy:          corev1.PullAlways,
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
@@ -277,6 +278,20 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			},
 			Volumes: volumes,
 		},
+	}
+
+	if b.instance.Spec.Services.Overrides != nil && b.instance.Spec.Services.Overrides.Deployment != nil {
+		err := ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
+		if err != nil {
+			return fmt.Errorf("can't apply deployment overrides: %v", err)
+		}
+	}
+
+	if b.service.Overrides != nil && b.service.Overrides.Deployment != nil {
+		err := ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
+		if err != nil {
+			return fmt.Errorf("failed applying deployment overrides: %v", err)
+		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

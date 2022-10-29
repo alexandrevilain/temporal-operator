@@ -8,6 +8,8 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+UNAME=$(shell uname -s)
+
 VERSION ?= "$(shell cat VERSION)"
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -39,8 +41,9 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: controller-gen yj jq ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	PATH="$(PATH):$(LOCALBIN)" ./hack/clean-crds.sh
 
 .PHONY: generate
 generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -112,7 +115,7 @@ endif
 
 .PHONY: install
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+	$(KUSTOMIZE) build config/crd |kubectl apply --server-side -f -
 
 .PHONY: uninstall
 uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -160,6 +163,8 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 GO_LICENSER ?= $(LOCALBIN)/go-licenser
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
+YJ ?= $(LOCALBIN)/yj
+JQ ?= $(LOCALBIN)/jq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
@@ -168,6 +173,8 @@ CONTROLLER_TOOLS_VERSION ?= v0.9.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.46.2
+YJ_VERSION ?= v5.1.0
+JQ_VERSION ?= 1.6
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -205,3 +212,23 @@ $(GEN_CRD_API_REFERENCE_DOCS): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: yj
+yj: $(YJ)
+$(YJ): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/sclevine/yj/v5@$(YJ_VERSION)
+
+ifeq ($(UNAME),Linux)
+jq_target := linux
+jq_arch := 64
+endif
+ifeq ($(UNAME),Darwin)
+jq_target := osx
+jq_arch := -amd64
+endif
+
+.PHONY: jq
+jq: $(JQ)
+$(JQ): $(LOCALBIN)
+	curl -Lo $(JQ) https://github.com/stedolan/jq/releases/download/jq-$(JQ_VERSION)/jq-$(jq_target)$(jq_arch)
+	@chmod +x $(JQ)

@@ -53,6 +53,10 @@ type ServiceSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Replicas *int32 `json:"replicas"`
+	// Overrides adds some overrides to the resources deployed for the service.
+	// Those overrides takes precedence over spec.services.overrides.
+	// +optional
+	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 }
 
 // ServicesSpec contains all temporal services specifications.
@@ -69,6 +73,10 @@ type ServicesSpec struct {
 	// Worker service custom specifications.
 	// +optional
 	Worker *ServiceSpec `json:"worker"`
+	// Overrides adds some overrides to the resources deployed for all temporal services services.
+	// Those overrides can be customized per service using spec.services.<serviceName>.overrides.
+	// +optional
+	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 }
 
 // GetServiceSpec returns service spec from its name.
@@ -85,6 +93,52 @@ func (s *ServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error) {
 	default:
 		return nil, fmt.Errorf("unknown service %s", name)
 	}
+}
+
+// ServiceSpecOverride provides the ability to override the generated manifests of a temporal service.
+type ServiceSpecOverride struct {
+	// Override configuration for the temporal service Deployment.
+	Deployment *DeploymentOverride `json:"deployment,omitempty"`
+}
+
+// DeploymentOverride provides the ability to override a Deployment.
+type DeploymentOverride struct {
+	*ObjectMetaOverride `json:"metadata,omitempty"`
+	// Specification of the desired behavior of the Deployment.
+	// +optional
+	Spec *DeploymentOverrideSpec `json:"spec,omitempty"`
+}
+
+// DeploymentOverrideSpec provides the ability to override a Deployment Spec.
+// It's a subset of fields included in k8s.io/api/apps/v1.DeploymentSpec.
+type DeploymentOverrideSpec struct {
+	// Template describes the pods that will be created.
+	// +optional
+	Template *PodTemplateSpecOverride `json:"template,omitempty"`
+}
+
+// PodTemplateSpecOverride provides the ability to override a pod template spec.
+// It's a subset of the fields included in k8s.io/api/core/v1.PodTemplateSpec.
+type PodTemplateSpecOverride struct {
+	*ObjectMetaOverride `json:"metadata,omitempty"`
+
+	// Specification of the desired behavior of the pod.
+	// +optional
+	Spec *corev1.PodSpec `json:"spec,omitempty"`
+}
+
+// ObjectMetaOverride provides the ability to override an object metadata.
+// It's a subset of the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+type ObjectMetaOverride struct {
+	// Map of string keys and values that can be used to organize and categorize
+	// (scope and select) objects.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations is an unstructured key value map stored with a resource that may be
+	// set by external tools to store and retrieve arbitrary metadata.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // SecretKeyReference contains enough information to locate the referenced Kubernetes Secret object in the same
