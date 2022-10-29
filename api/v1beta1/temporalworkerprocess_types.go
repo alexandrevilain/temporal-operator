@@ -73,28 +73,29 @@ type TemporalWorkerProcessStatus struct {
 	Ready bool `json:"ready"`
 	// Version is the version of the image that will be used to build worker image.
 	Version string `json:"version"`
+	// BuildAttempt is the build attempt number of a given version
+	// +required
+	BuildAttempt *int32 `json:"attempt"`
 	// Conditions represent the latest available observations of the worker process state.
 	Conditions []metav1.Condition `json:"conditions"`
 }
 
 type TemporalWorkerProcessBuilder struct {
 	// Enabled defines if the operator should build the temporal worker process.
+	// +required
 	Enabled bool `json:"enabled"`
 	// Version is the version of the image that will be used to build worker image.
-	// +required
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
+	// BuildAttempt is the build attempt number of a given version
+	BuildAttempt *int32 `json:"attempt,omitempty"`
 	// Image is the image that will be used to build worker image.
-	// +required
-	Image string `json:"image"`
+	Image string `json:"image,omitempty"`
 	//BuildDir is the location of where the sources will be built.
-	// +required
-	BuildDir string `json:"buildDir"`
+	BuildDir string `json:"buildDir,omitempty"`
 	// GitRepository specifies how to connect to Git source control.
-	// +required
-	GitRepository *GitRepositorySpec `json:"gitRepository"`
+	GitRepository *GitRepositorySpec `json:"gitRepository,omitempty"`
 	// BuildRegistry specifies how to connect to container registry.
-	// +required
-	BuildRegistry *ContainerRegistryConfig `json:"buildRegistry"`
+	BuildRegistry *ContainerRegistryConfig `json:"buildRegistry,omitempty"`
 }
 
 // GitRepositorySpec specifies the required configuration to produce an

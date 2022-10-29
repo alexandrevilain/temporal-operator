@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -102,6 +103,11 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 					if owner.(*v1beta1.TemporalWorkerProcess).Status.Version != owner.(*v1beta1.TemporalWorkerProcess).Spec.Version {
 						return false
 					}
+
+					if pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Spec.Builder.BuildAttempt) != pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Status.BuildAttempt) {
+						return false
+					}
+
 					return owner.(*v1beta1.TemporalWorkerProcess).Status.Created
 				},
 				ReportSuccess: func(owner runtime.Object) error {
@@ -127,6 +133,8 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 			if requeueAfter > 0 {
 				return reconcile.Result{RequeueAfter: requeueAfter}, nil
 			}
+
+			worker.Status.BuildAttempt = worker.Spec.Builder.BuildAttempt
 		}
 	}
 
@@ -225,6 +233,11 @@ func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context,
 		}
 		if worker.Spec.PullPolicy == "" {
 			worker.Spec.PullPolicy = v1.PullAlways
+		}
+
+		var defaultBuildAttempt int32 = 1
+		if worker.Status.BuildAttempt == nil {
+			worker.Status.BuildAttempt = &defaultBuildAttempt
 		}
 	}
 

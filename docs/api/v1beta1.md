@@ -3,6 +3,8 @@
 Resource Types:
 <ul class="simple"><li>
 <a href="#temporal.io/v1beta1.TemporalCluster">TemporalCluster</a>
+</li><li>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>
 </li></ul>
 <h3 id="temporal.io/v1beta1.TemporalCluster">TemporalCluster
 </h3>
@@ -224,6 +226,195 @@ TemporalClusterStatus
 </td>
 <td>
 <p>Most recent observed status of the Temporal cluster.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess
+</h3>
+<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>apiVersion</code><br>
+string</td>
+<td>
+<code>temporal.io/v1beta1</code>
+</td>
+</tr>
+<tr>
+<td>
+<code>kind</code><br>
+string
+</td>
+<td>
+<code>TemporalWorkerProcess</code>
+</td>
+</tr>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">
+TemporalWorkerProcessSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the worker will connect to.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Version defines the worker process version.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Image defines the temporal worker docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jobTtlSecondsAfterFinished</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+Defaults to 300 seconds.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Number of desired replicas. Default to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pullPolicy</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#pullpolicy-v1-core">
+Kubernetes core/v1.PullPolicy
+</a>
+</em>
+</td>
+<td>
+<p>Image pull policy for determining how to pull worker process images.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>An optional list of references to secrets in the same namespace
+to use for pulling temporal images from registries.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>temporalNamespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>TemporalNamespace that worker will poll.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>builder</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessBuilder">
+TemporalWorkerProcessBuilder
+</a>
+</em>
+</td>
+<td>
+<p>Builder is the configuration for building a TemporalWorkerProcess</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessStatus">
+TemporalWorkerProcessStatus
+</a>
+</em>
+</td>
+<td>
 </td>
 </tr>
 </tbody>
@@ -499,6 +690,62 @@ Kubernetes meta/v1.Duration
 <em>(Optional)</em>
 <p>InternodeCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the internode certificate.
 It defaults to 1 year.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ContainerRegistryConfig">ContainerRegistryConfig
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessBuilder">TemporalWorkerProcessBuilder</a>)
+</p>
+<p>ContainerRegistryConfig specifies the parameters to connect with desired container repository.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>repository</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Repository is the fqdn to the image repo.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>username</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Username is the username for the container repo.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>passwordSecretRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SecretKeyReference">
+SecretKeyReference
+</a>
+</em>
+</td>
+<td>
+<p>PasswordSecret is the reference to the secret holding the docker repo password.</p>
 </td>
 </tr>
 </tbody>
@@ -958,6 +1205,87 @@ bool
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.GitRepositoryRef">GitRepositoryRef
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.GitRepositorySpec">GitRepositorySpec</a>)
+</p>
+<p>GitRepositoryRef specifies the Git reference to resolve and checkout.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>branch</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Branch to check out, defaults to &lsquo;main&rsquo; if no other field is defined.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.GitRepositorySpec">GitRepositorySpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessBuilder">TemporalWorkerProcessBuilder</a>)
+</p>
+<p>GitRepositorySpec specifies the required configuration to produce an
+Artifact for a Git repository.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>url</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>URL specifies the Git repository URL, it can be an HTTP/S or SSH address.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reference</code><br>
+<em>
+<a href="#temporal.io/v1beta1.GitRepositoryRef">
+GitRepositoryRef
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Reference specifies the Git reference to resolve and monitor for
+changes, defaults to the &lsquo;master&rsquo; branch.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.InternodeMTLSSpec">InternodeMTLSSpec
 </h3>
 <p>
@@ -1314,6 +1642,7 @@ int
 </h3>
 <p>
 (<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ContainerRegistryConfig">ContainerRegistryConfig</a>, 
 <a href="#temporal.io/v1beta1.DatastoreSpec">DatastoreSpec</a>, 
 <a href="#temporal.io/v1beta1.DatastoreTLSSpec">DatastoreTLSSpec</a>)
 </p>
@@ -1600,115 +1929,6 @@ string
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess
-</h3>
-<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code><br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">
-TemporalWorkerProcessSpec
-</a>
-</em>
-</td>
-<td>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>foo</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code><br>
-<em>
-<a href="#temporal.io/v1beta1.TemporalWorkerProcessStatus">
-TemporalWorkerProcessStatus
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
-</p>
-<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>foo</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>Foo is an example field of TemporalWorkerProcess. Edit temporalworkerprocess_types.go to remove/update</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalWorkerProcessStatus">TemporalWorkerProcessStatus
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
-</p>
-<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess</p>
 <h3 id="temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient
 </h3>
 <p>A TemporalClusterClient creates a new mTLS client in the targeted temporal cluster.</p>
@@ -1854,6 +2074,50 @@ Kubernetes core/v1.LocalObjectReference
 </td>
 <td>
 <p>Reference to the Kubernetes Secret containing the certificate for the client.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalClusterReference">TemporalClusterReference
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec</a>)
+</p>
+<p>Reference to TemporalCluster</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The name of the TemporalCluster to reference.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The namespace of the TemporalCluster to reference.
+Defaults to the namespace of the requested resource if omitted.</p>
 </td>
 </tr>
 </tbody>
@@ -2691,6 +2955,297 @@ TemporalUIIngressSpec
 <em>(Optional)</em>
 <p>Ingress is an optional ingress configuration for the UI.
 If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessBuilder">TemporalWorkerProcessBuilder
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled defines if the operator should build the temporal worker process.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Version is the version of the image that will be used to build worker image.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Image is the image that will be used to build worker image.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>buildDir</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>BuildDir is the location of where the sources will be built.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>gitRepository</code><br>
+<em>
+<a href="#temporal.io/v1beta1.GitRepositorySpec">
+GitRepositorySpec
+</a>
+</em>
+</td>
+<td>
+<p>GitRepository specifies how to connect to Git source control.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>buildRegistry</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ContainerRegistryConfig">
+ContainerRegistryConfig
+</a>
+</em>
+</td>
+<td>
+<p>BuildRegistry specifies how to connect to container registry.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
+</p>
+<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>clusterRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal cluster the worker will connect to.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Version defines the worker process version.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>image</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Image defines the temporal worker docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jobTtlSecondsAfterFinished</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+Defaults to 300 seconds.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Number of desired replicas. Default to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pullPolicy</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#pullpolicy-v1-core">
+Kubernetes core/v1.PullPolicy
+</a>
+</em>
+</td>
+<td>
+<p>Image pull policy for determining how to pull worker process images.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imagePullSecrets</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
+[]Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>An optional list of references to secrets in the same namespace
+to use for pulling temporal images from registries.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>temporalNamespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>TemporalNamespace that worker will poll.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>builder</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcessBuilder">
+TemporalWorkerProcessBuilder
+</a>
+</em>
+</td>
+<td>
+<p>Builder is the configuration for building a TemporalWorkerProcess</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalWorkerProcessStatus">TemporalWorkerProcessStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
+</p>
+<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>created</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Created indicates if the worker process image was created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ready</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Ready defines if the worker process is ready.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Version is the version of the image that will be used to build worker image.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the worker process state.</p>
 </td>
 </tr>
 </tbody>
