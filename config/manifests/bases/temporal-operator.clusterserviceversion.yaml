@@ -4,10 +4,10 @@ metadata:
   annotations:
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.6.2
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.8.0
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
-  name: temporal-operator.v0.6.2
+  name: temporal-operator.v0.8.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -29,6 +29,12 @@ spec:
       displayName: Temporal Namespace
       kind: TemporalNamespace
       name: temporalnamespaces.temporal.io
+      version: v1beta1
+    - description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
+        API
+      displayName: Temporal Worker Process
+      kind: TemporalWorkerProcess
+      name: temporalworkerprocesses.temporal.io
       version: v1beta1
   description: |
     ## Temporal

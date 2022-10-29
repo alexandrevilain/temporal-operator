@@ -42,35 +42,12 @@ metadata:
                 }
               }
             },
-            "services": {
-              "frontend": {
-                "replicas": 1
-              },
-              "matching": {
-                "replicas": 1
-              }, 
-              "history": {
-                "replicas": 2
-              }, 
-              "worker": {
-                "replicas": 1
-              }
-            },              
             "ui": {
               "enabled": true
             },
-            "admintools": {
-              "enabled": true
-            },
-            "metrics": {
-              "enabled": true,
-              "prometheus": {
-                "listenAddress": "0.0.0.0:9090"
-              }              
-            },                                   
             "version": "1.17.4"
           }
-        },       
+        },
         {
           "apiVersion": "temporal.io/v1beta1",
           "kind": "TemporalClusterClient",
@@ -101,10 +78,10 @@ metadata:
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.7.0
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.8.0
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.7.0
+  name: temporal-operator.v0.8.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -126,6 +103,12 @@ spec:
       displayName: Temporal Namespace
       kind: TemporalNamespace
       name: temporalnamespaces.temporal.io
+      version: v1beta1
+    - description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
+        API
+      displayName: Temporal Worker Process
+      kind: TemporalWorkerProcess
+      name: temporalworkerprocesses.temporal.io
       version: v1beta1
   description: |
     ## Temporal
@@ -153,22 +136,16 @@ spec:
       name: prod
       namespace: demo
     spec:
-      version: 1.17.0
-      numHistoryShards: 1
+      version: 1.17.5
+      numHistoryShards: 512
       jobTtlSecondsAfterFinished: 300
-      services:
-        frontend:
-          replicas: 1
-        matching:
-          replicas: 1
-        history:
-          replicas: 2
-        worker:
-          replicas: 1
       persistence:
-        defaultStore:
+        defaultStore: default
+        visibilityStore: visibility
+      datastores:
+        - name: default
           sql:
-            user: postgres
+            user: temporal
             pluginName: postgres
             databaseName: temporal
             connectAddr: postgres.demo.svc.cluster.local:5432
@@ -176,9 +153,9 @@ spec:
           passwordSecretRef:
             name: postgres-password
             key: PASSWORD
-        visibilityStore:
+        - name: visibility
           sql:
-            user: postgres
+            user: temporal
             pluginName: postgres
             databaseName: temporal_visibility
             connectAddr: postgres.demo.svc.cluster.local:5432
@@ -186,29 +163,11 @@ spec:
           passwordSecretRef:
             name: postgres-password
             key: PASSWORD
-        advancedVisibilityStore:
-          elasticsearch:
-            version: v7
-            username: admin
-            url: http://elasticsearch-master.temporal:9200
-            indices:
-              visibility: temporal_visibility_v1_dev
-          passwordSecretRef:
-            name: es-password
-            key: PASSWORD
-      ui:
-        enabled: true
-      admintools:
-        enabled: true
-      metrics:
-        enabled: true
-        prometheus:
-          listenAddress: 0.0.0.0:9090
     </pre>
 
     ### Apply TemporalCluster CustomResource
     <pre>
-    $ kubectl apply -f temporalcluster.yaml -n demo
+    $ kubectl apply -f temporal.yaml -n demo
     </pre>
   displayName: Temporal Operator
   icon:
@@ -410,6 +369,32 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalworkerprocesses
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalworkerprocesses/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalworkerprocesses/status
+          verbs:
+          - get
+          - patch
+          - update
         serviceAccountName: temporal-operator-controller-manager
       deployments:
       - label:
@@ -433,7 +418,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.7.0
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.8.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -513,7 +498,7 @@ spec:
   - distributed
   links:
   - name: Temporal Operator
-    url: https://github.com/alexandrevilain/temporal-operator
+    url: github.com/alexandrevilain/temporal-operator/
   maintainers:
   - email: alexandre.vilain@me.com
     name: alexandrevilain
@@ -524,5 +509,4 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  version: 0.7.0
-  replaces: temporal-operator.v0.6.2  
+  version: 0.8.0

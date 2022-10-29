@@ -2,6 +2,34 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.8.0
+
+**Release date:** 2022-10-29
+
+Features:
+- Add support for temporal v1.18.0 [#151](https://github.com/alexandrevilain/temporal-operator/pull/151)
+- Add new CRD for TemporalWorkerProcess to manage application workers [#150](https://github.com/alexandrevilain/temporal-operator/pull/150)
+- Add builder option to build worker process source code and then deploy [#163](https://github.com/alexandrevilain/temporal-operator/pull/163)
+- Added buildAttempt to worker process [#176](https://github.com/alexandrevilain/temporal-operator/pull/176)
+
+Fixes:
+- Reduce useless objects updates by making patch updates [#160](https://github.com/alexandrevilain/temporal-operator/pull/160)
+
+Improvements:
+- Cleanup TemporalWorkerProcess api and reconciling code [#161](https://github.com/alexandrevilain/temporal-operator/pull/161)
+- Cleanup reconcile codebase [#171](https://github.com/alexandrevilain/temporal-operator/pull/171)
+- Add version to status so we can trigger new build if version in spec is updated [#174](https://github.com/alexandrevilain/temporal-operator/pull/174)
+
+Updates:
+- Bump github.com/gosimple/slug from 1.12.0 to 1.13.1 [#148](https://github.com/alexandrevilain/temporal-operator/pull/148)
+- Bump go.temporal.io/server from 1.18.0 to 1.18.1 [#152](https://github.com/alexandrevilain/temporal-operator/pull/152)
+- Bump k8s dependencies to v0.25.3 [#162](https://github.com/alexandrevilain/temporal-operator/pull/162)
+- Bump github.com/cert-manager/cert-manager from 1.9.1 to 1.10.0 [#165](https://github.com/alexandrevilain/temporal-operator/pull/165)
+- Bump go.temporal.io/server from 1.18.1 to 1.18.3 [#168](https://github.com/alexandrevilain/temporal-operator/pull/168)
+- Bump sigs.k8s.io/e2e-framework from 0.0.7 to 0.0.8 [#169](https://github.com/alexandrevilain/temporal-operator/pull/169)
+- Bump github.com/stretchr/testify from 1.8.0 to 1.8.1 [#173](https://github.com/alexandrevilain/temporal-operator/pull/173)
+- Bump github.com/onsi/gomega from 1.20.1 to 1.23.0 [#175](https://github.com/alexandrevilain/temporal-operator/pull/175)
+
 ## 0.7.0
 
 This is a **breaking 💣** release.
