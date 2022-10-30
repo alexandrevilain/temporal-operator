@@ -1115,7 +1115,6 @@ spec:
             required:
             - numHistoryShards
             - persistence
-            - version
             type: object
           status:
             description: Most recent observed status of the Temporal cluster.
@@ -1209,7 +1208,6 @@ spec:
                         type: boolean
                     required:
                     - created
-                    - schemaVersion
                     - setup
                     type: object
                   defaultStore:
@@ -1227,7 +1225,6 @@ spec:
                         type: boolean
                     required:
                     - created
-                    - schemaVersion
                     - setup
                     type: object
                   visibilityStore:
@@ -1245,7 +1242,6 @@ spec:
                         type: boolean
                     required:
                     - created
-                    - schemaVersion
                     - setup
                     type: object
                 required:
