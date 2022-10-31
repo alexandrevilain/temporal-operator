@@ -19,8 +19,8 @@ require (
 	go.temporal.io/server v1.18.3
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
-	istio.io/api v0.0.0-20221005164339-97dc20dc0ff3
-	istio.io/client-go v1.15.2
+	istio.io/api v0.0.0-20221013011440-bc935762d2b9
+	istio.io/client-go v1.15.3
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
