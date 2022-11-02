@@ -12,7 +12,7 @@ require (
 	github.com/gosimple/slug v1.13.1
 	github.com/lithammer/dedent v1.1.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.23.0
+	github.com/onsi/gomega v1.24.0
 	github.com/stretchr/testify v1.8.1
 	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.17.0
