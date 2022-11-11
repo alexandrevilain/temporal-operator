@@ -25,12 +25,13 @@ import (
 )
 
 const (
-	CreateCassandraTemplate  = "create-cassandra.sh"
-	CreateDatabaseTemplate   = "create-database.sh"
-	SetupSchemaTemplate      = "setup-schema.sh"
-	UpdateSchemaTemplate     = "update-schema.sh"
-	SetupAdvancedVisibility  = "setup-advanced-visibility.sh"
-	UpdateAdvancedVisibility = "update-advanced-visibility.sh"
+	CreateCassandraTemplate      = "create-cassandra.sh"
+	CreateDatabaseTemplate       = "create-database.sh"
+	CreateDatabaseTemplate_V1_18 = "create-database-1-8.sh"
+	SetupSchemaTemplate          = "setup-schema.sh"
+	UpdateSchemaTemplate         = "update-schema.sh"
+	SetupAdvancedVisibility      = "setup-advanced-visibility.sh"
+	UpdateAdvancedVisibility     = "update-advanced-visibility.sh"
 )
 
 var (
@@ -43,7 +44,11 @@ var (
 		`),
 		CreateDatabaseTemplate: dedent.Dedent(`
 			#!/bin/bash
-			{{ .Tool }} {{ .ConnectionArgs }}  create-database -database {{ .DatabaseName }}
+			{{ .Tool }} {{ .ConnectionArgs }} create-database -database {{ .DatabaseName }}
+		`),
+		CreateDatabaseTemplate_V1_18: dedent.Dedent(`
+			#!/bin/bash
+			{{ .Tool }} {{ .ConnectionArgs }} create
 		`),
 		SetupSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
