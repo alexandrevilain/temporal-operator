@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.8.1
+
+**Release date:** 2022-11-11
+
+Fixes:
+- temporal-sql-tool database creation flags for v1.18 have changed [#188](https://github.com/alexandrevilain/temporal-operator/pull/188)
+
+Improvements:
+- Disable fail-fast on e2e matrix [#179](https://github.com/alexandrevilain/temporal-operator/pull/179)
+
+Updates:
+- Bump go.temporal.io/server from 1.18.3 to 1.18.4 [#182](https://github.com/alexandrevilain/temporal-operator/pull/182)
+- Bump github.com/onsi/gomega from 1.23.0 to 1.24.1 [#186](https://github.com/alexandrevilain/temporal-operator/pull/186)
+
 ## 0.8.0
 
 **Release date:** 2022-10-29
