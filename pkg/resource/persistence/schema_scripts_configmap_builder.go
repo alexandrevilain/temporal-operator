@@ -28,6 +28,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/elliotchance/orderedmap/v2"
 	"go.temporal.io/server/tools/common/schema"
 	corev1 "k8s.io/api/core/v1"
@@ -231,6 +232,11 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
 	}
 
+	createDatabaseTemplateKey := CreateDatabaseTemplate
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
+		createDatabaseTemplateKey = CreateDatabaseTemplate_V1_18
+	}
+
 	defaultStoreTool := "temporal-sql-tool"
 	var renderedCreateDefaultDatabase bytes.Buffer
 	var renderedCreateVisibilityDatabase bytes.Buffer
@@ -249,7 +255,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 			return fmt.Errorf("can't render create-default-keyspace.sh: %w", err)
 		}
 	} else {
-		err = templates[CreateDatabaseTemplate].Execute(&renderedCreateDefaultDatabase, createDatabase{
+		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateDefaultDatabase, createDatabase{
 			baseData:       baseData,
 			Tool:           defaultStoreTool,
 			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
@@ -274,7 +280,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 			return fmt.Errorf("can't render create-visibility-keyspace.sh: %w", err)
 		}
 	} else {
-		err = templates[CreateDatabaseTemplate].Execute(&renderedCreateVisibilityDatabase, createDatabase{
+		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateVisibilityDatabase, createDatabase{
 			baseData:       baseData,
 			Tool:           visibilityStoreTool,
 			ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
