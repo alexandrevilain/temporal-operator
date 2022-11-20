@@ -98,6 +98,15 @@ type TemporalWorkerProcessBuilder struct {
 	BuildRegistry *ContainerRegistryConfig `json:"buildRegistry,omitempty"`
 }
 
+// GetPasswordEnvVarName crafts the environment variable name for the datastore.
+func (s *TemporalWorkerProcessBuilder) GetBuildRepoPasswordEnvVarName() string {
+	return "TEMPORAL_WORKER_BUILDER_REPO_PASSWORD"
+}
+
+func (w *TemporalWorkerProcessBuilder) BuilderEnabled() bool {
+	return w != nil && w.Enabled
+}
+
 // GitRepositorySpec specifies the required configuration to produce an
 // Artifact for a Git repository.
 type GitRepositorySpec struct {
@@ -160,15 +169,6 @@ type TemporalWorkerProcessList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []TemporalWorkerProcess `json:"items"`
-}
-
-// GetPasswordEnvVarName crafts the environment variable name for the datastore.
-func (s *TemporalWorkerProcessBuilder) GetBuildRepoPasswordEnvVarName() string {
-	return fmt.Sprintf("TEMPORAL_WORKER_BUILDER_REPO_PASSWORD")
-}
-
-func (w *TemporalWorkerProcessBuilder) BuilderEnabled() bool {
-	return w != nil && w.Enabled
 }
 
 // ChildResourceName returns child resource name using the worker processes name.

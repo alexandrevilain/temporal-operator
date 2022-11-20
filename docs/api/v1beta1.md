@@ -1011,6 +1011,93 @@ string
 </div>
 <h3 id="temporal.io/v1beta1.DatastoreType">DatastoreType
 (<code>string</code> alias)</h3>
+<h3 id="temporal.io/v1beta1.DeploymentOverride">DeploymentOverride
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">ServiceSpecOverride</a>)
+</p>
+<p>DeploymentOverride provides the ability to override a Deployment.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ObjectMetaOverride">
+ObjectMetaOverride
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DeploymentOverrideSpec">
+DeploymentOverrideSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Specification of the desired behavior of the Deployment.</p>
+<br/>
+<br/>
+<table>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.DeploymentOverrideSpec">DeploymentOverrideSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.DeploymentOverride">DeploymentOverride</a>)
+</p>
+<p>DeploymentOverrideSpec provides the ability to override a Deployment Spec.
+It&rsquo;s a subset of fields included in k8s.io/api/apps/v1.DeploymentSpec.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>template</code><br>
+<em>
+<a href="#temporal.io/v1beta1.PodTemplateSpecOverride">
+PodTemplateSpecOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Template describes the pods that will be created.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.ElasticsearchIndices">ElasticsearchIndices
 </h3>
 <p>
@@ -1467,6 +1554,107 @@ PrometheusSpec
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.ObjectMetaOverride">ObjectMetaOverride
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.DeploymentOverride">DeploymentOverride</a>, 
+<a href="#temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride</a>)
+</p>
+<p>ObjectMetaOverride provides the ability to override an object metadata.
+It&rsquo;s a subset of the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>labels</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Map of string keys and values that can be used to organize and categorize
+(scope and select) objects.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.DeploymentOverrideSpec">DeploymentOverrideSpec</a>)
+</p>
+<p>PodTemplateSpecOverride provides the ability to override a pod template spec.
+It&rsquo;s a subset of the fields included in k8s.io/api/core/v1.PodTemplateSpec.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ObjectMetaOverride">
+ObjectMetaOverride
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podspec-v1-core">
+Kubernetes core/v1.PodSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Specification of the desired behavior of the pod.</p>
+<br/>
+<br/>
+<table>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.PrometheusSpec">PrometheusSpec
 </h3>
 <p>
@@ -1748,6 +1936,56 @@ int32
 <p>Number of desired replicas for the service. Default to 1.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>overrides</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">
+ServiceSpecOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Override adds some overrides to the resources deployed for the service.
+Those overrides takes precedence over spec.services.overrides.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ServiceSpecOverride">ServiceSpecOverride
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ServiceSpec">ServiceSpec</a>, 
+<a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>)
+</p>
+<p>ServiceSpecOverride provides the ability to override the generated manifests of a temporal service.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>deployment</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DeploymentOverride">
+DeploymentOverride
+</a>
+</em>
+</td>
+<td>
+<p>Override configuration for the temporal service Deployment.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1877,6 +2115,21 @@ ServiceSpec
 <td>
 <em>(Optional)</em>
 <p>Worker service custom specifications.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>overrides</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">
+ServiceSpecOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Overrides adds some overrides to the resources deployed for all temporal services services.
+Those overrides can be customized per service using spec.services.<serviceName>.overrides.</p>
 </td>
 </tr>
 </tbody>
@@ -3001,6 +3254,17 @@ string
 </tr>
 <tr>
 <td>
+<code>attempt</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>BuildAttempt is the build attempt number of a given version</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>image</code><br>
 <em>
 string
@@ -3233,6 +3497,17 @@ string
 </td>
 <td>
 <p>Version is the version of the image that will be used to build worker image.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>attempt</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>BuildAttempt is the build attempt number of a given version</p>
 </td>
 </tr>
 <tr>

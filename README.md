@@ -28,7 +28,7 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 First install CRDs on your cluster and the operator:
 
 ```
-kubectl apply -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.crds.yaml
+kubectl apply --server-side -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.crds.yaml
 kubectl apply -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.yaml
 ```
 
@@ -74,6 +74,10 @@ spec:
 
 Apply this file to the cluster.
 For more customization options refers to the [api documentation](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/api/v1beta1.md).
+
+## Documentation
+
+- [Using overrides to customize rendered resources](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/applying-overrides.md)
 
 ## Examples
 
