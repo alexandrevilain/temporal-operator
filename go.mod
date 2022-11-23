@@ -16,7 +16,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	go.temporal.io/api v1.13.0
 	go.temporal.io/sdk v1.18.1
-	go.temporal.io/server v1.18.4
+	go.temporal.io/server v1.18.5
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20221109202042-b9e5d446a83d
