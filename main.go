@@ -38,7 +38,6 @@ import (
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/istio"
@@ -53,7 +52,6 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(v1beta1.AddToScheme(scheme))
 	utilruntime.Must(certmanagerv1.AddToScheme(scheme))
 	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
 	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
@@ -62,14 +60,20 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
+	var (
+		metricsAddr          string
+		enableLeaderElection bool
+		probeAddr            string
+		cmCheckNamespace     string
+		istioCheckNamespace  string
+	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&cmCheckNamespace, "cm-check-namespace", "cert-manager", "The namespace where to create resources to search for a cert-manager installation.")
+	flag.StringVar(&istioCheckNamespace, "istio-check-namespace", "default", "The namespace where to create resources to search for an isto installation.")
 
 	opts := zap.Options{
 		Development: true,
@@ -92,7 +96,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	apichecker, err := cmapichecker.New(mgr.GetConfig(), mgr.GetScheme(), "cert-manager")
+	apichecker, err := cmapichecker.New(mgr.GetConfig(), mgr.GetScheme(), cmCheckNamespace)
 	if err != nil {
 		setupLog.Error(err, "unable to create cert-manager api checker")
 		os.Exit(1)
@@ -107,7 +111,7 @@ func main() {
 		setupLog.Info("Found cert-manager installation in the cluster, features requiring cert-manager are enabled")
 	}
 
-	istioapichecker, err := istio.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), "default")
+	istioapichecker, err := istio.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), istioCheckNamespace)
 	if err != nil {
 		setupLog.Error(err, "unable to create istio api checker")
 		os.Exit(1)
