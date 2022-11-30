@@ -63,7 +63,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 			Metrics: &v1beta1.MetricsSpec{
 				Enabled: true,
 				Prometheus: &v1beta1.PrometheusSpec{
-					ListenAddress: &listAddress,
+					ListenAddress: listAddress,
 				},
 			},
 			MTLS: &v1beta1.MTLSSpec{

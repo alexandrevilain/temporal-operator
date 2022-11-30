@@ -27,6 +27,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	"go.temporal.io/server/common/primitives"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -218,6 +219,29 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		}
 	}
 
+	containerPorts := []corev1.ContainerPort{
+		{
+			Name:          "rpc",
+			ContainerPort: int32(*b.service.Port),
+			Protocol:      corev1.ProtocolTCP,
+		},
+		{
+			Name:          "membership",
+			ContainerPort: int32(*b.service.MembershipPort),
+			Protocol:      corev1.ProtocolTCP,
+		},
+	}
+
+	if b.instance.Spec.Metrics.MetricsEnabled() {
+		if b.instance.Spec.Metrics.Prometheus != nil && b.instance.Spec.Metrics.Prometheus.ListenPort != nil {
+			containerPorts = append(containerPorts, corev1.ContainerPort{
+				Name:          prometheus.MetricsPortName.String(),
+				ContainerPort: *b.instance.Spec.Metrics.Prometheus.ListenPort,
+				Protocol:      corev1.ProtocolTCP,
+			})
+		}
+	}
+
 	deployment.Spec.Replicas = b.service.Replicas
 
 	deployment.Spec.Selector = &metav1.LabelSelector{
@@ -243,24 +267,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 							Drop: []corev1.Capability{"ALL"},
 						},
 					},
-					Ports: []corev1.ContainerPort{
-						{
-							Name:          "rpc",
-							ContainerPort: int32(*b.service.Port),
-							Protocol:      corev1.ProtocolTCP,
-						},
-						{
-							Name:          "membership",
-							ContainerPort: int32(*b.service.MembershipPort),
-							Protocol:      corev1.ProtocolTCP,
-						},
-						{
-							Name:          "metrics",
-							ContainerPort: 9090,
-							Protocol:      corev1.ProtocolTCP,
-						},
-					},
-
+					Ports:         containerPorts,
 					LivenessProbe: livenessProbe,
 					Env:           envVars,
 					VolumeMounts:  volumeMounts,

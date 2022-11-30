@@ -34,13 +34,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	"github.com/cert-manager/cert-manager/pkg/util/cmapichecker"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
-	"github.com/alexandrevilain/temporal-operator/pkg/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	//+kubebuilder:scaffold:imports
 )
@@ -61,11 +60,12 @@ func init() {
 
 func main() {
 	var (
-		metricsAddr          string
-		enableLeaderElection bool
-		probeAddr            string
-		cmCheckNamespace     string
-		istioCheckNamespace  string
+		metricsAddr              string
+		enableLeaderElection     bool
+		probeAddr                string
+		cmCheckNamespace         string
+		istioCheckNamespace      string
+		prometheusCheckNamespace string
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
@@ -74,6 +74,7 @@ func main() {
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&cmCheckNamespace, "cm-check-namespace", "cert-manager", "The namespace where to create resources to search for a cert-manager installation.")
 	flag.StringVar(&istioCheckNamespace, "istio-check-namespace", "default", "The namespace where to create resources to search for an isto installation.")
+	flag.StringVar(&prometheusCheckNamespace, "prom-operator-check-namespace", "default", "The namespace where to create resources to search for a prometheus operator installation.")
 
 	opts := zap.Options{
 		Development: true,
@@ -96,63 +97,45 @@ func main() {
 		os.Exit(1)
 	}
 
-	apichecker, err := cmapichecker.New(mgr.GetConfig(), mgr.GetScheme(), cmCheckNamespace)
+	availableAPIs, err := discovery.FindAvailableAPIs(context.Background(), setupLog, mgr, discovery.ResourcesConfig{
+		CertManagerNamespace:        cmCheckNamespace,
+		IstioNamespace:              istioCheckNamespace,
+		PrometheusOperatorNamespace: prometheusCheckNamespace,
+	})
 	if err != nil {
-		setupLog.Error(err, "unable to create cert-manager api checker")
+		setupLog.Error(err, "unable to discover available apis")
 		os.Exit(1)
-	}
-
-	var certManagerAvailable bool
-	err = apichecker.Check(context.Background())
-	if err != nil {
-		setupLog.Info("Unable to find cert-manager installation in the cluster, features requiring cert-manager are disabled")
-	} else {
-		certManagerAvailable = true
-		setupLog.Info("Found cert-manager installation in the cluster, features requiring cert-manager are enabled")
-	}
-
-	istioapichecker, err := istio.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), istioCheckNamespace)
-	if err != nil {
-		setupLog.Error(err, "unable to create istio api checker")
-		os.Exit(1)
-	}
-
-	var istioAvailable bool
-	err = istioapichecker.Check(context.Background())
-	if err != nil {
-		setupLog.Info("Unable to find istio installation in the cluster, features requiring istio are disabled")
-	} else {
-		istioAvailable = true
-		setupLog.Info("Found istio installation in the cluster, features requiring istio are enabled")
 	}
 
 	if err = (&controllers.TemporalClusterReconciler{
 		Base: reconciler.Base{
-			Client:   mgr.GetClient(),
-			Scheme:   mgr.GetScheme(),
-			Recorder: mgr.GetEventRecorderFor("cluster-controller"),
+			Client:        mgr.GetClient(),
+			Scheme:        mgr.GetScheme(),
+			Recorder:      mgr.GetEventRecorderFor("cluster-controller"),
+			AvailableAPIs: availableAPIs,
 		},
-		CertManagerAvailable: certManagerAvailable,
-		IstioAvailable:       istioAvailable,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalWorkerProcessReconciler{
 		Base: reconciler.Base{
-			Client:   mgr.GetClient(),
-			Scheme:   mgr.GetScheme(),
-			Recorder: mgr.GetEventRecorderFor("workerprocess-controller"),
+			Client:        mgr.GetClient(),
+			Scheme:        mgr.GetScheme(),
+			Recorder:      mgr.GetEventRecorderFor("workerprocess-controller"),
+			AvailableAPIs: availableAPIs,
 		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)
 	}
 	if err = (&controllers.TemporalClusterClientReconciler{
-		Client:               mgr.GetClient(),
-		Scheme:               mgr.GetScheme(),
-		Recorder:             mgr.GetEventRecorderFor("clusterclient-controller"),
-		CertManagerAvailable: certManagerAvailable,
+		Base: reconciler.Base{
+			Client:        mgr.GetClient(),
+			Scheme:        mgr.GetScheme(),
+			Recorder:      mgr.GetEventRecorderFor("clusterclient-controller"),
+			AvailableAPIs: availableAPIs,
+		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterClient")
 		os.Exit(1)

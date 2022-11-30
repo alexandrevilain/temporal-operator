@@ -32,6 +32,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -54,9 +55,6 @@ const (
 // TemporalClusterReconciler reconciles a Cluster object
 type TemporalClusterReconciler struct {
 	reconciler.Base
-
-	CertManagerAvailable bool
-	IstioAvailable       bool
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -96,8 +94,24 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return reconcile.Result{}, nil
 	}
 
+	// Transform deprecated fields
+	updated, err := r.reconcileDeprecatedFields(ctx, cluster)
+	if err != nil {
+		logger.Error(err, "Can't reconcile cluster deprecated fields")
+		return r.handleError(ctx, cluster, "", err)
+	}
+	if updated {
+		err := r.Client.Update(ctx, cluster)
+		if err != nil {
+			logger.Error(err, "Can't reconcile cluster deprecated fields")
+			return r.handleError(ctx, cluster, "", err)
+		}
+		// As we updated the instance, another reconcile will be triggered.
+		return reconcile.Result{}, nil
+	}
+
 	// Set defaults on unfiled fields.
-	updated := r.reconcileDefaults(ctx, cluster)
+	updated = r.reconcileDefaults(ctx, cluster)
 	if updated {
 		err := r.Client.Update(ctx, cluster)
 		if err != nil {
@@ -110,7 +124,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
 	// it can't process the request, return the error.
-	if cluster.MTLSWithCertManagerEnabled() && !r.CertManagerAvailable {
+	if cluster.MTLSWithCertManagerEnabled() && !r.AvailableAPIs.CertManager {
 		err := errors.New("cert-manager is not available in the cluster")
 		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
 		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
@@ -251,7 +265,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&networkingv1.Ingress{}).
 		Owns(&batchv1.Job{})
 
-	if r.CertManagerAvailable {
+	if r.AvailableAPIs.CertManager {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
@@ -263,13 +277,23 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	if r.IstioAvailable {
+	if r.AvailableAPIs.Istio {
 		controller = controller.
 			Owns(&istiosecurityv1beta1.PeerAuthentication{}).
 			Owns(&istionetworkingv1beta1.DestinationRule{})
 
 		for _, resource := range []client.Object{&istiosecurityv1beta1.PeerAuthentication{}, &istionetworkingv1beta1.DestinationRule{}} {
 			if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addIstioResourceToIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if r.AvailableAPIs.PrometheusOperator {
+		controller = controller.Owns(&monitoringv1.ServiceMonitor{})
+
+		for _, resource := range []client.Object{&monitoringv1.ServiceMonitor{}} {
+			if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addPromtheusOperatorResourceToIndex); err != nil {
 				return err
 			}
 		}
@@ -308,6 +332,16 @@ func addIstioResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
 	case *certmanagerv1.Issuer,
 		*certmanagerv1.Certificate:
+		owner := metav1.GetControllerOf(resourceObject)
+		return validateAndGetOwner(owner)
+	default:
+		return nil
+	}
+}
+
+func addPromtheusOperatorResourceToIndex(rawObj client.Object) []string {
+	switch resourceObject := rawObj.(type) {
+	case *monitoringv1.ServiceMonitor:
 		owner := metav1.GetControllerOf(resourceObject)
 		return validateAndGetOwner(owner)
 	default:

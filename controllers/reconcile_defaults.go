@@ -19,7 +19,10 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -44,6 +47,29 @@ func (r *TemporalClusterReconciler) reconcileDatastoreDefaults(ctx context.Conte
 			datastore.SQL.ConnectProtocol = "tcp"
 		}
 	}
+}
+
+func (r *TemporalClusterReconciler) reconcileDeprecatedFields(ctx context.Context, cluster *v1beta1.TemporalCluster) (bool, error) {
+	before := cluster.DeepCopy()
+
+	if cluster.Spec.Metrics.MetricsEnabled() {
+		if cluster.Spec.Metrics.Prometheus != nil {
+			// If the user as set the deprecated ListenAddress field and not the new ListenPort, parse the listenAddress and set the listenPort.
+			if cluster.Spec.Metrics.Prometheus.ListenAddress != "" && cluster.Spec.Metrics.Prometheus.ListenPort == nil {
+				_, port, err := net.SplitHostPort(cluster.Spec.Metrics.Prometheus.ListenAddress)
+				if err != nil {
+					return false, fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress: %w", err)
+				}
+				portInt, err := strconv.Atoi(port)
+				if err != nil {
+					return false, fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress port: %w", err)
+				}
+				cluster.Spec.Metrics.Prometheus.ListenPort = pointer.Int32(int32(portInt))
+			}
+		}
+	}
+
+	return !reflect.DeepEqual(before.Spec, cluster.Spec), nil
 }
 
 func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, cluster *v1beta1.TemporalCluster) bool {
@@ -173,6 +199,14 @@ func (r *TemporalClusterReconciler) reconcileDefaults(ctx context.Context, clust
 		}
 		if cluster.Spec.MTLS.CertificatesDuration.InternodeCertificate == nil {
 			cluster.Spec.MTLS.CertificatesDuration.InternodeCertificate = &metav1.Duration{Duration: time.Hour * 8766}
+		}
+	}
+
+	if cluster.Spec.Metrics.MetricsEnabled() {
+		if cluster.Spec.Metrics.Prometheus != nil {
+			if cluster.Spec.Metrics.Prometheus.ListenPort == nil {
+				cluster.Spec.Metrics.Prometheus.ListenPort = pointer.Int32(9090)
+			}
 		}
 	}
 

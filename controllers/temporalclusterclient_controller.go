@@ -24,26 +24,21 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
 // TemporalClusterClientReconciler reconciles a ClusterClient object
 type TemporalClusterClientReconciler struct {
-	client.Client
-	Scheme               *runtime.Scheme
-	Recorder             record.EventRecorder
-	CertManagerAvailable bool
+	reconciler.Base
 }
 
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
@@ -124,7 +119,7 @@ func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) err
 	controller := ctrl.NewControllerManagedBy(mgr).
 		For(&v1beta1.TemporalClusterClient{})
 
-	if r.CertManagerAvailable {
+	if r.AvailableAPIs.CertManager {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})

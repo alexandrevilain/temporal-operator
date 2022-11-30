@@ -18,9 +18,9 @@
 package istio
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/apichecker"
 	istioapinetworkingv1beta1 "istio.io/api/networking/v1beta1"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
 	istioapiv1beta1 "istio.io/api/type/v1beta1"
@@ -63,16 +63,8 @@ var fakeObjects = []client.Object{
 	},
 }
 
-// APIChecker checks for needed istio resources in the cluster.
-// Under-the-hood is uses a dry-run client to check if CRDs are available.
-// APIChecker is inspired by cert-manager's apichecker
-// (https://github.com/cert-manager/cert-manager/blob/master/pkg/util/cmapichecker).
-type APIChecker struct {
-	client client.Client
-}
-
 // NewAPIChecker creates a new ApiChecker.
-func NewAPIChecker(restcfg *rest.Config, scheme *runtime.Scheme, namespace string) (*APIChecker, error) {
+func NewAPIChecker(restcfg *rest.Config, scheme *runtime.Scheme, namespace string) (*apichecker.APIChecker, error) {
 	if err := istiosecurityv1beta1.AddToScheme(scheme); err != nil {
 		return nil, fmt.Errorf("can't add istiosecurityv1beta1 to scheme: %w", err)
 	}
@@ -80,25 +72,5 @@ func NewAPIChecker(restcfg *rest.Config, scheme *runtime.Scheme, namespace strin
 		return nil, fmt.Errorf("can't add istionetworkingv1beta1 to scheme: %w", err)
 	}
 
-	cl, err := client.New(restcfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("can't create client: %w", err)
-	}
-
-	return &APIChecker{
-		client: client.NewNamespacedClient(client.NewDryRunClient(cl), namespace),
-	}, nil
-}
-
-// Check attempts to perform a dry-run create of a needed istio resources.
-func (c *APIChecker) Check(ctx context.Context) error {
-	for _, fakeObject := range fakeObjects {
-		err := c.client.Create(ctx, fakeObject)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return apichecker.NewAPIChecker(restcfg, scheme, namespace, fakeObjects)
 }
