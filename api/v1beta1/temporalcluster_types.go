@@ -25,7 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
-	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,13 +82,13 @@ type ServicesSpec struct {
 // GetServiceSpec returns service spec from its name.
 func (s *ServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error) {
 	switch name {
-	case common.FrontendServiceName:
+	case primitives.FrontendService:
 		return s.Frontend, nil
-	case common.HistoryServiceName:
+	case primitives.HistoryService:
 		return s.History, nil
-	case common.MatchingServiceName:
+	case primitives.MatchingService:
 		return s.Matching, nil
-	case common.WorkerServiceName:
+	case primitives.WorkerService:
 		return s.Worker, nil
 	default:
 		return nil, fmt.Errorf("unknown service %s", name)

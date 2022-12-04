@@ -28,7 +28,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	kubernetesutil "github.com/alexandrevilain/temporal-operator/tests/e2e/util/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/tests/e2e/util/networking"
-	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/primitives"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -218,7 +218,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 				{
 					Key:      "app.kubernetes.io/component",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{common.FrontendServiceName},
+					Values:   []string{primitives.FrontendService},
 				},
 				{
 					Key:      "app.kubernetes.io/version",
