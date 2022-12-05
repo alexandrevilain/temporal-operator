@@ -27,11 +27,11 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
-	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
+	"go.temporal.io/server/common/primitives"
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -141,7 +141,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			},
 		},
 		Services: map[string]config.Service{
-			common.FrontendServiceName: {
+			primitives.FrontendService: {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
@@ -149,7 +149,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			common.HistoryServiceName: {
+			primitives.HistoryService: {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.History.Port,
 					MembershipPort:  *b.instance.Spec.Services.History.MembershipPort,
@@ -157,7 +157,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			common.MatchingServiceName: {
+			primitives.MatchingService: {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Matching.Port,
 					MembershipPort:  *b.instance.Spec.Services.Matching.MembershipPort,
@@ -165,7 +165,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			common.WorkerServiceName: {
+			primitives.WorkerService: {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Worker.Port,
 					MembershipPort:  *b.instance.Spec.Services.Worker.MembershipPort,

@@ -1947,7 +1947,7 @@ ServiceSpecOverride
 </td>
 <td>
 <em>(Optional)</em>
-<p>Override adds some overrides to the resources deployed for the service.
+<p>Overrides adds some overrides to the resources deployed for the service.
 Those overrides takes precedence over spec.services.overrides.</p>
 </td>
 </tr>

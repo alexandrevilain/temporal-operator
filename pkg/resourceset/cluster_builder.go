@@ -22,7 +22,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/primitives"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -38,10 +38,10 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 	}
 
 	for _, serviceName := range []string{
-		common.FrontendServiceName,
-		common.HistoryServiceName,
-		common.MatchingServiceName,
-		common.WorkerServiceName,
+		primitives.FrontendService,
+		primitives.HistoryService,
+		primitives.MatchingService,
+		primitives.WorkerService,
 	} {
 		specs, err := b.Instance.Spec.Services.GetServiceSpec(serviceName)
 		if err != nil {
@@ -51,7 +51,7 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
 
-		if serviceName != common.WorkerServiceName {
+		if serviceName != primitives.WorkerService {
 			builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 		}
 

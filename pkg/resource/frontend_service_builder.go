@@ -22,7 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,7 +57,7 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 	service.Labels = object.GetLabels()
 	service.Annotations = object.GetAnnotations()
 	service.Spec.Type = corev1.ServiceTypeClusterIP
-	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, common.FrontendServiceName)
+	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, primitives.FrontendService)
 	service.Spec.Ports = []corev1.ServicePort{
 		{
 			Name:       "grpc-rpc",

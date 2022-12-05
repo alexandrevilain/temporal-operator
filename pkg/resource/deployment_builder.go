@@ -27,7 +27,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
-	"go.temporal.io/server/common"
+	"go.temporal.io/server/common/primitives"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -80,7 +80,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	// worker has no grpc endpoint so omit liveness probe
 	var livenessProbe *corev1.Probe
-	if b.serviceName != common.WorkerServiceName {
+	if b.serviceName != primitives.WorkerService {
 		livenessProbe = &corev1.Probe{
 			InitialDelaySeconds: 150,
 			TimeoutSeconds:      1,
