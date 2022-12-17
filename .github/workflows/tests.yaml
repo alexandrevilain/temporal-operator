@@ -11,8 +11,8 @@ defaults:
     shell: bash
 
 env:
-  GO_VERSION: 1.18.1
-  GOLANG_CI_VERSION: v1.45.2
+  GO_VERSION: 1.19.4
+  GOLANG_CI_VERSION: v1.50.1
 
 jobs:
   license:
