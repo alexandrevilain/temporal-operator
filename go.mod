@@ -3,7 +3,7 @@ module github.com/alexandrevilain/temporal-operator
 go 1.19
 
 require (
-	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/cert-manager/cert-manager v1.10.1
 	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/go-logr/logr v1.2.3
