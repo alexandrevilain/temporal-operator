@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.9.0
+
+**Release date:** 2022-12-17
+
+Features:
+- Add support for Prometheus scraping through annotations and ServiceMonitor [#201](https://github.com/alexandrevilain/temporal-operator/pull/201)
+- Add flags to define namespaces used for istio and cm api checking [#198](https://github.com/alexandrevilain/temporal-operator/pull/198)
+
+Improvements:
+- Use Golang 1.19 [#215](https://github.com/alexandrevilain/temporal-operator/pull/215)
+
+Updates:
+- Bump go.temporal.io/sdk from 1.17.0 to 1.18.1 [#190](https://github.com/alexandrevilain/temporal-operator/pull/190)
+- Bump k8s dependencies to 0.25.4 [#194](https://github.com/alexandrevilain/temporal-operator/pull/194)
+- Bump go.temporal.io/server from 1.18.4 to 1.18.5 [#195](https://github.com/alexandrevilain/temporal-operator/pull/195)
+- Bump github.com/cert-manager/cert-manager from 1.10.0 to 1.10.1 [#196](https://github.com/alexandrevilain/temporal-operator/pull/196)
+- Bump github.com/Masterminds/semver/v3 from 3.1.1 to 3.2.0 [#200](https://github.com/alexandrevilain/temporal-operator/pull/200)
+- Bump go.temporal.io/server from 1.18.5 to 1.19.0 [#203](https://github.com/alexandrevilain/temporal-operator/pull/203)
+- Bump go.temporal.io/sdk from 1.18.1 to 1.19.0 [#206](https://github.com/alexandrevilain/temporal-operator/pull/206)
+- Bump helm/kind-action from 1.4.0 to 1.5.0 [#210](https://github.com/alexandrevilain/temporal-operator/pull/210)
+- Bump github.com/gocql/gocql from 1.2.1 to 1.3.1 [#211](https://github.com/alexandrevilain/temporal-operator/pull/211)
+- Bump istio.io/client-go from 1.16.0 to 1.16.1 [#212](https://github.com/alexandrevilain/temporal-operator/pull/212)
+- Bump kubernetes dependencies to v0.26.0 [#213](https://github.com/alexandrevilain/temporal-operator/pull/213)
+
 ## 0.8.1
 
 **Release date:** 2022-11-11

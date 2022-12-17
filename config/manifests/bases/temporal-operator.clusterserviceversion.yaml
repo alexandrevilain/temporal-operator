@@ -4,10 +4,10 @@ metadata:
   annotations:
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.8.0
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.9.0
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
-    operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
-  name: temporal-operator.v0.8.0
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
+  name: temporal-operator.v0.9.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -128,7 +128,7 @@ spec:
   - email: keith.tenzer@temporal.io
     name: ktenzer
   maturity: alpha
-  minKubeVersion: 1.19.0
+  minKubeVersion: 1.23.0
   provider:
     name: Temporal Community
     url: https://temporal.io/
