@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
 	corev1 "k8s.io/api/core/v1"
@@ -37,8 +38,9 @@ import (
 
 type Base struct {
 	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Scheme        *runtime.Scheme
+	Recorder      record.EventRecorder
+	AvailableAPIs *discovery.AvailableAPIs
 }
 
 // LogAndRecordOperationResult logs and records an event for the provided CreateOrUpdate operation result.

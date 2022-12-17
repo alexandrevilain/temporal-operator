@@ -22,6 +22,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	"go.temporal.io/server/common/primitives"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -50,14 +51,19 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
-
-		if serviceName != primitives.WorkerService {
-			builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
-		}
+		builders = append(builders, resource.NewHeadlessServiceBuilder(serviceName, b.Instance, b.Scheme, specs))
 
 		if b.Instance.Spec.MTLS != nil && b.Instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider {
 			builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, b.Instance, b.Scheme, specs))
 			builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, b.Instance, b.Scheme, specs))
+		}
+
+		if b.Instance.Spec.Metrics.MetricsEnabled() &&
+			b.Instance.Spec.Metrics.Prometheus != nil &&
+			b.Instance.Spec.Metrics.Prometheus.ScrapeConfig != nil &&
+			b.Instance.Spec.Metrics.Prometheus.ScrapeConfig.ServiceMonitor != nil &&
+			b.Instance.Spec.Metrics.Prometheus.ScrapeConfig.ServiceMonitor.Enabled {
+			builders = append(builders, prometheus.NewServiceMonitorBuilder(serviceName, b.Instance, b.Scheme, specs))
 		}
 	}
 

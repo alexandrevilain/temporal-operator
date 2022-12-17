@@ -1534,7 +1534,7 @@ bool
 </em>
 </td>
 <td>
-<p>Enabled defines if the operator should configure metrics</p>
+<p>Enabled defines if the operator should enable metrics exposition on temporal components.</p>
 </td>
 </tr>
 <tr>
@@ -1547,7 +1547,8 @@ PrometheusSpec
 </em>
 </td>
 <td>
-<p>Prometheus Configuration</p>
+<em>(Optional)</em>
+<p>Prometheus reporter configuration.</p>
 </td>
 </tr>
 </tbody>
@@ -1655,13 +1656,55 @@ Kubernetes core/v1.PodSpec
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.PrometheusScrapeConfig">PrometheusScrapeConfig
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.PrometheusSpec">PrometheusSpec</a>)
+</p>
+<p>PrometheusScrapeConfig is the configuration for making prometheus scrape components metrics.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>annotations</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Annotations defines if the operator should add prometheus scrape annotations to the services pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceMonitor</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.PrometheusSpec">PrometheusSpec
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.MetricsSpec">MetricsSpec</a>)
 </p>
-<p>Prometheus is the configuration for prometheus reporter</p>
+<p>Prometheus is the configuration for prometheus reporter.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -1680,7 +1723,34 @@ string
 </em>
 </td>
 <td>
-<p>Address for prometheus to serve metrics from.</p>
+<em>(Optional)</em>
+<p>Deprecated. Address for prometheus to serve metrics from.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>listenPort</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ListenPort for prometheus to serve metrics from.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>scrapeConfig</code><br>
+<em>
+<a href="#temporal.io/v1beta1.PrometheusScrapeConfig">
+PrometheusScrapeConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ScrapeConfig is the prometheus scrape configuration.</p>
 </td>
 </tr>
 </tbody>

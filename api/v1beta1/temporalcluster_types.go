@@ -25,6 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -552,30 +553,59 @@ type MTLSSpec struct {
 	RefreshInterval *metav1.Duration `json:"refreshInterval"`
 }
 
-// Prometheus is the configuration for prometheus reporter
-type PrometheusSpec struct {
-	// Address for prometheus to serve metrics from.
-	ListenAddress *string `json:"listenAddress"`
-}
-
-// MetricsSpec determines parameters for configuring metrics endpoints
-type MetricsSpec struct {
-	// Enabled defines if the operator should configure metrics
-	Enabled bool `json:"enabled"`
-	// Prometheus Configuration
-	Prometheus *PrometheusSpec `json:"prometheus"`
-}
-
-func (m *MetricsSpec) MetricsEnabled() bool {
-	return m != nil && m.Enabled
-}
-
 func (m *MTLSSpec) InternodeEnabled() bool {
 	return m.Internode != nil && m.Internode.Enabled
 }
 
 func (m *MTLSSpec) FrontendEnabled() bool {
 	return m.Frontend != nil && m.Frontend.Enabled
+}
+
+// PrometheusScrapeConfigServiceMonitor is the configuration for prometheus operator ServiceMonitor.
+type PrometheusScrapeConfigServiceMonitor struct {
+	// Enabled defines if the operator should create a ServiceMonitor for each services.
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Override allows customization of the created ServiceMonitor.
+	// All fields can be overritten except "endpoints", "selector" and "namespaceSelector".
+	// +optional
+	Override *monitoringv1.ServiceMonitorSpec `json:"override"`
+}
+
+// PrometheusScrapeConfig is the configuration for making prometheus scrape components metrics.
+type PrometheusScrapeConfig struct {
+	// Annotations defines if the operator should add prometheus scrape annotations to the services pods.
+	// +optional
+	Annotations bool `json:"annotations"`
+	// +optional
+	ServiceMonitor *PrometheusScrapeConfigServiceMonitor `json:"serviceMonitor"`
+}
+
+// Prometheus is the configuration for prometheus reporter.
+type PrometheusSpec struct {
+	// Deprecated. Address for prometheus to serve metrics from.
+	// +optional
+	ListenAddress string `json:"listenAddress"`
+	// ListenPort for prometheus to serve metrics from.
+	// +kubebuilder:default:=9090
+	// +optional
+	ListenPort *int32 `json:"listenPort,omitempty"`
+	// ScrapeConfig is the prometheus scrape configuration.
+	// +optional
+	ScrapeConfig *PrometheusScrapeConfig `json:"scrapeConfig"`
+}
+
+// MetricsSpec determines parameters for configuring metrics endpoints
+type MetricsSpec struct {
+	// Enabled defines if the operator should enable metrics exposition on temporal components.
+	Enabled bool `json:"enabled"`
+	// Prometheus reporter configuration.
+	// +optional
+	Prometheus *PrometheusSpec `json:"prometheus"`
+}
+
+func (m *MetricsSpec) MetricsEnabled() bool {
+	return m != nil && m.Enabled
 }
 
 // TemporalClusterSpec defines the desired state of Cluster.

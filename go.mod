@@ -13,6 +13,7 @@ require (
 	github.com/lithammer/dedent v1.1.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.24.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.61.1
 	github.com/stretchr/testify v1.8.1
 	go.temporal.io/api v1.13.1-0.20221110200459-6a3cb21a3415
 	go.temporal.io/sdk v1.19.0
@@ -24,7 +25,7 @@ require (
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
 	k8s.io/client-go v0.25.4
-	k8s.io/utils v0.0.0-20220922133306-665eaaec4324
+	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
 	sigs.k8s.io/cli-utils v0.34.0
 	sigs.k8s.io/controller-runtime v0.13.1
 	sigs.k8s.io/e2e-framework v0.0.8
@@ -139,8 +140,8 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apiextensions-apiserver v0.25.3 // indirect
-	k8s.io/component-base v0.25.3 // indirect
+	k8s.io/apiextensions-apiserver v0.25.4 // indirect
+	k8s.io/component-base v0.25.4 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803164354-a70c9af30aea // indirect
 	sigs.k8s.io/gateway-api v0.5.0 // indirect

@@ -48,4 +48,4 @@ spec:
   metrics:
     enabled: true
     prometheusConfig:
-      listenAddress: "0.0.0.0:9090"    
+      listenPort: 9090 

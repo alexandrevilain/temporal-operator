@@ -46,16 +46,24 @@ func NewFrontendServiceBuilder(instance *v1beta1.TemporalCluster, scheme *runtim
 func (b *FrontendServiceBuilder) Build() (client.Object, error) {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(FrontendService),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(FrontendService),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance.Name, FrontendService, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
 }
 
 func (b *FrontendServiceBuilder) Update(object client.Object) error {
 	service := object.(*corev1.Service)
-	service.Labels = object.GetLabels()
-	service.Annotations = object.GetAnnotations()
+	service.Labels = metadata.Merge(
+		object.GetLabels(),
+		metadata.GetLabels(b.instance.Name, FrontendService, b.instance.Spec.Version, b.instance.Labels),
+	)
+	service.Annotations = metadata.Merge(
+		object.GetAnnotations(),
+		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+	)
 	service.Spec.Type = corev1.ServiceTypeClusterIP
 	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, primitives.FrontendService)
 	service.Spec.Ports = []corev1.ServicePort{

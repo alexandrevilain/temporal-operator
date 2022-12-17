@@ -22,6 +22,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,6 +40,7 @@ func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 		Annotations: metadata.Merge(
 			linkerd.GetAnnotations(instance),
 			istio.GetAnnotations(instance),
+			prometheus.GetAnnotations(instance),
 			metadata.GetAnnotations(instance.Name, instanceAnnotations),
 		),
 	}

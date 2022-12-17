@@ -187,10 +187,12 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			ClientConfig: metrics.ClientConfig{
 				Tags: map[string]string{"type": "{{ .Env.SERVICES }}"},
 			},
-			Prometheus: &metrics.PrometheusConfig{
-				ListenAddress: *b.instance.Spec.Metrics.Prometheus.ListenAddress,
+		}
+		if b.instance.Spec.Metrics.Prometheus != nil && b.instance.Spec.Metrics.Prometheus.ListenPort != nil {
+			temporalCfg.Global.Metrics.Prometheus = &metrics.PrometheusConfig{
 				TimerType:     "histogram",
-			},
+				ListenAddress: fmt.Sprintf("0.0.0.0:%d", *b.instance.Spec.Metrics.Prometheus.ListenPort),
+			}
 		}
 	}
 

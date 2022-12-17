@@ -47,3 +47,10 @@ func GetVersionStringLabels(name, service string, version string, labels map[str
 	}
 	return l
 }
+
+// HeadlessLabels returns labels to express that a service is headless.
+func HeadlessLabels() map[string]string {
+	return map[string]string{
+		"app.kubernetes.io/headless": "true",
+	}
+}

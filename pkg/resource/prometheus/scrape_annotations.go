@@ -15,14 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package istio
+package prometheus
 
 import (
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"fmt"
+
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
-func NewAPICheckerForTesting(client client.Client) *APIChecker {
-	return &APIChecker{
-		client: client,
+// GetAnnotations returns prometheus scrape annotations.
+func GetAnnotations(instance *v1beta1.TemporalCluster) map[string]string {
+	if instance.Spec.Metrics.MetricsEnabled() &&
+		instance.Spec.Metrics.Prometheus != nil &&
+		instance.Spec.Metrics.Prometheus.ListenPort != nil &&
+		instance.Spec.Metrics.Prometheus.ScrapeConfig != nil &&
+		instance.Spec.Metrics.Prometheus.ScrapeConfig.Annotations {
+		return map[string]string{
+			"prometheus.io/scrape": "true",
+			"prometheus.io/scheme": "http",
+			"prometheus.io/path":   "/metrics",
+			"prometheus.io/port":   fmt.Sprintf("%d", instance.Spec.Metrics.Prometheus.ListenPort),
+		}
 	}
+	return map[string]string{}
 }
