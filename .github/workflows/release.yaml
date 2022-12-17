@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  GO_VERSION: 1.18.1
+  GO_VERSION: 1.19.4
 
 jobs:
   release:

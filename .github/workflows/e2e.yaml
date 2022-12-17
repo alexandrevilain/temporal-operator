@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 env:
-  GO_VERSION: 1.18.1
+  GO_VERSION: 1.19.4
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
 
 jobs:
