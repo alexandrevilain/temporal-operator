@@ -18,7 +18,7 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 - [x] Support for integration in meshes: istio & linkerd.
 - [x] Namespace management using CRDs.
 - [x] Cluster version upgrades.
-- [ ] Cluster monitoring.
+- [x] Cluster monitoring.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
 - [ ] Complete end2end test suite.
