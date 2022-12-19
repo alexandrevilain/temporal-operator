@@ -40,10 +40,27 @@ help: ## Display this help.
 
 ##@ Development
 
+YAML_PREFIX=spec.versions[0].schema.openAPIV3Schema.properties.spec.properties
+CRD_PRESERVE=x-kubernetes-preserve-unknown-fields = true
+
 .PHONY: manifests
-manifests: controller-gen yj jq ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: controller-gen yq ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-	PATH="$(PATH):$(LOCALBIN)" ./hack/clean-crds.sh
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.frontend.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.frontend.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).services.properties.frontend.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.history.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.history.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).services.properties.history.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.matching.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.matching.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).services.properties.matching.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.worker.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.worker.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).services.properties.worker.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
 
 .PHONY: generate
 generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -163,8 +180,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 GO_LICENSER ?= $(LOCALBIN)/go-licenser
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
-YJ ?= $(LOCALBIN)/yj
-JQ ?= $(LOCALBIN)/jq
+YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
@@ -173,8 +189,7 @@ CONTROLLER_TOOLS_VERSION ?= v0.9.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.50.1
-YJ_VERSION ?= v5.1.0
-JQ_VERSION ?= 1.6
+YQ_VERSION ?= v4.30.6
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -213,22 +228,7 @@ envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
-.PHONY: yj
-yj: $(YJ)
-$(YJ): $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install github.com/sclevine/yj/v5@$(YJ_VERSION)
-
-ifeq ($(UNAME),Linux)
-jq_target := linux
-jq_arch := 64
-endif
-ifeq ($(UNAME),Darwin)
-jq_target := osx
-jq_arch := -amd64
-endif
-
-.PHONY: jq
-jq: $(JQ)
-$(JQ): $(LOCALBIN)
-	curl -Lo $(JQ) https://github.com/stedolan/jq/releases/download/jq-$(JQ_VERSION)/jq-$(jq_target)$(jq_arch)
-	@chmod +x $(JQ)
+.PHONY: yq
+yq: $(YQ)
+$(YQ): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@$(YQ_VERSION)

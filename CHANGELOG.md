@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 ## 0.9.0
 
-**Release date:** 2022-12-17
+**Release date:** 2022-12-19
 
 Features:
 - Add support for Prometheus scraping through annotations and ServiceMonitor [#201](https://github.com/alexandrevilain/temporal-operator/pull/201)
