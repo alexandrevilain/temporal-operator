@@ -13,6 +13,9 @@ Features:
 Improvements:
 - Use Golang 1.19 [#215](https://github.com/alexandrevilain/temporal-operator/pull/215)
 
+Fixes:
+- Fix CRDs generation [#220](https://github.com/alexandrevilain/temporal-operator/pull/220)
+
 Updates:
 - Bump go.temporal.io/sdk from 1.17.0 to 1.18.1 [#190](https://github.com/alexandrevilain/temporal-operator/pull/190)
 - Bump k8s dependencies to 0.25.4 [#194](https://github.com/alexandrevilain/temporal-operator/pull/194)
