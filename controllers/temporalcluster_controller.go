@@ -68,6 +68,7 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="security.istio.io",resources=peerauthentications,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="networking.istio.io",resources=destinationrules,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups="monitoring.coreos.com",resources=servicemonitors,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusters/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusters/finalizers,verbs=update
