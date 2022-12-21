@@ -15,7 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// Package v1beta1 contains API Schema definitions for the v1beta1 API group
-// +kubebuilder:object:generate=true
-// +groupName=temporal.io
 package v1beta1
+
+import v1 "k8s.io/api/core/v1"
+
+// Default set default fields values.
+func (w *TemporalWorkerProcess) Default() {
+	if w.Spec.Builder.BuilderEnabled() {
+		if w.Spec.Builder.GitRepository.Reference == nil {
+			w.Spec.Builder.GitRepository.Reference = new(GitRepositoryRef)
+		}
+		if w.Spec.Builder.GitRepository.Reference.Branch == "" {
+			w.Spec.Builder.GitRepository.Reference.Branch = "main"
+		}
+		if w.Spec.PullPolicy == "" {
+			w.Spec.PullPolicy = v1.PullAlways
+		}
+	}
+}

@@ -132,7 +132,6 @@ spec:
                           description: Deprecated. Address for prometheus to serve metrics from.
                           type: string
                         listenPort:
-                          default: 9090
                           description: ListenPort for prometheus to serve metrics from.
                           format: int32
                           type: integer

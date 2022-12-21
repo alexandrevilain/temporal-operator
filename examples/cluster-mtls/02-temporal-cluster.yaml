@@ -4,7 +4,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.16.0
+  version: 1.17.4
   numHistoryShards: 1
   jobTtlSecondsAfterFinished: 300
   persistence:
@@ -47,5 +47,5 @@ spec:
     enabled: true
   metrics:
     enabled: true
-    prometheusConfig:
-      listenPort: 9090 
+    prometheus:
+      listenPort: 9090

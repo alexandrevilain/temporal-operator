@@ -27,5 +27,5 @@ def deploy():
     )
 
 build_image()
-deploy_cert_manager()
+deploy_cert_manager(version="v1.10.1")
 deploy()

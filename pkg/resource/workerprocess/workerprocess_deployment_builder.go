@@ -20,11 +20,11 @@ package workerprocess
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -53,9 +53,9 @@ func NewDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1be
 func (b *DeploymentBuilder) Build() (client.Object, error) {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        b.instance.ChildResourceName("worker"),
+			Name:        b.instance.ChildResourceName("worker-process"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "worker-process", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}, nil
@@ -66,9 +66,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetVersionStringLabels(b.instance.Name, "worker", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetVersionStringLabels(b.instance.Name, "worker-process", b.instance.Spec.Version, b.instance.Labels),
 	)
-	deployment.Labels["app.kubernetes.io/build"] = strconv.Itoa(int(*b.instance.Spec.Builder.BuildAttempt))
+
+	if b.instance.Spec.Builder != nil {
+		if b.instance.Spec.Builder.BuildAttempt != nil {
+			deployment.Labels["app.kubernetes.io/build"] = fmt.Sprintf("%d", *b.instance.Spec.Builder.BuildAttempt)
+		}
+	}
 
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
@@ -86,13 +91,41 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
+	volumes := []corev1.Volume{}
+	volumeMounts := []corev1.VolumeMount{}
+
+	if b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled() {
+		secretName := certmanager.GetCertificateSecretName(b.instance.GetName())
+		certificateMountPath := "/etc/temporal/config/certs"
+
+		volumeMounts = append(volumeMounts,
+			corev1.VolumeMount{
+				Name:      secretName,
+				MountPath: certificateMountPath,
+			},
+		)
+
+		volumes = append(volumes,
+			corev1.Volume{
+				Name: secretName,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: b.cluster.ChildResourceName(secretName),
+					},
+				},
+			},
+		)
+
+		env = append(env, certmanager.GetTLSEnvironmentVariables(b.cluster, "TEMPORAL_MTLS", certificateMountPath)...)
+	}
+
 	deployment.Spec.Replicas = b.instance.Spec.Replicas
 	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker"),
+		MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker-process"),
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildWorkerProcessPodObjectMeta(b.instance, "worker"),
+		ObjectMeta: buildWorkerProcessPodObjectMeta(b.instance, "worker-process"),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{
@@ -103,6 +136,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 					Env:                      env,
+					VolumeMounts:             volumeMounts,
 					LivenessProbe: &corev1.Probe{
 						ProbeHandler: corev1.ProbeHandler{
 							Exec: &corev1.ExecAction{
@@ -125,6 +159,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			DNSPolicy:                     corev1.DNSClusterFirst,
 			SecurityContext:               &corev1.PodSecurityContext{},
 			SchedulerName:                 corev1.DefaultSchedulerName,
+			Volumes:                       volumes,
 		},
 	}
 

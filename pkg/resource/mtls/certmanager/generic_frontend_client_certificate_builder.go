@@ -18,6 +18,8 @@
 package certmanager
 
 import (
+	"fmt"
+
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
@@ -31,22 +33,13 @@ type GenericFrontendClientCertificateBuilder struct {
 	scheme   *runtime.Scheme
 	// name defines the name of the certificate
 	name string
-	// secretName is the name of the secrets holding the certificate
-	secretName string
-	// dnsName is the dns alt name of the certificate
-	dnsName string
-	// commonName is the common name to be used on the Certificate
-	commonName string
 }
 
-func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, name string, secretName string, dnsName string, commonName string) *GenericFrontendClientCertificateBuilder {
+func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, clientName string) *GenericFrontendClientCertificateBuilder {
 	return &GenericFrontendClientCertificateBuilder{
-		instance:   instance,
-		scheme:     scheme,
-		name:       name,
-		secretName: secretName,
-		dnsName:    dnsName,
-		commonName: commonName,
+		instance: instance,
+		scheme:   scheme,
+		name:     clientName,
 	}
 }
 
@@ -64,8 +57,8 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName(b.secretName),
-		CommonName: b.commonName,
+		SecretName: b.instance.ChildResourceName(GetCertificateSecretName(b.name)),
+		CommonName: fmt.Sprintf("%s client certificate", b.name),
 		Duration:   b.instance.Spec.MTLS.CertificatesDuration.ClientCertificates,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
@@ -74,7 +67,7 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 			Size:           4096,
 		},
 		DNSNames: []string{
-			b.dnsName,
+			fmt.Sprintf("%s.%s", b.name, b.instance.ServerName()),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
 			Name: b.instance.ChildResourceName(frontendIntermediateCAIssuer),

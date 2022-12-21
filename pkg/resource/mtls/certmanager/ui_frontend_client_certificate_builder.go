@@ -18,8 +18,6 @@
 package certmanager
 
 import (
-	"fmt"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,19 +25,12 @@ import (
 )
 
 type UIFrontendClientCertificateBuilder struct {
-	GenericFrontendClientCertificateBuilder
+	*GenericFrontendClientCertificateBuilder
 }
 
 func NewUIFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
 	return &UIFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder{
-			instance:   instance,
-			scheme:     scheme,
-			name:       UIFrontendClientCertificate,
-			secretName: UIFrontendClientCertificate,
-			commonName: "UI client certificate",
-			dnsName:    fmt.Sprintf("ui.%s", instance.ServerName()),
-		},
+		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui"),
 	}
 }
 

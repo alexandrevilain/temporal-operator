@@ -22,6 +22,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
@@ -51,7 +53,8 @@ type TemporalWorkerProcessSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// TemporalNamespace that worker will poll.
 	TemporalNamespace string `json:"temporalNamespace"`
-	// Builder is the configuration for building a TemporalWorkerProcess
+	// Builder is the configuration for building a TemporalWorkerProcess.
+	// THIS FEATURE IS HIGHLY EXPERIMENTAL.
 	Builder *TemporalWorkerProcessBuilder `json:"builder,omitempty"`
 }
 
@@ -65,16 +68,27 @@ type TemporalClusterReference struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// NamespacedName returns NamespacedName for the referenced TemporalCluster.
+// If the namespace is not set, it uses the provided object's namespace.
+func (r *TemporalClusterReference) NamespacedName(obj client.Object) types.NamespacedName {
+	namespace := r.Namespace
+	if namespace == "" {
+		namespace = obj.GetNamespace()
+	}
+	return types.NamespacedName{Namespace: namespace, Name: r.Name}
+}
+
 // TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess
 type TemporalWorkerProcessStatus struct {
 	// Created indicates if the worker process image was created.
+	// +optional
 	Created bool `json:"created"`
 	// Ready defines if the worker process is ready.
 	Ready bool `json:"ready"`
 	// Version is the version of the image that will be used to build worker image.
 	Version string `json:"version"`
 	// BuildAttempt is the build attempt number of a given version
-	// +required
+	// +optional
 	BuildAttempt *int32 `json:"attempt"`
 	// Conditions represent the latest available observations of the worker process state.
 	Conditions []metav1.Condition `json:"conditions"`
@@ -147,11 +161,13 @@ func (s *TemporalWorkerProcessStatus) AddWorkerDeploymentStatus(status *Temporal
 
 // +genclient
 // +genclient:Namespaced
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type == 'Ready')].status"
 // +kubebuilder:printcolumn:name="ReconcileSuccess",type="string",JSONPath=".status.conditions[?(@.type == 'ReconcileSuccess')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:webhook:path=/mutate-temporal-io-v1beta1-temporalworkerprocess,mutating=true,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=mtemporalworkerprocess.kb.io,admissionReviewVersions=v1
+// +kubebuilder:webhook:path=/validate-temporal-io-v1beta1-temporalworkerprocess,mutating=false,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=vtemporalworkerprocess.kb.io,admissionReviewVersions=v1
 
 // TemporalWorkerProcess is the Schema for the temporalworkerprocesses API
 type TemporalWorkerProcess struct {

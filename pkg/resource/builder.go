@@ -45,6 +45,10 @@ type Pruner interface {
 	Build() (client.Object, error)
 }
 
+type Copier interface {
+	Copy(client.Client, client.Object) (client.Object, error)
+}
+
 type StatusReporter interface {
 	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
 }

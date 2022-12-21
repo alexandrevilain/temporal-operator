@@ -2,9 +2,10 @@ apiVersion: temporal.io/v1beta1
 kind: TemporalWorkerProcess
 metadata:
   name: test
+  namespace: default
 spec:
   version: latest
-  replicas: 3
+  replicas: 1
   image: ktenzer/helloworld-worker
   pullPolicy: "Always"
   clusterRef:

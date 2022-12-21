@@ -454,7 +454,7 @@ const (
 	IstioMTLSProvider       MTLSProvider = "istio"
 )
 
-// InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
+// FrontendMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
 type FrontendMTLSSpec struct {
 	// Enabled defines if the operator should enable mTLS for cluster's public endpoints.
 	// +optional
@@ -585,6 +585,7 @@ type PrometheusScrapeConfig struct {
 type PrometheusSpec struct {
 	// Deprecated. Address for prometheus to serve metrics from.
 	// +optional
+	// +deprecated
 	ListenAddress string `json:"listenAddress"`
 	// ListenPort for prometheus to serve metrics from.
 	// +optional
@@ -710,11 +711,13 @@ func (s *TemporalClusterStatus) AddServiceStatus(status *ServiceStatus) {
 
 // +genclient
 // +genclient:Namespaced
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type == 'Ready')].status"
 // +kubebuilder:printcolumn:name="ReconcileSuccess",type="string",JSONPath=".status.conditions[?(@.type == 'ReconcileSuccess')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:webhook:path=/validate-temporal-io-v1beta1-temporalcluster,mutating=false,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalclusters,verbs=create;update,versions=v1beta1,name=vtemporalc.kb.io,admissionReviewVersions=v1
+// +kubebuilder:webhook:path=/mutate-temporal-io-v1beta1-temporalcluster,mutating=true,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalclusters,verbs=create;update,versions=v1beta1,name=mtemporalc.kb.io,admissionReviewVersions=v1
 
 // TemporalCluster defines a temporal cluster deployment.
 type TemporalCluster struct {

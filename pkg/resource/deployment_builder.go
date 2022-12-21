@@ -185,7 +185,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					MountPath: b.instance.Spec.MTLS.Frontend.GetCertificateMountPath(),
 				},
 				corev1.VolumeMount{
-					Name:      certmanager.WorkerCertificate,
+					Name:      certmanager.WorkerFrontendClientCertificate,
 					MountPath: b.instance.Spec.MTLS.Frontend.GetWorkerCertificateMountPath(),
 				},
 			)
@@ -208,10 +208,10 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					},
 				},
 				corev1.Volume{
-					Name: certmanager.WorkerCertificate,
+					Name: certmanager.WorkerFrontendClientCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.WorkerCertificate),
+							SecretName: b.instance.ChildResourceName(certmanager.WorkerFrontendClientCertificate),
 						},
 					},
 				},

@@ -129,6 +129,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)
 	}
+
+	if err = (&webhooks.TemporalWorkerProcessWebhook{
+		AvailableAPIs: availableAPIs,
+		Client:        mgr.GetClient(),
+	}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "TemporalWorkerProcess")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.TemporalClusterClientReconciler{
 		Base: reconciler.Base{
 			Client:        mgr.GetClient(),
@@ -148,7 +157,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
 		os.Exit(1)
 	}
-
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

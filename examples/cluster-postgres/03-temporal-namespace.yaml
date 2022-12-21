@@ -1,10 +1,10 @@
 apiVersion: temporal.io/v1beta1
 kind: TemporalNamespace
 metadata:
-  name: accounting
+  name: default
   namespace: demo
 spec:
   clusterRef:
     name: prod
-  description: Accounting team namespace
+  description: Default namespace
   retentionPeriod: 168h #7 days

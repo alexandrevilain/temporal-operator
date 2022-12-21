@@ -187,9 +187,6 @@ func (w *TemporalClusterWebhook) ValidateDelete(ctx context.Context, obj runtime
 	return nil
 }
 
-// +kubebuilder:webhook:path=/validate-temporal-io-v1beta1-temporalcluster,mutating=false,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalclusters,verbs=create;update,versions=v1beta1,name=vtemporalc.kb.io,admissionReviewVersions=v1
-// +kubebuilder:webhook:path=/mutate-temporal-io-v1beta1-temporalcluster,mutating=true,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalclusters,verbs=create;update,versions=v1beta1,name=mtemporalc.kb.io,admissionReviewVersions=v1
-
 func (w *TemporalClusterWebhook) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&v1beta1.TemporalCluster{}).
