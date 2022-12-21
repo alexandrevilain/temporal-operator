@@ -60,7 +60,7 @@ func (r *TemporalClusterReconciler) reconcileDeprecatedFields(ctx context.Contex
 				if err != nil {
 					return false, fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress: %w", err)
 				}
-				portInt, err := strconv.Atoi(port)
+				portInt, err := strconv.ParseInt(port, 10, 32)
 				if err != nil {
 					return false, fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress port: %w", err)
 				}
