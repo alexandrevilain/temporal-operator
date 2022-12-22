@@ -104,11 +104,17 @@ ensure-license: go-licenser
 check-license: go-licenser
 	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -exclude pkg/version -license ASL2 -d .
 
+.PHONY: dev-cluster
+dev-cluster: kind-with-registry
+	$(KIND_WITH_REGISTRY)
+
+.PHONY: clean-dev-cluster
+clean-dev-cluster:
+	kind delete clusters kind
+
 .PHONY: deploy-dev
-deploy-dev: docker-build-dev manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	kind load docker-image temporal-operator
-	$(KUSTOMIZE) build config/dev | kubectl apply -f -
-	kubectl rollout restart deployment temporal-operator-controller-manager -n temporal-system
+deploy-dev: dev-cluster
+	tilt up
 
 ##@ Build
 
@@ -181,6 +187,7 @@ GO_LICENSER ?= $(LOCALBIN)/go-licenser
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 YQ ?= $(LOCALBIN)/yq
+KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
@@ -190,6 +197,7 @@ GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.50.1
 YQ_VERSION ?= v4.30.6
+KIND_WITH_REGISTRY_VERSION ?= 0.17.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -232,3 +240,9 @@ $(ENVTEST): $(LOCALBIN)
 yq: $(YQ)
 $(YQ): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@$(YQ_VERSION)
+
+.PHONY: kind-with-registry
+kind-with-registry: $(KIND_WITH_REGISTRY)
+$(KIND_WITH_REGISTRY): $(LOCALBIN)
+	curl -sLo $(KIND_WITH_REGISTRY) https://raw.githubusercontent.com/kubernetes-sigs/kind/v$(KIND_WITH_REGISTRY_VERSION)/site/static/examples/kind-with-registry.sh
+	chmod +x $(KIND_WITH_REGISTRY)

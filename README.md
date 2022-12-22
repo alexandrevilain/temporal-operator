@@ -87,6 +87,11 @@ Few examples are available to help you get started:
 - [Demo cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
 - [Demo cluster with mTLS using cert-manager & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls)
 
+## Contributing
+
+Feel free to contribute to the project ! All issues and PRs are welcome!
+To start hacking on the project, you can follow the [local development](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/local_development.md) documentation page. 
+
 ## License
 
 Temporal Operator is licensed under Apache License Version 2.0. [See LICENSE for more information](https://github.com/alexandrevilain/temporal-operator/blob/main/LICENSE).
