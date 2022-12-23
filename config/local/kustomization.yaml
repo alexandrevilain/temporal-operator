@@ -1,12 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: temporal-system
-namePrefix: temporal-operator-
-
 resources:
-- ../rbac
-- ../manager
+- ../crd
+- ../default
 
 patchesStrategicMerge:
 - |-
@@ -20,5 +17,5 @@ patchesStrategicMerge:
       spec:
         containers:
         - name: manager
-          image: temporal-operator:latest
+          image: localhost:5001/temporal-operator:latest
           imagePullPolicy: IfNotPresent
