@@ -18,14 +18,15 @@
 package discovery
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/apichecker/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/apichecker/prometheus"
-	certmanager "github.com/cert-manager/cert-manager/pkg/util/cmapichecker"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/go-logr/logr"
-	ctrl "sigs.k8s.io/controller-runtime"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/prometheus-operator/prometheus-operator/pkg/k8sutil"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 )
 
 // AvailableAPIs holds available apis in the cluster.
@@ -35,54 +36,62 @@ type AvailableAPIs struct {
 	PrometheusOperator bool
 }
 
-// ResourcesConfig holds namespaces where to create resources to check if they exists.
-type ResourcesConfig struct {
-	IstioNamespace              string
-	CertManagerNamespace        string
-	PrometheusOperatorNamespace string
+type check struct {
+	name          string
+	groupVersion  string
+	resource      string
+	registerValue func(*AvailableAPIs, bool)
 }
 
 // FindAvailableAPIs searches for available well-known APIs in the cluster.
-func FindAvailableAPIs(ctx context.Context, logger logr.Logger, mgr ctrl.Manager, cfg ResourcesConfig) (*AvailableAPIs, error) {
+func FindAvailableAPIs(logger logr.Logger, config *rest.Config) (*AvailableAPIs, error) {
 	resources := &AvailableAPIs{}
 
-	cmAPIChecker, err := certmanager.New(mgr.GetConfig(), mgr.GetScheme(), cfg.CertManagerNamespace)
+	client, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create cert-manager api checker: %w", err)
+		return nil, fmt.Errorf("can't create discovery client: %w", err)
 	}
 
-	err = cmAPIChecker.Check(ctx)
-	if err != nil {
-		logger.Info("Unable to find cert-manager installation in the cluster, features requiring cert-manager are disabled")
-	} else {
-		resources.CertManager = true
-		logger.Info("Found cert-manager installation in the cluster, features requiring cert-manager are enabled")
+	checks := []check{
+		{
+			name:         "cert-manager",
+			groupVersion: certmanagerv1.SchemeGroupVersion.String(),
+			resource:     "certificates",
+			registerValue: func(a *AvailableAPIs, found bool) {
+				a.CertManager = found
+			},
+		},
+		{
+			name:         "istio",
+			groupVersion: istionetworkingv1beta1.SchemeGroupVersion.String(),
+			resource:     "destinationrules",
+			registerValue: func(a *AvailableAPIs, found bool) {
+				a.Istio = found
+			},
+		},
+		{
+			name:         "prometheus operator",
+			groupVersion: monitoringv1.SchemeGroupVersion.String(),
+			resource:     "servicemonitors",
+			registerValue: func(a *AvailableAPIs, found bool) {
+				a.PrometheusOperator = found
+			},
+		},
 	}
 
-	istioAPIChecker, err := istio.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), cfg.IstioNamespace)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create istio api checker: %w", err)
-	}
-
-	err = istioAPIChecker.Check(ctx)
-	if err != nil {
-		logger.Info("Unable to find istio installation in the cluster, features requiring istio are disabled")
-	} else {
-		resources.Istio = true
-		logger.Info("Found istio installation in the cluster, features requiring istio are enabled")
-	}
-
-	promOperatorAPIChecker, err := prometheus.NewAPIChecker(mgr.GetConfig(), mgr.GetScheme(), cfg.PrometheusOperatorNamespace)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create prometheus operator api checker: %w", err)
-	}
-
-	err = promOperatorAPIChecker.Check(ctx)
-	if err != nil {
-		logger.Info("Unable to find prometheus operator installation in the cluster, features requiring prometheus operator are disabled")
-	} else {
-		resources.PrometheusOperator = true
-		logger.Info("Found prometheus operator installation in the cluster, features requiring prometheus operator are enabled")
+	for _, check := range checks {
+		found, err := k8sutil.IsAPIGroupVersionResourceSupported(client, check.groupVersion, check.resource)
+		if err != nil {
+			return nil, err
+		}
+		var msg string
+		if found {
+			msg = fmt.Sprintf("Found %s installation in the cluster, features requiring %s are enabled", check.name, check.name)
+		} else {
+			msg = fmt.Sprintf("Unable to find %s installation in the cluster, features requiring %s are disabled", check.name, check.name)
+		}
+		logger.Info(msg)
+		check.registerValue(resources, found)
 	}
 
 	return resources, nil
