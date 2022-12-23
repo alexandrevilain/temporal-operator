@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.9.1
+
+**Release date:** 2022-12-24
+
+Improvements:
+- Add local development solution using tilt [#225](https://github.com/alexandrevilain/temporal-operator/pull/225)
+- Cleanup APIs discovery codebase [#226](https://github.com/alexandrevilain/temporal-operator/pull/226)
+
+Fixes:
+- Add missing rule for servicemonitors in clusterrole [#221](https://github.com/alexandrevilain/temporal-operator/pull/221)
+- Fix incorrect conversion between integers [#224](https://github.com/alexandrevilain/temporal-operator/pull/224)
+
+Updates:
+- Bump github.com/onsi/ginkgo/v2 from 2.6.0 to 2.6.1 [#219](https://github.com/alexandrevilain/temporal-operator/pull/219)
+- Bump sigs.k8s.io/controller-runtime from 0.14.0 to 0.14.1 [#222](https://github.com/alexandrevilain/temporal-operator/pull/222)
+
 ## 0.9.0
 
 **Release date:** 2022-12-19

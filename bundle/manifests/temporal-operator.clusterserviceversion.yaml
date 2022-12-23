@@ -89,7 +89,7 @@ metadata:
     containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.9.0
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.9.0
+  name: temporal-operator.v0.9.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -267,6 +267,17 @@ spec:
           - update
           - watch
         - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
           - networking.istio.io
           resources:
           - destinationrules
@@ -426,7 +437,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.9.0
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.9.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -517,4 +528,4 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  version: 0.9.0
+  version: 0.9.1
