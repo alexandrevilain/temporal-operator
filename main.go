@@ -18,7 +18,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 
@@ -34,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
@@ -55,26 +55,21 @@ func init() {
 	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme))
 	utilruntime.Must(istionetworkingv1beta1.AddToScheme(scheme))
 	utilruntime.Must(temporaliov1beta1.AddToScheme(scheme))
+	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
 func main() {
 	var (
-		metricsAddr              string
-		enableLeaderElection     bool
-		probeAddr                string
-		cmCheckNamespace         string
-		istioCheckNamespace      string
-		prometheusCheckNamespace string
+		metricsAddr          string
+		enableLeaderElection bool
+		probeAddr            string
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
-	flag.StringVar(&cmCheckNamespace, "cm-check-namespace", "cert-manager", "The namespace where to create resources to search for a cert-manager installation.")
-	flag.StringVar(&istioCheckNamespace, "istio-check-namespace", "default", "The namespace where to create resources to search for an isto installation.")
-	flag.StringVar(&prometheusCheckNamespace, "prom-operator-check-namespace", "default", "The namespace where to create resources to search for a prometheus operator installation.")
 
 	opts := zap.Options{
 		Development: true,
@@ -97,11 +92,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	availableAPIs, err := discovery.FindAvailableAPIs(context.Background(), setupLog, mgr, discovery.ResourcesConfig{
-		CertManagerNamespace:        cmCheckNamespace,
-		IstioNamespace:              istioCheckNamespace,
-		PrometheusOperatorNamespace: prometheusCheckNamespace,
-	})
+	availableAPIs, err := discovery.FindAvailableAPIs(setupLog, mgr.GetConfig())
 	if err != nil {
 		setupLog.Error(err, "unable to discover available apis")
 		os.Exit(1)
