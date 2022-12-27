@@ -41,6 +41,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
+	"github.com/alexandrevilain/temporal-operator/webhooks"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -109,6 +110,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
 	}
+
+	if err = (&webhooks.TemporalClusterWebhook{
+		AvailableAPIs: availableAPIs,
+	}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "TemporalCluster")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.TemporalWorkerProcessReconciler{
 		Base: reconciler.Base{
 			Client:        mgr.GetClient(),
@@ -139,6 +148,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
 		os.Exit(1)
 	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

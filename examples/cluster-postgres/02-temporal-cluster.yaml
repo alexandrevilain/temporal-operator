@@ -4,7 +4,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.17.4
+  version: 1.19.0
   numHistoryShards: 1
   persistence:
     defaultStore:
@@ -32,9 +32,9 @@ spec:
   admintools:
     enabled: true
   metrics:
-    enabled: true
-    prometheus:
-      listenPort: 9090
-      scrapeConfig:
-        serviceMonitor:
-          enabled: true
+    enabled: false
+    # prometheus:
+    #   listenPort: 9090
+    #   scrapeConfig:
+    #     serviceMonitor:
+    #       enabled: true

@@ -64,16 +64,16 @@ type ServiceSpec struct {
 type ServicesSpec struct {
 	// Frontend service custom specifications.
 	// +optional
-	Frontend *ServiceSpec `json:"frontend"`
+	Frontend *ServiceSpec `json:"frontend,omitempty"`
 	// History service custom specifications.
 	// +optional
-	History *ServiceSpec `json:"history"`
+	History *ServiceSpec `json:"history,omitempty"`
 	// Matching service custom specifications.
 	// +optional
-	Matching *ServiceSpec `json:"matching"`
+	Matching *ServiceSpec `json:"matching,omitempty"`
 	// Worker service custom specifications.
 	// +optional
-	Worker *ServiceSpec `json:"worker"`
+	Worker *ServiceSpec `json:"worker,omitempty"`
 	// Overrides adds some overrides to the resources deployed for all temporal services services.
 	// Those overrides can be customized per service using spec.services.<serviceName>.overrides.
 	// +optional
@@ -168,7 +168,7 @@ type SQLSpec struct {
 	ConnectProtocol string `json:"connectProtocol"`
 	// ConnectAttributes is a set of key-value attributes to be sent as part of connect data_source_name url
 	// +optional
-	ConnectAttributes map[string]string `json:"connectAttributes"`
+	ConnectAttributes map[string]string `json:"connectAttributes,omitempty"`
 	// MaxConns the max number of connections to this datastore.
 	// +optional
 	MaxConns int `json:"maxConns"`
@@ -189,13 +189,13 @@ type DatastoreTLSSpec struct {
 	Enabled bool `json:"enabled"`
 	// CertFileRef is a reference to a secret containing the cert file.
 	// +optional
-	CertFileRef *SecretKeyReference `json:"certFileRef"`
+	CertFileRef *SecretKeyReference `json:"certFileRef,omitempty"`
 	// KeyFileRef is a reference to a secret containing the key file.
 	// +optional
-	KeyFileRef *SecretKeyReference `json:"keyFileRef"`
+	KeyFileRef *SecretKeyReference `json:"keyFileRef,omitempty"`
 	// CaFileRef is a reference to a secret containing the ca file.
 	// +optional
-	CaFileRef *SecretKeyReference `json:"caFileRef"`
+	CaFileRef *SecretKeyReference `json:"caFileRef,omitempty"`
 	// EnableHostVerification defines if the hostname should be verified when connecting to the datastore.
 	EnableHostVerification bool `json:"enableHostVerification"`
 	// ServerName the datastore should present.
@@ -273,7 +273,7 @@ type CassandraSpec struct {
 	ConnectTimeout *metav1.Duration `json:"connectTimeout"`
 	// Consistency configuration.
 	// +optional
-	Consistency *CassandraConsistencySpec `json:"consistency"`
+	Consistency *CassandraConsistencySpec `json:"consistency,omitempty"`
 	// DisableInitialHostLookup instructs the gocql client to connect only using the supplied hosts.
 	// +optional
 	DisableInitialHostLookup bool `json:"disableInitialHostLookup"`
@@ -305,19 +305,19 @@ type DatastoreSpec struct {
 	Name string `json:"name"`
 	// SQL holds all connection parameters for SQL datastores.
 	// +optional
-	SQL *SQLSpec `json:"sql"`
+	SQL *SQLSpec `json:"sql,omitempty"`
 	// Elasticsearch holds all connection parameters for Elasticsearch datastores.
 	// +optional
-	Elasticsearch *ElasticsearchSpec `json:"elasticsearch"`
+	Elasticsearch *ElasticsearchSpec `json:"elasticsearch,omitempty"`
 	// Cassandra holds all connection parameters for Cassandra datastore.
 	// +optional
-	Cassandra *CassandraSpec `json:"cassandra"`
+	Cassandra *CassandraSpec `json:"cassandra,omitempty"`
 	// PasswordSecret is the reference to the secret holding the password.
 	// +required
 	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
 	// TLS is an optional option to connect to the datastore using TLS.
 	// +optional
-	TLS *DatastoreTLSSpec `json:"tls"`
+	TLS *DatastoreTLSSpec `json:"tls,omitempty"`
 }
 
 func (s *DatastoreSpec) GetType() DatastoreType {
@@ -388,7 +388,7 @@ type TemporalPersistenceSpec struct {
 	VisibilityStore *DatastoreSpec `json:"visibilityStore"`
 	// AdvancedVisibilityStore holds the avanced visibility datastore specs.
 	// +optional
-	AdvancedVisibilityStore *DatastoreSpec `json:"advancedVisibilityStore"`
+	AdvancedVisibilityStore *DatastoreSpec `json:"advancedVisibilityStore,omitempty"`
 }
 
 func (p *TemporalPersistenceSpec) GetDatastores() []*DatastoreSpec {
@@ -537,11 +537,11 @@ type MTLSSpec struct {
 	// Internode allows configuration of the internode traffic encryption.
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
-	Internode *InternodeMTLSSpec `json:"internode"`
+	Internode *InternodeMTLSSpec `json:"internode,omitempty"`
 	// Frontend allows configuration of the frontend's public endpoint traffic encryption.
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
-	Frontend *FrontendMTLSSpec `json:"frontend"`
+	Frontend *FrontendMTLSSpec `json:"frontend,omitempty"`
 	// CertificatesDuration allows configuration of maximum certificates lifetime.
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
@@ -578,7 +578,7 @@ type PrometheusScrapeConfig struct {
 	// +optional
 	Annotations bool `json:"annotations"`
 	// +optional
-	ServiceMonitor *PrometheusScrapeConfigServiceMonitor `json:"serviceMonitor"`
+	ServiceMonitor *PrometheusScrapeConfigServiceMonitor `json:"serviceMonitor,omitempty"`
 }
 
 // Prometheus is the configuration for prometheus reporter.
@@ -587,12 +587,11 @@ type PrometheusSpec struct {
 	// +optional
 	ListenAddress string `json:"listenAddress"`
 	// ListenPort for prometheus to serve metrics from.
-	// +kubebuilder:default:=9090
 	// +optional
 	ListenPort *int32 `json:"listenPort,omitempty"`
 	// ScrapeConfig is the prometheus scrape configuration.
 	// +optional
-	ScrapeConfig *PrometheusScrapeConfig `json:"scrapeConfig"`
+	ScrapeConfig *PrometheusScrapeConfig `json:"scrapeConfig,omitempty"`
 }
 
 // MetricsSpec determines parameters for configuring metrics endpoints
@@ -601,7 +600,7 @@ type MetricsSpec struct {
 	Enabled bool `json:"enabled"`
 	// Prometheus reporter configuration.
 	// +optional
-	Prometheus *PrometheusSpec `json:"prometheus"`
+	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 }
 
 func (m *MetricsSpec) MetricsEnabled() bool {

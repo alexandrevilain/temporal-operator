@@ -1681,6 +1681,7 @@ bool
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Annotations defines if the operator should add prometheus scrape annotations to the services pods.</p>
 </td>
 </tr>
@@ -1688,10 +1689,59 @@ bool
 <td>
 <code>serviceMonitor</code><br>
 <em>
+<a href="#temporal.io/v1beta1.PrometheusScrapeConfigServiceMonitor">
+PrometheusScrapeConfigServiceMonitor
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.PrometheusScrapeConfigServiceMonitor">PrometheusScrapeConfigServiceMonitor
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.PrometheusScrapeConfig">PrometheusScrapeConfig</a>)
+</p>
+<p>PrometheusScrapeConfigServiceMonitor is the configuration for prometheus operator ServiceMonitor.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
 bool
 </em>
 </td>
 <td>
+<em>(Optional)</em>
+<p>Enabled defines if the operator should create a ServiceMonitor for each services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>override</code><br>
+<em>
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.ServiceMonitorSpec
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Override allows customization of the created ServiceMonitor.
+All fields can be overritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdquo; and &ldquo;namespaceSelector&rdquo;.</p>
 </td>
 </tr>
 </tbody>

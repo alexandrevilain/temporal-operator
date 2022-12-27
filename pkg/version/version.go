@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-//+kubebuilder:object:generate=true
+// +kubebuilder:object:generate=true
 package version
 
 import (
@@ -28,7 +28,7 @@ import (
 
 var (
 	// SupportedVersionsRange holds all supported temporal versions.
-	SupportedVersionsRange = mustNewConstraint(">= 1.14.0 < 1.19.0")
+	SupportedVersionsRange = mustNewConstraint(">= 1.14.0 < 1.20.0")
 	V1_18_0                = MustNewVersionFromString("1.18.0")
 )
 
@@ -50,7 +50,10 @@ func (v *Version) Validate() error {
 }
 
 // ToUnstructured implements the value.UnstructuredConverter interface.
-func (v Version) ToUnstructured() interface{} {
+func (v *Version) ToUnstructured() any {
+	if v == nil {
+		return nil
+	}
 	return v.Version.String()
 }
 
@@ -78,10 +81,20 @@ func (v Version) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.Version.String())
 }
 
+// GreaterOrEqual returns whenever version is greater or equal than the provided version.
 func (v *Version) GreaterOrEqual(compare *Version) bool {
 	str := fmt.Sprintf(">= %s", compare.String())
 	c, _ := semver.NewConstraint(str)
 	return c.Check(v.Version)
+}
+
+// UpgradeConstraint returns the Temporal Server upgrade constraint.
+// Users should upgrade Temporal Server sequentially.
+// The returned constraint ensures that, we're could only upgrade to upgrade from v1.n.x to v1.n+1.x.
+func (v *Version) UpgradeConstraint() (*semver.Constraints, error) {
+	incrementedMinor := v.IncMinor()
+	constraint := fmt.Sprintf(">= %d.%d.%d <= %d.%d", v.Major(), v.Minor(), v.Patch(), v.Major(), incrementedMinor.Minor())
+	return semver.NewConstraint(constraint)
 }
 
 // OpenAPISchemaType is used by the kube-openapi generator when constructing
