@@ -85,7 +85,7 @@ For more customization options refers to the [api documentation](https://github.
 ## Documentation
 
 - [Using overrides to customize rendered resources](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/applying-overrides.md)
-- [Monitoring your temporal cluster](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/monitoring.md)
+- [Monitoring temporal using prometheus-operator](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/monitoring.md)
 
 ## Examples
 
