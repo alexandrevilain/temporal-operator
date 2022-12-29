@@ -2,8 +2,6 @@
 
 The Kubernetes Operator to deploy and manage [Temporal](https://temporal.io/) clusters.
 
-Current Status: Work in Progress. The operator can create a basic cluster. Many improvements are needed to make it production ready.
-
 ## Roadmap
 
 ### Features:
