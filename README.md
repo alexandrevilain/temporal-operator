@@ -25,7 +25,14 @@ Current Status: Work in Progress. The operator can create a basic cluster. Many 
 
 ## Quick start
 
-First install CRDs on your cluster and the operator:
+First install cert-manager on your cluster. The operator comes with admissions webhooks that needs self-signed certificates.
+
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml
+```
+(You can use the installation method you want, see the [cert-manager's documentation](https://cert-manager.io/docs/installation/))
+
+Then install Temporal Operator's CRDs and the operator itself on your cluster:
 
 ```
 kubectl apply --server-side -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.crds.yaml
@@ -47,7 +54,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.17.4
+  version: 1.18.5
   numHistoryShards: 1
   persistence:
     defaultStore:
@@ -78,6 +85,7 @@ For more customization options refers to the [api documentation](https://github.
 ## Documentation
 
 - [Using overrides to customize rendered resources](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/applying-overrides.md)
+- [Monitoring your temporal cluster](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/monitoring.md)
 
 ## Examples
 
