@@ -43,9 +43,29 @@ func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.
 	return err
 }
 
+func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.TemporalCluster) {
+	if cluster.Status.Persistence == nil {
+		cluster.Status.Persistence = new(v1beta1.TemporalPersistenceStatus)
+	}
+
+	if cluster.Status.Persistence.DefaultStore == nil {
+		cluster.Status.Persistence.DefaultStore = new(v1beta1.DatastoreStatus)
+	}
+
+	if cluster.Status.Persistence.VisibilityStore == nil {
+		cluster.Status.Persistence.VisibilityStore = new(v1beta1.DatastoreStatus)
+	}
+
+	if cluster.Status.Persistence.AdvancedVisibilityStore == nil && cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+		cluster.Status.Persistence.AdvancedVisibilityStore = new(v1beta1.DatastoreStatus)
+	}
+}
+
 // reconcilePersistence tries to reconcile the cluster persistence.
 func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.TemporalCluster) (time.Duration, error) {
-	// First of all, ensure the configmap containing scripts is up-to-date
+	// First of all, ensure status fields are set.
+	r.reconcilePersistenceStatus(cluster)
+	// Ensure the configmap containing scripts is up-to-date
 	err := r.reconcileSchemaScriptsConfigmap(ctx, cluster)
 	if err != nil {
 		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)

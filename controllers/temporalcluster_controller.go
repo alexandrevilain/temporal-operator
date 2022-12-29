@@ -19,8 +19,9 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -44,7 +45,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
-	"github.com/alexandrevilain/temporal-operator/pkg/version"
+	"sigs.k8s.io/cluster-api/util/patch"
 )
 
 const (
@@ -75,7 +76,7 @@ type TemporalClusterReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, reterr error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
@@ -95,69 +96,23 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return reconcile.Result{}, nil
 	}
 
-	// Transform deprecated fields
-	updated, err := r.reconcileDeprecatedFields(ctx, cluster)
+	patchHelper, err := patch.NewHelper(cluster, r.Client)
 	if err != nil {
-		logger.Error(err, "Can't reconcile cluster deprecated fields")
-		return r.handleError(ctx, cluster, "", err)
+		return reconcile.Result{}, err
 	}
-	if updated {
-		err := r.Client.Update(ctx, cluster)
+
+	defer func() {
+		// Always attempt to Patch the Cluster object and status after each reconciliation.
+		err := patchHelper.Patch(ctx, cluster, patch.WithStatusObservedGeneration{})
 		if err != nil {
-			logger.Error(err, "Can't reconcile cluster deprecated fields")
-			return r.handleError(ctx, cluster, "", err)
+			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
-		// As we updated the instance, another reconcile will be triggered.
-		return reconcile.Result{}, nil
-	}
-
-	// Set defaults on unfiled fields.
-	updated = r.reconcileDefaults(ctx, cluster)
-	if updated {
-		err := r.Client.Update(ctx, cluster)
-		if err != nil {
-			logger.Error(err, "Can't set cluster defaults")
-			return r.handleError(ctx, cluster, "", err)
-		}
-		// As we updated the instance, another reconcile will be triggered.
-		return reconcile.Result{}, nil
-	}
-
-	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
-	// it can't process the request, return the error.
-	if cluster.MTLSWithCertManagerEnabled() && !r.AvailableAPIs.CertManager {
-		err := errors.New("cert-manager is not available in the cluster")
-		logger.Error(err, "Can't process cluster with mTLS enabled using cert-manager")
-		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
-	}
-
-	// Validate that the cluster version is a supported one.
-	err = cluster.Spec.Version.Validate()
-	if err != nil {
-		logger.Error(err, "Can't validate temporal version")
-		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
-	}
-
-	// Ensure ElasticSearch v6 is not used with cluster >= 1.18.0
-	// TODO(alexandrevilain): this should be moved to a validating webhook.
-	if cluster.Spec.Version.GreaterOrEqual(version.V1_18_0) &&
-		cluster.Spec.Persistence.AdvancedVisibilityStore != nil &&
-		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch != nil &&
-		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch.Version == "v6" {
-		err := errors.New("temporal cluster version >= 1.18.0 doesn't support ElasticSearch v6")
-		return r.handleError(ctx, cluster, v1beta1.TemporalClusterValidationFailedReason, err)
-	}
-
-	logger.Info("Retrieved desired cluster version", "version", cluster.Spec.Version.String())
+	}()
 
 	// Check the ready condition
 	cond, exists := v1beta1.GetTemporalClusterReadyCondition(cluster)
 	if !exists || cond.ObservedGeneration != cluster.GetGeneration() {
 		v1beta1.SetTemporalClusterReady(cluster, metav1.ConditionUnknown, v1beta1.ProgressingReason, "")
-		err := r.updateClusterStatus(ctx, cluster)
-		if err != nil {
-			return r.handleError(ctx, cluster, "", err)
-		}
 	}
 
 	if requeueAfter, err := r.reconcilePersistence(ctx, cluster); err != nil || requeueAfter > 0 {
@@ -169,10 +124,6 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
-			err := r.updateClusterStatus(ctx, cluster)
-			if err != nil {
-				return r.handleError(ctx, cluster, "", err)
-			}
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
 	}
@@ -210,21 +161,16 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		v1beta1.SetTemporalClusterReady(temporalCluster, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return r.updateClusterStatus(ctx, temporalCluster)
+	return nil
 }
 
 func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, cluster *v1beta1.TemporalCluster) (ctrl.Result, error) {
 	return r.handleSuccessWithRequeue(ctx, cluster, 0)
 }
 
-func (r *TemporalClusterReconciler) handleError(ctx context.Context, cluster *v1beta1.TemporalCluster, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, cluster, reason, err, 0)
-}
-
 func (r *TemporalClusterReconciler) handleSuccessWithRequeue(ctx context.Context, cluster *v1beta1.TemporalCluster, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalClusterReconcileSuccess(cluster, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
-	err := r.updateClusterStatus(ctx, cluster)
-	return reconcile.Result{RequeueAfter: requeueAfter}, err
+	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
 func (r *TemporalClusterReconciler) handleErrorWithRequeue(ctx context.Context, cluster *v1beta1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
@@ -233,16 +179,7 @@ func (r *TemporalClusterReconciler) handleErrorWithRequeue(ctx context.Context, 
 		reason = v1beta1.ReconcileErrorReason
 	}
 	v1beta1.SetTemporalClusterReconcileError(cluster, metav1.ConditionTrue, reason, err.Error())
-	err = r.updateClusterStatus(ctx, cluster)
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
-}
-
-func (r *TemporalClusterReconciler) updateClusterStatus(ctx context.Context, cluster *v1beta1.TemporalCluster) error {
-	err := r.Status().Update(ctx, cluster)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
