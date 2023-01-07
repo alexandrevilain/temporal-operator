@@ -47,7 +47,8 @@ spec:
             description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
             properties:
               builder:
-                description: Builder is the configuration for building a TemporalWorkerProcess
+                description: Builder is the configuration for building a TemporalWorkerProcess.
+                  THIS FEATURE IS HIGHLY EXPERIMENTAL.
                 properties:
                   attempt:
                     description: BuildAttempt is the build attempt number of a given
@@ -268,9 +269,7 @@ spec:
                   to build worker image.
                 type: string
             required:
-            - attempt
             - conditions
-            - created
             - ready
             - version
             type: object

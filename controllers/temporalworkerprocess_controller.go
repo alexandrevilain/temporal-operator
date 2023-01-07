@@ -19,16 +19,15 @@ package controllers
 
 import (
 	"context"
-	"reflect"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -55,7 +54,7 @@ type TemporalWorkerProcessReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, reterr error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
@@ -75,19 +74,25 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, nil
 	}
 
-	// Set defaults on unfiled fields.
-	updated := r.reconcileDefaults(ctx, worker)
-	if updated {
-		err := r.Update(ctx, worker)
-		if err != nil {
-			logger.Error(err, "Can't set worker defaults")
-			return r.handleError(ctx, worker, "", err)
-		}
-		// As we updated the instance, another reconcile will be triggered.
-		return reconcile.Result{}, nil
+	patchHelper, err := patch.NewHelper(worker, r.Client)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
 
+	defer func() {
+		// Always attempt to Patch the WorkerProcess object and status after each reconciliation.
+		err := patchHelper.Patch(ctx, worker, patch.WithStatusObservedGeneration{})
+		if err != nil {
+			reterr = kerrors.NewAggregate([]error{reterr, err})
+		}
+	}()
+
 	if worker.Spec.Builder.BuilderEnabled() {
+		var defaultBuildAttempt int32 = 1
+		if worker.Status.BuildAttempt == nil {
+			worker.Status.BuildAttempt = &defaultBuildAttempt
+		}
+
 		// First of all, ensure the configmap containing scripts is up-to-date
 		err = r.reconcileWorkerScriptsConfigmap(ctx, worker)
 		if err != nil {
@@ -138,15 +143,8 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		}
 	}
 
-	// Set namespace based on ClusterRef
-	namespace := worker.Spec.ClusterRef.Namespace
-	if namespace == "" {
-		namespace = req.Namespace
-	}
-
-	namespacedName := types.NamespacedName{Namespace: namespace, Name: worker.Spec.ClusterRef.Name}
 	cluster := &v1beta1.TemporalCluster{}
-	err = r.Get(ctx, namespacedName, cluster)
+	err = r.Get(ctx, worker.Spec.ClusterRef.NamespacedName(worker), cluster)
 	if err != nil {
 		logger.Error(err, "Can't find referenced temporal cluster")
 		return r.handleError(ctx, worker, v1beta1.ReconcileErrorReason, err)
@@ -174,27 +172,6 @@ func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx co
 	return err
 }
 
-func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
-	if reason == "" {
-		reason = v1beta1.ReconcileErrorReason
-	}
-	v1beta1.SetTemporalWorkerProcessReconcileError(worker, metav1.ConditionTrue, reason, err.Error())
-	err = r.updateWorkerProcessStatus(ctx, worker)
-	return reconcile.Result{RequeueAfter: requeueAfter}, err
-}
-
-func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, worker, reason, err, 0)
-}
-
-func (r *TemporalWorkerProcessReconciler) updateWorkerProcessStatus(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) error {
-	err := r.Status().Update(ctx, worker)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) error {
 	workerProcessBuilder := &resourceset.WorkerProcessBuilder{
 		Instance: temporalWorkerProcess,
@@ -209,6 +186,8 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 
 	if len(statuses) == 1 {
 		temporalWorkerProcess.Status.Ready = statuses[0].Ready
+	} else {
+		temporalWorkerProcess.Status.Ready = false
 	}
 
 	if status.IsWorkerProcessReady(temporalWorkerProcess) {
@@ -218,30 +197,19 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return r.updateWorkerProcessStatus(ctx, temporalWorkerProcess)
+	return nil
 }
 
-func (r *TemporalWorkerProcessReconciler) reconcileDefaults(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) bool {
-	before := worker.DeepCopy()
-
-	if worker.Spec.Builder != nil {
-		if worker.Spec.Builder.GitRepository.Reference == nil {
-			worker.Spec.Builder.GitRepository.Reference = new(v1beta1.GitRepositoryRef)
-		}
-		if worker.Spec.Builder.GitRepository.Reference.Branch == "" {
-			worker.Spec.Builder.GitRepository.Reference.Branch = "main"
-		}
-		if worker.Spec.PullPolicy == "" {
-			worker.Spec.PullPolicy = v1.PullAlways
-		}
-
-		var defaultBuildAttempt int32 = 1
-		if worker.Status.BuildAttempt == nil {
-			worker.Status.BuildAttempt = &defaultBuildAttempt
-		}
+func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+	if reason == "" {
+		reason = v1beta1.ReconcileErrorReason
 	}
+	v1beta1.SetTemporalWorkerProcessReconcileError(worker, metav1.ConditionTrue, reason, err.Error())
+	return reconcile.Result{RequeueAfter: requeueAfter}, err
+}
 
-	return !reflect.DeepEqual(before.Spec, worker.Spec)
+func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(ctx, worker, reason, err, 0)
 }
 
 func (r *TemporalWorkerProcessReconciler) handleSuccess(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (ctrl.Result, error) {
@@ -250,8 +218,7 @@ func (r *TemporalWorkerProcessReconciler) handleSuccess(ctx context.Context, wor
 
 func (r *TemporalWorkerProcessReconciler) handleSuccessWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalWorkerProcessReconcileSuccess(worker, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
-	err := r.updateWorkerProcessStatus(ctx, worker)
-	return reconcile.Result{RequeueAfter: requeueAfter}, err
+	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

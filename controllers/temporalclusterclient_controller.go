@@ -77,11 +77,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
 	}
 
-	dnsName := fmt.Sprintf("%s.%s", clusterClient.GetName(), cluster.ServerName())
-	commonName := fmt.Sprintf("%s Client", clusterClient.GetName())
-	secretName := fmt.Sprintf("%s-mtls-certificate", clusterClient.GetName())
-
-	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName(), secretName, dnsName, commonName)
+	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName())
 
 	res, err := builder.Build()
 	if err != nil {

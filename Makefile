@@ -94,7 +94,7 @@ test-e2e: artifacts ## Run end2end tests.
 test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
 	docker build -t temporal-operator .
 	docker save temporal-operator > /tmp/temporal-operator.tar
-	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 60m -args "--v=4"
+	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 60m -args "--v=4" -feature="worker process"
 
 .PHONY: ensure-license
 ensure-license: go-licenser

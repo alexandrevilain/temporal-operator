@@ -1265,7 +1265,7 @@ bool
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.MTLSSpec">MTLSSpec</a>)
 </p>
-<p>InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
+<p>FrontendMTLSSpec defines parameters for the temporal encryption in transit with mTLS.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3627,6 +3627,7 @@ int32
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>BuildAttempt is the build attempt number of a given version</p>
 </td>
 </tr>

@@ -18,8 +18,6 @@
 package certmanager
 
 import (
-	"fmt"
-
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,19 +25,12 @@ import (
 )
 
 type AdminToolsFrontendClientCertificateBuilder struct {
-	GenericFrontendClientCertificateBuilder
+	*GenericFrontendClientCertificateBuilder
 }
 
 func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
 	return &AdminToolsFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder{
-			instance:   instance,
-			scheme:     scheme,
-			name:       AdmintoolsFrontendClientCertificate,
-			secretName: AdmintoolsFrontendClientCertificate,
-			commonName: "Admintools client certificate",
-			dnsName:    fmt.Sprintf("admintools.%s", instance.ServerName()),
-		},
+		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "admintools"),
 	}
 }
 

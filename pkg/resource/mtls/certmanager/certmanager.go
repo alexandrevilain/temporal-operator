@@ -18,6 +18,8 @@
 package certmanager
 
 import (
+	"fmt"
+
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
@@ -36,23 +38,24 @@ const (
 	InternodeCertificate = "internode-certificate"
 	// FrontendCertificate is the name of the certificate used by the frontend.
 	FrontendCertificate = "frontend-certificate"
-	// WorkerCertificate is the name of the client certificate
-	// used for by the worker for authenticating against the frontend.
-	WorkerCertificate = "worker-certificate"
-
 	// InternodeIntermediateCACertificate is the name of the intermediate CA certificate used to issue
 	// internode certificates.
 	InternodeIntermediateCACertificate = "internode-intermediate-ca-certificate"
 	// FrontendIntermediateCACertificate is the name of the intermediate CA certificate used to issue
 	// frontend certificates.
 	FrontendIntermediateCACertificate = "frontend-intermediate-ca-certificate"
+)
 
+var (
+	// WorkerFrontendClientCertificate is the name of the client certificate
+	// used for by the worker for authenticating against the frontend.
+	WorkerFrontendClientCertificate = GetCertificateSecretName("worker")
 	// AdmintoolsFrontendClientCertificate is the name of the client certificate
 	// used for by admin tools for authenticating against the frontend.
-	AdmintoolsFrontendClientCertificate = "admintools-mtls-certificate"
+	AdmintoolsFrontendClientCertificate = GetCertificateSecretName("admintools")
 	// UIFrontendClientCertificate is the name of the client certificate
 	// used for by UI for authenticating against the frontend.
-	UIFrontendClientCertificate = "ui-mtls-certificate"
+	UIFrontendClientCertificate = GetCertificateSecretName("ui")
 )
 
 const (
@@ -74,3 +77,8 @@ var (
 		Size:           4096,
 	}
 )
+
+// GetCertificateSecretName returns generated secret name for a given client name.
+func GetCertificateSecretName(clientName string) string {
+	return fmt.Sprintf("%s-mtls-certificate", clientName)
+}
