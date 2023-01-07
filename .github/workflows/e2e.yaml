@@ -82,3 +82,9 @@ jobs:
         env:
           OPERATOR_IMAGE_PATH: ${{ env.OPERATOR_IMAGE_PATH }}
           KUBERNETES_VERSION: ${{ matrix.kube-version }}
+      - name: Archive operator logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: operator-logs
+          path: out/tests/e2e/operator-${{ matrix.kube-version }}.log
