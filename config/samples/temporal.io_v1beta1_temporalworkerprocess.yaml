@@ -3,4 +3,28 @@ kind: TemporalWorkerProcess
 metadata:
   name: temporalworkerprocess-sample
 spec:
-  # TODO(user): Add fields here
+  builder:
+    attempt: 3
+    buildDir: samples-go/helloworld
+    buildRegistry:
+      passwordSecretRef:
+        key: PASSWORD
+        name: docker-password
+      repository: docker.io
+      username: ktenzer
+    enabled: false
+    gitRepository:
+      reference:
+        branch: main
+      url: https://github.com/ktenzer/samples-go.git
+    image: quay.io/podman/stable
+    version: latest
+  clusterRef:
+    name: prod
+    namespace: temporal
+  image: ktenzer/helloworld-worker
+  jobTtlSecondsAfterFinished: 300
+  pullPolicy: Always
+  replicas: 3
+  temporalNamespace: default
+  version: latest

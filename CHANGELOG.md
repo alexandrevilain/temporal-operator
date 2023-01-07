@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.10.0
+
+**Release date:** 2023-01-07
+
+⚠️ This is a **breaking 💣** release. The release now requires cert-manager to run.
+
+Improvements:
+- Add mutating and validating admission webhooks [#229](https://github.com/alexandrevilain/temporal-operator/pull/229)
+- Add support for mTLS enabled clusters in WorkerProcess [#223](https://github.com/alexandrevilain/temporal-operator/pull/223)
+
+Updates:
+- Updated ClusterServiceVersion for Operatorhub release v0.9.1 [#231](https://github.com/alexandrevilain/temporal-operator/pull/231)
+
 ## 0.9.1
 
 **Release date:** 2022-12-24

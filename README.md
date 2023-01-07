@@ -28,7 +28,7 @@ First install cert-manager on your cluster. The operator comes with admissions w
 ```
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml
 ```
-(You can use the installation method you want, see the [cert-manager's documentation](https://cert-manager.io/docs/installation/))
+(You can use the installation method you want, see the [cert-manager's documentation](https://cert-manager.io/docs/installation/)). Note that you can use your own certificates if you don't want cert-manager on your cluster.
 
 Then install Temporal Operator's CRDs and the operator itself on your cluster:
 
