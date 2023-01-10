@@ -118,7 +118,7 @@ metadata:
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.9.1
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.10.0
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: temporal-operator.v0.10.0
@@ -571,7 +571,7 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.7.0
+  replaces: temporal-operator.v0.9.1
   version: 0.10.0
   webhookdefinitions:
   - admissionReviewVersions:
