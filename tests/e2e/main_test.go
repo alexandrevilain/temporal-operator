@@ -19,7 +19,9 @@ package e2e
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -27,8 +29,9 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
@@ -50,11 +53,11 @@ var buildAttempt int32 = 1
 var listAddress string = "0.0.0.0:9090"
 
 func TestMain(m *testing.M) {
-	kindVersion := os.Getenv("KUBERNETES_VERSION")
-	if kindVersion == "" {
-		kindVersion = "v1.23.4"
+	kubernetesVersion := os.Getenv("KUBERNETES_VERSION")
+	if kubernetesVersion == "" {
+		kubernetesVersion = "v1.23.4"
 	}
-	kindImage := fmt.Sprintf("kindest/node:%s", kindVersion)
+	kindImage := fmt.Sprintf("kindest/node:%s", kubernetesVersion)
 
 	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
 
@@ -133,10 +136,61 @@ func TestMain(m *testing.M) {
 				c.Client().Resources().Create(ctx, obj)
 			}
 
-			err = wait.For(conditions.New(c.Client().Resources()).DeploymentConditionMatch(operatorDeploy, appsv1.DeploymentAvailable, v1.ConditionTrue), wait.WithTimeout(time.Minute*1))
+			err = wait.For(conditions.New(c.Client().Resources()).DeploymentConditionMatch(operatorDeploy, appsv1.DeploymentAvailable, corev1.ConditionTrue), wait.WithTimeout(time.Minute*1))
 			return ctx, err
 		}).
 		Finish(
+			// Download operator logs for debug purpose.
+			func(ctx context.Context, c *envconf.Config) (context.Context, error) {
+
+				clientset, err := kubernetes.NewForConfig(cfg.Client().RESTConfig())
+				if err != nil {
+					return ctx, err
+				}
+
+				pods, err := clientset.CoreV1().Pods("temporal-system").List(context.TODO(),
+					metav1.ListOptions{LabelSelector: "control-plane=controller-manager"})
+				if err != nil {
+					return ctx, err
+				}
+
+				if len(pods.Items) <= 0 {
+					return ctx, errors.New("no pod found for temporal-operator-controller-manager")
+				}
+
+				podName := pods.Items[0].GetName()
+
+				stream, err := clientset.CoreV1().
+					Pods("temporal-system").
+					GetLogs(podName, &corev1.PodLogOptions{
+						Container: "manager",
+						Follow:    false,
+					}).Stream(ctx)
+				if err != nil {
+					return ctx, err
+				}
+
+				defer stream.Close()
+				err = os.MkdirAll("../../out/tests/e2e", os.ModePerm)
+				if err != nil {
+					return ctx, err
+				}
+
+				filename := fmt.Sprintf("../../out/tests/e2e/operator-%s.log", kubernetesVersion)
+
+				f, err := os.Create(filename)
+				if err != nil {
+					return ctx, err
+				}
+				defer f.Close()
+
+				_, err = io.Copy(f, stream)
+				if err != nil {
+					return ctx, err
+				}
+
+				return ctx, nil
+			},
 			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
 			envfuncs.DestroyKindCluster(kindClusterName),
 		).
@@ -158,7 +212,7 @@ func createNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 
 	t.Logf("Creating namespace %s for feature  \"%s\" in test %s", ns, f.Name(), t.Name())
 
-	return ctx, cfg.Client().Resources().Create(ctx, &v1.Namespace{
+	return ctx, cfg.Client().Resources().Create(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		},
@@ -171,7 +225,7 @@ func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 
 	t.Logf("Deleting namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())
 
-	return ctx, cfg.Client().Resources().Delete(ctx, &v1.Namespace{
+	return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: ns,
 		},

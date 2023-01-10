@@ -94,7 +94,7 @@ test-e2e: artifacts ## Run end2end tests.
 test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
 	docker build -t temporal-operator .
 	docker save temporal-operator > /tmp/temporal-operator.tar
-	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 60m -args "--v=4" -feature="worker process"
+	OPERATOR_IMAGE_PATH=/tmp/temporal-operator.tar go test ./tests/e2e -v -timeout 60m -args "--v=4"
 
 .PHONY: ensure-license
 ensure-license: go-licenser
@@ -199,7 +199,6 @@ GOLANGCI_LINT_VERSION ?= v1.50.1
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
 
-KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
 $(KUSTOMIZE): $(LOCALBIN)
@@ -207,7 +206,7 @@ $(KUSTOMIZE): $(LOCALBIN)
 		echo "$(LOCALBIN)/kustomize version is not expected $(KUSTOMIZE_VERSION). Removing it before installing."; \
 		rm -rf $(LOCALBIN)/kustomize; \
 	fi
-	test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
+	test -s $(LOCALBIN)/kustomize || GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION}
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK)
