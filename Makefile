@@ -10,6 +10,8 @@ endif
 
 UNAME=$(shell uname -s)
 
+OS ?= $(shell go env GOOS)
+ARCH ?= $(shell go env GOARCH)
 VERSION ?= "$(shell cat VERSION)"
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -116,6 +118,18 @@ clean-dev-cluster:
 deploy-dev: dev-cluster
 	tilt up
 
+.PHONY: run2
+run2:
+	$(TELEPRESENCE) connect
+	$(TELEPRESENCE) intercept webhook --service temporal-operator-webhook-service -n temporal-system --port 9443
+	
+.PHONY: run2
+ensure-certs: ensure-certs
+    openssl req -new -x509 -nodes -days 365 -keyout ca.key -out ca.crt -subj "/CN=webhook"
+	openssl req -nodes -new -sha256 -keyout tls.key -out tls.csr -subj "/CN=webhook-service.webhook.svc" -config <(cat /etc/ssl/openssl.cnf <(printf "[SAN]\nsubjectAltName=DNS:temporal-operator-webhook-service.temporal-system.svc")) -reqexts SAN
+	openssl x509 -req -days 365 -in tls.csr -out tls.crt -CA ca.crt -CAkey ca.key -CAcreateserial -extfile <(cat /etc/ssl/openssl.cnf <(printf "[SAN]\nsubjectAltName=DNS:temporal-operator-webhook-service.temporal-system.svc")) -extensions SAN
+
+
 ##@ Build
 
 .PHONY: build
@@ -188,6 +202,7 @@ GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 YQ ?= $(LOCALBIN)/yq
 KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
+TELEPRESENCE ?= $(LOCALBIN)/telepresence
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
@@ -198,6 +213,7 @@ GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.50.1
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
+TELEPRESENCE_VERSION ?= 2.9.5
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -251,3 +267,9 @@ kind-with-registry: $(KIND_WITH_REGISTRY)
 $(KIND_WITH_REGISTRY): $(LOCALBIN)
 	curl -sLo $(KIND_WITH_REGISTRY) https://raw.githubusercontent.com/kubernetes-sigs/kind/v$(KIND_WITH_REGISTRY_VERSION)/site/static/examples/kind-with-registry.sh
 	chmod +x $(KIND_WITH_REGISTRY)
+
+.PHONY: telepresence
+telepresence: $(TELEPRESENCE)
+$(TELEPRESENCE): $(LOCALBIN)
+	test -s $(TELEPRESENCE) || curl -sLo $(TELEPRESENCE) https://app.getambassador.io/download/tel2/$(OS)/$(ARCH)/$(TELEPRESENCE_VERSION)/telepresence
+	@chmod +x $(TELEPRESENCE)
