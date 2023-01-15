@@ -19,6 +19,7 @@ package resource
 
 import (
 	"context"
+	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,12 +42,13 @@ type Builder interface {
 	Update(client.Object) error
 }
 
-type Pruner interface {
-	Build() (client.Object, error)
+type DependentBuilder interface {
+	Builder
+	EnsureDependencies(context.Context, client.Client) (time.Duration, error)
 }
 
-type Copier interface {
-	Copy(client.Client, client.Object) (client.Object, error)
+type Pruner interface {
+	Build() (client.Object, error)
 }
 
 type StatusReporter interface {

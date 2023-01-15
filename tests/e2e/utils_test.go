@@ -192,7 +192,7 @@ func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClien
 
 func waitForWorkerProcess(ctx context.Context, cfg *envconf.Config, worker *v1beta1.TemporalWorkerProcess) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(worker, func(object k8s.Object) bool {
-		return object.(*v1beta1.TemporalWorkerProcess).Status.Conditions != nil
+		return object.(*v1beta1.TemporalWorkerProcess).Status.Ready
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }

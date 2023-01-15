@@ -2,7 +2,7 @@ apiVersion: temporal.io/v1beta1
 kind: TemporalWorkerProcess
 metadata:
   name: prod
-  namespace: demo
+  namespace: default
 spec:
   builder:
     enabled: false

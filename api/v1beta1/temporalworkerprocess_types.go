@@ -62,8 +62,10 @@ type TemporalWorkerProcessStatus struct {
 	// +optional
 	Created bool `json:"created"`
 	// Ready defines if the worker process is ready.
+	// +optional
 	Ready bool `json:"ready"`
 	// Version is the version of the image that will be used to build worker image.
+	// +optional
 	Version string `json:"version"`
 	// BuildAttempt is the build attempt number of a given version
 	// +optional

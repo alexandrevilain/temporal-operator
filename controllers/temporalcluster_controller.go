@@ -128,23 +128,34 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 	}
 
-	if err := r.reconcileResources(ctx, cluster); err != nil {
-		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+	if requeueAfter, err := r.reconcileResources(ctx, cluster); err != nil || requeueAfter > 0 {
+		if err != nil {
+			logger.Error(err, "Can't reconcile resources")
+			if requeueAfter == 0 {
+				requeueAfter = 2 * time.Second
+			}
+			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
+		}
+		if requeueAfter > 0 {
+			return reconcile.Result{RequeueAfter: requeueAfter}, nil
+		}
 	}
 
 	return r.handleSuccess(ctx, cluster)
 }
 
-func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) error {
+func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	clusterBuilder := &resourceset.ClusterBuilder{
 		Instance: temporalCluster,
 		Scheme:   r.Scheme,
 	}
 
-	statuses, err := r.ReconcileResources(ctx, temporalCluster, clusterBuilder)
+	statuses, requeueAfter, err := r.ReconcileResources(ctx, temporalCluster, clusterBuilder)
 	if err != nil {
-		return err
+		return requeueAfter, err
+	}
+	if requeueAfter > 0 {
+		return requeueAfter, nil
 	}
 
 	for _, status := range statuses {
@@ -161,7 +172,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		v1beta1.SetTemporalClusterReady(temporalCluster, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return nil
+	return 0, nil
 }
 
 func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, cluster *v1beta1.TemporalCluster) (ctrl.Result, error) {

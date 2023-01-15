@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -87,59 +86,17 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		}
 	}()
 
-	if worker.Spec.Builder.BuilderEnabled() {
-		var defaultBuildAttempt int32 = 1
-		if worker.Status.BuildAttempt == nil {
-			worker.Status.BuildAttempt = &defaultBuildAttempt
-		}
-
-		// First of all, ensure the configmap containing scripts is up-to-date
-		err = r.reconcileWorkerScriptsConfigmap(ctx, worker)
+	// Experimental: ensure the workerprocess image is built by the temporal worker process builder.
+	if requeueAfter, err := r.reconcileBuilder(ctx, worker); err != nil || requeueAfter > 0 {
 		if err != nil {
-			return r.handleErrorWithRequeue(ctx, worker, "can't reconcile schema script configmap", err, 2*time.Second)
-		}
-
-		jobs := []*reconciler.Job{
-			{
-				Name:    "build-worker-process",
-				Command: []string{"/etc/scripts/build-worker-process.sh"},
-				Skip: func(owner runtime.Object) bool {
-
-					if owner.(*v1beta1.TemporalWorkerProcess).Status.Version != owner.(*v1beta1.TemporalWorkerProcess).Spec.Version {
-						return false
-					}
-
-					if pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Spec.Builder.BuildAttempt) != pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Status.BuildAttempt) {
-						return false
-					}
-
-					return owner.(*v1beta1.TemporalWorkerProcess).Status.Created
-				},
-				ReportSuccess: func(owner runtime.Object) error {
-					owner.(*v1beta1.TemporalWorkerProcess).Status.Created = true
-					return nil
-				},
-			},
-		}
-
-		factory := func(owner runtime.Object, scheme *runtime.Scheme, name string, command []string) resource.Builder {
-			worker := owner.(*v1beta1.TemporalWorkerProcess)
-			return workerprocessbuilder.NewJobBuilder(worker, scheme, name, command)
-		}
-
-		if requeueAfter, err := r.ReconcileJobs(ctx, worker, factory, jobs); err != nil || requeueAfter > 0 {
-			if err != nil {
-				logger.Error(err, "Can't reconcile persistence")
-				if requeueAfter == 0 {
-					requeueAfter = 2 * time.Second
-				}
-				return r.handleErrorWithRequeue(ctx, worker, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
+			logger.Error(err, "Can't reconcile builder")
+			if requeueAfter == 0 {
+				requeueAfter = 2 * time.Second
 			}
-			if requeueAfter > 0 {
-				return reconcile.Result{RequeueAfter: requeueAfter}, nil
-			}
-
-			worker.Status.BuildAttempt = worker.Spec.Builder.BuildAttempt
+			return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
+		}
+		if requeueAfter > 0 {
+			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
 	}
 
@@ -150,38 +107,96 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return r.handleError(ctx, worker, v1beta1.ReconcileErrorReason, err)
 	}
 
-	if err := r.reconcileResources(ctx, worker, cluster); err != nil {
-		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+	if requeueAfter, err := r.reconcileResources(ctx, worker, cluster); err != nil || requeueAfter > 0 {
+		if err != nil {
+			logger.Error(err, "Can't reconcile resources")
+			if requeueAfter == 0 {
+				requeueAfter = 2 * time.Second
+			}
+			return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
+		}
+		if requeueAfter > 0 {
+			return reconcile.Result{RequeueAfter: requeueAfter}, nil
+		}
 	}
 
 	return r.handleSuccess(ctx, worker)
 }
 
-// Reconcile worker process builder config maps
-func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) error {
-	workerScriptConfigMapBuilder := workerprocessbuilder.NewJobScriptsConfigmapBuilder(worker, r.Scheme)
-	schemaScriptConfigMap, err := workerScriptConfigMapBuilder.Build()
-	if err != nil {
-		return err
+// Reconcile worker process builder configmaps.
+func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (time.Duration, error) {
+	builders := []resource.Builder{
+		workerprocessbuilder.NewJobScriptsConfigmapBuilder(worker, r.Scheme),
 	}
-
-	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, schemaScriptConfigMap, func() error {
-		return workerScriptConfigMapBuilder.Update(schemaScriptConfigMap)
-	})
-	return err
+	_, requeueAfter, err := r.ReconcileBuilders(ctx, worker, builders)
+	return requeueAfter, err
 }
 
-func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) error {
+func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (time.Duration, error) {
+	if !worker.Spec.Builder.BuilderEnabled() {
+		return 0, nil
+	}
+
+	var defaultBuildAttempt int32 = 1
+	if worker.Status.BuildAttempt == nil {
+		worker.Status.BuildAttempt = &defaultBuildAttempt
+	}
+
+	// First of all, ensure the configmap containing scripts is up-to-date
+	if requeueAfter, err := r.reconcileWorkerScriptsConfigmap(ctx, worker); err != nil || requeueAfter > 0 {
+		return requeueAfter, err
+	}
+
+	jobs := []*reconciler.Job{
+		{
+			Name:    "build-worker-process",
+			Command: []string{"/etc/scripts/build-worker-process.sh"},
+			Skip: func(owner runtime.Object) bool {
+
+				if owner.(*v1beta1.TemporalWorkerProcess).Status.Version != owner.(*v1beta1.TemporalWorkerProcess).Spec.Version {
+					return false
+				}
+
+				if pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Spec.Builder.BuildAttempt) != pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Status.BuildAttempt) {
+					return false
+				}
+
+				return owner.(*v1beta1.TemporalWorkerProcess).Status.Created
+			},
+			ReportSuccess: func(owner runtime.Object) error {
+				owner.(*v1beta1.TemporalWorkerProcess).Status.Created = true
+				return nil
+			},
+		},
+	}
+
+	factory := func(owner runtime.Object, scheme *runtime.Scheme, name string, command []string) resource.Builder {
+		worker := owner.(*v1beta1.TemporalWorkerProcess)
+		return workerprocessbuilder.NewJobBuilder(worker, scheme, name, command)
+	}
+
+	if requeueAfter, err := r.ReconcileJobs(ctx, worker, factory, jobs); err != nil || requeueAfter > 0 {
+		return requeueAfter, err
+	}
+
+	worker.Status.BuildAttempt = worker.Spec.Builder.BuildAttempt
+
+	return 0, nil
+}
+
+func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	workerProcessBuilder := &resourceset.WorkerProcessBuilder{
 		Instance: temporalWorkerProcess,
 		Cluster:  temporalCluster,
 		Scheme:   r.Scheme,
 	}
 
-	statuses, err := r.ReconcileResources(ctx, temporalCluster, workerProcessBuilder)
+	statuses, requeueAfter, err := r.ReconcileResources(ctx, temporalCluster, workerProcessBuilder)
 	if err != nil {
-		return err
+		return requeueAfter, err
+	}
+	if requeueAfter > 0 {
+		return requeueAfter, nil
 	}
 
 	if len(statuses) == 1 {
@@ -197,7 +212,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return nil
+	return 0, nil
 }
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {

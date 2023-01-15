@@ -21,10 +21,15 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"sigs.k8s.io/e2e-framework/klient/k8s"
+	"sigs.k8s.io/e2e-framework/klient/wait"
+	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
@@ -97,10 +102,43 @@ func TestWorkerProcess(t *testing.T) {
 			return context.WithValue(ctx, clusterKey, cluster)
 		}).
 		Assess("Temporal cluster created", AssertClusterReady()).
-		Assess("Can create a temporal worker process", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Create the temporal namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
+			temporalNamespace := &v1beta1.TemporalNamespace{
+				ObjectMeta: metav1.ObjectMeta{Name: "default", Namespace: namespace},
+				Spec: v1beta1.TemporalNamespaceSpec{
+					ClusterRef: corev1.LocalObjectReference{
+						Name: cluster.GetName(),
+					},
+					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
+				},
+			}
+			err := cfg.Client().Resources(namespace).Create(ctx, temporalNamespace)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cond := conditions.New(cfg.Client().Resources()).ResourceMatch(temporalNamespace, func(object k8s.Object) bool {
+				for _, condition := range object.(*v1beta1.TemporalNamespace).Status.Conditions {
+					if condition.Type == v1beta1.ReadyCondition && condition.Status == metav1.ConditionTrue {
+						return true
+					}
+				}
+				return false
+			})
+			err = wait.For(cond, wait.WithTimeout(time.Minute*10))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return ctx
+		}).
+		Assess("Can create a temporal worker process", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+			namespace := GetNamespaceForFeature(ctx)
+
+			// create the temporal worker process
 			worker = &v1beta1.TemporalWorkerProcess{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalWorkerProcessSpec{
@@ -111,27 +149,6 @@ func TestWorkerProcess(t *testing.T) {
 					ClusterRef: &v1beta1.TemporalClusterReference{
 						Name:      "test",
 						Namespace: namespace,
-					},
-					Builder: &v1beta1.TemporalWorkerProcessBuilder{
-						Version:      "test",
-						Image:        "ktenzer/helloworld",
-						BuildAttempt: &buildAttempt,
-						BuildDir:     "samples-go/helloworld",
-						GitRepository: &v1beta1.GitRepositorySpec{
-							URL: "https://github.com/ktenzer/samples-go.git",
-							Reference: &v1beta1.GitRepositoryRef{
-								Branch: "main",
-							},
-						},
-						BuildRegistry: &v1beta1.ContainerRegistryConfig{
-							Repository: "docker.io",
-							Username:   "ktenzer",
-
-							PasswordSecretRef: v1beta1.SecretKeyReference{
-								Name: "docker-password",
-								Key:  "PASSWORD",
-							},
-						},
 					},
 				},
 			}

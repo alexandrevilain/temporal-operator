@@ -134,7 +134,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: b.instance.ChildResourceName(ServiceConfig),
 					},
-					DefaultMode: pointer.Int32(420),
+					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
 				},
 			},
 		},
@@ -160,7 +160,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name: certmanager.InternodeIntermediateCACertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.InternodeIntermediateCACertificate),
+							SecretName:  b.instance.ChildResourceName(certmanager.InternodeIntermediateCACertificate),
+							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -168,7 +169,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name: certmanager.InternodeCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.InternodeCertificate),
+							SecretName:  b.instance.ChildResourceName(certmanager.InternodeCertificate),
+							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -195,7 +197,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name: certmanager.FrontendIntermediateCACertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.FrontendIntermediateCACertificate),
+							SecretName:  b.instance.ChildResourceName(certmanager.FrontendIntermediateCACertificate),
+							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -203,7 +206,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name: certmanager.FrontendCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.FrontendCertificate),
+							SecretName:  b.instance.ChildResourceName(certmanager.FrontendCertificate),
+							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -211,7 +215,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name: certmanager.WorkerFrontendClientCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
-							SecretName: b.instance.ChildResourceName(certmanager.WorkerFrontendClientCertificate),
+							SecretName:  b.instance.ChildResourceName(certmanager.WorkerFrontendClientCertificate),
+							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
