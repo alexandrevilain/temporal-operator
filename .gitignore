@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+go.work*
 bin
 testbin/*
 out
