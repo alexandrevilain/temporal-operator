@@ -119,7 +119,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 			clusterClient = &v1beta1.TemporalClusterClient{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalClusterClientSpec{
-					ClusterRef: corev1.LocalObjectReference{
+					ClusterRef: v1beta1.TemporalClusterReference{
 						Name: cluster.GetName(),
 					},
 				},

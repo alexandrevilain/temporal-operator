@@ -20,17 +20,22 @@ package controllers
 import (
 	"context"
 	"errors"
-	"fmt"
+	"time"
 
+	certmanagerapiutil "github.com/cert-manager/cert-manager/pkg/api/util"
+	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
+	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
@@ -47,7 +52,7 @@ type TemporalClusterClientReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, reterr error) {
 	logger := log.FromContext(ctx)
 
 	logger.Info("Starting reconciliation")
@@ -66,9 +71,22 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, nil
 	}
 
-	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: clusterClient.Spec.ClusterRef.Name}
+	patchHelper, err := patch.NewHelper(clusterClient, r.Client)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	defer func() {
+		// Always attempt to Patch the ClusterClient object and status after each reconciliation.
+		err := patchHelper.Patch(ctx, clusterClient, patch.WithStatusObservedGeneration{})
+		if err != nil {
+			reterr = kerrors.NewAggregate([]error{reterr, err})
+		}
+	}()
+
+	// Get referenced cluster.
 	cluster := &v1beta1.TemporalCluster{}
-	err = r.Get(ctx, namespacedName, cluster)
+	err = r.Get(ctx, clusterClient.Spec.ClusterRef.NamespacedName(clusterClient), cluster)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -77,37 +95,47 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
 	}
 
-	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName())
+	clusterClient.Status.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
+	if clusterClient.Status.SecretRef == nil {
+		clusterClient.Status.SecretRef = &corev1.LocalObjectReference{
+			Name: "",
+		}
+	}
 
-	res, err := builder.Build()
+	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName())
+	certificateObject, err := builder.Build()
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, res, func() error {
-		err := builder.Update(res)
-		if err != nil {
-			return err
-		}
-		err = controllerutil.SetControllerReference(clusterClient, res, r.Scheme)
-		if err != nil {
-			return fmt.Errorf("failed setting controller reference: %v", err)
-		}
-		return nil
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, certificateObject, func() error {
+		return builder.Update(certificateObject)
 	})
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	certificate := res.(*certmanagerv1.Certificate)
+	certificate := certificateObject.(*certmanagerv1.Certificate)
 
-	clusterClient.Status.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
-	clusterClient.Status.SecretRef = corev1.LocalObjectReference{
+	condition := certmanagerapiutil.GetCertificateCondition(certificate, certmanagerv1.CertificateConditionReady)
+	if condition == nil || condition.Status != certmanagermeta.ConditionTrue {
+		logger.Info("Waiting for certificate to become ready, requeuing")
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
+	if clusterClient.GetNamespace() != cluster.GetNamespace() {
+		originalSecret := client.ObjectKey{Namespace: certificate.GetNamespace(), Name: certificate.Spec.SecretName}
+		err = kubernetes.NewSecretCopier(r.Client, r.Scheme).Copy(ctx, clusterClient, originalSecret, clusterClient.GetNamespace())
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
+	clusterClient.Status.SecretRef = &corev1.LocalObjectReference{
 		Name: certificate.Spec.SecretName,
 	}
 
-	err = r.Client.Status().Update(ctx, clusterClient)
-	return reconcile.Result{}, err
+	return reconcile.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -120,6 +148,8 @@ func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) err
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
 	}
+
+	controller.Owns(&corev1.Secret{})
 
 	return controller.Complete(r)
 }

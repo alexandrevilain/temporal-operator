@@ -40,9 +40,6 @@ func (b *WorkerProcessBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		builders = append(builders,
 			certmanager.NewGenericFrontendClientCertificateBuilder(b.Cluster, b.Scheme, b.Instance.GetName()),
 		)
-
-		// TODO(alexandre.vilain): support workerprocess + mTLS on other namespaces than the operator.
-		// if b.Instance.GetNamespace() != b.Cluster.GetNamespace()
 	}
 
 	return builders, nil
