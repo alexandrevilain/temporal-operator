@@ -14,7 +14,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.7.0
 	github.com/onsi/gomega v1.25.0
 	github.com/prometheus-operator/prometheus-operator v0.61.1
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.61.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.62.0
 	github.com/stretchr/testify v1.8.1
 	go.temporal.io/api v1.14.0
 	go.temporal.io/sdk v1.20.0
