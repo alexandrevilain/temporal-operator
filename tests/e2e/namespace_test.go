@@ -27,7 +27,9 @@ import (
 	"go.temporal.io/api/serviceerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
@@ -104,6 +106,71 @@ func TestNamespaceCreation(t *testing.T) {
 				}
 
 				return true, nil
+			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
+			return ctx
+		}).
+		Assess("Namespace can be deleted", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+			namespace := GetNamespaceForFeature(ctx)
+
+			err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				err := cfg.Client().Resources(namespace).Get(ctx, temporalNamespace.GetName(), temporalNamespace.GetNamespace(), temporalNamespace)
+				if err != nil {
+					return err
+				}
+
+				temporalNamespace.Spec.AllowDeletion = true
+				return cfg.Client().Resources(namespace).Update(ctx, temporalNamespace)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Wait for controller to set finalizer.
+			wait.For(func() (done bool, err error) {
+				err = cfg.Client().Resources(namespace).Get(ctx, temporalNamespace.GetName(), temporalNamespace.GetNamespace(), temporalNamespace)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				result := controllerutil.ContainsFinalizer(temporalNamespace, "deletion.finalizers.temporal.io")
+				return result, nil
+			}, wait.WithTimeout(2*time.Minute), wait.WithInterval(1*time.Second))
+
+			err = cfg.Client().Resources(namespace).Delete(ctx, temporalNamespace)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return ctx
+		}).
+		Assess("Namespace delete in temporal", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer closePortForward()
+
+			client, err := klientToControllerRuntimeClient(cfg.Client())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Wait for the client to return NamespaceNotFound error.
+			wait.For(func() (done bool, err error) {
+				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
+				if err != nil {
+					_, ok := err.(*serviceerror.NamespaceNotFound)
+					if ok {
+						return true, nil
+					}
+				}
+
+				return false, nil
 			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
 			return ctx
 		}).

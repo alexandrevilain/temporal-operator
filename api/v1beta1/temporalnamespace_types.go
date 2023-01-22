@@ -50,6 +50,10 @@ type TemporalNamespaceSpec struct {
 	// Only applicable if the namespace is a global namespace.
 	// +optional
 	ActiveClusterName string `json:"activeClusterName,omitempty"`
+	// AllowDeletion makes the controller delete the Temporal namespace if the
+	// CRD is deleted.
+	// +optional
+	AllowDeletion bool `json:"allowDeletion,omitempty"`
 }
 
 // TemporalNamespaceStatus defines the observed state of Namespace
