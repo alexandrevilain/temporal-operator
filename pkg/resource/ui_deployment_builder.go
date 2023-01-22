@@ -97,7 +97,8 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 				Name: certmanager.UIFrontendClientCertificate,
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName: b.instance.ChildResourceName(certmanager.UIFrontendClientCertificate),
+						SecretName:  b.instance.ChildResourceName(certmanager.UIFrontendClientCertificate),
+						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			},

@@ -25,7 +25,7 @@ import (
 // TemporalClusterClientSpec defines the desired state of ClusterClient
 type TemporalClusterClientSpec struct {
 	// Reference to the temporal cluster the client will get access to.
-	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
+	ClusterRef TemporalClusterReference `json:"clusterRef"`
 }
 
 // TemporalClusterClientStatus defines the observed state of ClusterClient
@@ -33,7 +33,7 @@ type TemporalClusterClientStatus struct {
 	// ServerName is the hostname returned by the certificate.
 	ServerName string `json:"serverName"`
 	// Reference to the Kubernetes Secret containing the certificate for the client.
-	SecretRef corev1.LocalObjectReference `json:"secretRef"`
+	SecretRef *corev1.LocalObjectReference `json:"secretRef,omitempty"`
 }
 
 //+kubebuilder:object:root=true

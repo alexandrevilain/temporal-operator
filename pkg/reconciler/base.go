@@ -20,6 +20,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
@@ -80,20 +81,24 @@ func (r *Base) LogAndRecordOperationResult(ctx context.Context, owner, resource 
 	}
 }
 
-func (r *Base) ReconcileResources(ctx context.Context, owner runtime.Object, builder resourceset.Builder) ([]*v1beta1.ServiceStatus, error) {
+func (r *Base) ReconcileResources(ctx context.Context, owner runtime.Object, builder resourceset.Builder) ([]*v1beta1.ServiceStatus, time.Duration, error) {
 	logger := log.FromContext(ctx)
 
 	builders, err := builder.ResourceBuilders()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	logger.Info("Retrieved builders", "count", len(builders))
 
-	statuses, err := r.ReconcileBuilders(ctx, owner, builders)
+	statuses, requeueAfter, err := r.ReconcileBuilders(ctx, owner, builders)
 	if err != nil {
 		logger.Error(err, "Can't reconcile builders")
-		return nil, err
+		return nil, requeueAfter, err
+	}
+
+	if requeueAfter > 0 {
+		return statuses, requeueAfter, nil
 	}
 
 	pruners := builder.ResourcePruners()
@@ -105,13 +110,13 @@ func (r *Base) ReconcileResources(ctx context.Context, owner runtime.Object, bui
 	err = r.ReconcilePruners(ctx, owner, pruners)
 	if err != nil {
 		logger.Error(err, "Can't reconcile pruners")
-		return nil, err
+		return nil, 0, err
 	}
 
-	return statuses, nil
+	return statuses, 0, nil
 }
 
-func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, builders []resource.Builder) ([]*v1beta1.ServiceStatus, error) {
+func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, builders []resource.Builder) ([]*v1beta1.ServiceStatus, time.Duration, error) {
 	logger := log.FromContext(ctx)
 
 	statuses := []*v1beta1.ServiceStatus{}
@@ -120,13 +125,24 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 		if comparer, ok := builder.(resource.Comparer); ok {
 			err := equality.Semantic.AddFunc(comparer.Equal)
 			if err != nil {
-				return statuses, err
+				return statuses, 0, err
+			}
+		}
+
+		dependentBuilder, hasDependents := builder.(resource.DependentBuilder)
+		if hasDependents {
+			requeueAfter, err := dependentBuilder.EnsureDependencies(ctx, r.Client)
+			if err != nil {
+				return statuses, 0, err
+			}
+			if requeueAfter > 0 {
+				return statuses, requeueAfter, err
 			}
 		}
 
 		res, err := builder.Build()
 		if err != nil {
-			return statuses, err
+			return statuses, 0, err
 		}
 
 		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, res, func() error {
@@ -135,7 +151,7 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 
 		r.LogAndRecordOperationResult(ctx, owner, res, operationResult, err)
 		if err != nil {
-			return statuses, err
+			return statuses, 0, err
 		}
 
 		reporter, ok := builder.(resource.StatusReporter)
@@ -145,7 +161,7 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 
 		serviceStatus, err := reporter.ReportServiceStatus(ctx, r.Client)
 		if err != nil {
-			return statuses, err
+			return statuses, 0, err
 		}
 
 		logger.Info("Reporting service status", "service", serviceStatus.Name)
@@ -153,7 +169,7 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 		statuses = append(statuses, serviceStatus)
 	}
 
-	return statuses, nil
+	return statuses, 0, nil
 }
 
 func (r *Base) ReconcilePruners(ctx context.Context, owner runtime.Object, pruners []resource.Pruner) error {

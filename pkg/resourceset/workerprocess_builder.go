@@ -20,7 +20,6 @@ package resourceset
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	workerprocessresource "github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocess"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -32,18 +31,15 @@ type WorkerProcessBuilder struct {
 }
 
 func (b *WorkerProcessBuilder) ResourceBuilders() ([]resource.Builder, error) {
-	builders := []resource.Builder{
-		workerprocessresource.NewDeploymentBuilder(b.Instance, b.Cluster, b.Scheme),
-	}
+	builders := []resource.Builder{}
 
 	if b.Cluster.MTLSWithCertManagerEnabled() && b.Cluster.Spec.MTLS.FrontendEnabled() {
 		builders = append(builders,
-			certmanager.NewGenericFrontendClientCertificateBuilder(b.Cluster, b.Scheme, b.Instance.GetName()),
+			workerprocessresource.NewClusterClientBuilder(b.Instance, b.Cluster, b.Scheme),
 		)
-
-		// TODO(alexandre.vilain): support workerprocess + mTLS on other namespaces than the operator.
-		// if b.Instance.GetNamespace() != b.Cluster.GetNamespace()
 	}
+
+	builders = append(builders, workerprocessresource.NewDeploymentBuilder(b.Instance, b.Cluster, b.Scheme))
 
 	return builders, nil
 }

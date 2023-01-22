@@ -96,6 +96,8 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	logger.Info("Successfully reconciled namespace", "namespace", namespace.GetName())
 
+	v1beta1.SetTemporalNamespaceReady(namespace, metav1.ConditionTrue, v1beta1.TemporalNamespaceCreatedReason, "Namespace successfully created")
+
 	return r.handleSuccess(ctx, namespace)
 }
 

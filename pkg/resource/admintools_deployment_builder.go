@@ -93,7 +93,8 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 				Name: certmanager.AdmintoolsFrontendClientCertificate,
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName: b.instance.ChildResourceName(certmanager.AdmintoolsFrontendClientCertificate),
+						SecretName:  b.instance.ChildResourceName(certmanager.AdmintoolsFrontendClientCertificate),
+						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			},

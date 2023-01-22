@@ -39,7 +39,7 @@ func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.
 	builders := []resource.Builder{
 		persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme),
 	}
-	_, err := r.ReconcileBuilders(ctx, cluster, builders)
+	_, _, err := r.ReconcileBuilders(ctx, cluster, builders)
 	return err
 }
 

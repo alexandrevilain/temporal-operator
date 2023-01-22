@@ -31,6 +31,8 @@ const (
 	ResourcesReconciliationFailedReason string = "ResoucesReconciliationFailed"
 	// TemporalClusterValidationFailedReason signals an error while validation desired cluster version.
 	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
+	// TemporalNamespaceCreatedReason signals a successful namespace creation.
+	TemporalNamespaceCreatedReason string = "TemporalNamespaceCreated"
 )
 
 // SetTemporalClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
@@ -67,6 +69,19 @@ func GetTemporalClusterReadyCondition(c *TemporalCluster) (*metav1.Condition, bo
 
 // SetTemporalClusterReady sets the ReadyCondition status for a temporal cluster.
 func SetTemporalClusterReady(c *TemporalCluster, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReadyCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: c.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
+}
+
+// SetTemporalNamespaceReady sets the ReadyCondition status for a temporal namespace.
+func SetTemporalNamespaceReady(c *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
 		Type:               ReadyCondition,
 		LastTransitionTime: metav1.Now(),

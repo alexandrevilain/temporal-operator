@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type GenericFrontendClientCertificateBuilder struct {
@@ -73,6 +74,10 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 			Name: b.instance.ChildResourceName(frontendIntermediateCAIssuer),
 			Kind: certmanagerv1.IssuerKind,
 		},
+	}
+
+	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
+		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
 
 	return nil

@@ -2,7 +2,8 @@ apiVersion: temporal.io/v1beta1
 kind: TemporalClusterClient
 metadata:
   name: my-worker
-  namespace: demo
+  namespace: default
 spec:
   clusterRef:
     name: prod
+    namespace: demo

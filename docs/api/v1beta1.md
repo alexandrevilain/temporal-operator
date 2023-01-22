@@ -399,7 +399,8 @@ TemporalWorkerProcessBuilder
 </em>
 </td>
 <td>
-<p>Builder is the configuration for building a TemporalWorkerProcess</p>
+<p>Builder is the configuration for building a TemporalWorkerProcess.
+THIS FEATURE IS HIGHLY EXPERIMENTAL.</p>
 </td>
 </tr>
 </table>
@@ -2346,8 +2347,8 @@ TemporalClusterClientSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
 </a>
 </em>
 </td>
@@ -2395,8 +2396,8 @@ TemporalClusterClientStatus
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
 </a>
 </em>
 </td>
@@ -2457,9 +2458,10 @@ Kubernetes core/v1.LocalObjectReference
 </h3>
 <p>
 (<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
 <a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec</a>)
 </p>
-<p>Reference to TemporalCluster</p>
+<p>Reference to a TemporalCluster.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3562,7 +3564,8 @@ TemporalWorkerProcessBuilder
 </em>
 </td>
 <td>
-<p>Builder is the configuration for building a TemporalWorkerProcess</p>
+<p>Builder is the configuration for building a TemporalWorkerProcess.
+THIS FEATURE IS HIGHLY EXPERIMENTAL.</p>
 </td>
 </tr>
 </tbody>
@@ -3594,6 +3597,7 @@ bool
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Created indicates if the worker process image was created.</p>
 </td>
 </tr>
@@ -3605,6 +3609,7 @@ bool
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Ready defines if the worker process is ready.</p>
 </td>
 </tr>
@@ -3616,6 +3621,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Version is the version of the image that will be used to build worker image.</p>
 </td>
 </tr>

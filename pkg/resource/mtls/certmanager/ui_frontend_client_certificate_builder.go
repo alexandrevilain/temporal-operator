@@ -20,8 +20,6 @@ package certmanager
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type UIFrontendClientCertificateBuilder struct {
@@ -32,13 +30,4 @@ func NewUIFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, sc
 	return &UIFrontendClientCertificateBuilder{
 		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui"),
 	}
-}
-
-func (b *UIFrontendClientCertificateBuilder) Update(object client.Object) error {
-	err := b.GenericFrontendClientCertificateBuilder.Update(object)
-	if err != nil {
-		return err
-	}
-
-	return controllerutil.SetControllerReference(b.instance, object, b.scheme)
 }

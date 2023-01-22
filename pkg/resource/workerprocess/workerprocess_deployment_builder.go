@@ -20,6 +20,7 @@ package workerprocess
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
@@ -34,12 +35,14 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type DeploymentBuilder struct {
 	instance *v1beta1.TemporalWorkerProcess
 	cluster  *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
+	client   *v1beta1.TemporalClusterClient
 }
 
 func NewDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster, scheme *runtime.Scheme) *DeploymentBuilder {
@@ -95,7 +98,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	volumeMounts := []corev1.VolumeMount{}
 
 	if b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled() {
-		secretName := certmanager.GetCertificateSecretName(b.instance.GetName())
+		secretName := "mtls"
 		certificateMountPath := "/etc/temporal/config/certs"
 
 		volumeMounts = append(volumeMounts,
@@ -110,7 +113,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				Name: secretName,
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName: b.cluster.ChildResourceName(secretName),
+						SecretName:  b.client.Status.SecretRef.Name,
+						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			},
@@ -172,14 +176,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
 	status := &v1beta1.ServiceStatus{
-		Name:    b.instance.ChildResourceName("worker"),
+		Name:    b.instance.ChildResourceName("worker-process"),
 		Version: "", // TODO(): implement me
 	}
 
 	deploy := &appsv1.Deployment{}
 
 	namespacedName := types.NamespacedName{
-		Name:      b.instance.ChildResourceName("worker"),
+		Name:      b.instance.ChildResourceName("worker-process"),
 		Namespace: b.instance.Namespace,
 	}
 
@@ -197,4 +201,29 @@ func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Cl
 	}
 
 	return status, nil
+}
+
+func (b *DeploymentBuilder) EnsureDependencies(ctx context.Context, c client.Client) (time.Duration, error) {
+	if !(b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled()) {
+		return 0, nil
+	}
+
+	b.client = &v1beta1.TemporalClusterClient{}
+
+	namespacedName := types.NamespacedName{
+		Name:      b.instance.ChildResourceName("cluster-client"),
+		Namespace: b.instance.Namespace,
+	}
+
+	err := c.Get(ctx, namespacedName, b.client)
+	if err != nil {
+		return 0, err
+	}
+
+	if b.client.Status.SecretRef == nil || b.client.Status.SecretRef.Name == "" {
+		log.FromContext(ctx).Info("TemporalClusterClient not ready, asking for a requeue")
+		return 10 * time.Second, nil
+	}
+
+	return 0, nil
 }
