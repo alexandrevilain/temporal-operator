@@ -29,6 +29,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
 	"go.temporal.io/server/common/primitives"
@@ -179,6 +180,13 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	if !b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
 		temporalCfg.PublicClient = config.PublicClient{
 			HostPort: b.instance.GetPublicClientAddress(),
+		}
+	}
+
+	if b.instance.Spec.DynamicConfig != nil {
+		temporalCfg.DynamicConfigClient = &dynamicconfig.FileBasedClientConfig{
+			Filepath:     "/etc/temporal/config/dynamic_config.yaml",
+			PollInterval: b.instance.Spec.DynamicConfig.PollInterval.Duration,
 		}
 	}
 

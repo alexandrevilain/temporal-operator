@@ -67,6 +67,10 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		}
 	}
 
+	if b.Instance.Spec.DynamicConfig != nil {
+		builders = append(builders, resource.NewDynamicConfigmapBuilder(b.Instance, b.Scheme))
+	}
+
 	if b.Instance.MTLSWithCertManagerEnabled() {
 		builders = append(builders,
 			certmanager.NewMTLSBootstrapIssuerBuilder(b.Instance, b.Scheme),

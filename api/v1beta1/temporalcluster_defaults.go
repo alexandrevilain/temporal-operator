@@ -186,4 +186,10 @@ func (c *TemporalCluster) Default() {
 			}
 		}
 	}
+
+	if c.Spec.DynamicConfig != nil {
+		if c.Spec.DynamicConfig.PollInterval == nil {
+			c.Spec.DynamicConfig.PollInterval = &metav1.Duration{Duration: time.Minute * 10}
+		}
+	}
 }

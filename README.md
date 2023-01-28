@@ -84,6 +84,7 @@ For more customization options refers to the [api documentation](https://github.
 
 - [Using overrides to customize rendered resources](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/applying-overrides.md)
 - [Monitoring temporal using prometheus-operator](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/monitoring.md)
+- [Using temporal server dynamic config](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/dynamic_config.md)
 
 ## Examples
 
