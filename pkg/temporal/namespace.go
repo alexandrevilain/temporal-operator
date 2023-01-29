@@ -19,6 +19,7 @@ package temporal
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/replication/v1"
 	"go.temporal.io/api/workflowservice/v1"
 )
@@ -57,4 +58,10 @@ func NamespaceToRegisterNamespaceRequest(namespace *v1beta1.TemporalNamespace) *
 	}
 
 	return re
+}
+
+func NamespaceToDeleteNamespaceRequest(namespace *v1beta1.TemporalNamespace) *operatorservice.DeleteNamespaceRequest {
+	return &operatorservice.DeleteNamespaceRequest{
+		Namespace: namespace.GetName(),
+	}
 }

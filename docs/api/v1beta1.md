@@ -2890,6 +2890,19 @@ string
 Only applicable if the namespace is a global namespace.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>allowDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowDeletion makes the controller delete the Temporal namespace if the
+CRD is deleted.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -3035,6 +3048,19 @@ string
 <em>(Optional)</em>
 <p>The name of active Temporal Cluster.
 Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowDeletion makes the controller delete the Temporal namespace if the
+CRD is deleted.</p>
 </td>
 </tr>
 </tbody>

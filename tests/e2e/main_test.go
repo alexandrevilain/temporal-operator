@@ -49,7 +49,6 @@ var testenv env.Environment
 var jobTtl int32 = 60
 var workerProcessJobTtl int32 = 300
 var replicas int32 = 1
-var buildAttempt int32 = 1
 var listAddress string = "0.0.0.0:9090"
 
 func TestMain(m *testing.M) {

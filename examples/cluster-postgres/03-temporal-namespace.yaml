@@ -8,3 +8,4 @@ spec:
     name: prod
   description: Default namespace
   retentionPeriod: 168h #7 days
+  allowDeletion: true
