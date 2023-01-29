@@ -51,6 +51,46 @@ spec:
                       description: Image defines the temporal admin tools docker image the instance should run.
                       type: string
                   type: object
+                dynamicConfig:
+                  description: DynamicConfig allows advanced configuration for the temporal cluster.
+                  properties:
+                    pollInterval:
+                      description: PollInterval defines how often the config should be updated by checking provided values. Defaults to 10s.
+                      type: string
+                    values:
+                      additionalProperties:
+                        items:
+                          description: ConstrainedValue is an alias for temporal's dynamicconfig.ConstrainedValue.
+                          properties:
+                            constraints:
+                              description: Constraints describe under what conditions a ConstrainedValue should be used.
+                              properties:
+                                namespace:
+                                  type: string
+                                namespaceId:
+                                  type: string
+                                shardId:
+                                  format: int32
+                                  type: integer
+                                taskQueueName:
+                                  type: string
+                                taskQueueType:
+                                  type: string
+                                taskType:
+                                  type: string
+                              type: object
+                            value:
+                              description: 'Value is the value for the configuration key. The type of the Value field depends on the key. Acceptable types will be one of: int, float64, bool, string, map[string]any, time.Duration'
+                              x-kubernetes-preserve-unknown-fields: true
+                          required:
+                            - value
+                          type: object
+                        type: array
+                      description: Values contains all dynamic config keys and their constained values.
+                      type: object
+                  required:
+                    - values
+                  type: object
                 image:
                   description: Image defines the temporal server docker image the cluster should use for each services.
                   type: string

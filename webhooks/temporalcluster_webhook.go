@@ -26,6 +26,8 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
+	enumspb "go.temporal.io/api/enums/v1"
+	enumsspb "go.temporal.io/server/api/enums/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -129,6 +131,52 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 				"temporal cluster version >= 1.18.0 doesn't support ElasticSearch v6",
 			),
 		)
+	}
+
+	// Ensure dynamicconfig is valid.
+	if cluster.Spec.DynamicConfig != nil {
+		for key, constrainedValues := range cluster.Spec.DynamicConfig.Values {
+			for i, constrainedValue := range constrainedValues {
+				c := constrainedValue.Constraints
+				if c.TaskQueueType != "" {
+					if _, ok := enumspb.TaskQueueType_value[c.TaskQueueType]; !ok {
+						supportedValues := []string{}
+						for k, v := range enumspb.TaskQueueType_name {
+							if k == 0 {
+								continue
+							}
+							supportedValues = append(supportedValues, v)
+						}
+						errs = append(errs,
+							field.NotSupported(
+								field.NewPath("spec", "dynamicConfig", "values", key, fmt.Sprintf("[%d]", i), "constraints", "taskQueueType"),
+								c.TaskQueueType,
+								supportedValues,
+							),
+						)
+					}
+				}
+
+				if c.TaskType != "" {
+					if _, ok := enumsspb.TaskType_value[c.TaskType]; !ok {
+						supportedValues := []string{}
+						for k, v := range enumsspb.TaskType_name {
+							if k == 0 {
+								continue
+							}
+							supportedValues = append(supportedValues, v)
+						}
+						errs = append(errs,
+							field.NotSupported(
+								field.NewPath("spec", "dynamicConfig", "values", key, fmt.Sprintf("[%d]", i), "constraints", ".taskType"),
+								c.TaskType,
+								supportedValues,
+							),
+						)
+					}
+				}
+			}
+		}
 	}
 
 	return errs

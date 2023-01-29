@@ -212,6 +212,20 @@ MetricsSpec
 <p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>dynamicConfig</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DynamicConfigSpec">
+DynamicConfigSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DynamicConfig allows advanced configuration for the temporal cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -697,6 +711,142 @@ It defaults to 1 year.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.ConstrainedValue">ConstrainedValue
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.DynamicConfigSpec">DynamicConfigSpec</a>)
+</p>
+<p>ConstrainedValue is an alias for temporal&rsquo;s dynamicconfig.ConstrainedValue.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>constraints</code><br>
+<em>
+<a href="#temporal.io/v1beta1.Constraints">
+Constraints
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Constraints describe under what conditions a ConstrainedValue should be used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>value</code><br>
+<em>
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</em>
+</td>
+<td>
+<p>Value is the value for the configuration key.
+The type of the Value field depends on the key.
+Acceptable types will be one of: int, float64, bool, string, map[string]any, time.Duration</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.Constraints">Constraints
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ConstrainedValue">ConstrainedValue</a>)
+</p>
+<p>Constraints is an alias for temporal&rsquo;s dynamicconfig.Constraints.
+It describes under what conditions a ConstrainedValue should be used.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>namespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespaceId</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>taskQueueName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>taskQueueType</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>shardId</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>taskType</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.ContainerRegistryConfig">ContainerRegistryConfig
 </h3>
 <p>
@@ -1093,6 +1243,55 @@ PodTemplateSpecOverride
 <td>
 <em>(Optional)</em>
 <p>Template describes the pods that will be created.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.DynamicConfigSpec">DynamicConfigSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>DynamicConfigSpec is the configuration for temporal dynamic config.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>pollInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PollInterval defines how often the config should be updated by checking provided values.
+Defaults to 10s.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>values</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ConstrainedValue">
+map[string][]./api/v1beta1.ConstrainedValue
+</a>
+</em>
+</td>
+<td>
+<p>Values contains all dynamic config keys and their constained values.</p>
 </td>
 </tr>
 </tbody>
@@ -1516,7 +1715,7 @@ Useless if mTLS provider is not cert-manager.</p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
-<p>MetricsSpec determines parameters for configuring metrics endpoints</p>
+<p>MetricsSpec determines parameters for configuring metrics endpoints.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2662,6 +2861,20 @@ MetricsSpec
 <td>
 <em>(Optional)</em>
 <p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dynamicConfig</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DynamicConfigSpec">
+DynamicConfigSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DynamicConfig allows advanced configuration for the temporal cluster.</p>
 </td>
 </tr>
 </tbody>

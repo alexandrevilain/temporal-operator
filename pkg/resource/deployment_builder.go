@@ -142,6 +142,26 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	volumes = append(volumes, persistence.GetDatastoresVolumes(datastores)...)
 
+	if b.instance.Spec.DynamicConfig != nil {
+		volumes = append(volumes, corev1.Volume{
+			Name: "dynamicconfig",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: b.instance.ChildResourceName(ServiceDynamicConfig),
+					},
+					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      "dynamicconfig",
+			MountPath: "/etc/temporal/config/dynamic_config.yaml",
+			SubPath:   "dynamic_config.yaml",
+		})
+	}
+
 	if b.instance.MTLSWithCertManagerEnabled() {
 		if b.instance.Spec.MTLS.InternodeEnabled() {
 			volumeMounts = append(volumeMounts,

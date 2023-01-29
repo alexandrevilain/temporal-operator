@@ -29,6 +29,7 @@ import (
 	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -595,7 +596,7 @@ type PrometheusSpec struct {
 	ScrapeConfig *PrometheusScrapeConfig `json:"scrapeConfig,omitempty"`
 }
 
-// MetricsSpec determines parameters for configuring metrics endpoints
+// MetricsSpec determines parameters for configuring metrics endpoints.
 type MetricsSpec struct {
 	// Enabled defines if the operator should enable metrics exposition on temporal components.
 	Enabled bool `json:"enabled"`
@@ -606,6 +607,45 @@ type MetricsSpec struct {
 
 func (m *MetricsSpec) MetricsEnabled() bool {
 	return m != nil && m.Enabled
+}
+
+// Constraints is an alias for temporal's dynamicconfig.Constraints.
+// It describes under what conditions a ConstrainedValue should be used.
+type Constraints struct {
+	// +optional
+	Namespace string `json:"namespace"`
+	// +optional
+	NamespaceID string `json:"namespaceId"`
+	// +optional
+	TaskQueueName string `json:"taskQueueName"`
+	// +optional
+	TaskQueueType string `json:"taskQueueType"`
+	// +optional
+	ShardID int32 `json:"shardId"`
+	// +optional
+	TaskType string `json:"taskType"`
+}
+
+// ConstrainedValue is an alias for temporal's dynamicconfig.ConstrainedValue.
+type ConstrainedValue struct {
+	// Constraints describe under what conditions a ConstrainedValue should be used.
+	// +optional
+	Constraints Constraints `json:"constraints"`
+	// Value is the value for the configuration key.
+	// The type of the Value field depends on the key.
+	// Acceptable types will be one of: int, float64, bool, string, map[string]any, time.Duration
+	Value *apiextensionsv1.JSON `json:"value"`
+	// Value json.RawMessage `json:"value"`
+}
+
+// DynamicConfigSpec is the configuration for temporal dynamic config.
+type DynamicConfigSpec struct {
+	// PollInterval defines how often the config should be updated by checking provided values.
+	// Defaults to 10s.
+	// +optional
+	PollInterval *metav1.Duration `json:"pollInterval"`
+	// Values contains all dynamic config keys and their constained values.
+	Values map[string][]ConstrainedValue `json:"values"`
 }
 
 // TemporalClusterSpec defines the desired state of Cluster.
@@ -648,6 +688,9 @@ type TemporalClusterSpec struct {
 	// Metrics allows configuration of scraping endpoints for stats. prometheus or m3.
 	// +optional
 	Metrics *MetricsSpec `json:"metrics,omitempty"`
+	// DynamicConfig allows advanced configuration for the temporal cluster.
+	// +optional
+	DynamicConfig *DynamicConfigSpec `json:"dynamicConfig,omitempty"`
 }
 
 // ServiceStatus reports a service status.

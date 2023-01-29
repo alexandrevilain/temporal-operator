@@ -27,8 +27,9 @@ import (
 
 // Service components.
 const (
-	FrontendService = "frontend"
-	ServiceConfig   = "config"
+	FrontendService      = "frontend"
+	ServiceConfig        = "config"
+	ServiceDynamicConfig = "dynamicconfig"
 )
 
 // Additionals services.
