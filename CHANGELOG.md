@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.11.0
+
+**Release date:** 2023-01-29
+
+Features:
+- Support cross-namespace mTLS for TemporalWorkerProcess & TemporalClusterClient [#247](https://github.com/alexandrevilain/temporal-operator/pull/247)
+- Add support for namespace deletion [#251](https://github.com/alexandrevilain/temporal-operator/pull/251)
+- Add support for dynamic config [#255](https://github.com/alexandrevilain/temporal-operator/pull/255)
+
+Improvements:
+- Add operator logs at e2e tests end to simplify debugging + stop kustomize throttling on github actions [#238](https://github.com/alexandrevilain/temporal-operator/pull/238)
+- Updated containerImage and replaces field in CSV for 0.10.0 [#240](https://github.com/alexandrevilain/temporal-operator/pull/240)
+
+Updates:
+- Bump sigs.k8s.io/cluster-api from 1.3.1 to 1.3.2 [#242](https://github.com/alexandrevilain/temporal-operator/pull/242)
+- Bump github.com/onsi/ginkgo/v2 from 2.6.1 to 2.7.0 [#243](https://github.com/alexandrevilain/temporal-operator/pull/243)
+- Bump github.com/cert-manager/cert-manager from 1.10.1 to 1.11.0 [#245](https://github.com/alexandrevilain/temporal-operator/pull/245)
+- Bump go.temporal.io/server from 1.19.0 to 1.19.1 [#248](https://github.com/alexandrevilain/temporal-operator/pull/248)
+- Bump go.temporal.io/sdk from 1.19.0 to 1.20.0 [#249](https://github.com/alexandrevilain/temporal-operator/pull/249)
+- Bump github.com/onsi/gomega from 1.24.2 to 1.25.0 [#250](https://github.com/alexandrevilain/temporal-operator/pull/250)
+- Bump go.temporal.io/api from 1.14.0 to 1.15.0 [#253](https://github.com/alexandrevilain/temporal-operator/pull/253)
+
 ## 0.10.0
 
 **Release date:** 2023-01-07
