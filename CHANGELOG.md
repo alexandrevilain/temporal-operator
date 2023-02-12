@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.11.1
+
+**Release date:** 2023-02-12
+
+Fixes:
+- Fix database tls certificates mounts when database with tls enabled [#267](https://github.com/alexandrevilain/temporal-operator/pull/267)
+
+Updates:
+- Bump docker/build-push-action from 3 to 4 [#258](https://github.com/alexandrevilain/temporal-operator/pull/258)
+- Bump istio.io/client-go from 1.16.1 to 1.16.2 [#259](https://github.com/alexandrevilain/temporal-operator/pull/259)
+- Bump github.com/onsi/ginkgo/v2 from 2.7.0 to 2.8.0 [#260](https://github.com/alexandrevilain/temporal-operator/pull/260)
+- Bump sigs.k8s.io/cluster-api from 1.3.2 to 1.3.3 [#262](https://github.com/alexandrevilain/temporal-operator/pull/262)
+
 ## 0.11.0
 
 **Release date:** 2023-01-29
