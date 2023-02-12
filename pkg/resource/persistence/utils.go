@@ -19,6 +19,7 @@ package persistence
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -72,7 +73,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 								Items: []corev1.KeyToPath{
 									{
 										Key:  key,
-										Path: datastore.GetTLSCaFileMountPath(),
+										Path: v1beta1.DataStoreClientTLSCaFileName,
 									},
 								},
 							},
@@ -94,7 +95,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 								Items: []corev1.KeyToPath{
 									{
 										Key:  key,
-										Path: datastore.GetTLSCertFileMountPath(),
+										Path: v1beta1.DataStoreClientTLSCertFileName,
 									},
 								},
 							},
@@ -117,7 +118,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 								Items: []corev1.KeyToPath{
 									{
 										Key:  key,
-										Path: datastore.GetTLSKeyFileMountPath(),
+										Path: v1beta1.DataStoreClientTLSCertFileName,
 									},
 								},
 							},
@@ -139,20 +140,20 @@ func GetDatastoresVolumeMounts(datastores []*v1beta1.DatastoreSpec) []corev1.Vol
 			if datastore.TLS.CaFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
 					Name:      fmt.Sprintf("%s-tls-ca-file", datastore.Name),
-					MountPath: datastore.GetTLSCaFileMountPath(),
+					MountPath: filepath.Dir(datastore.GetTLSCaFileMountPath()),
 				})
 			}
 			if datastore.TLS.CertFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
 					Name:      fmt.Sprintf("%s-tls-cert-file", datastore.Name),
-					MountPath: datastore.GetTLSCertFileMountPath(),
+					MountPath: filepath.Dir(datastore.GetTLSCertFileMountPath()),
 				})
 			}
 
 			if datastore.TLS.KeyFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
 					Name:      fmt.Sprintf("%s-tls-key-file", datastore.Name),
-					MountPath: datastore.GetTLSKeyFileMountPath(),
+					MountPath: filepath.Dir(datastore.GetTLSKeyFileMountPath()),
 				})
 			}
 		}

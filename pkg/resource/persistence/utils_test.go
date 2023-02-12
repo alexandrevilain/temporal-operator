@@ -238,7 +238,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "client.pem",
-									Path: "/etc/tls/datastores/test/client.pem",
+									Path: "client.pem",
 								},
 							},
 						},
@@ -252,7 +252,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "/etc/tls/datastores/test2/client.pem",
+									Path: "client.pem",
 								},
 							},
 						},
@@ -291,7 +291,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "client.key",
-									Path: "/etc/tls/datastores/test/client.key",
+									Path: "/client.key",
 								},
 							},
 						},
@@ -305,7 +305,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "/etc/tls/datastores/test2/client.key",
+									Path: "client.key",
 								},
 							},
 						},
@@ -358,7 +358,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-ca-file",
-					MountPath: "/etc/tls/datastores/test/ca.pem",
+					MountPath: "/etc/tls/datastores/test",
 				},
 			},
 		},
@@ -377,7 +377,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-cert-file",
-					MountPath: "/etc/tls/datastores/test/client.pem",
+					MountPath: "/etc/tls/datastores/test",
 				},
 			},
 		},
@@ -396,7 +396,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-key-file",
-					MountPath: "/etc/tls/datastores/test/client.key",
+					MountPath: "/etc/tls/datastores/test",
 				},
 			},
 		},
