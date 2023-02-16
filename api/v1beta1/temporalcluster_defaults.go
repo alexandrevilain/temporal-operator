@@ -29,7 +29,7 @@ const (
 	defaultTemporalVersion = "1.17.4"
 	defaultTemporalImage   = "temporalio/server"
 
-	defaultTemporalUIVersion = "2.5.0"
+	defaultTemporalUIVersion = "2.9.0"
 	defaultTemporalUIImage   = "temporalio/ui"
 
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"

@@ -79,8 +79,8 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
 		},
 		{
-			Name:  "TEMPORAL_CORS_ORIGINS",
-			Value: "",
+			Name:  "TEMPORAL_UI_PORT",
+			Value: "8080",
 		},
 	}
 
