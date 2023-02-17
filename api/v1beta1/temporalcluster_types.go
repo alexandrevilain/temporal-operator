@@ -570,7 +570,7 @@ type PrometheusScrapeConfigServiceMonitor struct {
 	// Override allows customization of the created ServiceMonitor.
 	// All fields can be overritten except "endpoints", "selector" and "namespaceSelector".
 	// +optional
-	Override *monitoringv1.ServiceMonitorSpec `json:"override"`
+	Override *monitoringv1.ServiceMonitorSpec `json:"override,omitempty"`
 }
 
 // PrometheusScrapeConfig is the configuration for making prometheus scrape components metrics.
