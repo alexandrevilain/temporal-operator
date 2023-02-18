@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.11.2
+
+**Release date:** 2023-02-18
+
+Fixes:
+- Fix UI: ensure TEMPORAL_UI_PORT is always set to prevent conflicts with k8s discovery environment variables [#275](https://github.com/alexandrevilain/temporal-operator/pull/275)
+- Fix Monitoring: Allow empty service monitor overrides [#277](https://github.com/alexandrevilain/temporal-operator/pull/277)
+
+Updates:
+- Bump github.com/onsi/ginkgo/v2 from 2.8.0 to 2.8.1 [#274](https://github.com/alexandrevilain/temporal-operator/pull/274)
+- Bump istio.io/client-go from 1.16.2 to 1.17.0 [#276](https://github.com/alexandrevilain/temporal-operator/pull/276)
+
 ## 0.11.1
 
 **Release date:** 2023-02-12
