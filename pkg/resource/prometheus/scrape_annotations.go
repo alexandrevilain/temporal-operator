@@ -25,7 +25,7 @@ import (
 
 // GetAnnotations returns prometheus scrape annotations.
 func GetAnnotations(instance *v1beta1.TemporalCluster) map[string]string {
-	if instance.Spec.Metrics.MetricsEnabled() &&
+	if instance.Spec.Metrics.IsEnabled() &&
 		instance.Spec.Metrics.Prometheus != nil &&
 		instance.Spec.Metrics.Prometheus.ListenPort != nil &&
 		instance.Spec.Metrics.Prometheus.ScrapeConfig != nil &&

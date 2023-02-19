@@ -86,7 +86,7 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.serviceName != primitives.WorkerService {
+	if b.serviceName != string(primitives.WorkerService) {
 		service.Spec.Ports = append(service.Spec.Ports,
 			corev1.ServicePort{
 				// Here "tcp-" is used instead of "grpc-" because temporal uses

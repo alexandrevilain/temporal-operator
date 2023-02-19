@@ -68,7 +68,7 @@ func (w *TemporalClusterWebhook) Default(ctx context.Context, obj runtime.Object
 		return err
 	}
 
-	if cluster.Spec.Metrics.MetricsEnabled() {
+	if cluster.Spec.Metrics.IsEnabled() {
 		if cluster.Spec.Metrics.Prometheus != nil {
 			// If the user has set the deprecated ListenAddress field and not the new ListenPort,
 			// parse the listenAddress and set the listenPort.
@@ -177,6 +177,16 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 				}
 			}
 		}
+	}
+
+	// Ensure Internal Frontend is only enabled for cluster version >= 1.20
+	if !cluster.Spec.Version.GreaterOrEqual(version.V1_20_0) && cluster.Spec.Services.InternalFrontend.IsEnabled() {
+		errs = append(errs,
+			field.Forbidden(
+				field.NewPath("spec", "services", "internalFrontend", "enabled"),
+				"temporal cluster version < 1.20.0 doesn't support internal frontend",
+			),
+		)
 	}
 
 	return errs

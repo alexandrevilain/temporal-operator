@@ -181,7 +181,7 @@ $(LOCALBIN):
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+CONTROLLER_GEN ?= GOFLAGS=-mod=mod $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GO_LICENSER ?= $(LOCALBIN)/go-licenser
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs

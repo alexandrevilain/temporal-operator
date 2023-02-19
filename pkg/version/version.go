@@ -28,8 +28,9 @@ import (
 
 var (
 	// SupportedVersionsRange holds all supported temporal versions.
-	SupportedVersionsRange = mustNewConstraint(">= 1.14.0 < 1.20.0")
+	SupportedVersionsRange = mustNewConstraint(">= 1.14.0 < 1.21.0")
 	V1_18_0                = MustNewVersionFromString("1.18.0")
+	V1_20_0                = MustNewVersionFromString("1.20.0")
 )
 
 // +kubebuilder:validation:Type=string

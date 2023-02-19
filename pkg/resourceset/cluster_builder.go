@@ -38,16 +38,24 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 		resource.NewFrontendServiceBuilder(b.Instance, b.Scheme),
 	}
 
-	for _, serviceName := range []string{
+	services := []primitives.ServiceName{
 		primitives.FrontendService,
 		primitives.HistoryService,
 		primitives.MatchingService,
 		primitives.WorkerService,
-	} {
-		specs, err := b.Instance.Spec.Services.GetServiceSpec(serviceName)
+	}
+
+	if b.Instance.Spec.Services.InternalFrontend.IsEnabled() {
+		services = append(services, primitives.InternalFrontendService)
+	}
+
+	for _, service := range services {
+		specs, err := b.Instance.Spec.Services.GetServiceSpec(service)
 		if err != nil {
 			return nil, err
 		}
+
+		serviceName := string(service)
 
 		builders = append(builders, resource.NewServiceAccountBuilder(serviceName, b.Instance, b.Scheme, specs))
 		builders = append(builders, resource.NewDeploymentBuilder(serviceName, b.Instance, b.Scheme, specs))
@@ -58,7 +66,7 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 			builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, b.Instance, b.Scheme, specs))
 		}
 
-		if b.Instance.Spec.Metrics.MetricsEnabled() &&
+		if b.Instance.Spec.Metrics.IsEnabled() &&
 			b.Instance.Spec.Metrics.Prometheus != nil &&
 			b.Instance.Spec.Metrics.Prometheus.ScrapeConfig != nil &&
 			b.Instance.Spec.Metrics.Prometheus.ScrapeConfig.ServiceMonitor != nil &&
@@ -91,8 +99,11 @@ func (b *ClusterBuilder) ResourceBuilders() ([]resource.Builder, error) {
 				certmanager.NewMTLSFrontendIntermediateCACertificateBuilder(b.Instance, b.Scheme),
 				certmanager.NewMTLSFrontendIntermediateCAIssuerBuilder(b.Instance, b.Scheme),
 				certmanager.NewMTLSFrontendCertificateBuilder(b.Instance, b.Scheme),
-				certmanager.NewWorkerFrontendClientCertificateBuilder(b.Instance, b.Scheme),
 			)
+
+			if !b.Instance.Spec.Services.InternalFrontend.IsEnabled() {
+				builders = append(builders, certmanager.NewWorkerFrontendClientCertificateBuilder(b.Instance, b.Scheme))
+			}
 		}
 	}
 

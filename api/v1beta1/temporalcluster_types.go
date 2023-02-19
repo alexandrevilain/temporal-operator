@@ -61,11 +61,27 @@ type ServiceSpec struct {
 	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 }
 
+// InternalFrontendServiceSpec contains temporal internal frontend service specifications.
+type InternalFrontendServiceSpec struct {
+	ServiceSpec `json:",inline"`
+	// Enabled defines if we want to spawn the internal frontend service.
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+func (s *InternalFrontendServiceSpec) IsEnabled() bool {
+	return s != nil && s.Enabled
+}
+
 // ServicesSpec contains all temporal services specifications.
 type ServicesSpec struct {
 	// Frontend service custom specifications.
 	// +optional
 	Frontend *ServiceSpec `json:"frontend,omitempty"`
+	// Internal Frontend service custom specifications.
+	// Only compatible with temporal >= 1.20.0
+	// +optional
+	InternalFrontend *InternalFrontendServiceSpec `json:"internalFrontend,omitempty"`
 	// History service custom specifications.
 	// +optional
 	History *ServiceSpec `json:"history,omitempty"`
@@ -82,10 +98,12 @@ type ServicesSpec struct {
 }
 
 // GetServiceSpec returns service spec from its name.
-func (s *ServicesSpec) GetServiceSpec(name string) (*ServiceSpec, error) {
+func (s *ServicesSpec) GetServiceSpec(name primitives.ServiceName) (*ServiceSpec, error) {
 	switch name {
 	case primitives.FrontendService:
 		return s.Frontend, nil
+	case primitives.InternalFrontendService:
+		return &s.InternalFrontend.ServiceSpec, nil
 	case primitives.HistoryService:
 		return s.History, nil
 	case primitives.MatchingService:
@@ -605,7 +623,7 @@ type MetricsSpec struct {
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 }
 
-func (m *MetricsSpec) MetricsEnabled() bool {
+func (m *MetricsSpec) IsEnabled() bool {
 	return m != nil && m.Enabled
 }
 

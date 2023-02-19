@@ -44,19 +44,13 @@ func TestNamespaceCreation(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
-			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.17.5")
+			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.19.1")
 			if err != nil {
 				t.Fatal(err)
 			}
-			return ctx
+			return SetTemporalClusterForFeature(ctx, cluster)
 		}).
-		Assess("Temporal cluster created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForCluster(ctx, cfg, cluster)
-			if err != nil {
-				t.Fatal(err)
-			}
-			return ctx
-		}).
+		Assess("Temporal cluster created", AssertTemporalClusterReady()).
 		Assess("Can create a temporal namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 

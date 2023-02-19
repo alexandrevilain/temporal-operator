@@ -230,21 +230,3 @@ func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 		},
 	})
 }
-
-type (
-	clusterContextKey   string
-	namespaceContextKey string
-)
-
-var (
-	clusterKey   clusterContextKey   = "cluster"
-	namespaceKey namespaceContextKey = "namespace"
-)
-
-func GetNamespaceForFeature(ctx context.Context) string {
-	return ctx.Value(namespaceKey).(string)
-}
-
-func SetNamespaceForFeature(ctx context.Context, namespace string) context.Context {
-	return context.WithValue(ctx, namespaceKey, namespace)
-}

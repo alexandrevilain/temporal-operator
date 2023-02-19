@@ -30,9 +30,9 @@ import (
 )
 
 var (
-	initialClusterVersion       = "1.16.0"
-	firstUpgradeClusterVersion  = "1.17.5"
-	secondUpgradeClusterVersion = "1.18.0"
+	initialClusterVersion       = "1.18.5"
+	firstUpgradeClusterVersion  = "1.19.1"
+	secondUpgradeClusterVersion = "1.20.0"
 )
 
 func TestPersistence(t *testing.T) {
@@ -216,15 +216,17 @@ func TestPersistence(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				return context.WithValue(ctx, clusterKey, cluster)
+				return SetTemporalClusterForFeature(ctx, cluster)
 			}).
-			Assess("Temporal cluster created", AssertClusterReady()).
+			Assess("Temporal cluster created", AssertTemporalClusterReady()).
+			Assess("Can create a TemporalNamespace", AssertCanCreateTemporalNamespace("default")).
+			Assess("TemporalNamespace ready", AssertTemporalNamespaceReady()).
 			Assess("Temporal cluster can handle workflows", AssertClusterCanHandleWorkflows()).
-			Assess("Upgrade cluster to 1.17.x", AssertClusterCanBeUpgraded(firstUpgradeClusterVersion)).
-			Assess("Temporal cluster ready after upgrade", AssertClusterReady()).
+			Assess("Upgrade cluster to 1.19.x", AssertTemporalClusterCanBeUpgraded(firstUpgradeClusterVersion)).
+			Assess("Temporal cluster ready after upgrade", AssertTemporalClusterReady()).
 			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
-			Assess("Upgrade cluster to 1.18.x", AssertClusterCanBeUpgraded(secondUpgradeClusterVersion)).
-			Assess("Temporal cluster ready after upgrade", AssertClusterReady()).
+			Assess("Upgrade cluster to 1.20.x", AssertTemporalClusterCanBeUpgraded(secondUpgradeClusterVersion)).
+			Assess("Temporal cluster ready after upgrade", AssertTemporalClusterReady()).
 			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
 			Feature()
 

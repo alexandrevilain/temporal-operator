@@ -23,186 +23,167 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/teststarter"
-	"github.com/alexandrevilain/temporal-operator/tests/e2e/temporal/testworker"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"sigs.k8s.io/e2e-framework/klient/wait"
-	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
 func TestWithmTLSEnabled(t *testing.T) {
-	var cluster *v1beta1.TemporalCluster
-	var clusterClient *v1beta1.TemporalClusterClient
-
-	mTLSCertManagerFeature := features.New("mTLS enabled with cert-manager").
-		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForFeature(ctx)
-
-			client, err := cfg.NewClient()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			// create the postgres
-			err = deployAndWaitForPostgres(ctx, cfg, namespace)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
-
-			// create the temporal cluster
-			cluster = &v1beta1.TemporalCluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: namespace,
-				},
-				Spec: v1beta1.TemporalClusterSpec{
-					NumHistoryShards:           1,
-					JobTtlSecondsAfterFinished: &jobTtl,
-					MTLS: &v1beta1.MTLSSpec{
-						Provider: v1beta1.CertManagerMTLSProvider,
-						Internode: &v1beta1.InternodeMTLSSpec{
-							Enabled: true,
-						},
-						Frontend: &v1beta1.FrontendMTLSSpec{
-							Enabled: true,
-						},
+	tests := map[string]struct {
+		deployDependencies func(ctx context.Context, cfg *envconf.Config, namespace string) error
+		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster
+	}{
+		"mTLS enabled with cert-manager": {
+			deployDependencies: deployAndWaitForPostgres,
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
+				return &v1beta1.TemporalCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: namespace,
 					},
-					Persistence: v1beta1.TemporalPersistenceSpec{
-						DefaultStore: &v1beta1.DatastoreSpec{
-							SQL: &v1beta1.SQLSpec{
-								User:            "temporal",
-								PluginName:      "postgres",
-								DatabaseName:    "temporal",
-								ConnectAddr:     connectAddr,
-								ConnectProtocol: "tcp",
+					Spec: v1beta1.TemporalClusterSpec{
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: &jobTtl,
+						MTLS: &v1beta1.MTLSSpec{
+							Provider: v1beta1.CertManagerMTLSProvider,
+							Internode: &v1beta1.InternodeMTLSSpec{
+								Enabled: true,
 							},
-							PasswordSecretRef: v1beta1.SecretKeyReference{
-								Name: "postgres-password",
-								Key:  "PASSWORD",
+							Frontend: &v1beta1.FrontendMTLSSpec{
+								Enabled: true,
 							},
 						},
-						VisibilityStore: &v1beta1.DatastoreSpec{
-							SQL: &v1beta1.SQLSpec{
-								User:            "temporal",
-								PluginName:      "postgres",
-								DatabaseName:    "temporal_visibility",
-								ConnectAddr:     connectAddr,
-								ConnectProtocol: "tcp",
+						Persistence: v1beta1.TemporalPersistenceSpec{
+							DefaultStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
 							},
-							PasswordSecretRef: v1beta1.SecretKeyReference{
-								Name: "postgres-password",
-								Key:  "PASSWORD",
+							VisibilityStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
 							},
 						},
 					},
-				},
-			}
-			err = client.Resources(namespace).Create(ctx, cluster)
-			if err != nil {
-				t.Fatal(err)
-			}
+				}
 
-			return context.WithValue(ctx, clusterKey, cluster)
-		}).
-		Assess("Temporal cluster created", AssertClusterReady()).
-		Assess("Can create a temporal cluster namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForFeature(ctx)
-
-			// create the temporal cluster client
-			clusterClient = &v1beta1.TemporalClusterClient{
-				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
-				Spec: v1beta1.TemporalClusterClientSpec{
-					ClusterRef: v1beta1.TemporalClusterReference{
-						Name: cluster.GetName(),
+			},
+		},
+		"mTLS enabled with cert-manager and internal frontend": {
+			deployDependencies: deployAndWaitForPostgres,
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
+				return &v1beta1.TemporalCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: namespace,
 					},
-				},
-			}
-			err := cfg.Client().Resources(namespace).Create(ctx, clusterClient)
-			if err != nil {
-				t.Fatal(err)
-			}
+					Spec: v1beta1.TemporalClusterSpec{
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: &jobTtl,
+						MTLS: &v1beta1.MTLSSpec{
+							Provider: v1beta1.CertManagerMTLSProvider,
+							Internode: &v1beta1.InternodeMTLSSpec{
+								Enabled: true,
+							},
+							Frontend: &v1beta1.FrontendMTLSSpec{
+								Enabled: true,
+							},
+						},
+						Services: &v1beta1.ServicesSpec{
+							InternalFrontend: &v1beta1.InternalFrontendServiceSpec{
+								Enabled: true,
+							},
+						},
+						Persistence: v1beta1.TemporalPersistenceSpec{
+							DefaultStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+							VisibilityStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+						},
+					},
+				}
 
-			return ctx
-		}).
-		Assess("Temporal cluster client created", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			err := waitForClusterClient(ctx, cfg, clusterClient)
-			if err != nil {
-				t.Fatal(err)
-			}
-			return ctx
+			},
+		},
+	}
 
-		}).
-		Assess("Temporal cluster can handle workflows", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
-			namespace := GetNamespaceForFeature(ctx)
+	featureTable := []features.Feature{}
 
-			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer closePortForward()
+	for name, test := range tests {
+		feature := features.New(name).
+			Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				namespace := GetNamespaceForFeature(ctx)
+				t.Logf("using namespace: %s", namespace)
 
-			t.Logf("Temporal frontend addr: %s", connectAddr)
+				err := test.deployDependencies(ctx, cfg, namespace)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			client, err := klientToControllerRuntimeClient(cfg.Client())
-			if err != nil {
-				t.Fatal(err)
-			}
+				cluster := test.cluster(ctx, cfg, namespace)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			clientSecret := &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      clusterClient.Status.SecretRef.Name,
-					Namespace: namespace,
-				},
-			}
+				err = cfg.Client().Resources().Create(ctx, cluster)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			list := &corev1.SecretList{Items: []corev1.Secret{*clientSecret}}
+				return SetTemporalClusterForFeature(ctx, cluster)
+			}).
+			Assess("Temporal cluster created", AssertTemporalClusterReady()).
+			Assess("Can create a TemporalNamespace", AssertCanCreateTemporalNamespace("default")).
+			Assess("TemporalNamespace ready", AssertTemporalNamespaceReady()).
+			Assess("Can create a TemporalClusterClient", AssertCanCreateTemporalClusterClient()).
+			Assess("TemporalClusterClient ready", AssertTemporalClusterClientReady()).
+			Assess("Temporal cluster with mTLS can handle workflows", AssertTemporalClusterWithMTLSCanHandleWorkflows()).
+			Feature()
 
-			err = wait.For(conditions.New(cfg.Client().Resources(namespace)).ResourcesFound(list))
-			if err != nil {
-				t.Fatal(err)
-			}
+		featureTable = append(featureTable, feature)
+	}
 
-			err = cfg.Client().Resources(namespace).Get(ctx, clusterClient.Status.SecretRef.Name, namespace, clientSecret)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			tlsCfg, err := temporal.GetTlSConfigFromSecret(clientSecret)
-			if err != nil {
-				t.Fatal(err)
-			}
-			tlsCfg.ServerName = clusterClient.Status.ServerName
-
-			clusterClient, err := temporal.GetClusterClient(ctx, client, cluster, temporal.WithHostPort(connectAddr), temporal.WithTLSConfig(tlsCfg))
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			w, err := testworker.NewWorker(clusterClient)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			t.Log("Starting test worker")
-			w.Start()
-			defer w.Stop()
-
-			t.Logf("Starting workflow")
-			err = teststarter.NewStarter(clusterClient).StartGreetingWorkflow()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			return ctx
-		}).
-		Feature()
-
-	testenv.Test(t, mTLSCertManagerFeature)
+	testenv.TestInParallel(t, featureTable...)
 }
