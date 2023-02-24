@@ -218,7 +218,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 				{
 					Key:      "app.kubernetes.io/component",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{primitives.FrontendService},
+					Values:   []string{string(primitives.FrontendService)},
 				},
 				{
 					Key:      "app.kubernetes.io/version",

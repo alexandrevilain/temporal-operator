@@ -18,11 +18,6 @@
 package testworker
 
 import (
-	"context"
-	"time"
-
-	"go.temporal.io/api/serviceerror"
-	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
@@ -39,11 +34,6 @@ func NewWorker(client client.Client) (*Worker, error) {
 		client: client,
 	}
 
-	err := w.createDefaultNamespace()
-	if err != nil {
-		return nil, err
-	}
-
 	w.worker = worker.New(w.client, Taskqueue, worker.Options{})
 	w.worker.RegisterWorkflow(GreetingSample)
 	w.worker.RegisterActivity(&Activities{
@@ -51,23 +41,6 @@ func NewWorker(client client.Client) (*Worker, error) {
 		Greeting: "Hello",
 	})
 	return w, nil
-}
-
-func (w *Worker) createDefaultNamespace() error {
-	dur := time.Hour * 24 * 10
-	_, err := w.client.WorkflowService().RegisterNamespace(context.Background(), &workflowservice.RegisterNamespaceRequest{
-		Namespace:                        "default",
-		WorkflowExecutionRetentionPeriod: &dur,
-	})
-	if err != nil {
-		_, ok := err.(*serviceerror.NamespaceAlreadyExists)
-		if !ok {
-			return err
-		}
-	}
-	// sleep to wait for ns to be registered
-	time.Sleep(10 * time.Second)
-	return nil
 }
 
 func (w *Worker) Start() error {

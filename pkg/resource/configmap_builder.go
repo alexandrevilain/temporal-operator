@@ -142,7 +142,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			},
 		},
 		Services: map[string]config.Service{
-			primitives.FrontendService: {
+			string(primitives.FrontendService): {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
@@ -150,7 +150,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			primitives.HistoryService: {
+			string(primitives.HistoryService): {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.History.Port,
 					MembershipPort:  *b.instance.Spec.Services.History.MembershipPort,
@@ -158,7 +158,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			primitives.MatchingService: {
+			string(primitives.MatchingService): {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Matching.Port,
 					MembershipPort:  *b.instance.Spec.Services.Matching.MembershipPort,
@@ -166,7 +166,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					BindOnIP:        "0.0.0.0",
 				},
 			},
-			primitives.WorkerService: {
+			string(primitives.WorkerService): {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Worker.Port,
 					MembershipPort:  *b.instance.Spec.Services.Worker.MembershipPort,
@@ -175,6 +175,19 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				},
 			},
 		},
+	}
+
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_20_0) {
+		if b.instance.Spec.Services.InternalFrontend.IsEnabled() {
+			temporalCfg.Services[string(primitives.InternalFrontendService)] = config.Service{
+				RPC: config.RPC{
+					GRPCPort:        *b.instance.Spec.Services.InternalFrontend.Port,
+					MembershipPort:  *b.instance.Spec.Services.InternalFrontend.MembershipPort,
+					BindOnLocalHost: false,
+					BindOnIP:        "0.0.0.0",
+				},
+			}
+		}
 	}
 
 	if !b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
@@ -190,7 +203,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		}
 	}
 
-	if b.instance.Spec.Metrics.MetricsEnabled() {
+	if b.instance.Spec.Metrics.IsEnabled() {
 		temporalCfg.Global.Metrics = &metrics.Config{
 			ClientConfig: metrics.ClientConfig{
 				Tags: map[string]string{"type": "{{ .Env.SERVICES }}"},
@@ -237,6 +250,16 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					RequireClientAuth: true,
 				},
 			}
+
+			// If internode mTLs is enabled and internal frontend is enabled,
+			// use internode mTLS certificates for the worker TLS.
+			if b.instance.Spec.Services.InternalFrontend.IsEnabled() {
+				temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
+					Client:   internodeClientTLS,
+					CertFile: internodeServerCertFilePath,
+					KeyFile:  internodeServerKeyFilePath,
+				}
+			}
 		}
 
 		if b.instance.Spec.MTLS.FrontendEnabled() {
@@ -262,15 +285,18 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				PerHostOverrides: map[string]config.ServerTLS{},
 			}
 
-			temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
-				CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSCert),
-				KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSKey),
-				Client: config.ClientTLS{
-					ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
-					DisableHostVerification: false,
-					RootCAFiles:             []string{frontendIntermediateCAFilePath},
-					ForceTLS:                true,
-				},
+			// If the Frontend mTLS is enabled, and if the internal frontend with internode mTLS is not enabled, the system worker should use the Frontend mTLS.
+			if !(b.instance.Spec.MTLS.InternodeEnabled() && b.instance.Spec.Services.InternalFrontend.IsEnabled()) {
+				temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
+					CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSCert),
+					KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSKey),
+					Client: config.ClientTLS{
+						ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
+						DisableHostVerification: false,
+						RootCAFiles:             []string{frontendIntermediateCAFilePath},
+						ForceTLS:                true,
+					},
+				}
 			}
 		}
 	}

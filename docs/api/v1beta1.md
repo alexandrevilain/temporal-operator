@@ -1573,6 +1573,54 @@ changes, defaults to the &lsquo;master&rsquo; branch.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.InternalFrontendServiceSpec">InternalFrontendServiceSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>)
+</p>
+<p>InternalFrontendServiceSpec contains temporal internal frontend service specifications.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>ServiceSpec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceSpec">
+ServiceSpec
+</a>
+</em>
+</td>
+<td>
+<p>
+(Members of <code>ServiceSpec</code> are embedded into this type.)
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if we want to spawn the internal frontend service.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.InternodeMTLSSpec">InternodeMTLSSpec
 </h3>
 <p>
@@ -2197,6 +2245,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.InternalFrontendServiceSpec">InternalFrontendServiceSpec</a>, 
 <a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>)
 </p>
 <p>ServiceSpec contains a temporal service specifications.</p>
@@ -2393,6 +2442,21 @@ ServiceSpec
 <td>
 <em>(Optional)</em>
 <p>Frontend service custom specifications.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internalFrontend</code><br>
+<em>
+<a href="#temporal.io/v1beta1.InternalFrontendServiceSpec">
+InternalFrontendServiceSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Internal Frontend service custom specifications.
+Only compatible with temporal &gt;= 1.20.0</p>
 </td>
 </tr>
 <tr>

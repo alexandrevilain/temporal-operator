@@ -81,7 +81,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	// worker has no grpc endpoint so omit liveness probe
 	var livenessProbe *corev1.Probe
-	if b.serviceName != primitives.WorkerService {
+	if b.serviceName != string(primitives.WorkerService) {
 		livenessProbe = &corev1.Probe{
 			InitialDelaySeconds: 150,
 			TimeoutSeconds:      1,
@@ -257,7 +257,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
-	if b.instance.Spec.Metrics.MetricsEnabled() {
+	if b.instance.Spec.Metrics.IsEnabled() {
 		if b.instance.Spec.Metrics.Prometheus != nil && b.instance.Spec.Metrics.Prometheus.ListenPort != nil {
 			containerPorts = append(containerPorts, corev1.ContainerPort{
 				Name:          prometheus.MetricsPortName.String(),
