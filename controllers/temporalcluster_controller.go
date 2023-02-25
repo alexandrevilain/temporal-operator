@@ -42,10 +42,10 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
-	"sigs.k8s.io/cluster-api/util/patch"
 )
 
 const (
@@ -103,7 +103,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	defer func() {
 		// Always attempt to Patch the Cluster object and status after each reconciliation.
-		err := patchHelper.Patch(ctx, cluster, patch.WithStatusObservedGeneration{})
+		err := patchHelper.Patch(ctx, cluster)
 		if err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
