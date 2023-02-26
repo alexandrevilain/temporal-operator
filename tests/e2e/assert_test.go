@@ -89,10 +89,7 @@ func AssertClusterCanHandleWorkflows() features.Func {
 
 		t.Logf("Temporal frontend addr: %s", connectAddr)
 
-		client, err := klientToControllerRuntimeClient(cfg.Client())
-		if err != nil {
-			t.Fatal(err)
-		}
+		client := cfg.Client().Resources().GetControllerRuntimeClient()
 
 		clusterClient, err := temporal.GetClusterClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
 		if err != nil {
@@ -132,10 +129,7 @@ func AssertTemporalClusterWithMTLSCanHandleWorkflows() features.Func {
 
 		t.Logf("Temporal frontend addr: %s", connectAddr)
 
-		client, err := klientToControllerRuntimeClient(cfg.Client())
-		if err != nil {
-			t.Fatal(err)
-		}
+		client := cfg.Client().Resources().GetControllerRuntimeClient()
 
 		clientSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
