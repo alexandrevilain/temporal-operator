@@ -75,17 +75,16 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
 	}
 	// Internal Frontend specs
-	if c.Spec.Services.InternalFrontend == nil {
-		c.Spec.Services.InternalFrontend = new(InternalFrontendServiceSpec)
-	}
-	if c.Spec.Services.InternalFrontend.Replicas == nil {
-		c.Spec.Services.InternalFrontend.Replicas = pointer.Int32(1)
-	}
-	if c.Spec.Services.InternalFrontend.Port == nil {
-		c.Spec.Services.InternalFrontend.Port = pointer.Int(7236)
-	}
-	if c.Spec.Services.InternalFrontend.MembershipPort == nil {
-		c.Spec.Services.InternalFrontend.MembershipPort = pointer.Int(6936)
+	if c.Spec.Services.InternalFrontend.IsEnabled() {
+		if c.Spec.Services.InternalFrontend.Replicas == nil {
+			c.Spec.Services.InternalFrontend.Replicas = pointer.Int32(1)
+		}
+		if c.Spec.Services.InternalFrontend.Port == nil {
+			c.Spec.Services.InternalFrontend.Port = pointer.Int(7236)
+		}
+		if c.Spec.Services.InternalFrontend.MembershipPort == nil {
+			c.Spec.Services.InternalFrontend.MembershipPort = pointer.Int(6936)
+		}
 	}
 	// History specs
 	if c.Spec.Services.History == nil {
