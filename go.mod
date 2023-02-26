@@ -30,7 +30,7 @@ require (
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448
 	sigs.k8s.io/cli-utils v0.34.0
 	sigs.k8s.io/controller-runtime v0.14.1
-	sigs.k8s.io/e2e-framework v0.0.8
+	sigs.k8s.io/e2e-framework v0.1.0
 )
 
 replace (
@@ -110,7 +110,7 @@ require (
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/uber-go/tally/v4 v4.1.3 // indirect
 	github.com/urfave/cli v1.22.10 // indirect
-	github.com/vladimirvivien/gexe v0.1.1 // indirect
+	github.com/vladimirvivien/gexe v0.2.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.36.4 // indirect
 	go.opentelemetry.io/otel v1.11.2 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.11.2 // indirect
