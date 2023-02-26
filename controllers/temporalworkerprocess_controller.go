@@ -21,13 +21,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -80,7 +80,7 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 
 	defer func() {
 		// Always attempt to Patch the WorkerProcess object and status after each reconciliation.
-		err := patchHelper.Patch(ctx, worker, patch.WithStatusObservedGeneration{})
+		err := patchHelper.Patch(ctx, worker)
 		if err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}

@@ -22,12 +22,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	certmanagerapiutil "github.com/cert-manager/cert-manager/pkg/api/util"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
-	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -78,7 +78,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 
 	defer func() {
 		// Always attempt to Patch the ClusterClient object and status after each reconciliation.
-		err := patchHelper.Patch(ctx, clusterClient, patch.WithStatusObservedGeneration{})
+		err := patchHelper.Patch(ctx, clusterClient)
 		if err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}

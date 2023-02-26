@@ -22,13 +22,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	"go.temporal.io/api/serviceerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
-	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -83,7 +83,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	defer func() {
 		// Always attempt to Patch the Cluster object and status after each reconciliation.
-		err := patchHelper.Patch(ctx, namespace, patch.WithStatusObservedGeneration{})
+		err := patchHelper.Patch(ctx, namespace)
 		if err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
