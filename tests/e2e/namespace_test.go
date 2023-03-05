@@ -78,10 +78,7 @@ func TestNamespaceCreation(t *testing.T) {
 			}
 			defer closePortForward()
 
-			client, err := klientToControllerRuntimeClient(cfg.Client())
-			if err != nil {
-				t.Fatal(err)
-			}
+			client := cfg.Client().Resources().GetControllerRuntimeClient()
 
 			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
 			if err != nil {
@@ -144,10 +141,7 @@ func TestNamespaceCreation(t *testing.T) {
 			}
 			defer closePortForward()
 
-			client, err := klientToControllerRuntimeClient(cfg.Client())
-			if err != nil {
-				t.Fatal(err)
-			}
+			client := cfg.Client().Resources().GetControllerRuntimeClient()
 
 			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
 			if err != nil {

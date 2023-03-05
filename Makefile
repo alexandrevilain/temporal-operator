@@ -194,11 +194,11 @@ KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
-OPERATOR_SDK_VERSION ?= 1.23.0
-CONTROLLER_TOOLS_VERSION ?=  v0.10.0
+OPERATOR_SDK_VERSION ?= 1.26.1
+CONTROLLER_TOOLS_VERSION ?=  v0.11.3
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
-GOLANGCI_LINT_VERSION ?= v1.50.1
+GOLANGCI_LINT_VERSION ?= v1.51.2
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
 
@@ -214,12 +214,14 @@ $(KUSTOMIZE): $(LOCALBIN)
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK)
 $(OPERATOR_SDK): $(LOCALBIN)
-	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
+	test -s $(LOCALBIN)/operator-sdk && $(LOCALBIN)/operator-sdk version | grep -q $(OPERATOR_SDK_VERSION) || \
+	curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
 	@chmod +x $(OPERATOR_SDK)
 
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCI_LINT)
 $(GOLANGCI_LINT): $(GOLANGCI_LINT)
+	test -s $(LOCALBIN)/golangci-lint && $(LOCALBIN)/golangci-lint version | grep -q $(GOLANGCI_LINT_VERSION) || \
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 .PHONY: go-licenser

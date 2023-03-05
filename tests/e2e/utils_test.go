@@ -32,9 +32,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"sigs.k8s.io/e2e-framework/klient"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
@@ -112,10 +110,6 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 
 	return cluster, nil
 
-}
-
-func klientToControllerRuntimeClient(k klient.Client) (client.Client, error) {
-	return client.New(k.RESTConfig(), client.Options{})
 }
 
 func deployAndWaitForMySQL(ctx context.Context, cfg *envconf.Config, namespace string) error {
