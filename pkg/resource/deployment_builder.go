@@ -206,10 +206,6 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					Name:      certmanager.FrontendCertificate,
 					MountPath: b.instance.Spec.MTLS.Frontend.GetCertificateMountPath(),
 				},
-				corev1.VolumeMount{
-					Name:      certmanager.WorkerFrontendClientCertificate,
-					MountPath: b.instance.Spec.MTLS.Frontend.GetWorkerCertificateMountPath(),
-				},
 			)
 
 			volumes = append(volumes,
@@ -231,7 +227,15 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 						},
 					},
 				},
-				corev1.Volume{
+			)
+
+			if !b.instance.Spec.Services.InternalFrontend.IsEnabled() {
+				volumeMounts = append(volumeMounts, corev1.VolumeMount{
+					Name:      certmanager.WorkerFrontendClientCertificate,
+					MountPath: b.instance.Spec.MTLS.Frontend.GetWorkerCertificateMountPath(),
+				})
+
+				volumes = append(volumes, corev1.Volume{
 					Name: certmanager.WorkerFrontendClientCertificate,
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
@@ -239,8 +243,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
-				},
-			)
+				})
+			}
 		}
 	}
 

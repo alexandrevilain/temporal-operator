@@ -151,7 +151,8 @@ func TestWithmTLSEnabled(t *testing.T) {
 
 	featureTable := []features.Feature{}
 
-	for name, test := range tests {
+	for name, testCase := range tests {
+		test := testCase
 		feature := features.New(name).
 			Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 				namespace := GetNamespaceForFeature(ctx)

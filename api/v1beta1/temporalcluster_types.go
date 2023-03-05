@@ -66,6 +66,7 @@ type InternalFrontendServiceSpec struct {
 	ServiceSpec `json:",inline"`
 	// Enabled defines if we want to spawn the internal frontend service.
 	// +optional
+	// +kubebuilder:default:=false
 	Enabled bool `json:"enabled,omitempty"`
 }
 

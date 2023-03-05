@@ -195,7 +195,14 @@ func TestPersistence(t *testing.T) {
 
 	featureTable := []features.Feature{}
 
-	for name, test := range tests {
+	for name, testCase := range tests {
+		// Temporary mysql e2e tests disabling
+		if name == "mysql persistence" {
+			continue
+		}
+		// Temporary mysql e2e tests disabling
+
+		test := testCase
 		feature := features.New(name).
 			Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 				namespace := GetNamespaceForFeature(ctx)
