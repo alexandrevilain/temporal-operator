@@ -117,9 +117,6 @@ func TestPersistence(t *testing.T) {
 									DatabaseName:    "temporal",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
-									ConnectAttributes: map[string]string{
-										"tx_isolation": "READ-COMMITTED",
-									},
 								},
 								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "mysql-password",
@@ -133,9 +130,6 @@ func TestPersistence(t *testing.T) {
 									DatabaseName:    "temporal_visibility",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
-									ConnectAttributes: map[string]string{
-										"tx_isolation": "READ-COMMITTED",
-									},
 								},
 								PasswordSecretRef: v1beta1.SecretKeyReference{
 									Name: "mysql-password",
@@ -196,12 +190,6 @@ func TestPersistence(t *testing.T) {
 	featureTable := []features.Feature{}
 
 	for name, testCase := range tests {
-		// Temporary mysql e2e tests disabling
-		if name == "mysql persistence" {
-			continue
-		}
-		// Temporary mysql e2e tests disabling
-
 		test := testCase
 		feature := features.New(name).
 			Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
