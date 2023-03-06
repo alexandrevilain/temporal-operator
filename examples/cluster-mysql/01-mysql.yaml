@@ -1,7 +1,27 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-password
+  namespace: demo
+type: Opaque
+data:
+  PASSWORD: dGVzdA==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+  namespace: demo
+data:
+  init.sql: |
+    CREATE DATABASE temporal_visibility;
+    GRANT ALL PRIVILEGES ON temporal_visibility.* TO 'temporal'@'%';
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
+  namespace: demo
   labels:
     service: mysql
 spec:
@@ -37,3 +57,15 @@ spec:
       - name: mysql-init
         configMap:
           name: mysql-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+  selector:
+    service: mysql

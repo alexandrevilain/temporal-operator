@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: mysql-init
 data:
-  init.sql: |
+  init.sql: |-
     CREATE DATABASE temporal_visibility;
     GRANT ALL PRIVILEGES ON temporal_visibility.* TO 'temporal'@'%';
