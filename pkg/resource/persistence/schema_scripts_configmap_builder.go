@@ -47,11 +47,13 @@ const (
 	defaultSchemaPath    = "temporal"
 	visibilitySchemaPath = "visibility"
 
-	postgreSQLSchemaPath        = "postgresql"
-	postgreSQLVersionSchemaPath = "v96"
+	postgreSQLSchemaPath          = "postgresql"
+	postgreSQLVersionSchemaPath   = "v96"
+	postgreSQL12VersionSchemaPath = "v12"
 
-	mysqlSchemaPath        = "mysql"
-	mysqlVersionSchemaPath = "v57"
+	mysqlSchemaPath         = "mysql"
+	mysqlVersionSchemaPath  = "v57"
+	mysql8VersionSchemaPath = "v8"
 
 	cassandraSchemaPath        = "cassandra"
 	cassandraVersionSchemaPath = ""
@@ -87,9 +89,15 @@ func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1beta1.Datas
 	case v1beta1.PostgresSQLDatastore:
 		storeSchemaPath = postgreSQLSchemaPath
 		storeVersionSchemaPath = postgreSQLVersionSchemaPath
+	case v1beta1.PostgresSQL12Datastore:
+		storeSchemaPath = postgreSQLSchemaPath
+		storeVersionSchemaPath = postgreSQL12VersionSchemaPath
 	case v1beta1.MySQLDatastore:
 		storeSchemaPath = mysqlSchemaPath
 		storeVersionSchemaPath = mysqlVersionSchemaPath
+	case v1beta1.MySQL8Datastore:
+		storeSchemaPath = mysqlSchemaPath
+		storeVersionSchemaPath = mysql8VersionSchemaPath
 	case v1beta1.CassandraDatastore:
 		storeSchemaPath = cassandraSchemaPath
 		storeVersionSchemaPath = cassandraVersionSchemaPath
@@ -174,7 +182,10 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec
 		if err != nil {
 			return nil, err
 		}
-	case v1beta1.PostgresSQLDatastore, v1beta1.MySQLDatastore:
+	case v1beta1.PostgresSQLDatastore,
+		v1beta1.PostgresSQL12Datastore,
+		v1beta1.MySQLDatastore,
+		v1beta1.MySQL8Datastore:
 		args, err = b.getSQLArgs(spec)
 		if err != nil {
 			return nil, err

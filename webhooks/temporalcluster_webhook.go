@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -179,14 +180,31 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
-	// Ensure Internal Frontend is only enabled for cluster version >= 1.20
-	if !cluster.Spec.Version.GreaterOrEqual(version.V1_20_0) && cluster.Spec.Services.InternalFrontend.IsEnabled() {
-		errs = append(errs,
-			field.Forbidden(
-				field.NewPath("spec", "services", "internalFrontend", "enabled"),
-				"temporal cluster version < 1.20.0 doesn't support internal frontend",
-			),
-		)
+	// Check new features introduced in cluster version >= 1.20 are not enabled for older version.
+
+	if !cluster.Spec.Version.GreaterOrEqual(version.V1_20_0) {
+		// Ensure Internal Frontend is only enabled for cluster version >= 1.20
+		if cluster.Spec.Services.InternalFrontend.IsEnabled() {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "services", "internalFrontend", "enabled"),
+					"temporal cluster version < 1.20.0 doesn't support internal frontend",
+				),
+			)
+		}
+
+		// Ensure mysql8 and postgres12 plugins are only used for cluster version >= 1.20
+		newStores := []string{string(v1beta1.PostgresSQL12Datastore), string(v1beta1.MySQL8Datastore)}
+		for name, store := range cluster.Spec.Persistence.GetDatastoresMap() {
+			if store.SQL != nil && slices.Contains(newStores, store.SQL.PluginName) {
+				errs = append(errs,
+					field.Forbidden(
+						field.NewPath("spec", "persistence", name, "sql", "pluginName"),
+						fmt.Sprintf("temporal cluster version < 1.20.0 doesn't support %s plugin name", store.SQL.PluginName),
+					),
+				)
+			}
+		}
 	}
 
 	return errs

@@ -861,6 +861,11 @@ spec:
                               type: integer
                             pluginName:
                               description: PluginName is the name of SQL plugin.
+                              enum:
+                                - postgres
+                                - postgres12
+                                - mysql
+                                - mysql8
                               type: string
                             taskScanPartitions:
                               description: TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
@@ -1079,6 +1084,11 @@ spec:
                               type: integer
                             pluginName:
                               description: PluginName is the name of SQL plugin.
+                              enum:
+                                - postgres
+                                - postgres12
+                                - mysql
+                                - mysql8
                               type: string
                             taskScanPartitions:
                               description: TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
@@ -1297,6 +1307,11 @@ spec:
                               type: integer
                             pluginName:
                               description: PluginName is the name of SQL plugin.
+                              enum:
+                                - postgres
+                                - postgres12
+                                - mysql
+                                - mysql8
                               type: string
                             taskScanPartitions:
                               description: TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.

@@ -67,7 +67,10 @@ func (b *ConfigmapBuilder) Build() (client.Object, error) {
 func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*config.DataStore, error) {
 	cfg := &config.DataStore{}
 	switch store.GetType() {
-	case v1beta1.MySQLDatastore, v1beta1.PostgresSQLDatastore:
+	case v1beta1.PostgresSQLDatastore,
+		v1beta1.PostgresSQL12Datastore,
+		v1beta1.MySQLDatastore,
+		v1beta1.MySQL8Datastore:
 		cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(store)
 		cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
 	case v1beta1.CassandraDatastore:

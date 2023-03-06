@@ -30,17 +30,19 @@ import (
 )
 
 var (
-	initialClusterVersion       = "1.18.5"
-	firstUpgradeClusterVersion  = "1.19.1"
-	secondUpgradeClusterVersion = "1.20.0"
+	initialClusterVersion = "1.18.5"
+	newDatastoreVersion   = "1.20.0"
+	defaultUpgradePath    = []string{"1.19.1", "1.20.0"}
 )
 
 func TestPersistence(t *testing.T) {
 	tests := map[string]struct {
 		deployDependencies func(ctx context.Context, cfg *envconf.Config, namespace string) error
 		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster
+		upgradePath        []string
 	}{
-		"postgresql persistence": {
+		"postgres persistence": {
+			upgradePath:        defaultUpgradePath,
 			deployDependencies: deployAndWaitForPostgres,
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
@@ -95,7 +97,64 @@ func TestPersistence(t *testing.T) {
 				}
 			},
 		},
+		"postgres12 persistence": {
+			upgradePath:        []string{},
+			deployDependencies: deployAndWaitForPostgres,
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
+
+				return &v1beta1.TemporalCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: namespace,
+					},
+					Spec: v1beta1.TemporalClusterSpec{
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: &jobTtl,
+						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
+						MTLS: &v1beta1.MTLSSpec{
+							Provider: v1beta1.CertManagerMTLSProvider,
+							Internode: &v1beta1.InternodeMTLSSpec{
+								Enabled: true,
+							},
+							Frontend: &v1beta1.FrontendMTLSSpec{
+								Enabled: true,
+							},
+						},
+						Persistence: v1beta1.TemporalPersistenceSpec{
+							DefaultStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres12",
+									DatabaseName:    "temporal",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+							VisibilityStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres12",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 		"mysql persistence": {
+			upgradePath:        defaultUpgradePath,
 			deployDependencies: deployAndWaitForMySQL,
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
@@ -141,7 +200,55 @@ func TestPersistence(t *testing.T) {
 				}
 			},
 		},
+		"mysql8 persistence": {
+			upgradePath:        []string{},
+			deployDependencies: deployAndWaitForMySQL,
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
+
+				return &v1beta1.TemporalCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: namespace,
+					},
+					Spec: v1beta1.TemporalClusterSpec{
+						NumHistoryShards:           1,
+						JobTtlSecondsAfterFinished: &jobTtl,
+						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
+						Persistence: v1beta1.TemporalPersistenceSpec{
+							DefaultStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "mysql8",
+									DatabaseName:    "temporal",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "mysql-password",
+									Key:  "PASSWORD",
+								},
+							},
+							VisibilityStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "mysql8",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "mysql-password",
+									Key:  "PASSWORD",
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 		"cassandra persistence": {
+			upgradePath:        defaultUpgradePath,
 			deployDependencies: deployAndWaitForCassandra,
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
@@ -216,16 +323,16 @@ func TestPersistence(t *testing.T) {
 			Assess("Temporal cluster created", AssertTemporalClusterReady()).
 			Assess("Can create a TemporalNamespace", AssertCanCreateTemporalNamespace("default")).
 			Assess("TemporalNamespace ready", AssertTemporalNamespaceReady()).
-			Assess("Temporal cluster can handle workflows", AssertClusterCanHandleWorkflows()).
-			Assess("Upgrade cluster to 1.19.x", AssertTemporalClusterCanBeUpgraded(firstUpgradeClusterVersion)).
-			Assess("Temporal cluster ready after upgrade", AssertTemporalClusterReady()).
-			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
-			Assess("Upgrade cluster to 1.20.x", AssertTemporalClusterCanBeUpgraded(secondUpgradeClusterVersion)).
-			Assess("Temporal cluster ready after upgrade", AssertTemporalClusterReady()).
-			Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows()).
-			Feature()
+			Assess("Temporal cluster can handle workflows", AssertClusterCanHandleWorkflows())
 
-		featureTable = append(featureTable, feature)
+		for _, version := range test.upgradePath {
+			feature.
+				Assess(fmt.Sprintf("Upgrade cluster to %s", version), AssertTemporalClusterCanBeUpgraded(version)).
+				Assess("Temporal cluster ready after upgrade", AssertTemporalClusterReady()).
+				Assess("Temporal cluster can handle workflows after upgrade", AssertClusterCanHandleWorkflows())
+		}
+
+		featureTable = append(featureTable, feature.Feature())
 	}
 
 	testenv.TestInParallel(t, featureTable...)
