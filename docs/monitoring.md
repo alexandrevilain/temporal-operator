@@ -17,7 +17,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.17.4
+  version: 1.20.0
   numHistoryShards: 1
   # [...]
   metrics:

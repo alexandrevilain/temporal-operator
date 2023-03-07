@@ -17,9 +17,9 @@ The Kubernetes Operator to deploy and manage [Temporal](https://temporal.io/) cl
 - [x] Namespace management using CRDs.
 - [x] Cluster version upgrades.
 - [x] Cluster monitoring.
+- [x] Complete end2end test suite.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
-- [ ] Complete end2end test suite.
 
 ## Quick start
 
@@ -52,7 +52,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.18.5
+  version: 1.20.0
   numHistoryShards: 1
   persistence:
     defaultStore:
@@ -93,6 +93,18 @@ Few examples are available to help you get started:
 - [Demo cluster with PostgreSQL & advanced visibility using ElasticSearch](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres-es)
 - [Demo cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
 - [Demo cluster with mTLS using cert-manager & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls)
+
+## Compatibility matrix
+
+The following table shows operator compatibility with Temporal and Kubernetes.
+Please note this table only reports end-to-end tests suite coverage, others versions *may* work.
+
+| Temporal Operator | Temporal           | Kubernetes     |
+|-------------------|--------------------|----------------|
+| v0.12.x (WIP)     | v1.18.x to v1.20.x | v1.23 to v1.26 |
+| v0.11.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
+| v0.10.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
+| v0.9.x            | v1.16.x to v1.18.x | v1.22 to v1.25 |
 
 ## Contributing
 

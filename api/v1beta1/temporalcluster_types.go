@@ -178,6 +178,7 @@ type SQLSpec struct {
 	// User is the username to be used for the connection.
 	User string `json:"user"`
 	// PluginName is the name of SQL plugin.
+	// +kubebuilder:validation:Enum=postgres;postgres12;mysql;mysql8
 	PluginName string `json:"pluginName"`
 	// DatabaseName is the name of SQL database to connect to.
 	DatabaseName string `json:"databaseName"`
@@ -303,8 +304,10 @@ type DatastoreType string
 
 const (
 	CassandraDatastore     DatastoreType = "cassandra"
-	PostgresSQLDatastore   DatastoreType = "postgresql"
+	PostgresSQLDatastore   DatastoreType = "postgres"
+	PostgresSQL12Datastore DatastoreType = "postgres12"
 	MySQLDatastore         DatastoreType = "mysql"
+	MySQL8Datastore        DatastoreType = "mysql8"
 	ElasticsearchDatastore DatastoreType = "elasticsearch"
 	UnknownDatastore       DatastoreType = "unknown"
 )
@@ -345,8 +348,12 @@ func (s *DatastoreSpec) GetType() DatastoreType {
 		switch s.SQL.PluginName {
 		case "postgres":
 			return PostgresSQLDatastore
+		case "postgres12":
+			return PostgresSQL12Datastore
 		case "mysql":
 			return MySQLDatastore
+		case "mysql8":
+			return MySQL8Datastore
 		}
 	}
 	if s.Elasticsearch != nil {
@@ -419,6 +426,18 @@ func (p *TemporalPersistenceSpec) GetDatastores() []*DatastoreSpec {
 
 	if p.AdvancedVisibilityStore != nil {
 		stores = append(stores, p.AdvancedVisibilityStore)
+	}
+
+	return stores
+}
+func (p *TemporalPersistenceSpec) GetDatastoresMap() map[string]*DatastoreSpec {
+	stores := map[string]*DatastoreSpec{
+		"defaultStore":    p.DefaultStore,
+		"visibilityStore": p.VisibilityStore,
+	}
+
+	if p.AdvancedVisibilityStore != nil {
+		stores["advancedVisibilityStore"] = p.AdvancedVisibilityStore
 	}
 
 	return stores
