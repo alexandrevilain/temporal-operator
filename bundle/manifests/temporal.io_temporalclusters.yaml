@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
+    controller-gen.kubebuilder.io/version: v0.11.3
   creationTimestamp: null
   name: temporalclusters.temporal.io
 spec:
@@ -1184,6 +1184,11 @@ spec:
                             type: integer
                           pluginName:
                             description: PluginName is the name of SQL plugin.
+                            enum:
+                            - postgres
+                            - postgres12
+                            - mysql
+                            - mysql8
                             type: string
                           taskScanPartitions:
                             description: TaskScanPartitions is the number of partitions
@@ -1441,6 +1446,11 @@ spec:
                             type: integer
                           pluginName:
                             description: PluginName is the name of SQL plugin.
+                            enum:
+                            - postgres
+                            - postgres12
+                            - mysql
+                            - mysql8
                             type: string
                           taskScanPartitions:
                             description: TaskScanPartitions is the number of partitions
@@ -1698,6 +1708,11 @@ spec:
                             type: integer
                           pluginName:
                             description: PluginName is the name of SQL plugin.
+                            enum:
+                            - postgres
+                            - postgres12
+                            - mysql
+                            - mysql8
                             type: string
                           taskScanPartitions:
                             description: TaskScanPartitions is the number of partitions
@@ -1874,6 +1889,102 @@ spec:
                   history:
                     description: History service custom specifications.
                     properties:
+                      membershipPort:
+                        description: 'Port defines a custom membership port for the
+                          service. Default values are: 6933 for Frontend service 6934
+                          for History service 6935 for Matching service 6939 for Worker
+                          service'
+                        type: integer
+                      overrides:
+                        description: Overrides adds some overrides to the resources
+                          deployed for the service. Those overrides takes precedence
+                          over spec.services.overrides.
+                        properties:
+                          deployment:
+                            description: Override configuration for the temporal service
+                              Deployment.
+                            properties:
+                              metadata:
+                                description: ObjectMetaOverride provides the ability
+                                  to override an object metadata. It's a subset of
+                                  the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                                properties:
+                                  annotations:
+                                    additionalProperties:
+                                      type: string
+                                    description: Annotations is an unstructured key
+                                      value map stored with a resource that may be
+                                      set by external tools to store and retrieve
+                                      arbitrary metadata.
+                                    type: object
+                                  labels:
+                                    additionalProperties:
+                                      type: string
+                                    description: Map of string keys and values that
+                                      can be used to organize and categorize (scope
+                                      and select) objects.
+                                    type: object
+                                type: object
+                              spec:
+                                description: Specification of the desired behavior
+                                  of the Deployment.
+                                properties:
+                                  template:
+                                    description: Template describes the pods that
+                                      will be created.
+                                    properties:
+                                      metadata:
+                                        description: ObjectMetaOverride provides the
+                                          ability to override an object metadata.
+                                          It's a subset of the fields included in
+                                          k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                                        properties:
+                                          annotations:
+                                            additionalProperties:
+                                              type: string
+                                            description: Annotations is an unstructured
+                                              key value map stored with a resource
+                                              that may be set by external tools to
+                                              store and retrieve arbitrary metadata.
+                                            type: object
+                                          labels:
+                                            additionalProperties:
+                                              type: string
+                                            description: Map of string keys and values
+                                              that can be used to organize and categorize
+                                              (scope and select) objects.
+                                            type: object
+                                        type: object
+                                      spec:
+                                        description: Specification of the desired
+                                          behavior of the pod.
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    type: object
+                                type: object
+                            type: object
+                        type: object
+                      port:
+                        description: 'Port defines a custom gRPC port for the service.
+                          Default values are: 7233 for Frontend service 7234 for History
+                          service 7235 for Matching service 7239 for Worker service'
+                        type: integer
+                      replicas:
+                        description: Number of desired replicas for the service. Default
+                          to 1.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                    type: object
+                  internalFrontend:
+                    description: Internal Frontend service custom specifications.
+                      Only compatible with temporal >= 1.20.0
+                    properties:
+                      enabled:
+                        default: false
+                        description: Enabled defines if we want to spawn the internal
+                          frontend service.
+                        type: boolean
                       membershipPort:
                         description: 'Port defines a custom membership port for the
                           service. Default values are: 6933 for Frontend service 6934
