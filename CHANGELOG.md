@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.12.0
+
+**Release date:** 2023-03-08
+
+Features:
+- Add support for temporal v1.20 and internal frontend [#284](https://github.com/alexandrevilain/temporal-operator/pull/284)
+- Add support for new sql plugins: mysql8 and postgres12 [#298](https://github.com/alexandrevilain/temporal-operator/pull/298)
+
+Improvements:
+- Implement patch helper to get rid of cluster api dependency [#288](https://github.com/alexandrevilain/temporal-operator/pull/288)
+- Add unit tests for SecretCopier [#296](https://github.com/alexandrevilain/temporal-operator/pull/296)
+
+Fixes:
+- Fix missing internalFrontend spec in CRDs [#289](https://github.com/alexandrevilain/temporal-operator/pull/289)
+- Reactivate MySQL e2e test suite [#297](https://github.com/alexandrevilain/temporal-operator/pull/297)
+
+Updates:
+- Bump github.com/onsi/gomega from 1.26.0 to 1.27.2 [#291](https://github.com/alexandrevilain/temporal-operator/pull/291)
+- Bump Kubernetes dependencies to 0.26.1 [#293](https://github.com/alexandrevilain/temporal-operator/pull/293)
+- Bump github.com/onsi/ginkgo/v2 from 2.8.3 to 2.9.0 [#294](https://github.com/alexandrevilain/temporal-operator/pull/294)
+
 ## 0.11.2
 
 **Release date:** 2023-02-18
