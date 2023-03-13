@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,20 +35,20 @@ type MTLSInternodeCertificateBuilder struct {
 	scheme   *runtime.Scheme
 }
 
-func NewMTLSInternodeCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *MTLSInternodeCertificateBuilder {
+func NewMTLSInternodeCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
 	return &MTLSInternodeCertificateBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *MTLSInternodeCertificateBuilder) Build() (client.Object, error) {
+func (b *MTLSInternodeCertificateBuilder) Build() client.Object {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(InternodeCertificate),
 			Namespace: b.instance.Namespace,
 		},
-	}, nil
+	}
 }
 
 func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {

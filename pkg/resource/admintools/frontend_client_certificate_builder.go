@@ -15,19 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package admintools
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type AdminToolsFrontendClientCertificateBuilder struct {
-	*GenericFrontendClientCertificateBuilder
+type FrontendClientCertificateBuilder struct {
+	*certmanager.GenericFrontendClientCertificateBuilder
 }
 
-func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
-	return &AdminToolsFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "admintools"),
+func NewFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &FrontendClientCertificateBuilder{
+		GenericFrontendClientCertificateBuilder: certmanager.NewGenericFrontendClientCertificateBuilder(instance, scheme, "admintools").(*certmanager.GenericFrontendClientCertificateBuilder),
 	}
 }

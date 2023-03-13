@@ -53,7 +53,7 @@ func NewDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1be
 	}
 }
 
-func (b *DeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("worker-process"),
@@ -61,7 +61,7 @@ func (b *DeploymentBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "worker-process", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *DeploymentBuilder) Update(object client.Object) error {

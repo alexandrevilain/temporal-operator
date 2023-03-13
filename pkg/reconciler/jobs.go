@@ -52,13 +52,10 @@ func (r *Base) ReconcileJobs(ctx context.Context, owner runtime.Object, builderF
 
 		jobBuilder := builderFactory(owner, r.Scheme, job.Name, job.Command)
 
-		expectedJob, err := jobBuilder.Build()
-		if err != nil {
-			return 0, nil
-		}
+		expectedJob := jobBuilder.Build()
 
 		matchingJob := &batchv1.Job{}
-		err = r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
+		err := r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				// The job is not found, create it

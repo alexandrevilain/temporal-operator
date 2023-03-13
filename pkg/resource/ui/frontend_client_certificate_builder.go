@@ -15,25 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package ui
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type MTLSInternodeIntermediateCAIssuerBuilder struct {
-	GenericCAIssuerBuilder
+type FrontendClientCertificateBuilder struct {
+	*certmanager.GenericFrontendClientCertificateBuilder
 }
 
-func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
-	return &MTLSInternodeIntermediateCAIssuerBuilder{
-		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
-			instance:   instance,
-			scheme:     scheme,
-			name:       internodeIntermediateCAIssuer,
-			secretName: InternodeIntermediateCACertificate,
-		},
+func NewFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &FrontendClientCertificateBuilder{
+		GenericFrontendClientCertificateBuilder: certmanager.NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui").(*certmanager.GenericFrontendClientCertificateBuilder),
 	}
 }

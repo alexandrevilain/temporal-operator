@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package cluster
 
 import (
 	"context"
@@ -25,6 +25,8 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
@@ -48,7 +50,7 @@ type DeploymentBuilder struct {
 	service     *v1beta1.ServiceSpec
 }
 
-func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DeploymentBuilder {
+func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
 	return &DeploymentBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -57,7 +59,7 @@ func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster,
 	}
 }
 
-func (b *DeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
@@ -65,7 +67,7 @@ func (b *DeploymentBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *DeploymentBuilder) Update(object client.Object) error {
@@ -278,7 +280,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName),
 		Spec: corev1.PodSpec{
 			ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 			DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
@@ -317,14 +319,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	if b.instance.Spec.Services.Overrides != nil && b.instance.Spec.Services.Overrides.Deployment != nil {
-		err := ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
+		err := resource.ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
 		if err != nil {
 			return fmt.Errorf("can't apply deployment overrides: %v", err)
 		}
 	}
 
 	if b.service.Overrides != nil && b.service.Overrides.Deployment != nil {
-		err := ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
+		err := resource.ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
 		if err != nil {
 			return fmt.Errorf("failed applying deployment overrides: %v", err)
 		}

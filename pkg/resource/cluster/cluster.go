@@ -15,19 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package cluster
 
-import (
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
+// Service components.
+const (
+	FrontendService      = "frontend"
+	ServiceConfig        = "config"
+	ServiceDynamicConfig = "dynamicconfig"
 )
 
-type UIFrontendClientCertificateBuilder struct {
-	*GenericFrontendClientCertificateBuilder
-}
-
-func NewUIFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
-	return &UIFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui"),
-	}
-}
+const (
+	DefaultBindIP = "0.0.0.0"
+)

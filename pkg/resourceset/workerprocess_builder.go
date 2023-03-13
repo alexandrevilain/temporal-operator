@@ -44,6 +44,6 @@ func (b *WorkerProcessBuilder) ResourceBuilders() ([]resource.Builder, error) {
 	return builders, nil
 }
 
-func (b *WorkerProcessBuilder) ResourcePruners() []resource.Pruner {
-	return []resource.Pruner{}
+func (b *WorkerProcessBuilder) ResourcePruners() ([]resource.Pruner, error) {
+	return []resource.Pruner{}, nil
 }

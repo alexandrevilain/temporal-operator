@@ -146,8 +146,9 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	clusterBuilder := &resourceset.ClusterBuilder{
-		Instance: temporalCluster,
-		Scheme:   r.Scheme,
+		Instance:      temporalCluster,
+		Scheme:        r.Scheme,
+		AvailableAPIs: r.AvailableAPIs,
 	}
 
 	statuses, requeueAfter, err := r.ReconcileResources(ctx, temporalCluster, clusterBuilder)
@@ -214,7 +215,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&networkingv1.Ingress{}).
 		Owns(&batchv1.Job{})
 
-	if r.AvailableAPIs.CertManager {
+	if r.AvailableAPIs.CertManager() {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})
@@ -226,7 +227,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	if r.AvailableAPIs.Istio {
+	if r.AvailableAPIs.Istio() {
 		controller = controller.
 			Owns(&istiosecurityv1beta1.PeerAuthentication{}).
 			Owns(&istionetworkingv1beta1.DestinationRule{})
@@ -238,7 +239,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 	}
 
-	if r.AvailableAPIs.PrometheusOperator {
+	if r.AvailableAPIs.PrometheusOperator() {
 		controller = controller.Owns(&monitoringv1.ServiceMonitor{})
 
 		for _, resource := range []client.Object{&monitoringv1.ServiceMonitor{}} {

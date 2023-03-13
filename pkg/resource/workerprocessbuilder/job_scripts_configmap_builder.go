@@ -44,7 +44,7 @@ func NewJobScriptsConfigmapBuilder(instance *v1beta1.TemporalWorkerProcess, sche
 	}
 }
 
-func (b *JobScriptsConfigmapBuilder) Build() (client.Object, error) {
+func (b *JobScriptsConfigmapBuilder) Build() client.Object {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("builder-scripts"),
@@ -52,7 +52,7 @@ func (b *JobScriptsConfigmapBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "builder-scripts", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *JobScriptsConfigmapBuilder) Update(object client.Object) error {

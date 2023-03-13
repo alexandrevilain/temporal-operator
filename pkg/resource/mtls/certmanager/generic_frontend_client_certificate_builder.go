@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +37,7 @@ type GenericFrontendClientCertificateBuilder struct {
 	name string
 }
 
-func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, clientName string) *GenericFrontendClientCertificateBuilder {
+func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, clientName string) resource.Builder {
 	return &GenericFrontendClientCertificateBuilder{
 		instance: instance,
 		scheme:   scheme,
@@ -44,13 +45,13 @@ func NewGenericFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluste
 	}
 }
 
-func (b *GenericFrontendClientCertificateBuilder) Build() (client.Object, error) {
+func (b *GenericFrontendClientCertificateBuilder) Build() client.Object {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(b.name),
 			Namespace: b.instance.Namespace,
 		},
-	}, nil
+	}
 }
 
 func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) error {

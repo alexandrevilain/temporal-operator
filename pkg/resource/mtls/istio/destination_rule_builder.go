@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"google.golang.org/protobuf/proto"
 	istioapinetworkingv1beta1 "istio.io/api/networking/v1beta1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
@@ -39,7 +40,7 @@ type DestinationRuleBuilder struct {
 	service     *v1beta1.ServiceSpec
 }
 
-func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DestinationRuleBuilder {
+func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
 	return &DestinationRuleBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -48,7 +49,7 @@ func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.TemporalClu
 	}
 }
 
-func (b *DestinationRuleBuilder) Build() (client.Object, error) {
+func (b *DestinationRuleBuilder) Build() client.Object {
 	return &istionetworkingv1beta1.DestinationRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
@@ -56,7 +57,7 @@ func (b *DestinationRuleBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *DestinationRuleBuilder) Update(object client.Object) error {

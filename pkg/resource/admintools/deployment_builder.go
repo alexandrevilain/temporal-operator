@@ -15,13 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package admintools
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,19 +38,19 @@ const (
 	admintoolsCertsMountPath = "/etc/temporal/config/certs/client/admintools"
 )
 
-type AdminToolsDeploymentBuilder struct {
+type DeploymentBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewAdminToolsDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
-	return &AdminToolsDeploymentBuilder{
+func NewDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &DeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *AdminToolsDeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("admintools"),
@@ -56,10 +58,10 @@ func (b *AdminToolsDeploymentBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
-func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
+func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
@@ -73,7 +75,7 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 	env := []corev1.EnvVar{
 		{
 			Name:  "TEMPORAL_CLI_ADDRESS",
-			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
+			Value: fmt.Sprintf("%s:%d", b.instance.FrontendResourceName(), *b.instance.Spec.Services.Frontend.Port),
 		},
 	}
 
@@ -110,7 +112,7 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildPodObjectMeta(b.instance, "admintools"),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "admintools"),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{

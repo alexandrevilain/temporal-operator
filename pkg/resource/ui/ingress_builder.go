@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package ui
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,19 +32,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type UIIngressBuilder struct {
+type IngressBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIIngressBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIIngressBuilder {
-	return &UIIngressBuilder{
+func NewIngressBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &IngressBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *UIIngressBuilder) Build() (client.Object, error) {
+func (b *IngressBuilder) Build() client.Object {
 	return &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("ui"),
@@ -51,12 +52,12 @@ func (b *UIIngressBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 // parseHost parses the provided ingress host.
 // It parses the path, but it's useless for now has the UI does not support another path than "/".
-func (b *UIIngressBuilder) parseHost(host string) *url.URL {
+func (b *IngressBuilder) parseHost(host string) *url.URL {
 	result := &url.URL{}
 	parts := strings.Split(host, "/")
 	if len(parts) == 0 {
@@ -69,7 +70,7 @@ func (b *UIIngressBuilder) parseHost(host string) *url.URL {
 	return result
 }
 
-func (b *UIIngressBuilder) Update(object client.Object) error {
+func (b *IngressBuilder) Update(object client.Object) error {
 	ingress := object.(*networkingv1.Ingress)
 	ingress.Labels = object.GetLabels()
 	ingress.Annotations = metadata.Merge(object.GetAnnotations(), b.instance.Spec.UI.Ingress.Annotations)
@@ -91,7 +92,7 @@ func (b *UIIngressBuilder) Update(object client.Object) error {
 								Service: &networkingv1.IngressServiceBackend{
 									Name: b.instance.ChildResourceName("ui"),
 									Port: networkingv1.ServiceBackendPort{
-										Number: UIServicePort,
+										Number: DefaultServicePort,
 									},
 								},
 							},

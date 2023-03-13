@@ -39,13 +39,13 @@ type GenericItermediateCACertificateBuilder struct {
 	commonName string
 }
 
-func (b *GenericItermediateCACertificateBuilder) Build() (client.Object, error) {
+func (b *GenericItermediateCACertificateBuilder) Build() client.Object {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(b.name),
 			Namespace: b.instance.Namespace,
 		},
-	}, nil
+	}
 }
 
 func (b *GenericItermediateCACertificateBuilder) Update(object client.Object) error {

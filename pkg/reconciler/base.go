@@ -101,7 +101,10 @@ func (r *Base) ReconcileResources(ctx context.Context, owner runtime.Object, bui
 		return statuses, requeueAfter, nil
 	}
 
-	pruners := builder.ResourcePruners()
+	pruners, err := builder.ResourcePruners()
+	if err != nil {
+		return nil, 0, err
+	}
 
 	if len(pruners) > 0 {
 		logger.Info("Retrieved pruners", "count", len(pruners))
@@ -129,8 +132,7 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 			}
 		}
 
-		dependentBuilder, hasDependents := builder.(resource.DependentBuilder)
-		if hasDependents {
+		if dependentBuilder, ok := builder.(resource.DependentBuilder); ok {
 			requeueAfter, err := dependentBuilder.EnsureDependencies(ctx, r.Client)
 			if err != nil {
 				return statuses, 0, err
@@ -140,11 +142,7 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 			}
 		}
 
-		res, err := builder.Build()
-		if err != nil {
-			return statuses, 0, err
-		}
-
+		res := builder.Build()
 		operationResult, err := controllerutil.CreateOrUpdate(ctx, r.Client, res, func() error {
 			return builder.Update(res)
 		})
@@ -154,19 +152,16 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 			return statuses, 0, err
 		}
 
-		reporter, ok := builder.(resource.StatusReporter)
-		if !ok {
-			continue
+		if reporter, ok := builder.(resource.StatusReporter); ok {
+			serviceStatus, err := reporter.ReportServiceStatus(ctx, r.Client)
+			if err != nil {
+				return statuses, 0, err
+			}
+
+			logger.Info("Reporting service status", "service", serviceStatus.Name)
+
+			statuses = append(statuses, serviceStatus)
 		}
-
-		serviceStatus, err := reporter.ReportServiceStatus(ctx, r.Client)
-		if err != nil {
-			return statuses, 0, err
-		}
-
-		logger.Info("Reporting service status", "service", serviceStatus.Name)
-
-		statuses = append(statuses, serviceStatus)
 	}
 
 	return statuses, 0, nil
@@ -174,15 +169,18 @@ func (r *Base) ReconcileBuilders(ctx context.Context, owner runtime.Object, buil
 
 func (r *Base) ReconcilePruners(ctx context.Context, owner runtime.Object, pruners []resource.Pruner) error {
 	for _, pruner := range pruners {
-		resource, err := pruner.Build()
-		if err != nil {
-			return err
-		}
-		err = r.Delete(ctx, resource)
+		resource := pruner.Build()
+		// Get the resource first to hit the client cache and reduce pressure on API server.
+		err := r.Get(ctx, client.ObjectKeyFromObject(resource), resource, &client.GetOptions{})
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				continue
 			}
+			return err
+		}
+		err = r.Delete(ctx, resource)
+		if err != nil {
+			return err
 		}
 		r.LogAndRecordOperationResult(ctx, owner, resource, controllerutil.OperationResult("deleted"), err)
 	}

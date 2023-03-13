@@ -103,11 +103,8 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName())
-	certificateObject, err := builder.Build()
-	if err != nil {
-		return reconcile.Result{}, err
-	}
 
+	certificateObject := builder.Build()
 	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, certificateObject, func() error {
 		return builder.Update(certificateObject)
 	})
@@ -143,7 +140,7 @@ func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) err
 	controller := ctrl.NewControllerManagedBy(mgr).
 		For(&v1beta1.TemporalClusterClient{})
 
-	if r.AvailableAPIs.CertManager {
+	if r.AvailableAPIs.CertManager() {
 		controller = controller.
 			Owns(&certmanagerv1.Issuer{}).
 			Owns(&certmanagerv1.Certificate{})

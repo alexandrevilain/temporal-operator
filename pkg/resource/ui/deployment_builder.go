@@ -15,13 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package ui
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,19 +38,19 @@ const (
 	uiCertsMountPath = "/etc/temporal/config/certs/client/ui"
 )
 
-type UIDeploymentBuilder struct {
+type DeploymentBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIDeploymentBuilder {
-	return &UIDeploymentBuilder{
+func NewDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &DeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *UIDeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("ui"),
@@ -56,10 +58,10 @@ func (b *UIDeploymentBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
-func (b *UIDeploymentBuilder) Update(object client.Object) error {
+func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
@@ -76,7 +78,7 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 	env := []corev1.EnvVar{
 		{
 			Name:  "TEMPORAL_ADDRESS",
-			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
+			Value: fmt.Sprintf("%s:%d", b.instance.FrontendResourceName(), *b.instance.Spec.Services.Frontend.Port),
 		},
 		{
 			Name:  "TEMPORAL_UI_PORT",
@@ -112,7 +114,7 @@ func (b *UIDeploymentBuilder) Update(object client.Object) error {
 		MatchLabels: metadata.LabelsSelector(b.instance.Name, "ui"),
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildPodObjectMeta(b.instance, "ui"),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui"),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{

@@ -15,49 +15,53 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package cluster
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type MTLSBootstrapIssuerBuilder struct {
-	instance *v1beta1.TemporalCluster
-	scheme   *runtime.Scheme
+type ServiceAccountBuilder struct {
+	serviceName string
+	instance    *v1beta1.TemporalCluster
+	scheme      *runtime.Scheme
+	service     *v1beta1.ServiceSpec
 }
 
-func NewMTLSBootstrapIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
-	return &MTLSBootstrapIssuerBuilder{
-		instance: instance,
-		scheme:   scheme,
+func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
+	return &ServiceAccountBuilder{
+		serviceName: serviceName,
+		instance:    instance,
+		scheme:      scheme,
+		service:     service,
 	}
 }
 
-func (b *MTLSBootstrapIssuerBuilder) Build() client.Object {
-	return &certmanagerv1.Issuer{
+func (b *ServiceAccountBuilder) Build() client.Object {
+	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(bootstrapIssuer),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(b.serviceName),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}
 }
 
-func (b *MTLSBootstrapIssuerBuilder) Update(object client.Object) error {
-	issuer := object.(*certmanagerv1.Issuer)
-	issuer.Labels = object.GetLabels()
-	issuer.Annotations = object.GetAnnotations()
-	issuer.Spec.SelfSigned = &certmanagerv1.SelfSignedIssuer{}
-
-	if err := controllerutil.SetControllerReference(b.instance, issuer, b.scheme); err != nil {
+func (b *ServiceAccountBuilder) Update(object client.Object) error {
+	sa := object.(*corev1.ServiceAccount)
+	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
+
 	return nil
 }

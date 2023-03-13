@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,7 +37,7 @@ type ServiceMonitorBuilder struct {
 	service     *v1beta1.ServiceSpec
 }
 
-func NewServiceMonitorBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceMonitorBuilder {
+func NewServiceMonitorBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
 	return &ServiceMonitorBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -45,7 +46,7 @@ func NewServiceMonitorBuilder(serviceName string, instance *v1beta1.TemporalClus
 	}
 }
 
-func (b *ServiceMonitorBuilder) Build() (client.Object, error) {
+func (b *ServiceMonitorBuilder) Build() client.Object {
 	return &monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
@@ -53,7 +54,7 @@ func (b *ServiceMonitorBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *ServiceMonitorBuilder) applySpecOverride(sm *monitoringv1.ServiceMonitor, specOverride *monitoringv1.ServiceMonitorSpec) error {

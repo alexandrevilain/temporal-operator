@@ -15,13 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package cluster
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/config"
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
@@ -37,14 +38,14 @@ type DynamicConfigmapBuilder struct {
 	scheme   *runtime.Scheme
 }
 
-func NewDynamicConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *DynamicConfigmapBuilder {
+func NewDynamicConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
 	return &DynamicConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *DynamicConfigmapBuilder) Build() (client.Object, error) {
+func (b *DynamicConfigmapBuilder) Build() client.Object {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(ServiceDynamicConfig),
@@ -52,7 +53,7 @@ func (b *DynamicConfigmapBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, ServiceDynamicConfig, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *DynamicConfigmapBuilder) Update(object client.Object) error {

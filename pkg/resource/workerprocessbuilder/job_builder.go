@@ -49,7 +49,7 @@ func NewJobBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Sche
 	}
 }
 
-func (b *JobBuilder) Build() (client.Object, error) {
+func (b *JobBuilder) Build() client.Object {
 	envVars := []corev1.EnvVar{
 		{
 			Name: b.instance.Spec.Builder.GetBuildRepoPasswordEnvVarName(),
@@ -121,7 +121,7 @@ func (b *JobBuilder) Build() (client.Object, error) {
 				},
 			},
 		},
-	}, nil
+	}
 }
 
 func (b *JobBuilder) Update(object client.Object) error {

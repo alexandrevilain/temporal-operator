@@ -15,13 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package cluster
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
@@ -39,7 +40,7 @@ type HeadlessServiceBuilder struct {
 	service     *v1beta1.ServiceSpec
 }
 
-func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *HeadlessServiceBuilder {
+func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
 	return &HeadlessServiceBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -48,7 +49,7 @@ func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.TemporalClu
 	}
 }
 
-func (b *HeadlessServiceBuilder) Build() (client.Object, error) {
+func (b *HeadlessServiceBuilder) Build() client.Object {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(fmt.Sprintf("%s-headless", b.serviceName)),
@@ -59,7 +60,7 @@ func (b *HeadlessServiceBuilder) Build() (client.Object, error) {
 			),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *HeadlessServiceBuilder) Update(object client.Object) error {

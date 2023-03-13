@@ -21,5 +21,5 @@ import "github.com/alexandrevilain/temporal-operator/pkg/resource"
 
 type Builder interface {
 	ResourceBuilders() ([]resource.Builder, error)
-	ResourcePruners() []resource.Pruner
+	ResourcePruners() ([]resource.Pruner, error)
 }

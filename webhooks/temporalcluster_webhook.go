@@ -99,7 +99,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 
 	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
 	// it can't process the request, return the error.
-	if cluster.MTLSWithCertManagerEnabled() && !w.AvailableAPIs.CertManager {
+	if cluster.MTLSWithCertManagerEnabled() && !w.AvailableAPIs.CertManager() {
 		errs = append(errs,
 			field.Invalid(
 				field.NewPath("spec", "mTLS", "provider"),

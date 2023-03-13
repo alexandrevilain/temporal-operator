@@ -15,52 +15,60 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package ui
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type ServiceAccountBuilder struct {
-	serviceName string
-	instance    *v1beta1.TemporalCluster
-	scheme      *runtime.Scheme
-	service     *v1beta1.ServiceSpec
+type ServiceBuilder struct {
+	instance *v1beta1.TemporalCluster
+	scheme   *runtime.Scheme
 }
 
-func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceAccountBuilder {
-	return &ServiceAccountBuilder{
-		serviceName: serviceName,
-		instance:    instance,
-		scheme:      scheme,
-		service:     service,
+func NewServiceBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
+	return &ServiceBuilder{
+		instance: instance,
+		scheme:   scheme,
 	}
 }
 
-func (b *ServiceAccountBuilder) Build() (client.Object, error) {
-	return &corev1.ServiceAccount{
+func (b *ServiceBuilder) Build() client.Object {
+	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        b.instance.ChildResourceName(b.serviceName),
-			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
-			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+			Name:      b.instance.ChildResourceName("ui"),
+			Namespace: b.instance.Namespace,
 		},
-	}, nil
+	}
 }
 
-func (b *ServiceAccountBuilder) Update(object client.Object) error {
-	sa := object.(*corev1.ServiceAccount)
-	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
+func (b *ServiceBuilder) Update(object client.Object) error {
+	service := object.(*corev1.Service)
+	service.Labels = object.GetLabels()
+	service.Annotations = object.GetAnnotations()
+	service.Spec.Type = corev1.ServiceTypeClusterIP
+	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, "ui")
+	service.Spec.Ports = []corev1.ServicePort{
+		{
+			Name:       "http",
+			TargetPort: intstr.FromString("http"),
+			Protocol:   corev1.ProtocolTCP,
+			Port:       DefaultServicePort,
+		},
+	}
+
+	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %v", err)
 	}
-
 	return nil
 }

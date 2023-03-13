@@ -828,6 +828,10 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 	return fmt.Sprintf("%s-%s", c.Name, resource)
 }
 
+func (c *TemporalCluster) FrontendResourceName() string {
+	return c.ChildResourceName("frontend")
+}
+
 func (c *TemporalCluster) GetPublicClientAddress() string {
 	return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
 }

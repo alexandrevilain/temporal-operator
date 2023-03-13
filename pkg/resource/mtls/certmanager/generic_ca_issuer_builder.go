@@ -36,13 +36,13 @@ type GenericCAIssuerBuilder struct {
 	secretName string
 }
 
-func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
+func (b *GenericCAIssuerBuilder) Build() client.Object {
 	return &certmanagerv1.Issuer{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(b.name),
 			Namespace: b.instance.Namespace,
 		},
-	}, nil
+	}
 }
 
 func (b *GenericCAIssuerBuilder) Update(object client.Object) error {

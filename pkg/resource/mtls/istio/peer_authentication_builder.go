@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"google.golang.org/protobuf/proto"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
 	istioapiv1beta1 "istio.io/api/type/v1beta1"
@@ -40,7 +41,7 @@ type PeerAuthenticationBuilder struct {
 	service     *v1beta1.ServiceSpec
 }
 
-func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *PeerAuthenticationBuilder {
+func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) resource.Builder {
 	return &PeerAuthenticationBuilder{
 		serviceName: serviceName,
 		instance:    instance,
@@ -49,7 +50,7 @@ func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.Temporal
 	}
 }
 
-func (b *PeerAuthenticationBuilder) Build() (client.Object, error) {
+func (b *PeerAuthenticationBuilder) Build() client.Object {
 	return &securityv1beta1.PeerAuthentication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
@@ -57,7 +58,7 @@ func (b *PeerAuthenticationBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *PeerAuthenticationBuilder) Update(object client.Object) error {

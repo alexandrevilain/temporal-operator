@@ -71,7 +71,7 @@ func NewSchemaScriptsConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme 
 	}
 }
 
-func (b *SchemaScriptsConfigmapBuilder) Build() (client.Object, error) {
+func (b *SchemaScriptsConfigmapBuilder) Build() client.Object {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("schema-scripts"),
@@ -79,7 +79,7 @@ func (b *SchemaScriptsConfigmapBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, "schema-scripts", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1beta1.DatastoreType, targetSchema Schema) string {

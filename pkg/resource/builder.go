@@ -22,24 +22,12 @@ import (
 	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Service components.
-const (
-	FrontendService      = "frontend"
-	ServiceConfig        = "config"
-	ServiceDynamicConfig = "dynamicconfig"
-)
-
-// Additionals services.
-const (
-	ServiceUIName     = "ui"
-	ServiceAdminTools = "admintools"
-)
-
 type Builder interface {
-	Build() (client.Object, error)
+	Build() client.Object
 	Update(client.Object) error
 }
 
@@ -49,7 +37,7 @@ type DependentBuilder interface {
 }
 
 type Pruner interface {
-	Build() (client.Object, error)
+	Build() client.Object
 }
 
 type StatusReporter interface {
@@ -61,3 +49,7 @@ type StatusReporter interface {
 type Comparer interface {
 	Equal()
 }
+
+type GenericBuilderFactory func(*v1beta1.TemporalCluster, *runtime.Scheme) Builder
+
+type ServiceSpecificBuilderFactory func(string, *v1beta1.TemporalCluster, *runtime.Scheme, *v1beta1.ServiceSpec) Builder

@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package cluster
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
@@ -46,14 +47,14 @@ type ConfigmapBuilder struct {
 	scheme   *runtime.Scheme
 }
 
-func NewConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *ConfigmapBuilder {
+func NewConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
 	return &ConfigmapBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *ConfigmapBuilder) Build() (client.Object, error) {
+func (b *ConfigmapBuilder) Build() client.Object {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(ServiceConfig),
@@ -61,7 +62,11 @@ func (b *ConfigmapBuilder) Build() (client.Object, error) {
 			Labels:      metadata.GetLabels(b.instance.Name, ServiceConfig, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *ConfigmapBuilder) getPasswordValue(store *v1beta1.DatastoreSpec) string {
+	return fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
 }
 
 func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*config.DataStore, error) {
@@ -72,17 +77,17 @@ func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*
 		v1beta1.MySQLDatastore,
 		v1beta1.MySQL8Datastore:
 		cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(store)
-		cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		cfg.SQL.Password = b.getPasswordValue(store)
 	case v1beta1.CassandraDatastore:
 		cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(store)
-		cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		cfg.Cassandra.Password = b.getPasswordValue(store)
 	case v1beta1.ElasticsearchDatastore:
 		esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(store)
 		if err != nil {
 			return nil, fmt.Errorf("can't get elasticsearch config: %w", err)
 		}
 		cfg.Elasticsearch = esCfg
-		cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		cfg.Elasticsearch.Password = b.getPasswordValue(store)
 	}
 	return cfg, nil
 }
@@ -150,7 +155,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        DefaultBindIP,
 				},
 			},
 			string(primitives.HistoryService): {
@@ -158,7 +163,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					GRPCPort:        *b.instance.Spec.Services.History.Port,
 					MembershipPort:  *b.instance.Spec.Services.History.MembershipPort,
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        DefaultBindIP,
 				},
 			},
 			string(primitives.MatchingService): {
@@ -166,7 +171,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					GRPCPort:        *b.instance.Spec.Services.Matching.Port,
 					MembershipPort:  *b.instance.Spec.Services.Matching.MembershipPort,
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        DefaultBindIP,
 				},
 			},
 			string(primitives.WorkerService): {
@@ -174,7 +179,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					GRPCPort:        *b.instance.Spec.Services.Worker.Port,
 					MembershipPort:  *b.instance.Spec.Services.Worker.MembershipPort,
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        DefaultBindIP,
 				},
 			},
 		},
@@ -187,7 +192,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					GRPCPort:        *b.instance.Spec.Services.InternalFrontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.InternalFrontend.MembershipPort,
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        DefaultBindIP,
 				},
 			}
 		}

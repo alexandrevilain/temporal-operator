@@ -15,25 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package admintools
 
-import (
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"k8s.io/apimachinery/pkg/runtime"
+const (
+	ServiceName = "admintools"
 )
-
-type MTLSInternodeIntermediateCAIssuerBuilder struct {
-	GenericCAIssuerBuilder
-}
-
-func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) resource.Builder {
-	return &MTLSInternodeIntermediateCAIssuerBuilder{
-		GenericCAIssuerBuilder: GenericCAIssuerBuilder{
-			instance:   instance,
-			scheme:     scheme,
-			name:       internodeIntermediateCAIssuer,
-			secretName: InternodeIntermediateCACertificate,
-		},
-	}
-}

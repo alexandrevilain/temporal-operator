@@ -51,7 +51,7 @@ func NewSchemaJobBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Sche
 	}
 }
 
-func (b *SchemaJobBuilder) Build() (client.Object, error) {
+func (b *SchemaJobBuilder) Build() client.Object {
 	datastores := b.instance.Spec.Persistence.GetDatastores()
 
 	envVars := []corev1.EnvVar{
@@ -134,7 +134,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 				},
 			},
 		},
-	}, nil
+	}
 }
 
 func (b *SchemaJobBuilder) Update(object client.Object) error {
