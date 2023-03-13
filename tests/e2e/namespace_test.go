@@ -25,7 +25,10 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
+	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/api/namespace/v1"
 	"go.temporal.io/api/serviceerror"
+	"go.temporal.io/api/workflowservice/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
@@ -152,22 +155,35 @@ func TestNamespaceCreation(t *testing.T) {
 
 			client := cfg.Client().Resources().GetControllerRuntimeClient()
 
-			nsClient, err := temporal.GetClusterNamespaceClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
+			tempClient, err := temporal.GetClusterClient(ctx, client, cluster, temporal.WithHostPort(connectAddr))
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			// Wait for the client to return NamespaceNotFound error.
 			err = wait.For(func() (done bool, err error) {
-				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
+				list, err := tempClient.WorkflowService().ListNamespaces(ctx, &workflowservice.ListNamespacesRequest{
+					PageSize: 10,
+					NamespaceFilter: &namespace.NamespaceFilter{
+						IncludeDeleted: true,
+					},
+				})
 				if err != nil {
-					var namespaceNotFoundError *serviceerror.NamespaceNotFound
-					if errors.As(err, &namespaceNotFoundError) {
-						return true, nil
+					return false, err
+				}
+
+				t.Logf("Retrieved %d namespaces", len(list.Namespaces))
+
+				for _, namespace := range list.Namespaces {
+					if namespace.NamespaceInfo.Name == temporalNamespace.GetName() {
+						t.Logf("Found '%s' namespace: %s", temporalNamespace.GetName(), namespace.NamespaceInfo.GetState())
+						return namespace.NamespaceInfo.GetState() == enums.NAMESPACE_STATE_DELETED, nil
 					}
 				}
 
-				return false, nil
+				t.Logf("Namespace '%s' not found", temporalNamespace.GetName())
+
+				return true, nil
 			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
 			if err != nil {
 				t.Fatal(err)
