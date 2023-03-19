@@ -1,0 +1,30 @@
+site_name: Temporal Operator
+repo_url: https://github.com/alexandrevilain/temporal-operator
+repo_name: alexandrevilain/temporal-operator
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+
+nav:
+  - Home: 
+    - Overview: index.md
+    - getting-started.md
+  - Features:
+    - Dynamic config: features/dynamic-config.md
+    - Temporal UI: wip.md
+    - Admin Tools: wip.md
+    - mTLS:
+      - Using Cert-Manager: features/mtls/cert-manager.md
+      - Using Istio: features/mtls/istio.md
+      - Using Linkerd: wip.md
+    - Monitoring: 
+      - Using prometheus-operator: features/monitoring.md
+      - Using prometheus: wip.md
+    - Overrides: features/overrides.md
+  - API:
+    - v1beta1: api/v1beta1.md
+  - Contributing:
+    - contributing/local-development.md
+    - contributing/publish-release.md
