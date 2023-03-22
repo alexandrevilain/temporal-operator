@@ -609,6 +609,9 @@ type PrometheusScrapeConfigServiceMonitor struct {
 	// All fields can be overritten except "endpoints", "selector" and "namespaceSelector".
 	// +optional
 	Override *monitoringv1.ServiceMonitorSpec `json:"override,omitempty"`
+	// MetricRelabelConfigs to apply to samples before ingestion.
+	// +optional
+	MetricRelabelConfigs []*monitoringv1.RelabelConfig `json:"metricRelabelings,omitempty"`
 }
 
 // PrometheusScrapeConfig is the configuration for making prometheus scrape components metrics.
