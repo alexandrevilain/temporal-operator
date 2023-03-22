@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.12.1
+
+**Release date:** 2023-03-22
+
+Improvements:
+- Allow ServiceMonitor endpoint override [#316](https://github.com/alexandrevilain/temporal-operator/pull/316)
+- fix(ServiceMonitor): remove endpoint override and add metricRelabelConfigs [#317](https://github.com/alexandrevilain/temporal-operator/pull/317)
+
+Fixes:
+- Updated clusterservice version replace was set to wrong version, need to update build [#307](https://github.com/alexandrevilain/temporal-operator/pull/307)
+
+Updates:
+- Bump actions/setup-go from 3 to 4 [#310](https://github.com/alexandrevilain/temporal-operator/pull/310)
+
 ## 0.12.0
 
 **Release date:** 2023-03-08
