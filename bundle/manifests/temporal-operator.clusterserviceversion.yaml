@@ -118,11 +118,10 @@ metadata:
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.12.0
-    createdAt: "2023-03-08T18:39:50Z"
-    operators.operatorframework.io/builder: operator-sdk-v1.26.1
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.12.1
+    operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.12.0
+  name: temporal-operator.v0.12.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -471,7 +470,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.12.0
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.12.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -575,8 +574,8 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.11.0
-  version: 0.12.0
+  replaces: temporal-operator.v0.9.1
+  version: 0.12.1
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

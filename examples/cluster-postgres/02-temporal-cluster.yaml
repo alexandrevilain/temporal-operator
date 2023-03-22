@@ -31,17 +31,17 @@ spec:
     enabled: true
   admintools:
     enabled: true
-  metrics:
-    enabled: true
-    prometheus:
-      listenPort: 9090
-      scrapeConfig:
-        serviceMonitor:
-          enabled: true
-          metricRelabelings:
-          - sourceLabels: [__name__]
-            targetLabel: __name__
-            replacement: temporal_$1
+  # metrics:
+  #   enabled: true
+  #   prometheus:
+  #     listenPort: 9090
+  #     scrapeConfig:
+  #       serviceMonitor:
+  #         enabled: true
+  #         metricRelabelings:
+  #         - sourceLabels: [__name__]
+  #           targetLabel: __name__
+  #           replacement: temporal_$1
   dynamicConfig:
     pollInterval: 10s
     values:
