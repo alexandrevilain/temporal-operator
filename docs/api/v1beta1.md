@@ -1992,6 +1992,18 @@ github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.Servic
 All fields can be overritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdquo; and &ldquo;namespaceSelector&rdquo;.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>metricRelabelings</code><br>
+<em>
+[]github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MetricRelabelConfigs to apply to samples before ingestion.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
