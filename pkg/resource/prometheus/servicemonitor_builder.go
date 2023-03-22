@@ -61,12 +61,18 @@ func (b *ServiceMonitorBuilder) applySpecOverride(sm *monitoringv1.ServiceMonito
 		return nil
 	}
 
-	// Clean non-overridable fields.
-	specOverride.Endpoints = []monitoringv1.Endpoint{}
-	specOverride.NamespaceSelector = monitoringv1.NamespaceSelector{}
-	specOverride.Selector = metav1.LabelSelector{}
+	specOverrideCopy := specOverride.DeepCopy()
 
-	patchedSpec, err := PatchServiceMonitorSpecWithOverride(&sm.Spec, b.instance.Spec.Metrics.Prometheus.ScrapeConfig.ServiceMonitor.Override)
+	// ensure first endpoint target port stay the same.
+	if len(specOverrideCopy.Endpoints) > 0 {
+		specOverrideCopy.Endpoints[0].TargetPort = &MetricsPortName
+	}
+
+	// Clean non-overridable fields.
+	specOverrideCopy.NamespaceSelector = monitoringv1.NamespaceSelector{}
+	specOverrideCopy.Selector = metav1.LabelSelector{}
+
+	patchedSpec, err := PatchServiceMonitorSpecWithOverride(&sm.Spec, specOverrideCopy)
 	if err != nil {
 		return err
 	}
