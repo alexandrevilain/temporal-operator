@@ -1,9 +1,17 @@
 # Applying overrides to resources created by the operator
 
-For some usecases, you may want to override some properites of temporal components.
+For some usecases, you may want to override some properites of temporal components. You can use this feature to:
+
+- Set extra properties on created pod like custom resources limits and request
+- Add sidecars on temporal services pods
+- Add init containers on temporal services pods
+- Mount extra volumes 
+
 The API provides you the ability to apply your overrides:
+
 - per temporal service (using `spec.services.[frontend|history|matching|worker].overrides`)
 - for all services (using `spec.services.overrides`)
+
 
 ## Overrides for all services
 

@@ -2,49 +2,8 @@
 
 The Kubernetes Operator to deploy and manage [Temporal](https://temporal.io/) clusters.
 
-## Roadmap
+Using this operator, deploying a Temporal Cluster on Kubernetes is as easy as deploying the following manifest:
 
-### Features:
-- [x] Deploy a new temporal cluster.
-- [x] Ability to deploy multiple clusters.
-- [x] Support for SQL datastores.
-- [x] Deploy Web UI.
-- [x] Deploy admin tools.
-- [x] Support for Elastisearch.
-- [x] Support for Cassandra datastore.
-- [x] Automatic mTLS certificates management (using cert-manager).
-- [x] Support for integration in meshes: istio & linkerd.
-- [x] Namespace management using CRDs.
-- [x] Cluster version upgrades.
-- [x] Cluster monitoring.
-- [x] Complete end2end test suite.
-- [ ] Auto scaling.
-- [ ] Multi cluster replication.
-
-## Quick start
-
-First install cert-manager on your cluster. The operator comes with admissions webhooks that needs self-signed certificates.
-
-```
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml
-```
-(You can use the installation method you want, see the [cert-manager's documentation](https://cert-manager.io/docs/installation/)). Note that you can use your own certificates if you don't want cert-manager on your cluster.
-
-Then install Temporal Operator's CRDs and the operator itself on your cluster:
-
-```
-kubectl apply --server-side -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.crds.yaml
-kubectl apply -f https://github.com/alexandrevilain/temporal-operator/releases/latest/download/temporal-operator.yaml
-```
-
-Then create the namespace "demo" and create a simple postgresql server:
-
-```
-kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/examples/cluster-postgres/00-namespace.yaml
-kubectl apply -f https://raw.githubusercontent.com/alexandrevilain/temporal-operator/main/examples/cluster-postgres/01-postgresql.yaml
-```
-
-Finish by creating your first temporal cluster:
 ```yaml
 apiVersion: temporal.io/v1beta1
 kind: TemporalCluster
@@ -77,22 +36,25 @@ spec:
         key: PASSWORD
 ```
 
-Apply this file to the cluster.
-For more customization options refers to the [api documentation](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/api/v1beta1.md).
-
 ## Documentation
 
-- [Using overrides to customize rendered resources](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/applying-overrides.md)
-- [Monitoring temporal using prometheus-operator](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/monitoring.md)
-- [Using temporal server dynamic config](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/dynamic_config.md)
+The documentation is available at: [https://alexandrevilain.github.io/temporal-operator/](https://alexandrevilain.github.io/temporal-operator/).
+
+### Quick start
+
+To start using the Operator and deploy you first cluster in a matter of minutes, follow the documentation's [getting started guide](https://alexandrevilain.github.io/temporal-operator/getting-started/).
 
 ## Examples
 
-Few examples are available to help you get started:
-- [Demo cluster with PostgreSQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres)
-- [Demo cluster with PostgreSQL & advanced visibility using ElasticSearch](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres-es)
-- [Demo cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
-- [Demo cluster with mTLS using cert-manager & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls)
+Somes examples are available to help you get started:
+- [Temporal Cluster with PostgreSQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres)
+- [Temporal Cluster with MySQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mysql)
+- [Temporal Cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
+- [Temporal Cluster with PostgreSQL & advanced visibility using ElasticSearch](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres-es)
+- [Temporal Cluster with mTLS using cert-manager & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls)
+- [Temporal Cluster with mTLS using istio & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls-istio)
+- [Temporal Cluster with mTLS using linkerd & PostgreSQL as datastore](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mtls-linkerd)
+
 
 ## Compatibility matrix
 
@@ -106,10 +68,29 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 | v0.10.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
 | v0.9.x            | v1.16.x to v1.18.x | v1.22 to v1.25 |
 
+## Roadmap
+
+### Features:
+- [x] Deploy a new temporal cluster.
+- [x] Ability to deploy multiple clusters.
+- [x] Support for SQL datastores.
+- [x] Deploy Web UI.
+- [x] Deploy admin tools.
+- [x] Support for Elastisearch.
+- [x] Support for Cassandra datastore.
+- [x] Automatic mTLS certificates management (using cert-manager).
+- [x] Support for integration in meshes: istio & linkerd.
+- [x] Namespace management using CRDs.
+- [x] Cluster version upgrades.
+- [x] Cluster monitoring.
+- [x] Complete end2end test suite.
+- [ ] Auto scaling.
+- [ ] Multi cluster replication.^
+
 ## Contributing
 
 Feel free to contribute to the project ! All issues and PRs are welcome!
-To start hacking on the project, you can follow the [local development](https://github.com/alexandrevilain/temporal-operator/blob/main/docs/local_development.md) documentation page. 
+To start hacking on the project, you can follow the [local development](https://alexandrevilain.github.io/temporal-operator/contributing/local-development/) documentation page. 
 
 ## License
 
