@@ -8,7 +8,7 @@ Using the Temporal Operator you can easily deploy a production-ready temporal cl
 
 ## Simplified temporal cluster upgrades
 
-Define your initial desired temporal version, the operator deploys it. Update the desired version, the operator upgrade the cluster for you. Without any manual or scripted actions.
+Define your initial desired temporal version, the operator deploys it. Update the desired version, the operator upgrade the cluster for you. Without any manual or scripted action.
 
 ## Choose the database you want
 
