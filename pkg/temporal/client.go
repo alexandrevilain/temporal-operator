@@ -64,6 +64,7 @@ func GetTlSConfigFromSecret(secret *corev1.Secret) (*tls.Config, error) {
 
 	return &tls.Config{
 		RootCAs:      certPool,
+		MinVersion:   tls.VersionTLS12,
 		Certificates: []tls.Certificate{clientCert},
 	}, nil
 }
@@ -87,7 +88,6 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 
 	tlsConfig.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
 	return tlsConfig, nil
-
 }
 
 func buildClusterClientOptions(ctx context.Context, client client.Client, cluster *v1beta1.TemporalCluster, overrides ...ClientOption) (temporalclient.Options, error) {

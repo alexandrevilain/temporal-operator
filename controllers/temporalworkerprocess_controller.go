@@ -42,7 +42,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
-// TemporalWorkerProcessReconciler reconciles a TemporalWorkerProcess object
+// TemporalWorkerProcessReconciler reconciles a TemporalWorkerProcess object.
 type TemporalWorkerProcessReconciler struct {
 	reconciler.Base
 }
@@ -152,7 +152,6 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 			Name:    "build-worker-process",
 			Command: []string{"/etc/scripts/build-worker-process.sh"},
 			Skip: func(owner runtime.Object) bool {
-
 				if owner.(*v1beta1.TemporalWorkerProcess).Status.Version != owner.(*v1beta1.TemporalWorkerProcess).Spec.Version {
 					return false
 				}

@@ -28,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,15 +42,15 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
-
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 )
 
-var testenv env.Environment
-var jobTtl int32 = 60
-var workerProcessJobTtl int32 = 300
-var replicas int32 = 1
-var listAddress string = "0.0.0.0:9090"
+var (
+	testenv             env.Environment
+	jobTTL              int32 = 60
+	workerProcessJobTTL int32 = 300
+	replicas            int32 = 1
+	listAddress               = "0.0.0.0:9090"
+)
 
 func TestMain(m *testing.M) {
 	kubernetesVersion := os.Getenv("KUBERNETES_VERSION")
@@ -84,7 +85,10 @@ func TestMain(m *testing.M) {
 			if err != nil {
 				return ctx, err
 			}
-			v1beta1.AddToScheme(r.GetScheme())
+			err = v1beta1.AddToScheme(r.GetScheme())
+			if err != nil {
+				return ctx, err
+			}
 			return ctx, nil
 		}).
 		// Deploy cert-manager.
@@ -132,7 +136,10 @@ func TestMain(m *testing.M) {
 						}
 					}
 				}
-				c.Client().Resources().Create(ctx, obj)
+				err := c.Client().Resources().Create(ctx, obj)
+				if err != nil {
+					return ctx, err
+				}
 			}
 
 			err = wait.For(conditions.New(c.Client().Resources()).DeploymentConditionMatch(operatorDeploy, appsv1.DeploymentAvailable, corev1.ConditionTrue), wait.WithTimeout(time.Minute*1))
@@ -141,7 +148,6 @@ func TestMain(m *testing.M) {
 		Finish(
 			// Download operator logs for debug purpose.
 			func(ctx context.Context, c *envconf.Config) (context.Context, error) {
-
 				clientset, err := kubernetes.NewForConfig(cfg.Client().RESTConfig())
 				if err != nil {
 					return ctx, err
@@ -153,7 +159,7 @@ func TestMain(m *testing.M) {
 					return ctx, err
 				}
 
-				if len(pods.Items) <= 0 {
+				if len(pods.Items) == 0 {
 					return ctx, errors.New("no pod found for temporal-operator-controller-manager")
 				}
 
@@ -169,7 +175,9 @@ func TestMain(m *testing.M) {
 					return ctx, err
 				}
 
-				defer stream.Close()
+				defer func() {
+					_ = stream.Close()
+				}()
 				err = os.MkdirAll("../../out/tests/e2e", os.ModePerm)
 				if err != nil {
 					return ctx, err
@@ -181,7 +189,9 @@ func TestMain(m *testing.M) {
 				if err != nil {
 					return ctx, err
 				}
-				defer f.Close()
+				defer func() {
+					_ = f.Close()
+				}()
 
 				_, err = io.Copy(f, stream)
 				if err != nil {

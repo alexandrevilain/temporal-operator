@@ -36,6 +36,7 @@ func DynamicConfigToYamlDynamicConfig(dc *v1beta1.DynamicConfigSpec) (YamlDynami
 	for k, v := range dc.Values {
 		yamlConstrainedValues := []YamlConstrainedValue{}
 		for _, constrainedValue := range v {
+			constrainedValue := constrainedValue
 			yamlConstrainedValue, err := constrainedValueToYamlConstrainedValue(&constrainedValue)
 			if err != nil {
 				return result, err
@@ -50,34 +51,34 @@ func DynamicConfigToYamlDynamicConfig(dc *v1beta1.DynamicConfigSpec) (YamlDynami
 // constrainedValueToYamlConstrainedValue transform kubernetes CRD-style ConstrainedValue to temporal's YamlConstrainedValue.
 // Key names are extracted from: https://github.com/temporalio/temporal/blob/v1.19.1/common/dynamicconfig/file_based_client.go#L344
 func constrainedValueToYamlConstrainedValue(cv *v1beta1.ConstrainedValue) (YamlConstrainedValue, error) {
-	constaints := map[string]any{}
+	constraints := map[string]any{}
 
 	if cv.Constraints.Namespace != "" {
-		constaints["namespace"] = cv.Constraints.Namespace
+		constraints["namespace"] = cv.Constraints.Namespace
 	}
 
 	if cv.Constraints.NamespaceID != "" {
-		constaints["namespaceid"] = cv.Constraints.NamespaceID
+		constraints["namespaceid"] = cv.Constraints.NamespaceID
 	}
 
 	if cv.Constraints.TaskQueueName != "" {
-		constaints["taskqueuename"] = cv.Constraints.TaskQueueName
+		constraints["taskqueuename"] = cv.Constraints.TaskQueueName
 	}
 
 	// TaskQueueType == tasktype
 	// See: https://github.com/temporalio/temporal/blob/v1.19.1/common/dynamicconfig/file_based_client.go#L366
 	if cv.Constraints.TaskQueueType != "" {
-		constaints["tasktype"] = cv.Constraints.TaskQueueType
+		constraints["tasktype"] = cv.Constraints.TaskQueueType
 	}
 
 	// TaskType == historytasktype
 	// See: https://github.com/temporalio/temporal/blob/v1.19.1/common/dynamicconfig/file_based_client.go#L379
 	if cv.Constraints.TaskType != "" {
-		constaints["historytasktype"] = cv.Constraints.TaskType
+		constraints["historytasktype"] = cv.Constraints.TaskType
 	}
 
 	if cv.Constraints.ShardID != 0 {
-		constaints["shardid"] = cv.Constraints.ShardID
+		constraints["shardid"] = cv.Constraints.ShardID
 	}
 
 	var value any
@@ -87,7 +88,7 @@ func constrainedValueToYamlConstrainedValue(cv *v1beta1.ConstrainedValue) (YamlC
 	}
 
 	return YamlConstrainedValue{
-		Constraints: constaints,
+		Constraints: constraints,
 		Value:       value,
 	}, nil
 }

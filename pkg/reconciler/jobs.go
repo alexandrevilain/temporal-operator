@@ -54,7 +54,7 @@ func (r *Base) ReconcileJobs(ctx context.Context, owner runtime.Object, builderF
 
 		expectedJob, err := jobBuilder.Build()
 		if err != nil {
-			return 0, nil
+			return 0, err
 		}
 
 		matchingJob := &batchv1.Job{}

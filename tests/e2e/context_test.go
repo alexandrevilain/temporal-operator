@@ -67,6 +67,6 @@ func GetTemporalNamespaceForFeature(ctx context.Context) *v1beta1.TemporalNamesp
 	return ctx.Value(temporalNamespaceKey).(*v1beta1.TemporalNamespace)
 }
 
-func SetTemporalNamespaceForFeature(ctx context.Context, Namespace *v1beta1.TemporalNamespace) context.Context {
-	return context.WithValue(ctx, temporalNamespaceKey, Namespace)
+func SetTemporalNamespaceForFeature(ctx context.Context, namespace *v1beta1.TemporalNamespace) context.Context {
+	return context.WithValue(ctx, temporalNamespaceKey, namespace)
 }

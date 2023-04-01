@@ -25,7 +25,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
 	istioapiv1beta1 "istio.io/api/type/v1beta1"
-	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -50,7 +50,7 @@ func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.Temporal
 }
 
 func (b *PeerAuthenticationBuilder) Build() (client.Object, error) {
-	return &securityv1beta1.PeerAuthentication{
+	return &istiosecurityv1beta1.PeerAuthentication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
 			Namespace:   b.instance.Namespace,
@@ -61,7 +61,7 @@ func (b *PeerAuthenticationBuilder) Build() (client.Object, error) {
 }
 
 func (b *PeerAuthenticationBuilder) Update(object client.Object) error {
-	pa := object.(*securityv1beta1.PeerAuthentication)
+	pa := object.(*istiosecurityv1beta1.PeerAuthentication)
 	pa.Spec = istioapisecurityv1beta1.PeerAuthentication{
 		Selector: &istioapiv1beta1.WorkloadSelector{
 			MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
@@ -72,7 +72,7 @@ func (b *PeerAuthenticationBuilder) Update(object client.Object) error {
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, pa, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	return nil

@@ -18,13 +18,12 @@
 package resource_test
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -301,14 +300,10 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
-			resource.ApplyDeploymentOverrides(test.original, test.override)
-			res := assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
-			if !res {
-				ori, _ := json.Marshal(test.original)
-				fmt.Printf("%s \n", ori)
-				exp, _ := json.Marshal(test.expected)
-				fmt.Printf("%s \n", exp)
-			}
+			err := resource.ApplyDeploymentOverrides(test.original, test.override)
+			require.NoError(tt, err)
+
+			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
 		})
 	}
 }
@@ -388,7 +383,8 @@ func TestApplyPodTemplateSpecOverrides(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
-			resource.ApplyPodTemplateSpecOverrides(test.original, test.override)
+			err := resource.ApplyPodTemplateSpecOverrides(test.original, test.override)
+			require.NoError(tt, err)
 			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
 		})
 	}
@@ -421,7 +417,8 @@ func TestPatchPodSpecWithOverride(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
-			resource.PatchPodSpecWithOverride(test.original, test.override)
+			_, err := resource.PatchPodSpecWithOverride(test.original, test.override)
+			require.NoError(tt, err)
 			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
 		})
 	}

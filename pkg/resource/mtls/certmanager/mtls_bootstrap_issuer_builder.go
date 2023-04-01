@@ -56,7 +56,7 @@ func (b *MTLSBootstrapIssuerBuilder) Update(object client.Object) error {
 	issuer.Spec.SelfSigned = &certmanagerv1.SelfSignedIssuer{}
 
 	if err := controllerutil.SetControllerReference(b.instance, issuer, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 	return nil
 }

@@ -36,16 +36,16 @@ const (
 )
 
 // Default set default fields values.
-func (d *DatastoreSpec) Default() {
-	if d.SQL != nil {
-		if d.SQL.ConnectProtocol == "" {
-			d.SQL.ConnectProtocol = "tcp"
+func (s *DatastoreSpec) Default() {
+	if s.SQL != nil {
+		if s.SQL.ConnectProtocol == "" {
+			s.SQL.ConnectProtocol = "tcp"
 		}
 	}
 
-	if d.Cassandra != nil {
-		if d.Cassandra.ConnectTimeout == nil {
-			d.Cassandra.ConnectTimeout = &metav1.Duration{Duration: 10 * time.Second}
+	if s.Cassandra != nil {
+		if s.Cassandra.ConnectTimeout == nil {
+			s.Cassandra.ConnectTimeout = &metav1.Duration{Duration: 10 * time.Second}
 		}
 	}
 }

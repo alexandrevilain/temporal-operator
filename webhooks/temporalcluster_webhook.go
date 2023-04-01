@@ -82,7 +82,7 @@ func (w *TemporalClusterWebhook) Default(ctx context.Context, obj runtime.Object
 				if err != nil {
 					return fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress port: %w", err)
 				}
-				cluster.Spec.Metrics.Prometheus.ListenAddress = "" // Empty the listen adress
+				cluster.Spec.Metrics.Prometheus.ListenAddress = "" // Empty the listen address
 				cluster.Spec.Metrics.Prometheus.ListenPort = pointer.Int32(int32(portInt))
 			}
 		}
@@ -125,7 +125,6 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		cluster.Spec.Persistence.AdvancedVisibilityStore != nil &&
 		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch != nil &&
 		cluster.Spec.Persistence.AdvancedVisibilityStore.Elasticsearch.Version == "v6" {
-
 		errs = append(errs,
 			field.Forbidden(
 				field.NewPath("spec", "persistence", "advancedVisibilityStore", "elasticsearch", "version"),

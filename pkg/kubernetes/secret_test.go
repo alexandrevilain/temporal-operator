@@ -29,6 +29,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -111,8 +112,8 @@ func TestSecretCopier(t *testing.T) {
 		t.Run(name, func(tt *testing.T) {
 			ctx := context.Background()
 			scheme := runtime.NewScheme()
-			v1beta1.AddToScheme(scheme)
-			corev1.AddToScheme(scheme)
+			utilruntime.Must(v1beta1.AddToScheme(scheme))
+			utilruntime.Must(corev1.AddToScheme(scheme))
 
 			fakeClient := fake.NewClientBuilder().WithObjects(test.original).WithScheme(scheme).Build()
 

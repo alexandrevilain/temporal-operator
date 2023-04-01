@@ -111,6 +111,8 @@ func (s *ServicesSpec) GetServiceSpec(name primitives.ServiceName) (*ServiceSpec
 		return s.Matching, nil
 	case primitives.WorkerService:
 		return s.Worker, nil
+	case primitives.AllServices, primitives.ServerService, primitives.UnitTestService:
+		fallthrough
 	default:
 		return nil, fmt.Errorf("unknown service %s", name)
 	}
@@ -430,6 +432,7 @@ func (p *TemporalPersistenceSpec) GetDatastores() []*DatastoreSpec {
 
 	return stores
 }
+
 func (p *TemporalPersistenceSpec) GetDatastoresMap() map[string]*DatastoreSpec {
 	stores := map[string]*DatastoreSpec{
 		"defaultStore":    p.DefaultStore,
@@ -472,7 +475,7 @@ type TemporalUISpec struct {
 	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
 }
 
-// TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
+// TemporalAdminToolsSpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
 // Note that deployed admin tools version is the same as the cluster's version.
 type TemporalAdminToolsSpec struct {
 	// Enabled defines if the operator should deploy the admin tools alongside the cluster.
@@ -547,7 +550,7 @@ type CertificatesDurationSpec struct {
 	// RootCACertificate is the 'duration' (i.e. lifetime) of the Root CA Certificate.
 	// It defaults to 10 years.
 	// +optional
-	RootCACertificate *metav1.Duration `json:"rootCACertificate"`
+	RootCACertificate *metav1.Duration `json:"rootCACertificate"` //nolint:tagliatelle
 	// IntermediateCACertificates is the 'duration' (i.e. lifetime) of the intermediate CAs Certificates.
 	// It defaults to 5 years.
 	// +optional
@@ -623,7 +626,7 @@ type PrometheusScrapeConfig struct {
 	ServiceMonitor *PrometheusScrapeConfigServiceMonitor `json:"serviceMonitor,omitempty"`
 }
 
-// Prometheus is the configuration for prometheus reporter.
+// PrometheusSpec is the configuration for prometheus reporter.
 type PrometheusSpec struct {
 	// Deprecated. Address for prometheus to serve metrics from.
 	// +optional
@@ -698,17 +701,17 @@ type TemporalClusterSpec struct {
 	// This version impacts the underlying persistence schemas versions.
 	// +optional
 	Version *version.Version `json:"version"`
-	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+	// JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// Defaults to 300 seconds.
 	// +optional
 	//+kubebuilder:default:=300
 	//+kubebuilder:validation:Minimum=1
-	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
+	JobTTLSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
 	NumHistoryShards int32 `json:"numHistoryShards"`
-	// Services allows customizations for for each temporal services deployment.
+	// Services allows customizations for each temporal services deployment.
 	// +optional
 	Services *ServicesSpec `json:"services,omitempty"`
 	// Persistence defines temporal persistence configuration.
@@ -725,7 +728,7 @@ type TemporalClusterSpec struct {
 	AdminTools *TemporalAdminToolsSpec `json:"admintools,omitempty"`
 	// MTLS allows configuration of the network traffic encryption for the cluster.
 	// +optional
-	MTLS *MTLSSpec `json:"mTLS,omitempty"`
+	MTLS *MTLSSpec `json:"mTLS,omitempty"` //nolint:tagliatelle
 	// Metrics allows configuration of scraping endpoints for stats. prometheus or m3.
 	// +optional
 	Metrics *MetricsSpec `json:"metrics,omitempty"`
@@ -837,7 +840,7 @@ func (c *TemporalCluster) GetPublicClientAddress() string {
 
 //+kubebuilder:object:root=true
 
-// ClusterList contains a list of Cluster
+// TemporalClusterList contains a list of Cluster.
 type TemporalClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

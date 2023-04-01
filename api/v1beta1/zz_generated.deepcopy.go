@@ -991,8 +991,8 @@ func (in *TemporalClusterSpec) DeepCopyInto(out *TemporalClusterSpec) {
 		*out = new(version.Version)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.JobTtlSecondsAfterFinished != nil {
-		in, out := &in.JobTtlSecondsAfterFinished, &out.JobTtlSecondsAfterFinished
+	if in.JobTTLSecondsAfterFinished != nil {
+		in, out := &in.JobTTLSecondsAfterFinished, &out.JobTTLSecondsAfterFinished
 		*out = new(int32)
 		**out = **in
 	}
@@ -1406,8 +1406,8 @@ func (in *TemporalWorkerProcessSpec) DeepCopyInto(out *TemporalWorkerProcessSpec
 		*out = new(TemporalClusterReference)
 		**out = **in
 	}
-	if in.JobTtlSecondsAfterFinished != nil {
-		in, out := &in.JobTtlSecondsAfterFinished, &out.JobTtlSecondsAfterFinished
+	if in.JobTTLSecondsAfterFinished != nil {
+		in, out := &in.JobTTLSecondsAfterFinished, &out.JobTTLSecondsAfterFinished
 		*out = new(int32)
 		**out = **in
 	}

@@ -41,7 +41,7 @@ import (
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
-// TemporalClusterClientReconciler reconciles a ClusterClient object
+// TemporalClusterClientReconciler reconciles a ClusterClient object.
 type TemporalClusterClientReconciler struct {
 	reconciler.Base
 }

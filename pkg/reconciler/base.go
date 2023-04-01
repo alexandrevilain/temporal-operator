@@ -56,19 +56,21 @@ func (r *Base) LogAndRecordOperationResult(ctx context.Context, owner, resource 
 	case controllerutil.OperationResultCreated:
 		action = "create"
 		reason = "RessourceCreate"
-	case controllerutil.OperationResultUpdated:
+	case controllerutil.OperationResultUpdated, controllerutil.OperationResultUpdatedStatus, controllerutil.OperationResultUpdatedStatusOnly:
 		action = "update"
 		reason = "ResourceUpdate"
 	case controllerutil.OperationResult("deleted"):
 		action = "delete"
 		reason = "ResourceDelete"
+	case controllerutil.OperationResultNone:
+		fallthrough
 	default:
 		return
 	}
 
 	if err == nil {
 		msg := fmt.Sprintf("%sd resource %s of type %T", action, resource.(metav1.Object).GetName(), resource.(metav1.Object))
-		reason := fmt.Sprintf("%sSucess", reason)
+		reason := fmt.Sprintf("%sSuccess", reason)
 		logger.Info(msg)
 		r.Recorder.Event(owner, corev1.EventTypeNormal, reason, msg)
 	}

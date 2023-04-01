@@ -18,6 +18,7 @@
 package resource
 
 import (
+	"errors"
 	"fmt"
 	"path"
 	"time"
@@ -83,6 +84,8 @@ func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*
 		}
 		cfg.Elasticsearch = esCfg
 		cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+	case v1beta1.UnknownDatastore:
+		return nil, errors.New("unknown datastore")
 	}
 	return cfg, nil
 }
@@ -314,7 +317,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, configMap, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	return nil

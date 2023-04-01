@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -128,11 +129,12 @@ func TestHelperPatch(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
 			scheme := runtime.NewScheme()
-			v1beta1.AddToScheme(scheme)
+			utilruntime.Must(v1beta1.AddToScheme(scheme))
 
 			ctx := context.Background()
 			fakeClient := fake.NewClientBuilder().WithScheme(scheme).Build()
-			fakeClient.Create(ctx, test.object)
+			err := fakeClient.Create(ctx, test.object)
+			require.NoError(tt, err)
 
 			h, err := patch.NewHelper(test.object, fakeClient)
 			if err != nil {
@@ -146,7 +148,9 @@ func TestHelperPatch(t *testing.T) {
 				assert.EqualError(tt, patchErr, test.expectedErr)
 			} else {
 				after := &v1beta1.TemporalCluster{}
-				fakeClient.Get(ctx, client.ObjectKeyFromObject(test.object), after)
+				err = fakeClient.Get(ctx, client.ObjectKeyFromObject(test.object), after)
+				require.NoError(tt, err)
+
 				test.validatePatch(tt, after)
 			}
 		})

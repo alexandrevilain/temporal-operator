@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TemporalNamespaceSpec defines the desired state of Namespace
+// TemporalNamespaceSpec defines the desired state of Namespace.
 type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
 	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
@@ -56,7 +56,7 @@ type TemporalNamespaceSpec struct {
 	AllowDeletion bool `json:"allowDeletion,omitempty"`
 }
 
-// TemporalNamespaceStatus defines the observed state of Namespace
+// TemporalNamespaceStatus defines the observed state of Namespace.
 type TemporalNamespaceStatus struct {
 	// Conditions represent the latest available observations of the Namespace state.
 	Conditions []metav1.Condition `json:"conditions"`
@@ -76,7 +76,7 @@ type TemporalNamespace struct {
 
 //+kubebuilder:object:root=true
 
-// TemporalNamespaceList contains a list of Namespace
+// TemporalNamespaceList contains a list of Namespace.
 type TemporalNamespaceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

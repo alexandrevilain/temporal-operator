@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//nolint:dupword
 package persistence
 
 import (
@@ -25,13 +26,13 @@ import (
 )
 
 const (
-	CreateCassandraTemplate      = "create-cassandra.sh"
-	CreateDatabaseTemplate       = "create-database.sh"
-	CreateDatabaseTemplate_V1_18 = "create-database-1-8.sh"
-	SetupSchemaTemplate          = "setup-schema.sh"
-	UpdateSchemaTemplate         = "update-schema.sh"
-	SetupAdvancedVisibility      = "setup-advanced-visibility.sh"
-	UpdateAdvancedVisibility     = "update-advanced-visibility.sh"
+	CreateCassandraTemplate     = "create-cassandra.sh"
+	CreateDatabaseTemplate      = "create-database.sh"
+	CreateDatabaseTemplateV1_18 = "create-database-1-8.sh"
+	SetupSchemaTemplate         = "setup-schema.sh"
+	UpdateSchemaTemplate        = "update-schema.sh"
+	SetupAdvancedVisibility     = "setup-advanced-visibility.sh"
+	UpdateAdvancedVisibility    = "update-advanced-visibility.sh"
 )
 
 var (
@@ -46,7 +47,7 @@ var (
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-database -database {{ .DatabaseName }}
 		`),
-		CreateDatabaseTemplate_V1_18: dedent.Dedent(`
+		CreateDatabaseTemplateV1_18: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create
 		`),
@@ -250,8 +251,7 @@ type (
 	}
 )
 
-var (
-	proxyShutdownScriptsContent = dedent.Dedent(`
+var proxyShutdownScriptsContent = dedent.Dedent(`
 		{{- define "scripts" -}}
 		{{- if eq .MTLSProvider "linkerd" -}}
 		x=$?
@@ -265,7 +265,6 @@ var (
 		{{- end -}}
 		{{- end -}}
 	`)
-)
 
 func init() {
 	for name, content := range templatesContent {

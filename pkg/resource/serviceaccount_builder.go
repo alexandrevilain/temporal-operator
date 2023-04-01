@@ -59,7 +59,7 @@ func (b *ServiceAccountBuilder) Build() (client.Object, error) {
 func (b *ServiceAccountBuilder) Update(object client.Object) error {
 	sa := object.(*corev1.ServiceAccount)
 	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	return nil

@@ -53,7 +53,7 @@ const (
 	ownerKind = "Cluster"
 )
 
-// TemporalClusterReconciler reconciles a Cluster object
+// TemporalClusterReconciler reconciles a Cluster object.
 type TemporalClusterReconciler struct {
 	reconciler.Base
 }

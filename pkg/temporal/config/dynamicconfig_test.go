@@ -75,7 +75,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 				},
 			},
 		},
-		"combined constaints": {
+		"combined constraints": {
 			dyanmicConfig: &v1beta1.DynamicConfigSpec{
 				Values: map[string][]v1beta1.ConstrainedValue{
 					"matching.numTaskqueueReadPartitions": {

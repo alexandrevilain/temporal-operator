@@ -19,7 +19,5 @@ package prometheus
 
 import "k8s.io/apimachinery/pkg/util/intstr"
 
-var (
-	// MetricsPortName returns the default port name for metrics endpoints.
-	MetricsPortName = intstr.FromString("metrics")
-)
+// MetricsPortName returns the default port name for metrics endpoints.
+var MetricsPortName = intstr.FromString("metrics")

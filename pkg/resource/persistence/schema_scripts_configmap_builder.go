@@ -57,6 +57,9 @@ const (
 
 	cassandraSchemaPath        = "cassandra"
 	cassandraVersionSchemaPath = ""
+
+	elasticsearchSchemaPath        = "elasticsearch"
+	elasticsearchVersionSchemaPath = ""
 )
 
 type SchemaScriptsConfigmapBuilder struct {
@@ -101,6 +104,12 @@ func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1beta1.Datas
 	case v1beta1.CassandraDatastore:
 		storeSchemaPath = cassandraSchemaPath
 		storeVersionSchemaPath = cassandraVersionSchemaPath
+	case v1beta1.ElasticsearchDatastore:
+		storeSchemaPath = elasticsearchSchemaPath
+		storeVersionSchemaPath = elasticsearchVersionSchemaPath
+	case v1beta1.UnknownDatastore:
+		storeSchemaPath = ""
+		storeVersionSchemaPath = ""
 	}
 
 	tagetSchemaPath := defaultSchemaPath
@@ -190,6 +199,8 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec
 		if err != nil {
 			return nil, err
 		}
+	case v1beta1.ElasticsearchDatastore, v1beta1.UnknownDatastore:
+		return nil, fmt.Errorf("unsupported datastore: %s", spec.GetType())
 	}
 
 	if spec.TLS != nil && spec.TLS.Enabled {
@@ -245,7 +256,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 	createDatabaseTemplateKey := CreateDatabaseTemplate
 	if b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
-		createDatabaseTemplateKey = CreateDatabaseTemplate_V1_18
+		createDatabaseTemplateKey = CreateDatabaseTemplateV1_18
 	}
 
 	defaultStoreTool := "temporal-sql-tool"
@@ -382,7 +393,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, configMap, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	return nil

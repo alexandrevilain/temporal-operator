@@ -58,7 +58,7 @@ func (c *SecretCopier) Copy(ctx context.Context, owner client.Object, original c
 
 	err = controllerutil.SetOwnerReference(owner, destinationSecret, c.scheme)
 	if err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	_, err = controllerutil.CreateOrUpdate(ctx, c.Client, destinationSecret, func() error {

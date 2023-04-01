@@ -5,7 +5,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Reference to a TemporalCluster.
+// TemporalClusterReference is a reference to a TemporalCluster.
 type TemporalClusterReference struct {
 	// The name of the TemporalCluster to reference.
 	Name string `json:"name,omitempty"`

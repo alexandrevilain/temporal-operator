@@ -19,6 +19,7 @@ package e2e
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -85,19 +86,24 @@ func TestNamespaceCreation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			wait.For(func() (done bool, err error) {
+			err = wait.For(func() (done bool, err error) {
 				// If no error while describing the namespace, it works.
 				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
 				if err != nil {
-					_, ok := err.(*serviceerror.NamespaceNotFound)
-					if ok {
+					var namespaceNotFoundError *serviceerror.NamespaceNotFound
+					if errors.As(err, &namespaceNotFoundError) {
 						return false, nil
 					}
+
 					return false, err
 				}
 
 				return true, nil
 			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			return ctx
 		}).
 		Assess("Namespace can be deleted", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
@@ -117,7 +123,7 @@ func TestNamespaceCreation(t *testing.T) {
 			}
 
 			// Wait for controller to set finalizer.
-			wait.For(func() (done bool, err error) {
+			err = wait.For(func() (done bool, err error) {
 				err = cfg.Client().Resources(namespace).Get(ctx, temporalNamespace.GetName(), temporalNamespace.GetNamespace(), temporalNamespace)
 				if err != nil {
 					t.Fatal(err)
@@ -126,6 +132,9 @@ func TestNamespaceCreation(t *testing.T) {
 				result := controllerutil.ContainsFinalizer(temporalNamespace, "deletion.finalizers.temporal.io")
 				return result, nil
 			}, wait.WithTimeout(2*time.Minute), wait.WithInterval(1*time.Second))
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			err = cfg.Client().Resources(namespace).Delete(ctx, temporalNamespace)
 			if err != nil {
@@ -149,17 +158,21 @@ func TestNamespaceCreation(t *testing.T) {
 			}
 
 			// Wait for the client to return NamespaceNotFound error.
-			wait.For(func() (done bool, err error) {
+			err = wait.For(func() (done bool, err error) {
 				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
 				if err != nil {
-					_, ok := err.(*serviceerror.NamespaceNotFound)
-					if ok {
+					var namespaceNotFoundError *serviceerror.NamespaceNotFound
+					if errors.As(err, &namespaceNotFoundError) {
 						return true, nil
 					}
 				}
 
 				return false, nil
 			}, wait.WithTimeout(5*time.Minute), wait.WithInterval(5*time.Second))
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			return ctx
 		}).
 		Feature()
