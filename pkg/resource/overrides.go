@@ -29,7 +29,7 @@ import (
 )
 
 // PatchPodSpecWithOverride patches the provided pod spec with the provided pod spec override.
-func PatchPodSpecWithOverride(spec *corev1.PodSpec, override *corev1.PodSpec) (*corev1.PodSpec, error) {
+func PatchPodSpecWithOverride(spec, override *corev1.PodSpec) (*corev1.PodSpec, error) {
 	if override == nil {
 		return nil, nil
 	}
@@ -74,6 +74,15 @@ func ApplyPodTemplateSpecOverrides(podTemplate *corev1.PodTemplateSpec, override
 	}
 
 	if override.Spec != nil {
+		// Ensure override has required field initilized so that StrategicMergePatch will work as expected.
+		if len(override.Spec.Containers) == 0 {
+			override.Spec.Containers = []corev1.Container{}
+		}
+
+		if len(override.Spec.InitContainers) == 0 {
+			override.Spec.InitContainers = []corev1.Container{}
+		}
+
 		patchedSpec, err := PatchPodSpecWithOverride(&podTemplate.Spec, override.Spec)
 		if err != nil {
 			return err

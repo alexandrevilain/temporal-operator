@@ -172,6 +172,131 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 				},
 			},
 		},
+		"add sidecar": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "testcontainer",
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				Spec: &v1beta1.DeploymentOverrideSpec{
+					Template: &v1beta1.PodTemplateSpecOverride{
+						Spec: &corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "my-sidecar",
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "my-sidecar",
+								},
+								{
+									Name: "testcontainer",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"add init container": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "testcontainer",
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				Spec: &v1beta1.DeploymentOverrideSpec{
+					Template: &v1beta1.PodTemplateSpecOverride{
+						Spec: &corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Name: "my-init",
+									Resources: corev1.ResourceRequirements{
+										Limits: corev1.ResourceList{
+											corev1.ResourceCPU: apimachineryresource.MustParse("50m"),
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{},
+						},
+					},
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							InitContainers: []corev1.Container{
+								{
+									Name: "my-init",
+									Resources: corev1.ResourceRequirements{
+										Limits: corev1.ResourceList{
+											corev1.ResourceCPU: apimachineryresource.MustParse("50m"),
+										},
+									},
+								},
+							},
+							Containers: []corev1.Container{
+								{
+									Name: "testcontainer",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {

@@ -7,18 +7,27 @@ theme:
     - content.code.copy
     - navigation.sections
 
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
 nav:
   - Home: 
     - Overview: index.md
     - getting-started.md
   - Features:
     - Dynamic config: features/dynamic-config.md
-    - Temporal UI: wip.md
-    - Admin Tools: wip.md
+    - Temporal UI: features/temporal-ui.md
+    - Admin Tools: features/admin-tools.md
     - mTLS:
       - Using Cert-Manager: features/mtls/cert-manager.md
       - Using Istio: features/mtls/istio.md
-      - Using Linkerd: wip.md
+      - Using Linkerd: features/mtls/linkerd.md
     - Monitoring: 
       - Using prometheus-operator: features/monitoring/prometheus-operator.md
       - Using prometheus: features/monitoring/prometheus.md

@@ -6,6 +6,16 @@ metadata:
 spec:
   version: 1.20.0
   numHistoryShards: 1
+  services:
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                - name: my-sidecar
+                  image: busybox
+                  command: ["sh","-c","while true; do echo 'Hello from sidecar'; sleep 30; done"]
   persistence:
     defaultStore:
       sql:
