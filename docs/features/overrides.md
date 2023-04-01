@@ -7,6 +7,8 @@ For some usecases, you may want to override some properites of temporal componen
 - Add init containers on temporal services pods
 - Mount extra volumes 
 
+Overrides allows you to override every fields you want in temporal services deployments.
+
 The API provides you the ability to apply your overrides:
 
 - per temporal service (using `spec.services.[frontend|history|matching|worker].overrides`)
@@ -23,6 +25,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
+  # [...]
   services:
     overrides:
       deployment:
@@ -62,6 +65,49 @@ spec:
                     name: extra-config
 ```
 
+### Example: add sidecar to all pods
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                - name: my-sidecar
+                  image: busybox
+                  command: ["sh","-c","while true; do echo 'Hello from sidecar'; sleep 30; done"]
+```
+
+### Example: add init container to all pods
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  # [...]
+  services:
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              initContainers:
+              - name: init-myservice
+                image: busybox:1.28
+                command: ['sh', '-c', "echo My example init container"]
+```
+
 ## Overrides per temporal service
 
 Here is a general example:
@@ -72,6 +118,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
+  # [...]
   services:
     [service name]:
       overrides:
@@ -95,6 +142,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
+  # [...]
   services:
     frontend:
       overrides:
@@ -120,6 +168,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
+  # [...]
   services:
     worker:
       overrides:
@@ -142,6 +191,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
+  # [...]
   services:
     frontend:
       overrides:
