@@ -46,7 +46,7 @@ jobs:
           tags: |
             type=ref,event=tag
       - name: Docker meta example worker-process
-        id: metabundle
+        id: workerprocess
         uses: docker/metadata-action@v4
         with:
           images: |
@@ -73,8 +73,8 @@ jobs:
         with:
           context: ./examples/worker-process/helloworld
           push: true
-          tags: ${{ steps.metabundle.outputs.tags }}
-          labels: ${{ steps.metabundle.outputs.labels }}
+          tags: ${{ steps.workerprocess.outputs.tags }}
+          labels: ${{ steps.workerprocess.outputs.labels }}
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
