@@ -9,7 +9,7 @@ spec:
   clusterRef:
     name: prod
     namespace: demo
-  image: ktenzer/helloworld-worker
+  image: ghcr.io/alexandrevilain/example-worker-process
   jobTtlSecondsAfterFinished: 300
   pullPolicy: Always
   replicas: 1

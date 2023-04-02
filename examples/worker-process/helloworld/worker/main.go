@@ -27,7 +27,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"github.com/alexandrevilain/temporal-operator/examples/temporalworkerprocess/helloworld"
+	"github.com/alexandrevilain/temporal-operator/examples/worker-process/helloworld"
 )
 
 func main() {

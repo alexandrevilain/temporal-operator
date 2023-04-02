@@ -45,6 +45,14 @@ jobs:
             ${{ env.REGISTRY }}/alexandrevilain/temporal-operator-bundle
           tags: |
             type=ref,event=tag
+      - name: Docker meta example worker-process
+        id: metabundle
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.REGISTRY }}/alexandrevilain/example-worker-process
+          tags: |
+            type=ref,event=tag
       - name: Build and push operator docker image
         uses: docker/build-push-action@v4
         with:
@@ -57,6 +65,13 @@ jobs:
         with:
           context: .
           file: bundle.Dockerfile
+          push: true
+          tags: ${{ steps.metabundle.outputs.tags }}
+          labels: ${{ steps.metabundle.outputs.labels }}
+      - name: Build and push worker-process docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./examples/worker-process/helloworld
           push: true
           tags: ${{ steps.metabundle.outputs.tags }}
           labels: ${{ steps.metabundle.outputs.labels }}
