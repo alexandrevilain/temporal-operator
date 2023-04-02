@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
+// TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess.
 type TemporalWorkerProcessSpec struct {
 	// Reference to the temporal cluster the worker will connect to.
 	ClusterRef *TemporalClusterReference `json:"clusterRef"`
@@ -33,12 +33,12 @@ type TemporalWorkerProcessSpec struct {
 	Version string `json:"version"`
 	// Image defines the temporal worker docker image the instance should run.
 	Image string `json:"image"`
-	// JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+	// JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// Defaults to 300 seconds.
 	// +optional
 	//+kubebuilder:default:=300
 	//+kubebuilder:validation:Minimum=1
-	JobTtlSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
+	JobTTLSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
 	// Number of desired replicas. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -56,7 +56,7 @@ type TemporalWorkerProcessSpec struct {
 	Builder *TemporalWorkerProcessBuilder `json:"builder,omitempty"`
 }
 
-// TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess
+// TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess.
 type TemporalWorkerProcessStatus struct {
 	// Created indicates if the worker process image was created.
 	// +optional
@@ -84,7 +84,7 @@ type TemporalWorkerProcessBuilder struct {
 	BuildAttempt *int32 `json:"attempt,omitempty"`
 	// Image is the image that will be used to build worker image.
 	Image string `json:"image,omitempty"`
-	//BuildDir is the location of where the sources will be built.
+	// BuildDir is the location of where the sources will be built.
 	BuildDir string `json:"buildDir,omitempty"`
 	// GitRepository specifies how to connect to Git source control.
 	GitRepository *GitRepositorySpec `json:"gitRepository,omitempty"`
@@ -93,12 +93,12 @@ type TemporalWorkerProcessBuilder struct {
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.
-func (s *TemporalWorkerProcessBuilder) GetBuildRepoPasswordEnvVarName() string {
+func (b *TemporalWorkerProcessBuilder) GetBuildRepoPasswordEnvVarName() string {
 	return "TEMPORAL_WORKER_BUILDER_REPO_PASSWORD"
 }
 
-func (w *TemporalWorkerProcessBuilder) BuilderEnabled() bool {
-	return w != nil && w.Enabled
+func (b *TemporalWorkerProcessBuilder) BuilderEnabled() bool {
+	return b != nil && b.Enabled
 }
 
 // GitRepositorySpec specifies the required configuration to produce an
@@ -149,7 +149,7 @@ func (s *TemporalWorkerProcessStatus) AddWorkerDeploymentStatus(status *Temporal
 // +kubebuilder:webhook:path=/mutate-temporal-io-v1beta1-temporalworkerprocess,mutating=true,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=mtemporalworkerprocess.kb.io,admissionReviewVersions=v1
 // +kubebuilder:webhook:path=/validate-temporal-io-v1beta1-temporalworkerprocess,mutating=false,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=vtemporalworkerprocess.kb.io,admissionReviewVersions=v1
 
-// TemporalWorkerProcess is the Schema for the temporalworkerprocesses API
+// TemporalWorkerProcess is the Schema for the temporalworkerprocesses API.
 type TemporalWorkerProcess struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -160,7 +160,7 @@ type TemporalWorkerProcess struct {
 
 //+kubebuilder:object:root=true
 
-// TemporalWorkerProcessList contains a list of TemporalWorkerProcess
+// TemporalWorkerProcessList contains a list of TemporalWorkerProcess.
 type TemporalWorkerProcessList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

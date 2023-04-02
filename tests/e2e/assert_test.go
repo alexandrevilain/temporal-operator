@@ -69,7 +69,6 @@ func AssertTemporalClusterCanBeUpgraded(v string) features.Func {
 
 			return nil
 		})
-
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -102,7 +101,11 @@ func AssertClusterCanHandleWorkflows() features.Func {
 		}
 
 		t.Log("Starting test worker")
-		w.Start()
+		err = w.Start()
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		defer w.Stop()
 
 		t.Logf("Starting workflow")
@@ -167,7 +170,11 @@ func AssertTemporalClusterWithMTLSCanHandleWorkflows() features.Func {
 		}
 
 		t.Log("Starting test worker")
-		w.Start()
+		err = w.Start()
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		defer w.Stop()
 
 		t.Logf("Starting workflow")

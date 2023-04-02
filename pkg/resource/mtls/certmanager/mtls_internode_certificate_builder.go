@@ -77,7 +77,7 @@ func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 	return nil
 }

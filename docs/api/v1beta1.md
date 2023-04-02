@@ -98,7 +98,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+<p>JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 Defaults to 300 seconds.</p>
 </td>
 </tr>
@@ -348,7 +348,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+<p>JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 Defaults to 300 seconds.</p>
 </td>
 </tr>
@@ -2825,7 +2825,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+<p>JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 Defaults to 300 seconds.</p>
 </td>
 </tr>
@@ -3814,7 +3814,7 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>JobTtlSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
+<p>JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 Defaults to 300 seconds.</p>
 </td>
 </tr>

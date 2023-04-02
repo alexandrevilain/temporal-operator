@@ -22,13 +22,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TemporalClusterClientSpec defines the desired state of ClusterClient
+// TemporalClusterClientSpec defines the desired state of ClusterClient.
 type TemporalClusterClientSpec struct {
 	// Reference to the temporal cluster the client will get access to.
 	ClusterRef TemporalClusterReference `json:"clusterRef"`
 }
 
-// TemporalClusterClientStatus defines the observed state of ClusterClient
+// TemporalClusterClientStatus defines the observed state of ClusterClient.
 type TemporalClusterClientStatus struct {
 	// ServerName is the hostname returned by the certificate.
 	ServerName string `json:"serverName"`
@@ -50,7 +50,7 @@ type TemporalClusterClient struct {
 
 //+kubebuilder:object:root=true
 
-// ClusterClientList contains a list of ClusterClient
+// TemporalClusterClientList contains a list of ClusterClient.
 type TemporalClusterClientList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

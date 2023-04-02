@@ -54,7 +54,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
@@ -110,7 +110,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
@@ -166,7 +166,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
@@ -213,7 +213,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
@@ -260,7 +260,7 @@ func TestPersistence(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(initialClusterVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{

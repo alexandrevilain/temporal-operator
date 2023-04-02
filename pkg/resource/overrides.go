@@ -31,7 +31,7 @@ import (
 // PatchPodSpecWithOverride patches the provided pod spec with the provided pod spec override.
 func PatchPodSpecWithOverride(spec, override *corev1.PodSpec) (*corev1.PodSpec, error) {
 	if override == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	orginalSpec, err := json.Marshal(spec)

@@ -56,7 +56,7 @@ func TestDefault(t *testing.T) {
 			}(),
 			expectedErr: "",
 		},
-		"deprecated fields: prometheus listen adress": {
+		"deprecated fields: prometheus listen address": {
 			initialObject: &v1beta1.TemporalCluster{
 				TypeMeta: v1beta1.TemporalClusterTypeMeta,
 				ObjectMeta: metav1.ObjectMeta{

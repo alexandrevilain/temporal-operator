@@ -71,7 +71,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)
 	}
 
-	// Then for each stores actions, check if the corresponding job is created and has succesfully ran.
+	// Then for each stores actions, check if the corresponding job is created and has successfully ran.
 	jobs := []*reconciler.Job{
 		{
 			Name:    "create-default-database",

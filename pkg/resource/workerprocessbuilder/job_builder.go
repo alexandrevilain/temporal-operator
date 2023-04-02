@@ -79,7 +79,7 @@ func (b *JobBuilder) Build() (client.Object, error) {
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: b.instance.ChildResourceName("builder-scripts"),
 					},
-					DefaultMode: pointer.Int32(0777),
+					DefaultMode: pointer.Int32(0o777),
 				},
 			},
 		},
@@ -93,7 +93,7 @@ func (b *JobBuilder) Build() (client.Object, error) {
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{
-			TTLSecondsAfterFinished: b.instance.Spec.JobTtlSecondsAfterFinished,
+			TTLSecondsAfterFinished: b.instance.Spec.JobTTLSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					RestartPolicy:    corev1.RestartPolicyOnFailure,
@@ -127,7 +127,7 @@ func (b *JobBuilder) Build() (client.Object, error) {
 func (b *JobBuilder) Update(object client.Object) error {
 	job := object.(*batchv1.Job)
 	if err := controllerutil.SetOwnerReference(b.instance, job, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 	return nil
 }

@@ -56,7 +56,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		},
 		Spec: v1beta1.TemporalClusterSpec{
 			NumHistoryShards:           1,
-			JobTtlSecondsAfterFinished: &jobTtl,
+			JobTTLSecondsAfterFinished: &jobTTL,
 			Version:                    version.MustNewVersionFromString(v),
 			Metrics: &v1beta1.MetricsSpec{
 				Enabled: true,
@@ -109,7 +109,6 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 	}
 
 	return cluster, nil
-
 }
 
 func deployAndWaitForMySQL(ctx context.Context, cfg *envconf.Config, namespace string) error {

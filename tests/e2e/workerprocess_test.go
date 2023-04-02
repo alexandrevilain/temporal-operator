@@ -58,7 +58,7 @@ func TestWorkerProcess(t *testing.T) {
 				},
 				Spec: v1beta1.TemporalClusterSpec{
 					NumHistoryShards:           1,
-					JobTtlSecondsAfterFinished: &jobTtl,
+					JobTTLSecondsAfterFinished: &jobTTL,
 					Persistence: v1beta1.TemporalPersistenceSpec{
 						DefaultStore: &v1beta1.DatastoreSpec{
 							SQL: &v1beta1.SQLSpec{
@@ -107,7 +107,7 @@ func TestWorkerProcess(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalWorkerProcessSpec{
 					Version:                    "latest",
-					JobTtlSecondsAfterFinished: &workerProcessJobTtl,
+					JobTTLSecondsAfterFinished: &workerProcessJobTTL,
 					Replicas:                   &replicas,
 					Image:                      "ktenzer/helloworld-worker",
 					ClusterRef: &v1beta1.TemporalClusterReference{
@@ -129,7 +129,6 @@ func TestWorkerProcess(t *testing.T) {
 				t.Fatal(err)
 			}
 			return ctx
-
 		}).
 		Feature()
 

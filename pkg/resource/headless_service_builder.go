@@ -107,7 +107,6 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	}
 
 	service.Spec.Ports = []corev1.ServicePort{
-
 		{
 			Name:       "http-metrics",
 			TargetPort: prometheus.MetricsPortName,
@@ -117,7 +116,7 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 	return nil
 }

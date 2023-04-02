@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,7 +44,7 @@ import (
 
 const deletionFinalizer = "deletion.finalizers.temporal.io"
 
-// TemporalNamespaceReconciler reconciles a Namespace object
+// TemporalNamespaceReconciler reconciles a Namespace object.
 type TemporalNamespaceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
@@ -112,7 +113,8 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	err = client.Register(ctx, temporal.NamespaceToRegisterNamespaceRequest(namespace))
 	if err != nil {
-		_, ok := err.(*serviceerror.NamespaceAlreadyExists)
+		var namespaceAlreadyExistsError *serviceerror.NamespaceAlreadyExists
+		ok := errors.As(err, &namespaceAlreadyExistsError)
 		if !ok {
 			err = fmt.Errorf("can't create \"%s\" namespace: %w", namespace.GetName(), err)
 			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)

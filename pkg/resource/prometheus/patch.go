@@ -28,7 +28,7 @@ import (
 // PatchServiceMonitorSpecWithOverride patches the provided ServiceMonitor spec with the provided ServiceMonitor spec override.
 func PatchServiceMonitorSpecWithOverride(spec *monitoringv1.ServiceMonitorSpec, override *monitoringv1.ServiceMonitorSpec) (*monitoringv1.ServiceMonitorSpec, error) {
 	if override == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	orginalSpec, err := json.Marshal(spec)

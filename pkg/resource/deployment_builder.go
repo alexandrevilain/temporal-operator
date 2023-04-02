@@ -319,19 +319,19 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	if b.instance.Spec.Services.Overrides != nil && b.instance.Spec.Services.Overrides.Deployment != nil {
 		err := ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
 		if err != nil {
-			return fmt.Errorf("can't apply deployment overrides: %v", err)
+			return fmt.Errorf("can't apply deployment overrides: %w", err)
 		}
 	}
 
 	if b.service.Overrides != nil && b.service.Overrides.Deployment != nil {
 		err := ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
 		if err != nil {
-			return fmt.Errorf("failed applying deployment overrides: %v", err)
+			return fmt.Errorf("failed applying deployment overrides: %w", err)
 		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {
-		return fmt.Errorf("failed setting controller reference: %v", err)
+		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
 	return nil

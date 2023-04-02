@@ -45,7 +45,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
 							Internode: &v1beta1.InternodeMTLSSpec{
@@ -85,7 +85,6 @@ func TestWithmTLSEnabled(t *testing.T) {
 						},
 					},
 				}
-
 			},
 		},
 		"mTLS enabled with cert-manager and internal frontend": {
@@ -99,7 +98,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 					},
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
-						JobTtlSecondsAfterFinished: &jobTtl,
+						JobTTLSecondsAfterFinished: &jobTTL,
 						MTLS: &v1beta1.MTLSSpec{
 							Provider: v1beta1.CertManagerMTLSProvider,
 							Internode: &v1beta1.InternodeMTLSSpec{
@@ -144,7 +143,6 @@ func TestWithmTLSEnabled(t *testing.T) {
 						},
 					},
 				}
-
 			},
 		},
 	}
