@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.12.2
+
+**Release date:** 2023-04-02
+
+Improvements:
+- Add more documentation on monitoring [#319](https://github.com/alexandrevilain/temporal-operator/pull/319)
+- Document how we can add sidecar and init container using overrides [#322](https://github.com/alexandrevilain/temporal-operator/pull/322)
+- Improve code quality: enable way more linters on golangci-lint [#324](https://github.com/alexandrevilain/temporal-operator/pull/324)
+- Build & push example worker-process [#326](https://github.com/alexandrevilain/temporal-operator/pull/326)
+
+Updates:
+- Bump actions/cache from 2 to 3 [#320](https://github.com/alexandrevilain/temporal-operator/pull/320)
+- Bump k8s dependencies to 0.26.3 [#323](https://github.com/alexandrevilain/temporal-operator/pull/323)
+
 ## 0.12.1
 
 **Release date:** 2023-03-22

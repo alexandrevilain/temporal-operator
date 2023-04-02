@@ -1438,7 +1438,7 @@ spec:
                     - visibilityStore
                   type: object
                 services:
-                  description: Services allows customizations for for each temporal services deployment.
+                  description: Services allows customizations for each temporal services deployment.
                   properties:
                     frontend:
                       description: Frontend service custom specifications.

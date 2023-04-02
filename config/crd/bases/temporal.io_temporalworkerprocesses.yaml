@@ -29,7 +29,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
-          API
+          API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -44,7 +44,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess
+            description: TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess.
             properties:
               builder:
                 description: Builder is the configuration for building a TemporalWorkerProcess.
@@ -182,7 +182,7 @@ spec:
             type: object
           status:
             description: TemporalWorkerProcessStatus defines the observed state of
-              TemporalWorkerProcess
+              TemporalWorkerProcess.
             properties:
               attempt:
                 description: BuildAttempt is the build attempt number of a given version

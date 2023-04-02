@@ -33,7 +33,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TemporalNamespaceSpec defines the desired state of Namespace
+            description: TemporalNamespaceSpec defines the desired state of Namespace.
             properties:
               activeClusterName:
                 description: The name of active Temporal Cluster. Only applicable
@@ -84,7 +84,7 @@ spec:
             - retentionPeriod
             type: object
           status:
-            description: TemporalNamespaceStatus defines the observed state of Namespace
+            description: TemporalNamespaceStatus defines the observed state of Namespace.
             properties:
               conditions:
                 description: Conditions represent the latest available observations
