@@ -118,10 +118,11 @@ metadata:
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
-    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.12.1
-    operators.operatorframework.io/builder: operator-sdk-v1.23.0
+    containerImage: ghcr.io/alexandrevilain/temporal-operator:v0.12.2
+    createdAt: "2023-04-02T16:49:40Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.26.1
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.12.1
+  name: temporal-operator.v0.12.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -145,7 +146,7 @@ spec:
       name: temporalnamespaces.temporal.io
       version: v1beta1
     - description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
-        API
+        API.
       displayName: Temporal Worker Process
       kind: TemporalWorkerProcess
       name: temporalworkerprocesses.temporal.io
@@ -470,7 +471,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.12.1
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.12.2
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -575,7 +576,7 @@ spec:
     name: Temporal Community
     url: https://temporal.io/
   replaces: temporal-operator.v0.9.1
-  version: 0.12.1
+  version: 0.12.2
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
