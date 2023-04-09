@@ -125,7 +125,7 @@ ServicesSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>Services allows customizations for for each temporal services deployment.</p>
+<p>Services allows customizations for each temporal services deployment.</p>
 </td>
 </tr>
 <tr>
@@ -248,7 +248,7 @@ TemporalClusterStatus
 </div>
 <h3 id="temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess
 </h3>
-<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API</p>
+<p>TemporalWorkerProcess is the Schema for the temporalworkerprocesses API.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2014,7 +2014,7 @@ All fields can be overritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdq
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.MetricsSpec">MetricsSpec</a>)
 </p>
-<p>Prometheus is the configuration for prometheus reporter.</p>
+<p>PrometheusSpec is the configuration for prometheus reporter.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2538,7 +2538,7 @@ Those overrides can be customized per service using spec.services.<serviceName>.
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
-<p>TemporalUISpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
+<p>TemporalAdminToolsSpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
 Note that deployed admin tools version is the same as the cluster&rsquo;s version.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
@@ -2656,7 +2656,7 @@ TemporalClusterClientStatus
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient</a>)
 </p>
-<p>TemporalClusterClientSpec defines the desired state of ClusterClient</p>
+<p>TemporalClusterClientSpec defines the desired state of ClusterClient.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2690,7 +2690,7 @@ TemporalClusterReference
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalClusterClient">TemporalClusterClient</a>)
 </p>
-<p>TemporalClusterClientStatus defines the observed state of ClusterClient</p>
+<p>TemporalClusterClientStatus defines the observed state of ClusterClient.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2736,7 +2736,7 @@ Kubernetes core/v1.LocalObjectReference
 <a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
 <a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec</a>)
 </p>
-<p>Reference to a TemporalCluster.</p>
+<p>TemporalClusterReference is a reference to a TemporalCluster.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -2852,7 +2852,7 @@ ServicesSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>Services allows customizations for for each temporal services deployment.</p>
+<p>Services allows customizations for each temporal services deployment.</p>
 </td>
 </tr>
 <tr>
@@ -3217,7 +3217,7 @@ TemporalNamespaceStatus
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalNamespace">TemporalNamespace</a>)
 </p>
-<p>TemporalNamespaceSpec defines the desired state of Namespace</p>
+<p>TemporalNamespaceSpec defines the desired state of Namespace.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3362,7 +3362,7 @@ CRD is deleted.</p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalNamespace">TemporalNamespace</a>)
 </p>
-<p>TemporalNamespaceStatus defines the observed state of Namespace</p>
+<p>TemporalNamespaceStatus defines the observed state of Namespace.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3758,7 +3758,7 @@ ContainerRegistryConfig
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
 </p>
-<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess</p>
+<p>TemporalWorkerProcessSpec defines the desired state of TemporalWorkerProcess.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3893,7 +3893,7 @@ THIS FEATURE IS HIGHLY EXPERIMENTAL.</p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalWorkerProcess">TemporalWorkerProcess</a>)
 </p>
-<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess</p>
+<p>TemporalWorkerProcessStatus defines the observed state of TemporalWorkerProcess.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
