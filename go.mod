@@ -30,7 +30,7 @@ require (
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/cli-utils v0.34.0
 	sigs.k8s.io/controller-runtime v0.14.6
-	sigs.k8s.io/e2e-framework v0.1.0
+	sigs.k8s.io/e2e-framework v0.1.1-0.20230407222314-8faafbcac0fa
 )
 
 require (

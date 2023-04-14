@@ -19,9 +19,7 @@ package e2e
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -32,7 +30,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
@@ -55,7 +52,7 @@ var (
 func TestMain(m *testing.M) {
 	kubernetesVersion := os.Getenv("KUBERNETES_VERSION")
 	if kubernetesVersion == "" {
-		kubernetesVersion = "v1.23.4"
+		kubernetesVersion = "v1.26.0"
 	}
 	kindImage := fmt.Sprintf("kindest/node:%s", kubernetesVersion)
 
@@ -146,60 +143,7 @@ func TestMain(m *testing.M) {
 			return ctx, err
 		}).
 		Finish(
-			// Download operator logs for debug purpose.
-			func(ctx context.Context, c *envconf.Config) (context.Context, error) {
-				clientset, err := kubernetes.NewForConfig(cfg.Client().RESTConfig())
-				if err != nil {
-					return ctx, err
-				}
-
-				pods, err := clientset.CoreV1().Pods("temporal-system").List(context.TODO(),
-					metav1.ListOptions{LabelSelector: "control-plane=controller-manager"})
-				if err != nil {
-					return ctx, err
-				}
-
-				if len(pods.Items) == 0 {
-					return ctx, errors.New("no pod found for temporal-operator-controller-manager")
-				}
-
-				podName := pods.Items[0].GetName()
-
-				stream, err := clientset.CoreV1().
-					Pods("temporal-system").
-					GetLogs(podName, &corev1.PodLogOptions{
-						Container: "manager",
-						Follow:    false,
-					}).Stream(ctx)
-				if err != nil {
-					return ctx, err
-				}
-
-				defer func() {
-					_ = stream.Close()
-				}()
-				err = os.MkdirAll("../../out/tests/e2e", os.ModePerm)
-				if err != nil {
-					return ctx, err
-				}
-
-				filename := fmt.Sprintf("../../out/tests/e2e/operator-%s.log", kubernetesVersion)
-
-				f, err := os.Create(filename)
-				if err != nil {
-					return ctx, err
-				}
-				defer func() {
-					_ = f.Close()
-				}()
-
-				_, err = io.Copy(f, stream)
-				if err != nil {
-					return ctx, err
-				}
-
-				return ctx, nil
-			},
+			envfuncs.ExportKindClusterLogs(kindClusterName, "../../out/tests/e2e/"),
 			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
 			envfuncs.DestroyKindCluster(kindClusterName),
 		).
