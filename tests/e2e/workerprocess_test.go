@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -109,7 +110,8 @@ func TestWorkerProcess(t *testing.T) {
 					Version:                    "latest",
 					JobTTLSecondsAfterFinished: &workerProcessJobTTL,
 					Replicas:                   &replicas,
-					Image:                      "ktenzer/helloworld-worker",
+					Image:                      "example-worker-process", // image built when starting e2e
+					PullPolicy:                 corev1.PullIfNotPresent,
 					ClusterRef: &v1beta1.TemporalClusterReference{
 						Name:      "test",
 						Namespace: namespace,

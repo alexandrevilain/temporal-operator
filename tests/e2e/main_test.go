@@ -57,6 +57,7 @@ func TestMain(m *testing.M) {
 	kindImage := fmt.Sprintf("kindest/node:%s", kubernetesVersion)
 
 	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
+	exampleWorkerProcessImagePath := os.Getenv("WORKER_PROCESS_IMAGE_PATH")
 
 	kindClusterName := envconf.RandomName("temporal", 16)
 	runID := envconf.RandomName("ns", 4)
@@ -72,6 +73,7 @@ func TestMain(m *testing.M) {
 		Setup(
 			envfuncs.CreateKindClusterWithConfig(kindClusterName, kindImage, "kind-config.yaml"),
 			envfuncs.LoadImageArchiveToCluster(kindClusterName, operatorImagePath),
+			envfuncs.LoadImageArchiveToCluster(kindClusterName, exampleWorkerProcessImagePath),
 			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
 		).
 		// Add the operators crds to the client scheme.

@@ -14,6 +14,7 @@ env:
   GO_VERSION: 1.19.4
   KIND_VERSION: v0.17.0
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
+  WORKER_PROCESS_IMAGE_PATH: /tmp/example-worker-process.tar
 
 jobs:
   run-e2e:
@@ -54,6 +55,15 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           outputs: type=docker,dest=${{ env.OPERATOR_IMAGE_PATH }}
+      - name: Build worker-process
+        uses: docker/build-push-action@v4
+        with:
+          context: ./examples/worker-process/helloworld
+          push: false
+          tags: example-worker-process:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          outputs: type=docker,dest=${{ env.WORKER_PROCESS_IMAGE_PATH }}
       -
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -72,6 +82,7 @@ jobs:
         run: make test-e2e
         env:
           OPERATOR_IMAGE_PATH: ${{ env.OPERATOR_IMAGE_PATH }}
+          WORKER_PROCESS_IMAGE_PATH: ${{ env.WORKER_PROCESS_IMAGE_PATH }}
           KUBERNETES_VERSION: ${{ matrix.kube-version }}
       - name: Archive operator logs
         uses: actions/upload-artifact@v3
