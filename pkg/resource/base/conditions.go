@@ -15,19 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package base
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"go.temporal.io/server/common/primitives"
 )
 
-type UIFrontendClientCertificateBuilder struct {
-	*GenericFrontendClientCertificateBuilder
-}
-
-func NewUIFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIFrontendClientCertificateBuilder {
-	return &UIFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui"),
+func isBuilderEnabled(c *v1beta1.TemporalCluster, serviceName string) bool {
+	if !c.Spec.Services.InternalFrontend.IsEnabled() && serviceName == string(primitives.InternalFrontendService) {
+		return false
 	}
+
+	return true
 }

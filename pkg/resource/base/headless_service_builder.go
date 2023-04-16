@@ -15,13 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package base
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
@@ -31,6 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+var _ resource.Builder = (*HeadlessServiceBuilder)(nil)
 
 type HeadlessServiceBuilder struct {
 	serviceName string
@@ -48,25 +51,29 @@ func NewHeadlessServiceBuilder(serviceName string, instance *v1beta1.TemporalClu
 	}
 }
 
-func (b *HeadlessServiceBuilder) Build() (client.Object, error) {
+func (b *HeadlessServiceBuilder) Build() client.Object {
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      b.instance.ChildResourceName(fmt.Sprintf("%s-headless", b.serviceName)),
 			Namespace: b.instance.Namespace,
 			Labels: metadata.Merge(
-				metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+				metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 				metadata.HeadlessLabels(),
 			),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *HeadlessServiceBuilder) Enabled() bool {
+	return isBuilderEnabled(b.instance, b.serviceName)
 }
 
 func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	service := object.(*corev1.Service)
 	service.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 		metadata.HeadlessLabels(),
 	)
 	service.Annotations = metadata.Merge(
@@ -75,7 +82,7 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	)
 	service.Spec.Type = corev1.ServiceTypeClusterIP
 	service.Spec.ClusterIP = corev1.ClusterIPNone
-	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, b.serviceName)
+	service.Spec.Selector = metadata.LabelsSelector(b.instance, b.serviceName)
 
 	service.Spec.Ports = []corev1.ServicePort{
 		{

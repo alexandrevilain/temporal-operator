@@ -15,31 +15,30 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package base
 
 import (
-	"context"
-	"errors"
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
 	"go.temporal.io/server/common/primitives"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+var _ resource.Builder = (*DeploymentBuilder)(nil)
 
 type DeploymentBuilder struct {
 	serviceName string
@@ -57,22 +56,26 @@ func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster,
 	}
 }
 
-func (b *DeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *DeploymentBuilder) Enabled() bool {
+	return isBuilderEnabled(b.instance, b.serviceName)
 }
 
 func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
@@ -132,7 +135,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: b.instance.ChildResourceName(ServiceConfig),
+						Name: b.instance.ChildResourceName(resource.ServiceConfig),
 					},
 					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
 				},
@@ -148,7 +151,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: b.instance.ChildResourceName(ServiceDynamicConfig),
+						Name: b.instance.ChildResourceName(resource.ServiceDynamicConfig),
 					},
 					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
 				},
@@ -274,11 +277,11 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec.Replicas = b.service.Replicas
 
 	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
+		MatchLabels: metadata.LabelsSelector(b.instance, b.serviceName),
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildPodObjectMeta(b.instance, b.serviceName),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName),
 		Spec: corev1.PodSpec{
 			ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 			DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),
@@ -317,14 +320,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	if b.instance.Spec.Services.Overrides != nil && b.instance.Spec.Services.Overrides.Deployment != nil {
-		err := ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
+		err := resource.ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
 		if err != nil {
 			return fmt.Errorf("can't apply deployment overrides: %w", err)
 		}
 	}
 
 	if b.service.Overrides != nil && b.service.Overrides.Deployment != nil {
-		err := ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
+		err := resource.ApplyDeploymentOverrides(deployment, b.service.Overrides.Deployment)
 		if err != nil {
 			return fmt.Errorf("failed applying deployment overrides: %w", err)
 		}
@@ -335,38 +338,4 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	return nil
-}
-
-func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
-	status := &v1beta1.ServiceStatus{
-		Name: b.serviceName,
-	}
-
-	deploy := &appsv1.Deployment{}
-
-	namespacedName := types.NamespacedName{
-		Name:      b.instance.ChildResourceName(b.serviceName),
-		Namespace: b.instance.Namespace,
-	}
-
-	err := c.Get(ctx, namespacedName, deploy)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return status, nil
-		}
-		return status, err
-	}
-
-	var ok bool
-	status.Version, ok = deploy.Labels["app.kubernetes.io/version"]
-	if !ok {
-		return nil, errors.New("can't determine service version from deployment labels")
-	}
-
-	status.Ready, err = kubernetes.IsDeploymentReady(deploy)
-	if err != nil {
-		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
-	}
-
-	return status, nil
 }

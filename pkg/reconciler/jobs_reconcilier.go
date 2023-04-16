@@ -27,6 +27,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
@@ -40,7 +42,13 @@ type Job struct {
 
 type JobBuilderFactory func(owner runtime.Object, scheme *runtime.Scheme, name string, command []string) resource.Builder
 
-func (r *Base) ReconcileJobs(ctx context.Context, owner runtime.Object, builderFactory JobBuilderFactory, jobs []*Job) (time.Duration, error) {
+type JosbReconciler struct {
+	client.Client
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
+}
+
+func (r *JosbReconciler) Reconcile(ctx context.Context, owner client.Object, builderFactory JobBuilderFactory, jobs []*Job) (time.Duration, error) {
 	logger := log.FromContext(ctx)
 
 	for _, job := range jobs {
@@ -52,13 +60,10 @@ func (r *Base) ReconcileJobs(ctx context.Context, owner runtime.Object, builderF
 
 		jobBuilder := builderFactory(owner, r.Scheme, job.Name, job.Command)
 
-		expectedJob, err := jobBuilder.Build()
-		if err != nil {
-			return 0, err
-		}
+		expectedJob := jobBuilder.Build()
 
 		matchingJob := &batchv1.Job{}
-		err = r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
+		err := r.Client.Get(ctx, types.NamespacedName{Name: expectedJob.GetName(), Namespace: expectedJob.GetNamespace()}, matchingJob)
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				// The job is not found, create it

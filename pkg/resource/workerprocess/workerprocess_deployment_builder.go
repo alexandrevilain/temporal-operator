@@ -18,24 +18,19 @@
 package workerprocess
 
 import (
-	"context"
 	"fmt"
-	"time"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type DeploymentBuilder struct {
@@ -53,15 +48,19 @@ func NewDeploymentBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v1be
 	}
 }
 
-func (b *DeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("worker-process"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "worker-process", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetVersionStringLabels(b.instance, "worker-process", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *DeploymentBuilder) Enabled() bool {
+	return true
 }
 
 func (b *DeploymentBuilder) Update(object client.Object) error {
@@ -69,7 +68,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetVersionStringLabels(b.instance.Name, "worker-process", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetVersionStringLabels(b.instance, "worker-process", b.instance.Spec.Version, b.instance.Labels),
 	)
 
 	if b.instance.Spec.Builder != nil {
@@ -125,7 +124,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 	deployment.Spec.Replicas = b.instance.Spec.Replicas
 	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, "worker-process"),
+		MatchLabels: metadata.LabelsSelector(b.instance, "worker-process"),
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
@@ -174,56 +173,16 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	return nil
 }
 
-func (b *DeploymentBuilder) ReportServiceStatus(ctx context.Context, c client.Client) (*v1beta1.ServiceStatus, error) {
-	status := &v1beta1.ServiceStatus{
-		Name:    b.instance.ChildResourceName("worker-process"),
-		Version: "", // TODO(): implement me
-	}
-
-	deploy := &appsv1.Deployment{}
-
-	namespacedName := types.NamespacedName{
-		Name:      b.instance.ChildResourceName("worker-process"),
-		Namespace: b.instance.Namespace,
-	}
-
-	err := c.Get(ctx, namespacedName, deploy)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return status, nil
-		}
-		return nil, err
-	}
-
-	status.Ready, err = kubernetes.IsDeploymentReady(deploy)
-	if err != nil {
-		return nil, fmt.Errorf("can't determine if deployment is ready: %w", err)
-	}
-
-	return status, nil
-}
-
-func (b *DeploymentBuilder) EnsureDependencies(ctx context.Context, c client.Client) (time.Duration, error) {
+func (b *DeploymentBuilder) Dependencies() []*resource.Dependency {
 	if !(b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled()) {
-		return 0, nil
+		return []*resource.Dependency{}
 	}
 
-	b.client = &v1beta1.TemporalClusterClient{}
-
-	namespacedName := types.NamespacedName{
-		Name:      b.instance.ChildResourceName("cluster-client"),
-		Namespace: b.instance.Namespace,
+	return []*resource.Dependency{
+		{
+			Object:    &v1beta1.TemporalClusterClient{},
+			Name:      b.instance.ChildResourceName("cluster-client"),
+			Namespace: b.instance.GetNamespace(),
+		},
 	}
-
-	err := c.Get(ctx, namespacedName, b.client)
-	if err != nil {
-		return 0, err
-	}
-
-	if b.client.Status.SecretRef == nil || b.client.Status.SecretRef.Name == "" {
-		log.FromContext(ctx).Info("TemporalClusterClient not ready, asking for a requeue")
-		return 10 * time.Second, nil
-	}
-
-	return 0, nil
 }

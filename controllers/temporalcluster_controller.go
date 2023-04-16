@@ -21,6 +21,7 @@ import (
 	"context"
 	"time"
 
+	"go.temporal.io/server/common/primitives"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -32,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/discovery"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
@@ -44,18 +46,25 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
-	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/admintools"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/base"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/ui"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
 const (
-	ownerKey  = ".metadata.controller"
-	ownerKind = "Cluster"
+	ownerKey = ".metadata.controller"
 )
 
 // TemporalClusterReconciler reconciles a Cluster object.
 type TemporalClusterReconciler struct {
 	reconciler.Base
+
+	AvailableAPIs *discovery.AvailableAPIs
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -145,12 +154,12 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
-	clusterBuilder := &resourceset.ClusterBuilder{
-		Instance: temporalCluster,
-		Scheme:   r.Scheme,
+	builders, err := r.resourceBuilders(temporalCluster)
+	if err != nil {
+		return 0, err
 	}
 
-	statuses, requeueAfter, err := r.ReconcileResources(ctx, temporalCluster, clusterBuilder)
+	statuses, requeueAfter, err := r.Builders.Reconcile(ctx, temporalCluster, builders)
 	if err != nil {
 		return requeueAfter, err
 	}
@@ -158,7 +167,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		return requeueAfter, nil
 	}
 
-	for _, status := range statuses {
+	for _, status := range status.ResourceStatusToServiceStatuses(temporalCluster, statuses) {
 		temporalCluster.Status.AddServiceStatus(status)
 	}
 
@@ -173,6 +182,63 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 	}
 
 	return 0, nil
+}
+
+func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.TemporalCluster) ([]resource.Builder, error) {
+	builders := []resource.Builder{
+		base.NewConfigmapBuilder(temporalCluster, r.Scheme),
+		base.NewFrontendServiceBuilder(temporalCluster, r.Scheme),
+	}
+
+	services := []primitives.ServiceName{
+		primitives.FrontendService,
+		primitives.HistoryService,
+		primitives.MatchingService,
+		primitives.WorkerService,
+		primitives.InternalFrontendService,
+	}
+
+	for _, service := range services {
+		specs, err := temporalCluster.Spec.Services.GetServiceSpec(service)
+		if err != nil {
+			return nil, err
+		}
+
+		serviceName := string(service)
+
+		builders = append(builders, base.NewServiceAccountBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, base.NewDeploymentBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, base.NewHeadlessServiceBuilder(serviceName, temporalCluster, r.Scheme, specs))
+
+		builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, istio.NewDestinationRuleBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, prometheus.NewServiceMonitorBuilder(serviceName, temporalCluster, r.Scheme, specs))
+	}
+
+	builders = append(builders,
+		base.NewDynamicConfigmapBuilder(temporalCluster, r.Scheme),
+		// mTLS
+		certmanager.NewMTLSBootstrapIssuerBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSRootCACertificateBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSRootCAIssuerBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSInternodeIntermediateCACertificateBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSInternodeIntermediateCAIssuerBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSInternodeCertificateBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSFrontendIntermediateCACertificateBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSFrontendIntermediateCAIssuerBuilder(temporalCluster, r.Scheme),
+		certmanager.NewMTLSFrontendCertificateBuilder(temporalCluster, r.Scheme),
+		certmanager.NewWorkerFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
+		// UI:
+		ui.NewDeploymentBuilder(temporalCluster, r.Scheme),
+		ui.NewServiceBuilder(temporalCluster, r.Scheme),
+		ui.NewIngressBuilder(temporalCluster, r.Scheme),
+		ui.NewFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
+		// Admin tools:
+		admintools.NewDeploymentBuilder(temporalCluster, r.Scheme),
+		admintools.NewFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
+	)
+
+	return builders, nil
 }
 
 func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, cluster *v1beta1.TemporalCluster) (ctrl.Result, error) {
@@ -266,7 +332,7 @@ func addResourceToIndex(rawObj client.Object) []string {
 	}
 }
 
-func addCertManagerResourceToIndex(rawObj client.Object) []string {
+func addIstioResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
 	case *istiosecurityv1beta1.PeerAuthentication,
 		*istionetworkingv1beta1.DestinationRule:
@@ -277,7 +343,7 @@ func addCertManagerResourceToIndex(rawObj client.Object) []string {
 	}
 }
 
-func addIstioResourceToIndex(rawObj client.Object) []string {
+func addCertManagerResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
 	case *certmanagerv1.Issuer,
 		*certmanagerv1.Certificate:
@@ -302,7 +368,7 @@ func validateAndGetOwner(owner *metav1.OwnerReference) []string {
 	if owner == nil {
 		return nil
 	}
-	if owner.APIVersion != v1beta1.GroupVersion.String() || owner.Kind != ownerKind {
+	if owner.APIVersion != v1beta1.GroupVersion.String() || owner.Kind != v1beta1.TemporalClusterTypeMeta.Kind {
 		return nil
 	}
 	return []string{owner.Name}

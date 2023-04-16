@@ -49,7 +49,7 @@ func NewJobBuilder(instance *v1beta1.TemporalWorkerProcess, scheme *runtime.Sche
 	}
 }
 
-func (b *JobBuilder) Build() (client.Object, error) {
+func (b *JobBuilder) Build() client.Object {
 	envVars := []corev1.EnvVar{
 		{
 			Name: b.instance.Spec.Builder.GetBuildRepoPasswordEnvVarName(),
@@ -89,7 +89,7 @@ func (b *JobBuilder) Build() (client.Object, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.name),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetVersionStringLabels(b.instance.Name, b.name, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetVersionStringLabels(b.instance, b.name, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{
@@ -121,7 +121,11 @@ func (b *JobBuilder) Build() (client.Object, error) {
 				},
 			},
 		},
-	}, nil
+	}
+}
+
+func (b *JobBuilder) Enabled() bool {
+	return true
 }
 
 func (b *JobBuilder) Update(object client.Object) error {

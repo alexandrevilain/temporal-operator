@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package ui
 
 import (
 	"fmt"
@@ -31,32 +31,38 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-type UIIngressBuilder struct {
+type IngressBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewUIIngressBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIIngressBuilder {
-	return &UIIngressBuilder{
+func NewIngressBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *IngressBuilder {
+	return &IngressBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *UIIngressBuilder) Build() (client.Object, error) {
+func (b *IngressBuilder) Build() client.Object {
 	return &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("ui"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, "ui", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, "ui", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *IngressBuilder) Enabled() bool {
+	return b.instance.Spec.UI != nil &&
+		b.instance.Spec.UI.Enabled &&
+		b.instance.Spec.UI.Ingress != nil
 }
 
 // parseHost parses the provided ingress host.
 // It parses the path, but it's useless for now has the UI does not support another path than "/".
-func (b *UIIngressBuilder) parseHost(host string) *url.URL {
+func (b *IngressBuilder) parseHost(host string) *url.URL {
 	result := &url.URL{}
 	parts := strings.Split(host, "/")
 	if len(parts) == 0 {
@@ -69,7 +75,7 @@ func (b *UIIngressBuilder) parseHost(host string) *url.URL {
 	return result
 }
 
-func (b *UIIngressBuilder) Update(object client.Object) error {
+func (b *IngressBuilder) Update(object client.Object) error {
 	ingress := object.(*networkingv1.Ingress)
 	ingress.Labels = object.GetLabels()
 	ingress.Annotations = metadata.Merge(object.GetAnnotations(), b.instance.Spec.UI.Ingress.Annotations)

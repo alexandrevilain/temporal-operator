@@ -158,6 +158,13 @@ type TemporalWorkerProcess struct {
 	Status TemporalWorkerProcessStatus `json:"status,omitempty"`
 }
 
+func (w *TemporalWorkerProcess) SelectorLabels() map[string]string {
+	return map[string]string{
+		"app.kubernetes.io/name":    w.GetName(),
+		"app.kubernetes.io/part-of": "temporal",
+	}
+}
+
 //+kubebuilder:object:root=true
 
 // TemporalWorkerProcessList contains a list of TemporalWorkerProcess.

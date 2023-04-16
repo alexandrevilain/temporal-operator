@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package meta
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -26,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// buildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
-func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav1.ObjectMeta {
+// BuildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
+func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav1.ObjectMeta {
 	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, v string) bool {
 		return k != "kubectl.kubernetes.io/last-applied-configuration"
 	})
@@ -35,7 +35,7 @@ func buildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
 			istio.GetLabels(instance),
-			metadata.GetLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
+			metadata.GetLabels(instance, service, instance.Spec.Version, instance.Labels),
 		),
 		Annotations: metadata.Merge(
 			linkerd.GetAnnotations(instance),

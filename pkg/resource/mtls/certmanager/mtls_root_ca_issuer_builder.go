@@ -36,3 +36,7 @@ func NewMTLSRootCAIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *runti
 		},
 	}
 }
+
+func (b *MTLSRootCAIssuerBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled()
+}

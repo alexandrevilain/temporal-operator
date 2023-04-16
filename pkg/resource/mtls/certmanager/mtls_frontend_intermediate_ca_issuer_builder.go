@@ -36,3 +36,7 @@ func NewMTLSFrontendIntermediateCAIssuerBuilder(instance *v1beta1.TemporalCluste
 		},
 	}
 }
+
+func (b *MTLSFrontendIntermediateCAIssuerBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled()
+}

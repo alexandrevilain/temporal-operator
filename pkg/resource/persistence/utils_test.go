@@ -185,7 +185,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "ca.pem",
-									Path: "/etc/tls/datastores/test/ca.pem",
+									Path: "ca.pem",
 								},
 							},
 						},
@@ -199,7 +199,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "/etc/tls/datastores/test2/ca.pem",
+									Path: "ca.pem",
 								},
 							},
 						},
@@ -291,7 +291,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "client.key",
-									Path: "/client.key",
+									Path: "client.pem",
 								},
 							},
 						},
@@ -305,7 +305,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "client.key",
+									Path: "client.pem",
 								},
 							},
 						},

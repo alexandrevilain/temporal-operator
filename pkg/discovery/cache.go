@@ -15,29 +15,37 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package kubernetes
+package discovery
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	"sync"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// IsDeploymentReady returns whenever the provided deployment is ready.
-func IsDeploymentReady(deploy *appsv1.Deployment) (bool, error) {
-	udeploy, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deploy)
-	if err != nil {
-		return false, err
+type cache struct {
+	sync.RWMutex
+
+	data map[schema.GroupVersionKind]bool
+}
+
+func newCache() *cache {
+	return &cache{
+		data: make(map[schema.GroupVersionKind]bool),
 	}
+}
 
-	u := &unstructured.Unstructured{}
-	u.SetUnstructuredContent(udeploy)
+func (c *cache) Get(gvk schema.GroupVersionKind) (bool, bool) {
+	c.RLock()
+	defer c.RUnlock()
 
-	result, err := kstatus.Compute(u)
-	if err != nil {
-		return false, err
-	}
+	value, found := c.data[gvk]
+	return value, found
+}
 
-	return result.Status == kstatus.CurrentStatus, nil
+func (c *cache) Set(gvk schema.GroupVersionKind, value bool) {
+	c.Lock()
+	defer c.Unlock()
+
+	c.data[gvk] = value
 }

@@ -37,3 +37,7 @@ func NewMTLSInternodeIntermediateCACertificateBuilder(instance *v1beta1.Temporal
 		},
 	}
 }
+
+func (b *MTLSInternodeItermediateCACertificateBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.InternodeEnabled()
+}

@@ -37,8 +37,8 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocess"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocessbuilder"
-	"github.com/alexandrevilain/temporal-operator/pkg/resourceset"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
@@ -128,7 +128,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx co
 	builders := []resource.Builder{
 		workerprocessbuilder.NewJobScriptsConfigmapBuilder(worker, r.Scheme),
 	}
-	_, requeueAfter, err := r.ReconcileBuilders(ctx, worker, builders)
+	_, requeueAfter, err := r.Builders.Reconcile(ctx, worker, builders)
 	return requeueAfter, err
 }
 
@@ -174,7 +174,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 		return workerprocessbuilder.NewJobBuilder(worker, scheme, name, command)
 	}
 
-	if requeueAfter, err := r.ReconcileJobs(ctx, worker, factory, jobs); err != nil || requeueAfter > 0 {
+	if requeueAfter, err := r.Jobs.Reconcile(ctx, worker, factory, jobs); err != nil || requeueAfter > 0 {
 		return requeueAfter, err
 	}
 
@@ -184,13 +184,9 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 }
 
 func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
-	workerProcessBuilder := &resourceset.WorkerProcessBuilder{
-		Instance: temporalWorkerProcess,
-		Cluster:  temporalCluster,
-		Scheme:   r.Scheme,
-	}
+	builders := r.resourceBuilders(temporalWorkerProcess, temporalCluster)
 
-	statuses, requeueAfter, err := r.ReconcileResources(ctx, temporalCluster, workerProcessBuilder)
+	statuses, requeueAfter, err := r.Builders.Reconcile(ctx, temporalCluster, builders)
 	if err != nil {
 		return requeueAfter, err
 	}
@@ -212,6 +208,13 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 	}
 
 	return 0, nil
+}
+
+func (r *TemporalWorkerProcessReconciler) resourceBuilders(temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) []resource.Builder {
+	return []resource.Builder{
+		workerprocess.NewClusterClientBuilder(temporalWorkerProcess, temporalCluster, r.Scheme),
+		workerprocess.NewDeploymentBuilder(temporalWorkerProcess, temporalCluster, r.Scheme),
+	}
 }
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
@@ -243,7 +246,8 @@ func (r *TemporalWorkerProcessReconciler) SetupWithManager(mgr ctrl.Manager) err
 			predicate.LabelChangedPredicate{},
 			predicate.AnnotationChangedPredicate{},
 		))).
-		Owns(&appsv1.Deployment{})
+		Owns(&appsv1.Deployment{}).
+		Owns(&v1beta1.TemporalClusterClient{})
 
 	return controller.Complete(r)
 }

@@ -39,7 +39,7 @@ func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.
 	builders := []resource.Builder{
 		persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme),
 	}
-	_, _, err := r.ReconcileBuilders(ctx, cluster, builders)
+	_, _, err := r.Builders.Reconcile(ctx, cluster, builders)
 	return err
 }
 
@@ -190,5 +190,5 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		return persistence.NewSchemaJobBuilder(cluster, scheme, name, command)
 	}
 
-	return r.ReconcileJobs(ctx, cluster, factory, jobs)
+	return r.Jobs.Reconcile(ctx, cluster, factory, jobs)
 }

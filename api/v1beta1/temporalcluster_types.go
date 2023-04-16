@@ -104,6 +104,9 @@ func (s *ServicesSpec) GetServiceSpec(name primitives.ServiceName) (*ServiceSpec
 	case primitives.FrontendService:
 		return s.Frontend, nil
 	case primitives.InternalFrontendService:
+		if s.InternalFrontend == nil {
+			return &ServiceSpec{}, nil
+		}
 		return &s.InternalFrontend.ServiceSpec, nil
 	case primitives.HistoryService:
 		return s.History, nil
@@ -815,6 +818,13 @@ type TemporalCluster struct {
 	Spec TemporalClusterSpec `json:"spec,omitempty"`
 	// Most recent observed status of the Temporal cluster.
 	Status TemporalClusterStatus `json:"status,omitempty"`
+}
+
+func (c *TemporalCluster) SelectorLabels() map[string]string {
+	return map[string]string{
+		"app.kubernetes.io/name":    c.GetName(),
+		"app.kubernetes.io/part-of": "temporal",
+	}
 }
 
 // ServerName returns cluster's server name.

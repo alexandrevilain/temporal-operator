@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,13 +42,19 @@ func NewMTLSFrontendCertificateBuilder(instance *v1beta1.TemporalCluster, scheme
 	}
 }
 
-func (b *MTLSFrontendCertificateBuilder) Build() (client.Object, error) {
+func (b *MTLSFrontendCertificateBuilder) Build() client.Object {
 	return &certmanagerv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(FrontendCertificate),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(FrontendCertificate),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance, FrontendCertificate, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *MTLSFrontendCertificateBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled()
 }
 
 func (b *MTLSFrontendCertificateBuilder) Update(object client.Object) error {

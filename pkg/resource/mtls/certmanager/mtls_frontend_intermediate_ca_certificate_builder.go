@@ -37,3 +37,7 @@ func NewMTLSFrontendIntermediateCACertificateBuilder(instance *v1beta1.TemporalC
 		},
 	}
 }
+
+func (b *MTLSFrontendItermediateCACertificateBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.FrontendEnabled()
+}

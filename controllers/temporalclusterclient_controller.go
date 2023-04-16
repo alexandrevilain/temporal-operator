@@ -22,6 +22,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/alexandrevilain/temporal-operator/internal/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	certmanagerapiutil "github.com/cert-manager/cert-manager/pkg/api/util"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
@@ -44,6 +45,8 @@ import (
 // TemporalClusterClientReconciler reconciles a ClusterClient object.
 type TemporalClusterClientReconciler struct {
 	reconciler.Base
+
+	AvailableAPIs *discovery.AvailableAPIs
 }
 
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
@@ -103,10 +106,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	builder := certmanager.NewGenericFrontendClientCertificateBuilder(cluster, r.Scheme, clusterClient.GetName())
-	certificateObject, err := builder.Build()
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	certificateObject := builder.Build()
 
 	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, certificateObject, func() error {
 		return builder.Update(certificateObject)

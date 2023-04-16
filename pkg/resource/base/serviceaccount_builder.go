@@ -15,61 +15,59 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package base
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const UIServicePort = 8080
+var _ resource.Builder = (*ServiceAccountBuilder)(nil)
 
-type UIServiceBuilder struct {
-	instance *v1beta1.TemporalCluster
-	scheme   *runtime.Scheme
+type ServiceAccountBuilder struct {
+	serviceName string
+	instance    *v1beta1.TemporalCluster
+	scheme      *runtime.Scheme
+	service     *v1beta1.ServiceSpec
 }
 
-func NewUIServiceBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *UIServiceBuilder {
-	return &UIServiceBuilder{
-		instance: instance,
-		scheme:   scheme,
+func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceAccountBuilder {
+	return &ServiceAccountBuilder{
+		serviceName: serviceName,
+		instance:    instance,
+		scheme:      scheme,
+		service:     service,
 	}
 }
 
-func (b *UIServiceBuilder) Build() (client.Object, error) {
-	return &corev1.Service{
+func (b *ServiceAccountBuilder) Build() client.Object {
+	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName("ui"),
-			Namespace: b.instance.Namespace,
-		},
-	}, nil
-}
-
-func (b *UIServiceBuilder) Update(object client.Object) error {
-	service := object.(*corev1.Service)
-	service.Labels = object.GetLabels()
-	service.Annotations = object.GetAnnotations()
-	service.Spec.Type = corev1.ServiceTypeClusterIP
-	service.Spec.Selector = metadata.LabelsSelector(b.instance.Name, "ui")
-	service.Spec.Ports = []corev1.ServicePort{
-		{
-			Name:       "http",
-			TargetPort: intstr.FromString("http"),
-			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(UIServicePort),
+			Name:        b.instance.ChildResourceName(b.serviceName),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 	}
+}
 
-	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
+func (b *ServiceAccountBuilder) Enabled() bool {
+	return isBuilderEnabled(b.instance, b.serviceName)
+}
+
+func (b *ServiceAccountBuilder) Update(object client.Object) error {
+	sa := object.(*corev1.ServiceAccount)
+	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
+
 	return nil
 }

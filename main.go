@@ -39,6 +39,7 @@ import (
 
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
+	internaldiscovery "github.com/alexandrevilain/temporal-operator/internal/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/webhooks"
@@ -93,19 +94,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	availableAPIs, err := discovery.FindAvailableAPIs(setupLog, mgr.GetConfig())
+	discoveryManager, err := discovery.NewManager(mgr.GetConfig(), scheme)
+	if err != nil {
+		setupLog.Error(err, "unable to discover available apis")
+		os.Exit(1)
+	}
+
+	availableAPIs, err := internaldiscovery.FindAvailableAPIs(setupLog, discoveryManager)
 	if err != nil {
 		setupLog.Error(err, "unable to discover available apis")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Base: reconciler.Base{
-			Client:        mgr.GetClient(),
-			Scheme:        mgr.GetScheme(),
-			Recorder:      mgr.GetEventRecorderFor("cluster-controller"),
-			AvailableAPIs: availableAPIs,
-		},
+		Base:          reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager),
+		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
@@ -119,12 +122,7 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalWorkerProcessReconciler{
-		Base: reconciler.Base{
-			Client:        mgr.GetClient(),
-			Scheme:        mgr.GetScheme(),
-			Recorder:      mgr.GetEventRecorderFor("workerprocess-controller"),
-			AvailableAPIs: availableAPIs,
-		},
+		Base: reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("workerprocess-controller"), discoveryManager),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)
@@ -139,12 +137,8 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterClientReconciler{
-		Base: reconciler.Base{
-			Client:        mgr.GetClient(),
-			Scheme:        mgr.GetScheme(),
-			Recorder:      mgr.GetEventRecorderFor("clusterclient-controller"),
-			AvailableAPIs: availableAPIs,
-		},
+		Base:          reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager),
+		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterClient")
 		os.Exit(1)

@@ -27,7 +27,7 @@ import (
 func buildWorkerProcessPodObjectMeta(instance *v1beta1.TemporalWorkerProcess, service string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
-			metadata.GetVersionStringLabels(instance.Name, service, instance.Spec.Version, instance.Labels),
+			metadata.GetVersionStringLabels(instance, service, instance.Spec.Version, instance.Labels),
 		),
 		Annotations: metadata.Merge(
 			metadata.GetAnnotations(instance.Name, instance.Annotations),

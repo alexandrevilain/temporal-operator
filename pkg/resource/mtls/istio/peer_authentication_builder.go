@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"google.golang.org/protobuf/proto"
 	istioapisecurityv1beta1 "istio.io/api/security/v1beta1"
 	istioapiv1beta1 "istio.io/api/type/v1beta1"
@@ -32,6 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+var _ resource.Builder = (*PeerAuthenticationBuilder)(nil)
 
 type PeerAuthenticationBuilder struct {
 	serviceName string
@@ -49,22 +52,26 @@ func NewPeerAuthenticationBuilder(serviceName string, instance *v1beta1.Temporal
 	}
 }
 
-func (b *PeerAuthenticationBuilder) Build() (client.Object, error) {
+func (b *PeerAuthenticationBuilder) Build() client.Object {
 	return &istiosecurityv1beta1.PeerAuthentication{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *PeerAuthenticationBuilder) Enabled() bool {
+	return b.instance.Spec.MTLS != nil && b.instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider
 }
 
 func (b *PeerAuthenticationBuilder) Update(object client.Object) error {
 	pa := object.(*istiosecurityv1beta1.PeerAuthentication)
 	pa.Spec = istioapisecurityv1beta1.PeerAuthentication{
 		Selector: &istioapiv1beta1.WorkloadSelector{
-			MatchLabels: metadata.LabelsSelector(b.instance.Name, b.serviceName),
+			MatchLabels: metadata.LabelsSelector(b.instance, b.serviceName),
 		},
 		Mtls: &istioapisecurityv1beta1.PeerAuthentication_MutualTLS{
 			Mode: istioapisecurityv1beta1.PeerAuthentication_MutualTLS_STRICT,

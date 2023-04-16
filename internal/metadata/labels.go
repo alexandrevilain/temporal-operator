@@ -17,20 +17,29 @@
 
 package metadata
 
-import "github.com/alexandrevilain/temporal-operator/pkg/version"
+import (
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+type OwnerObject interface {
+	client.Object
+	SelectorLabels() map[string]string
+}
 
 // LabelsSelector returns service's default labels.
-func LabelsSelector(clusterName, serviceName string) map[string]string {
-	return map[string]string{
-		"app.kubernetes.io/name":      clusterName,
-		"app.kubernetes.io/component": serviceName,
-		"app.kubernetes.io/part-of":   "temporal",
-	}
+func LabelsSelector(owner OwnerObject, serviceName string) map[string]string {
+	return Merge(
+		owner.SelectorLabels(),
+		map[string]string{
+			"app.kubernetes.io/component": serviceName,
+		},
+	)
 }
 
 // GetLabels returns a Labels for a temporal service.
-func GetLabels(name, service string, version *version.Version, labels map[string]string) map[string]string {
-	l := LabelsSelector(name, service)
+func GetLabels(owner OwnerObject, service string, version *version.Version, labels map[string]string) map[string]string {
+	l := LabelsSelector(owner, service)
 	l["app.kubernetes.io/version"] = version.String()
 	for k, v := range labels {
 		l[k] = v
@@ -39,8 +48,8 @@ func GetLabels(name, service string, version *version.Version, labels map[string
 }
 
 // GetLabels returns a Labels for a temporal service using string Version.
-func GetVersionStringLabels(name, service string, version string, labels map[string]string) map[string]string {
-	l := LabelsSelector(name, service)
+func GetVersionStringLabels(owner OwnerObject, service string, version string, labels map[string]string) map[string]string {
+	l := LabelsSelector(owner, service)
 	l["app.kubernetes.io/version"] = version
 	for k, v := range labels {
 		l[k] = v

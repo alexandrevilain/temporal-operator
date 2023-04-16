@@ -36,3 +36,7 @@ func NewMTLSInternodeIntermediateCAIssuerBuilder(instance *v1beta1.TemporalClust
 		},
 	}
 }
+
+func (b *MTLSInternodeIntermediateCAIssuerBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() && b.instance.Spec.MTLS.InternodeEnabled()
+}
