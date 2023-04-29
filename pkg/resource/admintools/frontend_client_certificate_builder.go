@@ -15,35 +15,33 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resourceset
+package admintools
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	workerprocessresource "github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocess"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type WorkerProcessBuilder struct {
-	Instance *v1beta1.TemporalWorkerProcess
-	Scheme   *runtime.Scheme
-	Cluster  *v1beta1.TemporalCluster
+var _ resource.Builder = (*FrontendClientCertificateBuilder)(nil)
+
+type FrontendClientCertificateBuilder struct {
+	instance *v1beta1.TemporalCluster
+
+	*certmanager.GenericFrontendClientCertificateBuilder
 }
 
-func (b *WorkerProcessBuilder) ResourceBuilders() ([]resource.Builder, error) {
-	builders := []resource.Builder{}
-
-	if b.Cluster.MTLSWithCertManagerEnabled() && b.Cluster.Spec.MTLS.FrontendEnabled() {
-		builders = append(builders,
-			workerprocessresource.NewClusterClientBuilder(b.Instance, b.Cluster, b.Scheme),
-		)
+func NewFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *FrontendClientCertificateBuilder {
+	return &FrontendClientCertificateBuilder{
+		instance:                                instance,
+		GenericFrontendClientCertificateBuilder: certmanager.NewGenericFrontendClientCertificateBuilder(instance, scheme, "admintools"),
 	}
-
-	builders = append(builders, workerprocessresource.NewDeploymentBuilder(b.Instance, b.Cluster, b.Scheme))
-
-	return builders, nil
 }
 
-func (b *WorkerProcessBuilder) ResourcePruners() []resource.Pruner {
-	return []resource.Pruner{}
+func (b *FrontendClientCertificateBuilder) Enabled() bool {
+	return b.instance.Spec.AdminTools != nil &&
+		b.instance.Spec.AdminTools.Enabled &&
+		b.instance.MTLSWithCertManagerEnabled() &&
+		b.instance.Spec.MTLS.FrontendEnabled()
 }

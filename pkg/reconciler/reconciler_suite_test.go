@@ -15,11 +15,40 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resourceset
+package reconciler_test
 
-import "github.com/alexandrevilain/temporal-operator/pkg/resource"
+import (
+	"testing"
 
-type Builder interface {
-	ResourceBuilders() ([]resource.Builder, error)
-	ResourcePruners() []resource.Pruner
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/envtest"
+)
+
+func TestReconciler(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Reconciler Suite")
 }
+
+var testenv *envtest.Environment
+var cfg *rest.Config
+var c client.Client
+
+var _ = BeforeSuite(func() {
+	var err error
+
+	testenv = &envtest.Environment{}
+
+	cfg, err = testenv.Start()
+	Expect(err).NotTo(HaveOccurred())
+
+	c, err = client.New(cfg, client.Options{})
+	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = AfterSuite(func() {
+	Expect(testenv.Stop()).To(Succeed())
+})

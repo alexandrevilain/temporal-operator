@@ -24,7 +24,7 @@ import (
 	"strconv"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
+	"github.com/alexandrevilain/temporal-operator/internal/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	enumspb "go.temporal.io/api/enums/v1"
 	enumsspb "go.temporal.io/server/api/enums/v1"
@@ -183,7 +183,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 
 	if !cluster.Spec.Version.GreaterOrEqual(version.V1_20_0) {
 		// Ensure Internal Frontend is only enabled for cluster version >= 1.20
-		if cluster.Spec.Services.InternalFrontend.IsEnabled() {
+		if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend.IsEnabled() {
 			errs = append(errs,
 				field.Forbidden(
 					field.NewPath("spec", "services", "internalFrontend", "enabled"),
@@ -195,7 +195,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		// Ensure mysql8 and postgres12 plugins are only used for cluster version >= 1.20
 		newStores := []string{string(v1beta1.PostgresSQL12Datastore), string(v1beta1.MySQL8Datastore)}
 		for name, store := range cluster.Spec.Persistence.GetDatastoresMap() {
-			if store.SQL != nil && slices.Contains(newStores, store.SQL.PluginName) {
+			if store != nil && store.SQL != nil && slices.Contains(newStores, store.SQL.PluginName) {
 				errs = append(errs,
 					field.Forbidden(
 						field.NewPath("spec", "persistence", name, "sql", "pluginName"),

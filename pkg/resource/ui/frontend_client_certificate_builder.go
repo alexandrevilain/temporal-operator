@@ -15,19 +15,30 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package certmanager
+package ui
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type AdminToolsFrontendClientCertificateBuilder struct {
-	*GenericFrontendClientCertificateBuilder
+type FrontendClientCertificateBuilder struct {
+	instance *v1beta1.TemporalCluster
+
+	*certmanager.GenericFrontendClientCertificateBuilder
 }
 
-func NewAdminToolsFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsFrontendClientCertificateBuilder {
-	return &AdminToolsFrontendClientCertificateBuilder{
-		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "admintools"),
+func NewFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *FrontendClientCertificateBuilder {
+	return &FrontendClientCertificateBuilder{
+		instance:                                instance,
+		GenericFrontendClientCertificateBuilder: certmanager.NewGenericFrontendClientCertificateBuilder(instance, scheme, "ui"),
 	}
+}
+
+func (b *FrontendClientCertificateBuilder) Enabled() bool {
+	return b.instance.Spec.UI != nil &&
+		b.instance.Spec.UI.Enabled &&
+		b.instance.MTLSWithCertManagerEnabled() &&
+		b.instance.Spec.MTLS.FrontendEnabled()
 }

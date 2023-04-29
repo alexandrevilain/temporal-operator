@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package base
 
 import (
 	"errors"
@@ -25,6 +25,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
@@ -42,6 +43,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+var _ resource.Builder = (*ConfigmapBuilder)(nil)
+
 type ConfigmapBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
@@ -54,15 +57,19 @@ func NewConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Sche
 	}
 }
 
-func (b *ConfigmapBuilder) Build() (client.Object, error) {
+func (b *ConfigmapBuilder) Build() client.Object {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        b.instance.ChildResourceName(ServiceConfig),
+			Name:        b.instance.ChildResourceName(resource.ServiceConfig),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, ServiceConfig, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, resource.ServiceConfig, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *ConfigmapBuilder) Enabled() bool {
+	return true
 }
 
 func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*config.DataStore, error) {

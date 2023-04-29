@@ -42,15 +42,19 @@ func NewClusterClientBuilder(instance *v1beta1.TemporalWorkerProcess, cluster *v
 	}
 }
 
-func (b *ClusterClientBuilder) Build() (client.Object, error) {
+func (b *ClusterClientBuilder) Build() client.Object {
 	return &v1beta1.TemporalClusterClient{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("cluster-client"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetVersionStringLabels(b.instance.Name, "cluster-client", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetVersionStringLabels(b.instance, "cluster-client", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *ClusterClientBuilder) Enabled() bool {
+	return b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled()
 }
 
 func (b *ClusterClientBuilder) Update(object client.Object) error {
@@ -58,7 +62,7 @@ func (b *ClusterClientBuilder) Update(object client.Object) error {
 
 	clusterClient.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetVersionStringLabels(b.instance.Name, "cluster-client", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetVersionStringLabels(b.instance, "cluster-client", b.instance.Spec.Version, b.instance.Labels),
 	)
 
 	clusterClient.Spec.ClusterRef = v1beta1.TemporalClusterReference{

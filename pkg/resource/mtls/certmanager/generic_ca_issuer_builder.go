@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,13 +37,15 @@ type GenericCAIssuerBuilder struct {
 	secretName string
 }
 
-func (b *GenericCAIssuerBuilder) Build() (client.Object, error) {
+func (b *GenericCAIssuerBuilder) Build() client.Object {
 	return &certmanagerv1.Issuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(b.name),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(b.name),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance, b.name, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
 func (b *GenericCAIssuerBuilder) Update(object client.Object) error {

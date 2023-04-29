@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"google.golang.org/protobuf/proto"
 	istioapinetworkingv1beta1 "istio.io/api/networking/v1beta1"
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
@@ -31,6 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+var _ resource.Builder = (*DestinationRuleBuilder)(nil)
 
 type DestinationRuleBuilder struct {
 	serviceName string
@@ -48,15 +51,19 @@ func NewDestinationRuleBuilder(serviceName string, instance *v1beta1.TemporalClu
 	}
 }
 
-func (b *DestinationRuleBuilder) Build() (client.Object, error) {
+func (b *DestinationRuleBuilder) Build() client.Object {
 	return &istionetworkingv1beta1.DestinationRule{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.serviceName),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, b.serviceName, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *DestinationRuleBuilder) Enabled() bool {
+	return b.instance.Spec.MTLS != nil && b.instance.Spec.MTLS.Provider == v1beta1.IstioMTLSProvider
 }
 
 func (b *DestinationRuleBuilder) Update(object client.Object) error {

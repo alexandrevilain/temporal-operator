@@ -15,13 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package resource
+package admintools
 
 import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/pkg/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,38 +34,44 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+var _ resource.Builder = (*DeploymentBuilder)(nil)
+
 const (
 	admintoolsCertsMountPath = "/etc/temporal/config/certs/client/admintools"
 )
 
-type AdminToolsDeploymentBuilder struct {
+type DeploymentBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
 }
 
-func NewAdminToolsDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *AdminToolsDeploymentBuilder {
-	return &AdminToolsDeploymentBuilder{
+func NewDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *DeploymentBuilder {
+	return &DeploymentBuilder{
 		instance: instance,
 		scheme:   scheme,
 	}
 }
 
-func (b *AdminToolsDeploymentBuilder) Build() (client.Object, error) {
+func (b *DeploymentBuilder) Build() client.Object {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName("admintools"),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, "admintools", b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
 }
 
-func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
+func (b *DeploymentBuilder) Enabled() bool {
+	return b.instance.Spec.AdminTools != nil && b.instance.Spec.AdminTools.Enabled
+}
+
+func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment := object.(*appsv1.Deployment)
 	deployment.Labels = metadata.Merge(
 		object.GetLabels(),
-		metadata.GetLabels(b.instance.Name, "admintools", b.instance.Spec.Version, b.instance.Labels),
+		metadata.GetLabels(b.instance, "admintools", b.instance.Spec.Version, b.instance.Labels),
 	)
 	deployment.Annotations = metadata.Merge(
 		object.GetAnnotations(),
@@ -73,7 +81,7 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 	env := []corev1.EnvVar{
 		{
 			Name:  "TEMPORAL_CLI_ADDRESS",
-			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(FrontendService), *b.instance.Spec.Services.Frontend.Port),
+			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(resource.FrontendService), *b.instance.Spec.Services.Frontend.Port),
 		},
 	}
 
@@ -105,11 +113,11 @@ func (b *AdminToolsDeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec.Replicas = pointer.Int32(1)
 
 	deployment.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels: metadata.LabelsSelector(b.instance.Name, "admintools"),
+		MatchLabels: metadata.LabelsSelector(b.instance, "admintools"),
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: buildPodObjectMeta(b.instance, "admintools"),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "admintools"),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{

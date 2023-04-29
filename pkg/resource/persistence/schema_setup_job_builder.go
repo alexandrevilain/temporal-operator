@@ -51,7 +51,11 @@ func NewSchemaJobBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Sche
 	}
 }
 
-func (b *SchemaJobBuilder) Build() (client.Object, error) {
+func (b *SchemaJobBuilder) Enabled() bool {
+	return true
+}
+
+func (b *SchemaJobBuilder) Build() client.Object {
 	datastores := b.instance.Spec.Persistence.GetDatastores()
 
 	envVars := []corev1.EnvVar{
@@ -91,7 +95,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.name),
 			Namespace:   b.instance.Namespace,
-			Labels:      metadata.GetLabels(b.instance.Name, b.name, b.instance.Spec.Version, b.instance.Labels),
+			Labels:      metadata.GetLabels(b.instance, b.name, b.instance.Spec.Version, b.instance.Labels),
 			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
 		Spec: batchv1.JobSpec{
@@ -100,7 +104,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: metadata.Merge(
 						istio.GetLabels(b.instance),
-						metadata.GetLabels(b.instance.Name, b.name, b.instance.Spec.Version, b.instance.Labels),
+						metadata.GetLabels(b.instance, b.name, b.instance.Spec.Version, b.instance.Labels),
 					),
 					Annotations: metadata.Merge(
 						linkerd.GetAnnotations(b.instance),
@@ -134,7 +138,7 @@ func (b *SchemaJobBuilder) Build() (client.Object, error) {
 				},
 			},
 		},
-	}, nil
+	}
 }
 
 func (b *SchemaJobBuilder) Update(object client.Object) error {

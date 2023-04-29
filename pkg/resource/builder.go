@@ -18,10 +18,7 @@
 package resource
 
 import (
-	"context"
-	"time"
-
-	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,25 +36,37 @@ const (
 )
 
 type Builder interface {
-	Build() (client.Object, error)
+	Build() client.Object
+	Enabled() bool
 	Update(client.Object) error
 }
 
 type DependentBuilder interface {
 	Builder
-	EnsureDependencies(context.Context, client.Client) (time.Duration, error)
+	Dependencies() []*Dependency
 }
 
-type Pruner interface {
-	Build() (client.Object, error)
-}
-
-type StatusReporter interface {
-	ReportServiceStatus(context.Context, client.Client) (*v1beta1.ServiceStatus, error)
+type OwnerObject interface {
+	client.Object
+	SelectorLabels() map[string]string
 }
 
 // A Comparer provides a custom function to compare two resources returned
 // by a Builder.
 type Comparer interface {
 	Equal()
+}
+
+type Status struct {
+	GVK       schema.GroupVersionKind
+	Name      string
+	Namespace string
+	Labels    map[string]string
+	Ready     bool
+}
+
+type Dependency struct {
+	Object    client.Object
+	Name      string
+	Namespace string
 }

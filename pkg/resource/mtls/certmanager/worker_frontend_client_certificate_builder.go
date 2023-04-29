@@ -31,3 +31,9 @@ func NewWorkerFrontendClientCertificateBuilder(instance *v1beta1.TemporalCluster
 		GenericFrontendClientCertificateBuilder: NewGenericFrontendClientCertificateBuilder(instance, scheme, "worker"),
 	}
 }
+
+func (b *WorkerFrontendClientCertificateBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled() &&
+		b.instance.Spec.MTLS.FrontendEnabled() &&
+		!b.instance.Spec.Services.InternalFrontend.IsEnabled()
+}

@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
+	"github.com/alexandrevilain/temporal-operator/internal/discovery"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/alexandrevilain/temporal-operator/webhooks"
 	"github.com/stretchr/testify/assert"

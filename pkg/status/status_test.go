@@ -96,15 +96,20 @@ func TestIsClusterReady(t *testing.T) {
 	}{
 		"all services are ready": {
 			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.20.1"),
+				},
 				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
-							Name:  "test",
-							Ready: true,
+							Name:    "test",
+							Version: "1.20.1",
+							Ready:   true,
 						},
 						{
-							Name:  "test2",
-							Ready: true,
+							Name:    "test2",
+							Version: "1.20.1",
+							Ready:   true,
 						},
 					},
 				},
@@ -113,15 +118,20 @@ func TestIsClusterReady(t *testing.T) {
 		},
 		"one service not ready": {
 			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.20.1"),
+				},
 				Status: v1beta1.TemporalClusterStatus{
 					Services: []v1beta1.ServiceStatus{
 						{
-							Name:  "test",
-							Ready: true,
+							Name:    "test",
+							Version: "1.20.1",
+							Ready:   true,
 						},
 						{
-							Name:  "test2",
-							Ready: false,
+							Name:    "test2",
+							Version: "1.20.1",
+							Ready:   false,
 						},
 					},
 				},
@@ -130,6 +140,9 @@ func TestIsClusterReady(t *testing.T) {
 		},
 		"empty status": {
 			cluster: &v1beta1.TemporalCluster{
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.20.1"),
+				},
 				Status: v1beta1.TemporalClusterStatus{},
 			},
 			expected: false,

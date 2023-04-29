@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,13 +41,19 @@ func NewMTLSBootstrapIssuerBuilder(instance *v1beta1.TemporalCluster, scheme *ru
 	}
 }
 
-func (b *MTLSBootstrapIssuerBuilder) Build() (client.Object, error) {
+func (b *MTLSBootstrapIssuerBuilder) Build() client.Object {
 	return &certmanagerv1.Issuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      b.instance.ChildResourceName(bootstrapIssuer),
-			Namespace: b.instance.Namespace,
+			Name:        b.instance.ChildResourceName(bootstrapIssuer),
+			Namespace:   b.instance.Namespace,
+			Labels:      metadata.GetLabels(b.instance, bootstrapIssuer, b.instance.Spec.Version, b.instance.Labels),
+			Annotations: metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 		},
-	}, nil
+	}
+}
+
+func (b *MTLSBootstrapIssuerBuilder) Enabled() bool {
+	return b.instance.MTLSWithCertManagerEnabled()
 }
 
 func (b *MTLSBootstrapIssuerBuilder) Update(object client.Object) error {
