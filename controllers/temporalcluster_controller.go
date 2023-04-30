@@ -44,15 +44,14 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
-	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/admintools"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/base"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/istio"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/prometheus"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/ui"
+	"github.com/alexandrevilain/controller-tools/pkg/patch"
+	"github.com/alexandrevilain/controller-tools/pkg/resource"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/admintools"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/base"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/istio"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/prometheus"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/ui"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
@@ -62,7 +61,7 @@ const (
 
 // TemporalClusterReconciler reconciles a Cluster object.
 type TemporalClusterReconciler struct {
-	reconciler.Base
+	Base
 
 	AvailableAPIs *discovery.AvailableAPIs
 }

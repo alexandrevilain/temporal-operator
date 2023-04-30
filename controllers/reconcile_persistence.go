@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexandrevilain/controller-tools/pkg/reconciler"
+	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/persistence"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"k8s.io/apimachinery/pkg/runtime"
 )

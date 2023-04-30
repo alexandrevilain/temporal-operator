@@ -20,7 +20,7 @@ package discovery
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
+	"github.com/alexandrevilain/controller-tools/pkg/discovery"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/go-logr/logr"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"

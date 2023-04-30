@@ -21,7 +21,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
+	"github.com/alexandrevilain/controller-tools/pkg/patch"
 	appsv1 "k8s.io/api/apps/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,17 +34,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/alexandrevilain/controller-tools/pkg/reconciler"
+	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocess"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/workerprocessbuilder"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/workerprocess"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/workerprocessbuilder"
 	"github.com/alexandrevilain/temporal-operator/pkg/status"
 )
 
 // TemporalWorkerProcessReconciler reconciles a TemporalWorkerProcess object.
 type TemporalWorkerProcessReconciler struct {
-	reconciler.Base
+	Base
 }
 
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalworkerprocesses,verbs=get;list;watch;create;update;patch;delete

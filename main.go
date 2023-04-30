@@ -37,11 +37,10 @@ import (
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 
+	"github.com/alexandrevilain/controller-tools/pkg/discovery"
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/controllers"
 	internaldiscovery "github.com/alexandrevilain/temporal-operator/internal/discovery"
-	"github.com/alexandrevilain/temporal-operator/pkg/discovery"
-	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
 	"github.com/alexandrevilain/temporal-operator/webhooks"
 	//+kubebuilder:scaffold:imports
 )
@@ -107,7 +106,7 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Base:          reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager),
+		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager),
 		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
@@ -122,7 +121,7 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalWorkerProcessReconciler{
-		Base: reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("workerprocess-controller"), discoveryManager),
+		Base: controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("workerprocess-controller"), discoveryManager),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
 		os.Exit(1)
@@ -137,7 +136,7 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterClientReconciler{
-		Base:          reconciler.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager),
+		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager),
 		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterClient")

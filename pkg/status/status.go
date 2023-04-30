@@ -18,8 +18,8 @@
 package status
 
 import (
+	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource"
 	"go.temporal.io/server/common/primitives"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
