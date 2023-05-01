@@ -22,8 +22,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/alexandrevilain/controller-tools/pkg/patch"
 	"github.com/alexandrevilain/temporal-operator/internal/discovery"
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
 	certmanagerapiutil "github.com/cert-manager/cert-manager/pkg/api/util"
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,15 +36,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
-	"github.com/alexandrevilain/temporal-operator/pkg/reconciler"
-	"github.com/alexandrevilain/temporal-operator/pkg/resource/mtls/certmanager"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
 // TemporalClusterClientReconciler reconciles a ClusterClient object.
 type TemporalClusterClientReconciler struct {
-	reconciler.Base
+	Base
 
 	AvailableAPIs *discovery.AvailableAPIs
 }

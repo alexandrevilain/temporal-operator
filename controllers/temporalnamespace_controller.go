@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes/patch"
+	"github.com/alexandrevilain/controller-tools/pkg/patch"
 	"go.temporal.io/api/serviceerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

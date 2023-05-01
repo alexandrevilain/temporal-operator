@@ -103,11 +103,11 @@ test-e2e-dev: artifacts ## Run end2end tests on dev computer using kind.
 
 .PHONY: ensure-license
 ensure-license: go-licenser
-	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -exclude pkg/version -license ASL2 .
+	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude api -exclude pkg/version -license ASL2 .
 
 .PHONY: check-license
 check-license: go-licenser
-	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude internal/forked -exclude api -exclude pkg/version -license ASL2 -d .
+	$(GO_LICENSER) -licensor "Alexandre VILAIN" -exclude api -exclude pkg/version -license ASL2 -d .
 
 .PHONY: dev-cluster
 dev-cluster: kind-with-registry
