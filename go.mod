@@ -14,7 +14,7 @@ require (
 	github.com/lithammer/dedent v1.1.0
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.6
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.64.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.64.1
 	github.com/stretchr/testify v1.8.2
 	go.temporal.io/api v1.18.2-0.20230324225508-f2c7ab685b44
 	go.temporal.io/sdk v1.21.2
