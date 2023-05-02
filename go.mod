@@ -23,10 +23,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20230224174655-35782d263c2c
 	istio.io/client-go v1.17.1
-	k8s.io/api v0.26.3
+	k8s.io/api v0.27.1
 	k8s.io/apiextensions-apiserver v0.26.3
 	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.26.3
+	k8s.io/client-go v0.27.1
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/e2e-framework v0.2.0
