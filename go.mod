@@ -23,10 +23,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20230224174655-35782d263c2c
 	istio.io/client-go v1.17.1
-	k8s.io/api v0.26.3
+	k8s.io/api v0.27.2
 	k8s.io/apiextensions-apiserver v0.26.3
-	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.26.3
+	k8s.io/apimachinery v0.27.2
+	k8s.io/client-go v0.27.2
 	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/e2e-framework v0.2.0
@@ -131,7 +131,7 @@ require (
 	k8s.io/component-base v0.26.3 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-aggregator v0.26.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20230327201221-f5883ff37f0c // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	sigs.k8s.io/cli-utils v0.34.0 // indirect
 	sigs.k8s.io/gateway-api v0.6.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
