@@ -6,6 +6,7 @@ For some usecases, you may want to override some properites of temporal componen
 - Add sidecars on temporal services pods
 - Add init containers on temporal services pods
 - Mount extra volumes 
+- Get environment variable for secretRef
 
 Overrides allows you to override every fields you want in temporal services deployments.
 
@@ -208,4 +209,53 @@ spec:
                   - name: extra-volume
                     configMap:
                       name: extra-config
+```
+
+### Example: Add an environment variable from secretRef to the frontend pod
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    frontend:
+      overrides:
+        deployment:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: service
+                    envFrom:
+                      - secretRef:
+                          name: frontend
+```
+
+## Overrides container resources all services
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                - name: service
+                  resources:
+                    limits:
+                      cpu: 500m
+                      memory: 500Mi
+                    requests:
+                      cpu: 500m
+                      memory: 500Mi
 ```
