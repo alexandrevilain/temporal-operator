@@ -11,8 +11,8 @@ defaults:
     shell: bash
 
 env:
-  GO_VERSION: "1.20.3"
-  KIND_VERSION: v0.17.0
+  GO_VERSION: "1.20.4"
+  KIND_VERSION: v0.19.0
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
   WORKER_PROCESS_IMAGE_PATH: /tmp/example-worker-process.tar
 
@@ -23,10 +23,10 @@ jobs:
       fail-fast: false
       matrix:
        kube-version:
-       - v1.23.13
-       - v1.24.7
-       - v1.25.3
-       - v1.26.0
+       - v1.23.17
+       - v1.24.13
+       - v1.25.9
+       - v1.26.4
     name: Run generate E2E tests
     steps:
       - name: Checkout
