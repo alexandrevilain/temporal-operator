@@ -66,7 +66,7 @@ var (
 
 			curl --fail --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/_cluster/settings" -H "Content-Type: application/json" --data-binary @/etc/temporal/schema/elasticsearch/visibility/cluster_settings_{{ .Version }}.json --write-out "\n"
 			curl --fail --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/_template/temporal_visibility_v1_template" -H "Content-Type: application/json" --data-binary @/etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json --write-out "\n"
-			# No --fail here because create index is not idempotent operation.
+			# No --fail here because create index is not idempotent operaton.
 			curl --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}" --write-out "\n"
 			{{ if .Indices.SecondaryVisibility }}
 			curl --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.SecondaryVisibility }}" --write-out "\n"
@@ -116,9 +116,24 @@ var (
 						new_mapping='
 						{
 							"properties": {
-								"NamespaceDivision": {
+								"TemporalNamespaceDivision": {
 								  "type": "keyword"
 								}
+							}
+						}
+						'
+
+						curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
+						;;
+					v4)
+						echo "Upgrading to schema v4"
+						
+						new_mapping='
+						{
+							"properties": {
+							  "HistorySizeBytes": {
+								"type": "long"
+							  }
 							}
 						}
 						'
@@ -153,8 +168,8 @@ var (
 				fi
 			fi
 
-			# v2 does not have the "NamespaceDivision" property
-			is_v2=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("NamespaceDivision") | not')
+			# v2 does not have the "TemporalNamespaceDivision" property
+			is_v2=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision") | not')
 			if [ $is_v2 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -162,12 +177,21 @@ var (
 				fi
 			fi
 
-			# v3 has the "NamespaceDivision"
-			is_v3=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("NamespaceDivision")')
+			# v3 has the "TemporalNamespaceDivision"
+			is_v3=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision")')
 			if [ $is_v3 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
 					current_version="v3"
+				fi
+			fi
+
+			# v4 has the "HistorySizeBytes"
+			is_v4=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("HistorySizeBytes")')
+			if [ $is_v4 == "true" ]; then
+				if [ $current_version_found = false ]; then
+					current_version_found=true
+					current_version="v4"
 				fi
 			fi
 
