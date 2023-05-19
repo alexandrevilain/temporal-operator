@@ -109,6 +109,32 @@ spec:
                 command: ['sh', '-c', "echo My example init container"]
 ```
 
+## Example: Override containers resources
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                - name: service
+                  resources:
+                    limits:
+                      cpu: 500m
+                      memory: 500Mi
+                    requests:
+                      cpu: 500m
+                      memory: 500Mi
+```
+
 ## Overrides per temporal service
 
 Here is a general example:
@@ -232,30 +258,4 @@ spec:
                     envFrom:
                       - secretRef:
                           name: frontend
-```
-
-## Overrides container resources all services
-
-```yaml
-apiVersion: temporal.io/v1beta1
-kind: TemporalCluster
-metadata:
-  name: prod
-spec:
-  # [...]
-  services:
-    overrides:
-      deployment:
-        spec:
-          template:
-            spec:
-              containers:
-                - name: service
-                  resources:
-                    limits:
-                      cpu: 500m
-                      memory: 500Mi
-                    requests:
-                      cpu: 500m
-                      memory: 500Mi
 ```
