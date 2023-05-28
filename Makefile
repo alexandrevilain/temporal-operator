@@ -169,8 +169,8 @@ bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metada
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --manifests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
-.PHONY: release
-release:
+.PHONY: prepare-release
+prepare-release: kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/alexandrevilain/temporal-operator:v$(VERSION)
 	$(MAKE) bundle
 
