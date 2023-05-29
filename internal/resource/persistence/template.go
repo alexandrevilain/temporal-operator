@@ -153,14 +153,14 @@ var (
 
 			# Guess current mapping version
 			# v0 does not have the "ExecutionDuration" property
-			is_v0=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("ExecutionDuration") | not')
+			is_v0=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("ExecutionDuration") | not')
 			if [ $is_v0 == "true" ]; then
 				echo "Can't do upgrade from v0 schema, version needing advanced visibility schema v1 are not supported by the operator"
 				exit 1;
 			fi
 
 			# v1 does not have the "TemporalScheduledById" property
-			is_v1=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalScheduledById") | not')
+			is_v1=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalScheduledById") | not')
 			if [ $is_v1 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -169,7 +169,7 @@ var (
 			fi
 
 			# v2 does not have the "TemporalNamespaceDivision" property
-			is_v2=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision") | not')
+			is_v2=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalNamespaceDivision") | not')
 			if [ $is_v2 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -178,7 +178,7 @@ var (
 			fi
 
 			# v3 has the "TemporalNamespaceDivision"
-			is_v3=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("TemporalNamespaceDivision")')
+			is_v3=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalNamespaceDivision")')
 			if [ $is_v3 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -187,7 +187,7 @@ var (
 			fi
 
 			# v4 has the "HistorySizeBytes"
-			is_v4=$(echo $current_mapping | jq -r '.temporal_visibility_v1_dev.mappings.properties | has("HistorySizeBytes")')
+			is_v4=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("HistorySizeBytes")')
 			if [ $is_v4 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
