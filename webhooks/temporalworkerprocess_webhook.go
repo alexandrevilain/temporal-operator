@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // TemporalWorkerProcessWebhook provides endpoints to validate
@@ -86,37 +87,37 @@ func (w *TemporalWorkerProcessWebhook) validateWorkerProcess(workerprocess *v1be
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
-func (w *TemporalWorkerProcessWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalWorkerProcessWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	workerprocess, err := w.getWorkerProcessFromRequest(obj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cluster, err := w.getReferencedCluster(ctx, workerprocess)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	errs := w.validateWorkerProcess(workerprocess, cluster)
 
-	return w.aggregateWorkerProcessErrors(workerprocess, errs)
+	return nil, w.aggregateWorkerProcessErrors(workerprocess, errs)
 }
 
 // ValidateUpdate validates TemporalWorkerProcess updates.
 // It mainly check for sequential version upgrades.
-func (w *TemporalWorkerProcessWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) error {
+func (w *TemporalWorkerProcessWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	oldWorkerProcess, err := w.getWorkerProcessFromRequest(oldObj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	newWorkerProcess, err := w.getWorkerProcessFromRequest(newObj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if oldWorkerProcess.Spec.ClusterRef.NamespacedName(oldWorkerProcess) != newWorkerProcess.Spec.ClusterRef.NamespacedName(newWorkerProcess) {
-		return w.aggregateWorkerProcessErrors(newWorkerProcess, field.ErrorList{
+		return nil, w.aggregateWorkerProcessErrors(newWorkerProcess, field.ErrorList{
 			field.Forbidden(
 				field.NewPath("spec", "clusterRef"),
 				"ClusterRef is immutable",
@@ -126,18 +127,18 @@ func (w *TemporalWorkerProcessWebhook) ValidateUpdate(ctx context.Context, oldOb
 
 	cluster, err := w.getReferencedCluster(ctx, newWorkerProcess)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	errs := w.validateWorkerProcess(newWorkerProcess, cluster)
 
-	return w.aggregateWorkerProcessErrors(newWorkerProcess, errs)
+	return nil, w.aggregateWorkerProcessErrors(newWorkerProcess, errs)
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalWorkerProcessWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalWorkerProcessWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	// No delete validation needed.
-	return nil
+	return nil, nil
 }
 
 func (w *TemporalWorkerProcessWebhook) SetupWebhookWithManager(mgr ctrl.Manager) error {

@@ -746,7 +746,9 @@ Constraints
 <td>
 <code>value</code><br>
 <em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
 </em>
 </td>
 <td>
@@ -1983,7 +1985,9 @@ bool
 <td>
 <code>override</code><br>
 <em>
+<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.ServiceMonitorSpec">
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.ServiceMonitorSpec
+</a>
 </em>
 </td>
 <td>
@@ -1996,7 +2000,9 @@ All fields can be overritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdq
 <td>
 <code>metricRelabelings</code><br>
 <em>
+<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.RelabelConfig">
 []github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig
+</a>
 </em>
 </td>
 <td>

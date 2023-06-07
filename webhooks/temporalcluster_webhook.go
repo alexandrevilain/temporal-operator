@@ -34,6 +34,7 @@ import (
 	"k8s.io/utils/pointer"
 	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // TemporalClusterWebhook provides endpoints to validate
@@ -210,28 +211,28 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
-func (w *TemporalClusterWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalClusterWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	cluster, err := w.getClusterFromRequest(obj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	errs := w.validateCluster(cluster)
 
-	return w.aggregateClusterErrors(cluster, errs)
+	return nil, w.aggregateClusterErrors(cluster, errs)
 }
 
 // ValidateUpdate validates TemporalCluster updates.
 // It mainly check for sequential version upgrades.
-func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) error {
+func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	oldCluster, err := w.getClusterFromRequest(oldObj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	newCluster, err := w.getClusterFromRequest(newObj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	errs := w.validateCluster(newCluster)
@@ -240,7 +241,7 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 	// See: https://docs.temporal.io/cluster-deployment-guide#upgrade-server
 	constraint, err := oldCluster.Spec.Version.UpgradeConstraint()
 	if err != nil {
-		return fmt.Errorf("can't compute version upgrade constraint: %w", err)
+		return nil, fmt.Errorf("can't compute version upgrade constraint: %w", err)
 	}
 
 	allowed := constraint.Check(newCluster.Spec.Version.Version)
@@ -253,13 +254,13 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 		)
 	}
 
-	return w.aggregateClusterErrors(newCluster, errs)
+	return nil, w.aggregateClusterErrors(newCluster, errs)
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalClusterWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalClusterWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	// No delete validation needed.
-	return nil
+	return nil, nil
 }
 
 func (w *TemporalClusterWebhook) SetupWebhookWithManager(mgr ctrl.Manager) error {
