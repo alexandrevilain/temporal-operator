@@ -239,7 +239,7 @@ func TestValidateCreate(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
-			err := test.wh.ValidateCreate(context.Background(), test.object)
+			_, err := test.wh.ValidateCreate(context.Background(), test.object)
 			if test.expectedErr != "" {
 				assert.Error(tt, err)
 				// Here contains is used to allow partial error checks.
@@ -325,7 +325,7 @@ func TestValidateUpdate(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
 			wh := &webhooks.TemporalClusterWebhook{}
-			err := wh.ValidateUpdate(context.Background(), test.oldlObject, test.newObject)
+			_, err := wh.ValidateUpdate(context.Background(), test.oldlObject, test.newObject)
 			if test.expectedErr != "" {
 				assert.Error(tt, err)
 				assert.Equal(tt, test.expectedErr, err.Error())
