@@ -561,7 +561,10 @@ spec:
                                               type: object
                                             type: array
                                           scheme:
-                                            description: HTTP scheme to use for scraping.
+                                            description: HTTP scheme to use for scraping. `http` and `https` are the expected values unless you rewrite the `__scheme__` label via relabeling. If empty, Prometheus uses the default value `http`.
+                                            enum:
+                                              - http
+                                              - https
                                             type: string
                                           scrapeTimeout:
                                             description: Timeout after which the scrape is ended If not specified, the Prometheus global scrape timeout is used unless it is less than `Interval` in which the latter is used.
@@ -1848,16 +1851,16 @@ spec:
                         tls:
                           description: TLS configuration.
                           items:
-                            description: IngressTLS describes the transport layer security associated with an Ingress.
+                            description: IngressTLS describes the transport layer security associated with an ingress.
                             properties:
                               hosts:
-                                description: Hosts are a list of hosts included in the TLS certificate. The values in this list must match the name/s used in the tlsSecret. Defaults to the wildcard host setting for the loadbalancer controller fulfilling this Ingress, if left unspecified.
+                                description: hosts is a list of hosts included in the TLS certificate. The values in this list must match the name/s used in the tlsSecret. Defaults to the wildcard host setting for the loadbalancer controller fulfilling this Ingress, if left unspecified.
                                 items:
                                   type: string
                                 type: array
                                 x-kubernetes-list-type: atomic
                               secretName:
-                                description: SecretName is the name of the secret used to terminate TLS traffic on port 443. Field is left optional to allow TLS routing based on SNI hostname alone. If the SNI host in a listener conflicts with the "Host" header field used by an IngressRule, the SNI host is used for termination and value of the Host header is used for routing.
+                                description: secretName is the name of the secret used to terminate TLS traffic on port 443. Field is left optional to allow TLS routing based on SNI hostname alone. If the SNI host in a listener conflicts with the "Host" header field used by an IngressRule, the SNI host is used for termination and value of the "Host" header is used for routing.
                                 type: string
                             type: object
                           type: array
