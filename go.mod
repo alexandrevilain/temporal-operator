@@ -12,8 +12,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1
 	github.com/lithammer/dedent v1.1.0
-	github.com/onsi/ginkgo/v2 v2.9.5
-	github.com/onsi/gomega v1.27.7
+	github.com/onsi/ginkgo/v2 v2.9.7
+	github.com/onsi/gomega v1.27.8
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.65.2
 	github.com/stretchr/testify v1.8.2
 	go.temporal.io/api v1.18.2-0.20230324225508-f2c7ab685b44
