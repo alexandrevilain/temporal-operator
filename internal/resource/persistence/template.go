@@ -64,7 +64,7 @@ var (
 		SetupAdvancedVisibility: dedent.Dedent(`
 			#!/bin/bash
 			# Change index_patterns from temporal_visibility_v1* to {{ .Indices.Visibility }}* at index_template_{{ .Version }}.json before apply 
-			sed -i '' -e 's/temporal_visibility_v1./{{ .Indices.Visibility }}*/g' /etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json
+			sed -i -e 's/temporal_visibility_v1./{{ .Indices.Visibility }}*/g' /etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json
 
 			curl --fail --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/_cluster/settings" -H "Content-Type: application/json" --data-binary @/etc/temporal/schema/elasticsearch/visibility/cluster_settings_{{ .Version }}.json --write-out "\n"
 			curl --fail --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/_template/{{ .Indices.Visibility }}_template" -H "Content-Type: application/json" --data-binary @/etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json --write-out "\n"
