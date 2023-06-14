@@ -8,7 +8,7 @@ require (
 	github.com/cert-manager/cert-manager v1.11.0
 	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/go-logr/logr v1.2.4
-	github.com/gocql/gocql v1.4.0
+	github.com/gocql/gocql v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1
 	github.com/lithammer/dedent v1.1.0
