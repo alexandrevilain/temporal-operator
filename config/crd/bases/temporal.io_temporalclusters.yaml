@@ -878,7 +878,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices
@@ -1101,7 +1101,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices
@@ -1324,7 +1324,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices
