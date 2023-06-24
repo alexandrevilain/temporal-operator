@@ -165,6 +165,10 @@ func (c *TemporalCluster) Default() {
 		c.Spec.UI.Image = defaultTemporalUIImage
 	}
 
+	if c.Spec.UI.Replicas == nil {
+		c.Spec.UI.Replicas = pointer.Int32(1)
+	}
+
 	if c.Spec.AdminTools == nil {
 		c.Spec.AdminTools = new(TemporalAdminToolsSpec)
 	}

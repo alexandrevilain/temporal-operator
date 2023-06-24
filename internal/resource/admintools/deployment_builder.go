@@ -25,6 +25,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -128,6 +129,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 					Env:                      env,
+					Resources:                b.instance.Spec.AdminTools.Resources,
 					LivenessProbe: &corev1.Probe{
 						ProbeHandler: corev1.ProbeHandler{
 							Exec: &corev1.ExecAction{
@@ -153,6 +155,13 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			SchedulerName:                 corev1.DefaultSchedulerName,
 			Volumes:                       volumes,
 		},
+	}
+
+	if b.instance.Spec.AdminTools.Overrides != nil && b.instance.Spec.AdminTools.Overrides.Deployment != nil {
+		err := kubernetes.ApplyDeploymentOverrides(deployment, b.instance.Spec.AdminTools.Overrides.Deployment)
+		if err != nil {
+			return fmt.Errorf("can't apply deployment overrides: %w", err)
+		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, deployment, b.scheme); err != nil {

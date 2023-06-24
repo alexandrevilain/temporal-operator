@@ -2325,6 +2325,21 @@ int32
 </tr>
 <tr>
 <td>
+<code>resources</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
+Kubernetes core/v1.ResourceRequirements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Compute Resources required by this service.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
 <code>overrides</code><br>
 <em>
 <a href="#temporal.io/v1beta1.ServiceSpecOverride">
@@ -2347,7 +2362,9 @@ Those overrides takes precedence over spec.services.overrides.</p>
 <p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.ServiceSpec">ServiceSpec</a>, 
-<a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>)
+<a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalAdminToolsSpec">TemporalAdminToolsSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalUISpec">TemporalUISpec</a>)
 </p>
 <p>ServiceSpecOverride provides the ability to override the generated manifests of a temporal service.</p>
 <div class="md-typeset__scrollwrap">
@@ -2578,6 +2595,35 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal admin tools docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resources</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
+Kubernetes core/v1.ResourceRequirements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Compute Resources required by the ui.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>overrides</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">
+ServiceSpecOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Overrides adds some overrides to the resources deployed for the ui.</p>
 </td>
 </tr>
 </tbody>
@@ -3636,6 +3682,47 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal ui docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replicas</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Number of desired replicas for the ui. Default to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>resources</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
+Kubernetes core/v1.ResourceRequirements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Compute Resources required by the ui.
+More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<code>overrides</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">
+ServiceSpecOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Overrides adds some overrides to the resources deployed for the ui.</p>
 </td>
 </tr>
 <tr>

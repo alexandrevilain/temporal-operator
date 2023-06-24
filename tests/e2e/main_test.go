@@ -170,31 +170,6 @@ func testMainRun(m *testing.M) int {
 			}
 			return ctx, nil
 		}).
-		// Deploy ECK.
-		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
-			manager := helm.New(c.KubeconfigFile())
-			err := manager.RunRepo(helm.WithArgs("add", "elastic", "https://helm.elastic.co"))
-			if err != nil {
-				return ctx, fmt.Errorf("failed to add elastic helm chart repo: %w", err)
-			}
-			err = manager.RunRepo(helm.WithArgs("update"))
-			if err != nil {
-				return ctx, fmt.Errorf("failed to upgrade helm repo: %w", err)
-			}
-			err = manager.RunInstall(
-				helm.WithName("elastic-operator"),
-				helm.WithNamespace("elastic-system"),
-				helm.WithReleaseName("elastic/eck-operator"),
-				helm.WithVersion("v2.8.0"),
-				helm.WithArgs("--create-namespace"),
-				helm.WithWait(),
-				helm.WithTimeout("10m"),
-			)
-			if err != nil {
-				return ctx, fmt.Errorf("failed to install eck-operator chart: %w", err)
-			}
-			return ctx, nil
-		}).
 		// Deploy the operator and wait for it.
 		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
 			objects, err := decoder.DecodeAllFiles(ctx, os.DirFS("../../out/release/artifacts"), "temporal-operator.yaml")
