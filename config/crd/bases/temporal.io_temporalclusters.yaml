@@ -860,6 +860,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:
@@ -1083,6 +1084,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:
@@ -1306,6 +1308,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:

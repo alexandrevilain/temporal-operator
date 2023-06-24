@@ -232,6 +232,7 @@ type DatastoreTLSSpec struct {
 // ElasticsearchIndices holds index names.
 type ElasticsearchIndices struct {
 	// Visibility defines visibility's index name.
+	// +kubebuilder:default=temporal_visibility_v1
 	Visibility string `json:"visibility"`
 	// SecondaryVisibility defines secondary visibility's index name.
 	// +optional
