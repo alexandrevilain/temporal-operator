@@ -860,6 +860,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:
@@ -878,7 +879,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices
@@ -1083,6 +1084,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:
@@ -1101,7 +1103,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices
@@ -1306,6 +1308,7 @@ spec:
                                   description: SecondaryVisibility defines secondary visibility's index name.
                                   type: string
                                 visibility:
+                                  default: temporal_visibility_v1
                                   description: Visibility defines visibility's index name.
                                   type: string
                               required:
@@ -1324,7 +1327,7 @@ spec:
                             version:
                               default: v7
                               description: Version defines the elasticsearch version.
-                              pattern: ^v(6|7)$
+                              pattern: ^v(6|7|8)$
                               type: string
                           required:
                             - indices

@@ -48,6 +48,12 @@ func (s *DatastoreSpec) Default() {
 			s.Cassandra.ConnectTimeout = &metav1.Duration{Duration: 10 * time.Second}
 		}
 	}
+
+	if s.Elasticsearch != nil {
+		if s.Elasticsearch.Indices.Visibility == "" {
+			s.Elasticsearch.Indices.Visibility = "temporal_visibility_v1"
+		}
+	}
 }
 
 // Default set default fields values.

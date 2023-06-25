@@ -35,15 +35,19 @@ var (
 	defaultUpgradePath    = []string{"1.19.1", "1.20.0"}
 )
 
+type (
+	deployDependencyFunc func(ctx context.Context, cfg *envconf.Config, namespace string) error
+)
+
 func TestPersistence(t *testing.T) {
 	tests := map[string]struct {
-		deployDependencies func(ctx context.Context, cfg *envconf.Config, namespace string) error
+		deployDependencies []deployDependencyFunc
 		cluster            func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster
 		upgradePath        []string
 	}{
 		"postgres persistence": {
 			upgradePath:        defaultUpgradePath,
-			deployDependencies: deployAndWaitForPostgres,
+			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
@@ -99,7 +103,7 @@ func TestPersistence(t *testing.T) {
 		},
 		"postgres12 persistence": {
 			upgradePath:        []string{},
-			deployDependencies: deployAndWaitForPostgres,
+			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
@@ -153,9 +157,76 @@ func TestPersistence(t *testing.T) {
 				}
 			},
 		},
+		"postgres persistence with ES advanced visibility": {
+			upgradePath:        []string{},
+			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres, deployAndWaitForElasticSearch},
+			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
+
+				return &v1beta1.TemporalCluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test",
+						Namespace: namespace,
+					},
+					Spec: v1beta1.TemporalClusterSpec{
+						NumHistoryShards:           1,
+						JobTTLSecondsAfterFinished: &jobTTL,
+						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
+						MTLS: &v1beta1.MTLSSpec{
+							Provider: v1beta1.CertManagerMTLSProvider,
+							Internode: &v1beta1.InternodeMTLSSpec{
+								Enabled: true,
+							},
+							Frontend: &v1beta1.FrontendMTLSSpec{
+								Enabled: true,
+							},
+						},
+						Persistence: v1beta1.TemporalPersistenceSpec{
+							DefaultStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+							VisibilityStore: &v1beta1.DatastoreSpec{
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     connectAddr,
+									ConnectProtocol: "tcp",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "postgres-password",
+									Key:  "PASSWORD",
+								},
+							},
+							AdvancedVisibilityStore: &v1beta1.DatastoreSpec{
+								Elasticsearch: &v1beta1.ElasticsearchSpec{
+									Version:  "v8",
+									URL:      "http://elasticsearch-es-http:9200",
+									Username: "elastic",
+								},
+								PasswordSecretRef: v1beta1.SecretKeyReference{
+									Name: "elasticsearch-es-elastic-user",
+									Key:  "elastic",
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 		"mysql persistence": {
 			upgradePath:        defaultUpgradePath,
-			deployDependencies: deployAndWaitForMySQL,
+			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
@@ -202,7 +273,7 @@ func TestPersistence(t *testing.T) {
 		},
 		"mysql8 persistence": {
 			upgradePath:        []string{},
-			deployDependencies: deployAndWaitForMySQL,
+			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
@@ -249,7 +320,7 @@ func TestPersistence(t *testing.T) {
 		},
 		"cassandra persistence": {
 			upgradePath:        defaultUpgradePath,
-			deployDependencies: deployAndWaitForCassandra,
+			deployDependencies: []deployDependencyFunc{deployAndWaitForCassandra},
 			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
 
@@ -303,17 +374,16 @@ func TestPersistence(t *testing.T) {
 				namespace := GetNamespaceForFeature(ctx)
 				t.Logf("using namespace: %s", namespace)
 
-				err := test.deployDependencies(ctx, cfg, namespace)
-				if err != nil {
-					t.Fatal(err)
+				for _, f := range test.deployDependencies {
+					err := f(ctx, cfg, namespace)
+					if err != nil {
+						t.Fatal(err)
+					}
 				}
 
 				cluster := test.cluster(ctx, cfg, namespace)
-				if err != nil {
-					t.Fatal(err)
-				}
 
-				err = cfg.Client().Resources().Create(ctx, cluster)
+				err := cfg.Client().Resources().Create(ctx, cluster)
 				if err != nil {
 					t.Fatal(err)
 				}

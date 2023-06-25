@@ -18,7 +18,7 @@ env:
 
 jobs:
   run-e2e:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -84,9 +84,9 @@ jobs:
           OPERATOR_IMAGE_PATH: ${{ env.OPERATOR_IMAGE_PATH }}
           WORKER_PROCESS_IMAGE_PATH: ${{ env.WORKER_PROCESS_IMAGE_PATH }}
           KUBERNETES_VERSION: ${{ matrix.kube-version }}
-      - name: Archive operator logs
+      - name: Archive e2e logs
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: operator-logs
-          path: out/tests/e2e/operator-${{ matrix.kube-version }}.log
+          name: e2e-artifacts
+          path: out/tests/e2e/

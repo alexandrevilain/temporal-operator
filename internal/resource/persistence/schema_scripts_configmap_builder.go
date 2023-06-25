@@ -372,9 +372,15 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 
 	advancedVisibilityStore := b.instance.Spec.Persistence.AdvancedVisibilityStore
 	if advancedVisibilityStore != nil {
+		version := advancedVisibilityStore.Elasticsearch.Version
+		if version == "v8" {
+			// For now, when elasticsearch version 8 is specified, it uses v7 schema.
+			// See: https://github.com/temporalio/temporal/tree/v1.20.3/schema/elasticsearch/visibility
+			version = "v7"
+		}
 		data := advancedVisibilityData{
 			baseData:       baseData,
-			Version:        advancedVisibilityStore.Elasticsearch.Version,
+			Version:        version,
 			URL:            advancedVisibilityStore.Elasticsearch.URL,
 			Username:       advancedVisibilityStore.Elasticsearch.Username,
 			PasswordEnvVar: advancedVisibilityStore.GetPasswordEnvVarName(),
