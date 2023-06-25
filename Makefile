@@ -64,6 +64,12 @@ manifests: controller-gen yq ## Generate WebhookConfiguration, ClusterRole and C
 	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
 	$(YQ) -i 'del(.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
 	$(YQ) -i '.$(YAML_PREFIX).services.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).ui.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).ui.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).ui.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).admintools.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.properties)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i 'del(.$(YAML_PREFIX).admintools.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.required)' ./config/crd/bases/temporal.io_temporalclusters.yaml
+	$(YQ) -i '.$(YAML_PREFIX).admintools.properties.overrides.properties.deployment.properties.spec.properties.template.properties.spec.$(CRD_PRESERVE)' ./config/crd/bases/temporal.io_temporalclusters.yaml
 
 .PHONY: generate
 generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.

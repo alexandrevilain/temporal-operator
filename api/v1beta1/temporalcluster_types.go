@@ -55,6 +55,10 @@ type ServiceSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Replicas *int32 `json:"replicas"`
+	// Compute Resources required by this service.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// Overrides adds some overrides to the resources deployed for the service.
 	// Those overrides takes precedence over spec.services.overrides.
 	// +optional
@@ -473,6 +477,17 @@ type TemporalUISpec struct {
 	// Image defines the temporal ui docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// Number of desired replicas for the ui. Default to 1.
+	// +kubebuilder:validation:Minimum=1
+	// +optional
+	Replicas *int32 `json:"replicas"`
+	// Compute Resources required by the ui.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Overrides adds some overrides to the resources deployed for the ui.
+	// +optional
+	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 	// Ingress is an optional ingress configuration for the UI.
 	// If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.
 	// +optional
@@ -488,6 +503,13 @@ type TemporalAdminToolsSpec struct {
 	// Image defines the temporal admin tools docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// Compute Resources required by the ui.
+	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Overrides adds some overrides to the resources deployed for the ui.
+	// +optional
+	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 }
 
 // MTLSProvider is the enum for support mTLS provider.
