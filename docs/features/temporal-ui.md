@@ -44,3 +44,29 @@ spec:
       annotations:
         <annotations>
 ```
+
+## Set UI replicas and resources
+
+Example:
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.20.0
+  numHistoryShards: 1
+  # [...]
+  ui:
+    enabled: true
+    version: 2.15.0
+    replicas: 1
+    resources:
+      limits:
+        cpu: 10m
+        memory: 20Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+```
