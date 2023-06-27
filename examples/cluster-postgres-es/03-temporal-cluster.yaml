@@ -30,7 +30,7 @@ spec:
         key: PASSWORD
     advancedVisibilityStore:
       elasticsearch:
-        version: v7
+        version: v8
         username: admin
         url: http://elasticsearch-master.demo:9200
         indices:

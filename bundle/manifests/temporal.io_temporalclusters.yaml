@@ -56,6 +56,122 @@ spec:
                     description: Image defines the temporal admin tools docker image
                       the instance should run.
                     type: string
+                  overrides:
+                    description: Overrides adds some overrides to the resources deployed
+                      for the ui.
+                    properties:
+                      deployment:
+                        description: Override configuration for the temporal service
+                          Deployment.
+                        properties:
+                          metadata:
+                            description: ObjectMetaOverride provides the ability to
+                              override an object metadata. It's a subset of the fields
+                              included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                            properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Annotations is an unstructured key value
+                                  map stored with a resource that may be set by external
+                                  tools to store and retrieve arbitrary metadata.
+                                type: object
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Map of string keys and values that can
+                                  be used to organize and categorize (scope and select)
+                                  objects.
+                                type: object
+                            type: object
+                          spec:
+                            description: Specification of the desired behavior of
+                              the Deployment.
+                            properties:
+                              template:
+                                description: Template describes the pods that will
+                                  be created.
+                                properties:
+                                  metadata:
+                                    description: ObjectMetaOverride provides the ability
+                                      to override an object metadata. It's a subset
+                                      of the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                                    properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: Annotations is an unstructured
+                                          key value map stored with a resource that
+                                          may be set by external tools to store and
+                                          retrieve arbitrary metadata.
+                                        type: object
+                                      labels:
+                                        additionalProperties:
+                                          type: string
+                                        description: Map of string keys and values
+                                          that can be used to organize and categorize
+                                          (scope and select) objects.
+                                        type: object
+                                    type: object
+                                  spec:
+                                    description: Specification of the desired behavior
+                                      of the pod.
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                type: object
+                            type: object
+                        type: object
+                    type: object
+                  resources:
+                    description: 'Compute Resources required by the ui. More info:
+                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate. \n This field is immutable. It can only be
+                          set for containers."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. Requests cannot exceed
+                          Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                    type: object
                 type: object
               dynamicConfig:
                 description: DynamicConfig allows advanced configuration for the temporal
@@ -1195,6 +1311,7 @@ spec:
                                   visibility's index name.
                                 type: string
                               visibility:
+                                default: temporal_visibility_v1
                                 description: Visibility defines visibility's index
                                   name.
                                 type: string
@@ -1217,7 +1334,7 @@ spec:
                           version:
                             default: v7
                             description: Version defines the elasticsearch version.
-                            pattern: ^v(6|7)$
+                            pattern: ^v(6|7|8)$
                             type: string
                         required:
                         - indices
@@ -1457,6 +1574,7 @@ spec:
                                   visibility's index name.
                                 type: string
                               visibility:
+                                default: temporal_visibility_v1
                                 description: Visibility defines visibility's index
                                   name.
                                 type: string
@@ -1479,7 +1597,7 @@ spec:
                           version:
                             default: v7
                             description: Version defines the elasticsearch version.
-                            pattern: ^v(6|7)$
+                            pattern: ^v(6|7|8)$
                             type: string
                         required:
                         - indices
@@ -1719,6 +1837,7 @@ spec:
                                   visibility's index name.
                                 type: string
                               visibility:
+                                default: temporal_visibility_v1
                                 description: Visibility defines visibility's index
                                   name.
                                 type: string
@@ -1741,7 +1860,7 @@ spec:
                           version:
                             default: v7
                             description: Version defines the elasticsearch version.
-                            pattern: ^v(6|7)$
+                            pattern: ^v(6|7|8)$
                             type: string
                         required:
                         - indices
@@ -1980,6 +2099,56 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      resources:
+                        description: 'Compute Resources required by this service.
+                          More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        properties:
+                          claims:
+                            description: "Claims lists the names of resources, defined
+                              in spec.resourceClaims, that are used by this container.
+                              \n This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate. \n This field
+                              is immutable. It can only be set for containers."
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: Name must match the name of one entry
+                                    in pod.spec.resourceClaims of the Pod where this
+                                    field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
                     type: object
                   history:
                     description: History service custom specifications.
@@ -2070,6 +2239,56 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      resources:
+                        description: 'Compute Resources required by this service.
+                          More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        properties:
+                          claims:
+                            description: "Claims lists the names of resources, defined
+                              in spec.resourceClaims, that are used by this container.
+                              \n This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate. \n This field
+                              is immutable. It can only be set for containers."
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: Name must match the name of one entry
+                                    in pod.spec.resourceClaims of the Pod where this
+                                    field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
                     type: object
                   internalFrontend:
                     description: Internal Frontend service custom specifications.
@@ -2166,6 +2385,56 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      resources:
+                        description: 'Compute Resources required by this service.
+                          More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        properties:
+                          claims:
+                            description: "Claims lists the names of resources, defined
+                              in spec.resourceClaims, that are used by this container.
+                              \n This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate. \n This field
+                              is immutable. It can only be set for containers."
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: Name must match the name of one entry
+                                    in pod.spec.resourceClaims of the Pod where this
+                                    field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
                     type: object
                   matching:
                     description: Matching service custom specifications.
@@ -2256,6 +2525,56 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      resources:
+                        description: 'Compute Resources required by this service.
+                          More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        properties:
+                          claims:
+                            description: "Claims lists the names of resources, defined
+                              in spec.resourceClaims, that are used by this container.
+                              \n This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate. \n This field
+                              is immutable. It can only be set for containers."
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: Name must match the name of one entry
+                                    in pod.spec.resourceClaims of the Pod where this
+                                    field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
                     type: object
                   overrides:
                     description: Overrides adds some overrides to the resources deployed
@@ -2413,6 +2732,56 @@ spec:
                         format: int32
                         minimum: 1
                         type: integer
+                      resources:
+                        description: 'Compute Resources required by this service.
+                          More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        properties:
+                          claims:
+                            description: "Claims lists the names of resources, defined
+                              in spec.resourceClaims, that are used by this container.
+                              \n This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate. \n This field
+                              is immutable. It can only be set for containers."
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: Name must match the name of one entry
+                                    in pod.spec.resourceClaims of the Pod where this
+                                    field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Limits describes the maximum amount of compute
+                              resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: 'Requests describes the minimum amount of
+                              compute resources required. If Requests is omitted for
+                              a container, it defaults to Limits if that is explicitly
+                              specified, otherwise to an implementation-defined value.
+                              Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                            type: object
+                        type: object
                     type: object
                 type: object
               ui:
@@ -2476,6 +2845,128 @@ spec:
                         type: array
                     required:
                     - hosts
+                    type: object
+                  overrides:
+                    description: Overrides adds some overrides to the resources deployed
+                      for the ui.
+                    properties:
+                      deployment:
+                        description: Override configuration for the temporal service
+                          Deployment.
+                        properties:
+                          metadata:
+                            description: ObjectMetaOverride provides the ability to
+                              override an object metadata. It's a subset of the fields
+                              included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                            properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Annotations is an unstructured key value
+                                  map stored with a resource that may be set by external
+                                  tools to store and retrieve arbitrary metadata.
+                                type: object
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Map of string keys and values that can
+                                  be used to organize and categorize (scope and select)
+                                  objects.
+                                type: object
+                            type: object
+                          spec:
+                            description: Specification of the desired behavior of
+                              the Deployment.
+                            properties:
+                              template:
+                                description: Template describes the pods that will
+                                  be created.
+                                properties:
+                                  metadata:
+                                    description: ObjectMetaOverride provides the ability
+                                      to override an object metadata. It's a subset
+                                      of the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                                    properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: Annotations is an unstructured
+                                          key value map stored with a resource that
+                                          may be set by external tools to store and
+                                          retrieve arbitrary metadata.
+                                        type: object
+                                      labels:
+                                        additionalProperties:
+                                          type: string
+                                        description: Map of string keys and values
+                                          that can be used to organize and categorize
+                                          (scope and select) objects.
+                                        type: object
+                                    type: object
+                                  spec:
+                                    description: Specification of the desired behavior
+                                      of the pod.
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                type: object
+                            type: object
+                        type: object
+                    type: object
+                  replicas:
+                    description: Number of desired replicas for the ui. Default to
+                      1.
+                    format: int32
+                    minimum: 1
+                    type: integer
+                  resources:
+                    description: 'Compute Resources required by the ui. More info:
+                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate. \n This field is immutable. It can only be
+                          set for containers."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. Requests cannot exceed
+                          Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
                     type: object
                   version:
                     description: Version defines the temporal ui version the instance

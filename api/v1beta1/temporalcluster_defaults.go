@@ -48,6 +48,12 @@ func (s *DatastoreSpec) Default() {
 			s.Cassandra.ConnectTimeout = &metav1.Duration{Duration: 10 * time.Second}
 		}
 	}
+
+	if s.Elasticsearch != nil {
+		if s.Elasticsearch.Indices.Visibility == "" {
+			s.Elasticsearch.Indices.Visibility = "temporal_visibility_v1"
+		}
+	}
 }
 
 // Default set default fields values.
@@ -157,6 +163,10 @@ func (c *TemporalCluster) Default() {
 
 	if c.Spec.UI.Image == "" {
 		c.Spec.UI.Image = defaultTemporalUIImage
+	}
+
+	if c.Spec.UI.Replicas == nil {
+		c.Spec.UI.Replicas = pointer.Int32(1)
 	}
 
 	if c.Spec.AdminTools == nil {

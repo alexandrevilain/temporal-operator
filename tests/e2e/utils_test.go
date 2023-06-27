@@ -32,6 +32,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
@@ -117,6 +118,30 @@ func deployAndWaitForMySQL(ctx context.Context, cfg *envconf.Config, namespace s
 
 func deployAndWaitForPostgres(ctx context.Context, cfg *envconf.Config, namespace string) error {
 	return deployAndWaitFor(ctx, cfg, "postgres", namespace)
+}
+
+func deployAndWaitForElasticSearch(ctx context.Context, cfg *envconf.Config, namespace string) error {
+	err := deployTestManifest(ctx, cfg, "elasticsearch", namespace)
+	if err != nil {
+		return err
+	}
+
+	es := &unstructured.Unstructured{}
+	es.SetAPIVersion("elasticsearch.k8s.elastic.co/v1")
+	es.SetKind("Elasticsearch")
+	es.SetName("elasticsearch")
+	es.SetNamespace(namespace)
+
+	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(es, func(object k8s.Object) bool {
+		o := object.(*unstructured.Unstructured)
+		val, found, err := unstructured.NestedString(o.UnstructuredContent(), "status", "health")
+		if err != nil {
+			return false
+		}
+		return val == "green" && found
+	})
+
+	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
 func deployAndWaitForCassandra(ctx context.Context, cfg *envconf.Config, namespace string) error {
