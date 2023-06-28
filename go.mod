@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/alexandrevilain/controller-tools v0.0.2
-	github.com/cert-manager/cert-manager v1.11.0
+	github.com/cert-manager/cert-manager v1.12.2
 	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/go-logr/logr v1.2.4
 	github.com/gocql/gocql v1.5.2
@@ -70,6 +70,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -91,6 +92,7 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
@@ -133,10 +135,10 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/component-base v0.27.3 // indirect
-	k8s.io/kube-aggregator v0.26.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
+	k8s.io/kube-aggregator v0.27.2 // indirect
+	k8s.io/kube-openapi v0.0.0-20230515203736-54b630e78af5 // indirect
 	sigs.k8s.io/cli-utils v0.34.0 // indirect
-	sigs.k8s.io/gateway-api v0.6.0 // indirect
+	sigs.k8s.io/gateway-api v0.7.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
