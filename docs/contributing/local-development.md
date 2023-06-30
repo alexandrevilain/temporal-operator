@@ -2,6 +2,8 @@
 - [Docker](https://docs.docker.com/engine/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 - [tilt](https://docs.tilt.dev/install.html)
+- [Golang](https://go.dev/doc/install)
+- [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 
 # Local Development
 
