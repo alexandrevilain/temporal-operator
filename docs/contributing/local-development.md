@@ -1,3 +1,8 @@
+# Prerequisites
+- [Docker](https://docs.docker.com/engine/install/)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- [tilt](https://docs.tilt.dev/install.html)
+
 # Local Development
 
 Tilt offers a simple way of creating a local development environment.
