@@ -93,6 +93,12 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{}, err
 	}
 
+	if !cluster.IsReady() {
+		logger.Info("Skipping cluster client reconciliation until referenced cluster is ready")
+
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
 	if !(cluster.MTLSWithCertManagerEnabled() && cluster.Spec.MTLS.FrontendEnabled()) {
 		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
 	}

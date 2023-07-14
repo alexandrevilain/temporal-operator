@@ -28,7 +28,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -70,11 +69,16 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return reconcile.Result{}, err
 	}
 
-	namespacedName := types.NamespacedName{Namespace: req.Namespace, Name: namespace.Spec.ClusterRef.Name}
 	cluster := &v1beta1.TemporalCluster{}
-	err = r.Get(ctx, namespacedName, cluster)
+	err = r.Get(ctx, namespace.Spec.ClusterRef.NamespacedName(namespace), cluster)
 	if err != nil {
 		return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+	}
+
+	if !cluster.IsReady() {
+		logger.Info("Skipping namespace reconciliation until referenced cluster is ready")
+
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	patchHelper, err := patch.NewHelper(namespace, r.Client)

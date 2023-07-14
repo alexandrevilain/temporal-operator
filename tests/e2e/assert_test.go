@@ -231,7 +231,7 @@ func AssertCanCreateTemporalNamespace(name string) features.Func {
 		temporalNamespace := &v1beta1.TemporalNamespace{
 			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
 			Spec: v1beta1.TemporalNamespaceSpec{
-				ClusterRef: corev1.LocalObjectReference{
+				ClusterRef: v1beta1.TemporalClusterReference{
 					Name: cluster.GetName(),
 				},
 				RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
