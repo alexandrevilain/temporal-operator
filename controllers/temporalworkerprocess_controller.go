@@ -107,6 +107,12 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 		return r.handleError(ctx, worker, v1beta1.ReconcileErrorReason, err)
 	}
 
+	if !cluster.IsReady() {
+		logger.Info("Skipping workerprocess reconciliation until referenced cluster is ready")
+
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
 	if requeueAfter, err := r.reconcileResources(ctx, worker, cluster); err != nil || requeueAfter > 0 {
 		if err != nil {
 			logger.Error(err, "Can't reconcile resources")

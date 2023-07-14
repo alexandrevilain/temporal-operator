@@ -18,14 +18,13 @@
 package v1beta1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // TemporalNamespaceSpec defines the desired state of Namespace.
 type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
-	ClusterRef corev1.LocalObjectReference `json:"clusterRef"`
+	ClusterRef TemporalClusterReference `json:"clusterRef"`
 	// Namespace description.
 	// +optional
 	Description string `json:"description,omitempty"`

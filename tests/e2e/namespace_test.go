@@ -26,7 +26,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 	"go.temporal.io/api/serviceerror"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 
@@ -59,7 +58,7 @@ func TestNamespaceCreation(t *testing.T) {
 			temporalNamespace = &v1beta1.TemporalNamespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalNamespaceSpec{
-					ClusterRef: corev1.LocalObjectReference{
+					ClusterRef: v1beta1.TemporalClusterReference{
 						Name: cluster.GetName(),
 					},
 					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},

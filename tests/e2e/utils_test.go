@@ -191,12 +191,7 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 // waitForCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
 func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.TemporalCluster) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(cluster, func(object k8s.Object) bool {
-		for _, condition := range object.(*v1beta1.TemporalCluster).Status.Conditions {
-			if condition.Type == v1beta1.ReadyCondition && condition.Status == metav1.ConditionTrue {
-				return true
-			}
-		}
-		return false
+		return object.(*v1beta1.TemporalCluster).IsReady()
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }

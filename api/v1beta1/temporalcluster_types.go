@@ -871,6 +871,16 @@ func (c *TemporalCluster) GetPublicClientAddress() string {
 	return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
 }
 
+// IsReady returns true if the TemporalCluster's conditions reports it ready.
+func (c *TemporalCluster) IsReady() bool {
+	for _, condition := range c.Status.Conditions {
+		if condition.Type == ReadyCondition && condition.Status == metav1.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
 //+kubebuilder:object:root=true
 
 // TemporalClusterList contains a list of Cluster.
