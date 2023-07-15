@@ -49,11 +49,13 @@ spec:
                   be created.
                 properties:
                   name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    description: The name of the TemporalCluster to reference.
+                    type: string
+                  namespace:
+                    description: The namespace of the TemporalCluster to reference.
+                      Defaults to the namespace of the requested resource if omitted.
                     type: string
                 type: object
-                x-kubernetes-map-type: atomic
               clusters:
                 description: List of clusters names to which the namespace can fail
                   over. Only applicable if the namespace is a global namespace.
