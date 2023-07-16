@@ -266,7 +266,13 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	defaultStoreTool := "temporal-sql-tool"
 	var renderedCreateDefaultDatabase bytes.Buffer
 	var renderedCreateVisibilityDatabase bytes.Buffer
-	if defaultStoreType == v1beta1.CassandraDatastore {
+	switch {
+	case defaultStore.SkipCreate:
+		err = templates[NoOpTemplate].Execute(&renderedCreateDefaultDatabase, nil)
+		if err != nil {
+			return fmt.Errorf("can't render no-op.sh: %w", err)
+		}
+	case defaultStoreType == v1beta1.CassandraDatastore:
 		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
 		// Which requires an env var set.
 		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
@@ -280,7 +286,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		if err != nil {
 			return fmt.Errorf("can't render create-default-keyspace.sh: %w", err)
 		}
-	} else {
+	default:
 		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateDefaultDatabase, createDatabase{
 			baseData:       baseData,
 			Tool:           defaultStoreTool,
@@ -293,7 +299,13 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	visibilityStoreTool := "temporal-sql-tool"
-	if visibilityStoreType == v1beta1.CassandraDatastore {
+	switch {
+	case visibilityStore.SkipCreate:
+		err = templates[NoOpTemplate].Execute(&renderedCreateVisibilityDatabase, nil)
+		if err != nil {
+			return fmt.Errorf("can't render no-op.sh: %w", err)
+		}
+	case visibilityStoreType == v1beta1.CassandraDatastore:
 		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
 
 		err = templates[CreateCassandraTemplate].Execute(&renderedCreateVisibilityDatabase, createKeyspace{
@@ -305,7 +317,7 @@ func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
 		if err != nil {
 			return fmt.Errorf("can't render create-visibility-keyspace.sh: %w", err)
 		}
-	} else {
+	default:
 		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateVisibilityDatabase, createDatabase{
 			baseData:       baseData,
 			Tool:           visibilityStoreTool,

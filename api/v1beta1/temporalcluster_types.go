@@ -351,6 +351,9 @@ type DatastoreSpec struct {
 	// TLS is an optional option to connect to the datastore using TLS.
 	// +optional
 	TLS *DatastoreTLSSpec `json:"tls,omitempty"`
+	// SkipCreate instructs the operator to skip creating the database for SQL datastores or to skip creating keyspace for Cassandra. Use this option if your database or keyspace has already been provisioned by an administrator.
+	// +optional
+	SkipCreate bool `json:"skipCreate,omitempty"`
 }
 
 func (s *DatastoreSpec) GetType() DatastoreType {
