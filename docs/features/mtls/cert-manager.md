@@ -22,5 +22,5 @@ When you enable mTLS in the operator using the following configuration, the oper
 
 Here is a diagram of cert-manager's resources created by the operator and their hierarchy:
 
-![diagram](/assets/mtls-certmanager.png)
+![diagram](../../assets/mtls-certmanager.png)
 
