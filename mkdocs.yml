@@ -1,4 +1,5 @@
 site_name: Temporal Operator
+site_url: https://alexandrevilain.github.io/temporal-operator/
 repo_url: https://github.com/alexandrevilain/temporal-operator
 repo_name: alexandrevilain/temporal-operator
 theme:
@@ -17,7 +18,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - Home: 
+  - Home:
     - Overview: index.md
     - getting-started.md
   - Features:
@@ -28,7 +29,7 @@ nav:
       - Using Cert-Manager: features/mtls/cert-manager.md
       - Using Istio: features/mtls/istio.md
       - Using Linkerd: features/mtls/linkerd.md
-    - Monitoring: 
+    - Monitoring:
       - Using prometheus-operator: features/monitoring/prometheus-operator.md
       - Using prometheus: features/monitoring/prometheus.md
     - Overrides: features/overrides.md
