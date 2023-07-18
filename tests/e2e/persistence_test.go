@@ -30,9 +30,9 @@ import (
 )
 
 var (
-	initialClusterVersion = "1.18.5"
+	initialClusterVersion = "1.19.1"
 	newDatastoreVersion   = "1.20.0"
-	defaultUpgradePath    = []string{"1.19.1", "1.20.0"}
+	defaultUpgradePath    = []string{"1.20.4", "1.21.2"}
 )
 
 type (

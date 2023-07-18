@@ -146,6 +146,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Persistence.VisibilityStore.Default()
 	}
 
+	if c.Spec.Persistence.SecondaryVisibilityStore != nil {
+		if c.Spec.Persistence.SecondaryVisibilityStore.Name == "" {
+			c.Spec.Persistence.SecondaryVisibilityStore.Name = SecondaryVisibilityStoreName
+		}
+		c.Spec.Persistence.SecondaryVisibilityStore.Default()
+	}
+
 	if c.Spec.Persistence.AdvancedVisibilityStore != nil {
 		if c.Spec.Persistence.AdvancedVisibilityStore.Name == "" {
 			c.Spec.Persistence.AdvancedVisibilityStore.Name = AdvancedVisibilityStoreName

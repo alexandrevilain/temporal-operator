@@ -181,6 +181,21 @@ func TestValidateCreate(t *testing.T) {
 			},
 			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unsupported temporal version",
 		},
+		"error with version marked as broken": {
+			object: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.21.0"),
+				},
+			},
+			wh: &webhooks.TemporalClusterWebhook{
+				AvailableAPIs: &discovery.AvailableAPIs{},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: version 1.21.0 is marked as broken by the operator, please upgrade to 1.21.1 (if allowed)",
+		},
 		"error when no cert manager and mTLS with cert-manager enabled": {
 			object: &v1beta1.TemporalCluster{
 				TypeMeta: v1beta1.TemporalClusterTypeMeta,
