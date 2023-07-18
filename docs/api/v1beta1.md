@@ -1006,6 +1006,18 @@ DatastoreTLSSpec
 <p>TLS is an optional option to connect to the datastore using TLS.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>skipCreate</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SkipCreate instructs the operator to skip creating the database for SQL datastores or to skip creating keyspace for Cassandra. Use this option if your database or keyspace has already been provisioned by an administrator.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2786,6 +2798,7 @@ Kubernetes core/v1.LocalObjectReference
 <p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>, 
 <a href="#temporal.io/v1beta1.TemporalWorkerProcessSpec">TemporalWorkerProcessSpec</a>)
 </p>
 <p>TemporalClusterReference is a reference to a TemporalCluster.</p>
@@ -3124,8 +3137,8 @@ TemporalNamespaceSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
 </a>
 </em>
 </td>
@@ -3284,8 +3297,8 @@ TemporalNamespaceStatus
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
+<a href="#temporal.io/v1beta1.TemporalClusterReference">
+TemporalClusterReference
 </a>
 </em>
 </td>

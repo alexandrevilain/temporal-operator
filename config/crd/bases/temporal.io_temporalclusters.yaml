@@ -987,6 +987,9 @@ spec:
                           required:
                             - name
                           type: object
+                        skipCreate:
+                          description: SkipCreate instructs the operator to skip creating the database for SQL datastores or to skip creating keyspace for Cassandra. Use this option if your database or keyspace has already been provisioned by an administrator.
+                          type: boolean
                         sql:
                           description: SQL holds all connection parameters for SQL datastores.
                           properties:
@@ -1211,6 +1214,9 @@ spec:
                           required:
                             - name
                           type: object
+                        skipCreate:
+                          description: SkipCreate instructs the operator to skip creating the database for SQL datastores or to skip creating keyspace for Cassandra. Use this option if your database or keyspace has already been provisioned by an administrator.
+                          type: boolean
                         sql:
                           description: SQL holds all connection parameters for SQL datastores.
                           properties:
@@ -1435,6 +1441,9 @@ spec:
                           required:
                             - name
                           type: object
+                        skipCreate:
+                          description: SkipCreate instructs the operator to skip creating the database for SQL datastores or to skip creating keyspace for Cassandra. Use this option if your database or keyspace has already been provisioned by an administrator.
+                          type: boolean
                         sql:
                           description: SQL holds all connection parameters for SQL datastores.
                           properties:

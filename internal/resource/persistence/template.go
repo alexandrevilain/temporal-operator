@@ -33,12 +33,17 @@ const (
 	UpdateSchemaTemplate        = "update-schema.sh"
 	SetupAdvancedVisibility     = "setup-advanced-visibility.sh"
 	UpdateAdvancedVisibility    = "update-advanced-visibility.sh"
+	NoOpTemplate                = "no-op.sh"
 )
 
 var (
 	templates = map[string]*template.Template{}
 
 	templatesContent = map[string]string{
+		NoOpTemplate: dedent.Dedent(`
+			#!/bin/bash
+			echo "No-op"
+		`),
 		CreateCassandraTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
@@ -63,7 +68,7 @@ var (
 		`),
 		SetupAdvancedVisibility: dedent.Dedent(`
 			#!/bin/bash
-			# Change index_patterns from temporal_visibility_v1* to {{ .Indices.Visibility }}* at index_template_{{ .Version }}.json before apply 
+			# Change index_patterns from temporal_visibility_v1* to {{ .Indices.Visibility }}* at index_template_{{ .Version }}.json before apply
 			sed 's/temporal_visibility_v1./{{ .Indices.Visibility }}*/g' /etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json > /tmp/index_template_{{ .Version }}.json
 
 			curl --fail --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/_cluster/settings" -H "Content-Type: application/json" --data-binary @/etc/temporal/schema/elasticsearch/visibility/cluster_settings_{{ .Version }}.json --write-out "\n"
@@ -86,7 +91,7 @@ var (
 					v2)
 						echo "Upgrading to schema v2"
 
-						# Extracted from: 
+						# Extracted from:
 						# https://github.com/temporalio/temporal/blob/v1.17.5/schema/elasticsearch/visibility/versioned/v2/upgrade.sh
 
 						case $es_version in
@@ -114,7 +119,7 @@ var (
 						;;
 					v3)
 						echo "Upgrading to schema v3"
-						
+
 						new_mapping='
 						{
 							"properties": {
@@ -129,7 +134,7 @@ var (
 						;;
 					v4)
 						echo "Upgrading to schema v4"
-						
+
 						new_mapping='
 						{
 							"properties": {
@@ -215,7 +220,7 @@ var (
 
 			echo "Schema version upgrade is needed"
 
-			# If the current version is v1, the script only supports to update to v2. 
+			# If the current version is v1, the script only supports to update to v2.
 			expected_next_version=$(( current_version_int + 1))
 
 			if [ $expected_next_version -ne $expected_version_int ]; then
