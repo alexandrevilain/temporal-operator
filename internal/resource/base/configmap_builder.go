@@ -28,6 +28,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
+	archivalutil "github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common/cluster"
@@ -128,12 +129,85 @@ func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error)
 	return cfg, nil
 }
 
+func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.ArchivalNamespaceDefaults, error) {
+	cfg := &config.Archival{}
+	namespaceDefaults := &config.ArchivalNamespaceDefaults{}
+
+	if !b.instance.Spec.Archival.IsEnabled() {
+		return cfg, namespaceDefaults, nil
+	}
+
+	archival := b.instance.Spec.Archival
+
+	cfg.History = config.HistoryArchival{}
+	cfg.Visibility = config.VisibilityArchival{}
+
+	// Configure provider for both history and visibility even if there is no default config for
+	// both of them. The user can choose to provide the provider at cluster-level and enable archival per-namespace.
+	if archival.Provider != nil {
+		cfg.History.Provider = &config.HistoryArchiverProvider{
+			Filestore: archivalutil.FilestoreArchiverToTemporalFilestoreArchiver(archival.Provider.Filestore),
+			Gstorage:  archivalutil.GCSArchiverToTemporalGstorageArchiver(archival.Provider.GCS),
+			S3store:   archivalutil.S3ArchiverToTemporalS3Archiver(archival.Provider.S3),
+		}
+
+		cfg.Visibility.Provider = &config.VisibilityArchiverProvider{
+			Filestore: archivalutil.FilestoreArchiverToTemporalFilestoreArchiver(archival.Provider.Filestore),
+			Gstorage:  archivalutil.GCSArchiverToTemporalGstorageArchiver(archival.Provider.GCS),
+			S3store:   archivalutil.S3ArchiverToTemporalS3Archiver(archival.Provider.S3),
+		}
+	}
+
+	if archival.History != nil {
+		state := config.ArchivalDisabled
+		if archival.History.Enabled {
+			state = config.ArchivalEnabled
+		}
+		if archival.History.Paused {
+			state = config.ArchivalPaused
+		}
+
+		cfg.History.State = state
+		cfg.History.EnableRead = archival.History.EnableRead
+
+		namespaceDefaults.History = config.HistoryArchivalNamespaceDefaults{
+			State: state,
+			URI:   archivalutil.URI(archival.Provider, archival.History),
+		}
+	}
+
+	if archival.Visibility != nil {
+		state := config.ArchivalDisabled
+		if archival.Visibility.Enabled {
+			state = config.ArchivalEnabled
+		}
+		if archival.Visibility.Paused {
+			state = config.ArchivalPaused
+		}
+
+		cfg.Visibility.State = state
+		cfg.Visibility.EnableRead = archival.Visibility.EnableRead
+
+		namespaceDefaults.Visibility = config.VisibilityArchivalNamespaceDefaults{
+			State: state,
+			URI:   archivalutil.URI(archival.Provider, archival.Visibility),
+		}
+	}
+
+	return cfg, namespaceDefaults, nil
+}
+
 func (b *ConfigmapBuilder) Update(object client.Object) error {
 	configMap := object.(*corev1.ConfigMap)
 
 	persistenceConfig, err := b.buildPersistenceConfig()
 	if err != nil {
 		return fmt.Errorf("can't build persistence config: %w", err)
+	}
+
+	archivalConfig, archivalNamespaceDefaults, err := b.buildArchivalConfig()
+	if err != nil {
+		return fmt.Errorf("can't build archival config: %w", err)
 	}
 
 	temporalCfg := config.Config{
@@ -147,6 +221,10 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		Log: log.Config{
 			Stdout: true,
 			Level:  "info",
+		},
+		Archival: *archivalConfig,
+		NamespaceDefaults: config.NamespaceDefaults{
+			Archival: *archivalNamespaceDefaults,
 		},
 		ClusterMetadata: &cluster.Config{
 			EnableGlobalNamespace:    false,

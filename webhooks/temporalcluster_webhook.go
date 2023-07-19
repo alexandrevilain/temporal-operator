@@ -181,6 +181,29 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
+	// validate archival
+	if cluster.Spec.Archival.IsEnabled() {
+		if cluster.Spec.Archival.Provider == nil || cluster.Spec.Archival.Provider.Kind() == v1beta1.UnknownArchivalProviderKind {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "archival", "provider"),
+					"Please provide an archival provider or disable cluster archival",
+				),
+			)
+		}
+
+		if cluster.Spec.Archival.Provider.Kind() == v1beta1.S3ArchivalProviderKind {
+			if cluster.Spec.Archival.Provider.S3.RoleName == nil && cluster.Spec.Archival.Provider.S3.Credentials == nil {
+				errs = append(errs,
+					field.Forbidden(
+						field.NewPath("spec", "archival", "provider", "s3"),
+						"Please provide s3 role name if using EKS or s3 credentials for s3 provider (spec.archival.provider.s3.roleName or spec.archival.provider.s3.credentials)",
+					),
+				)
+			}
+		}
+	}
+
 	// Check that the user-specified version is not marked as broken.
 	for _, version := range version.ForbiddenBrokenReleases {
 		if cluster.Spec.Version.Equal(version.Version) {

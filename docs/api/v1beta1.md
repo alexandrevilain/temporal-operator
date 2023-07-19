@@ -226,6 +226,20 @@ DynamicConfigSpec
 <p>DynamicConfig allows advanced configuration for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>archival</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterArchivalSpec">
+ClusterArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -430,6 +444,136 @@ TemporalWorkerProcessStatus
 </em>
 </td>
 <td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ArchivalProvider">ArchivalProvider
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ClusterArchivalSpec">ClusterArchivalSpec</a>)
+</p>
+<p>ArchivalProvider contains the config for archivers.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>filestore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.FilestoreArchiver">
+FilestoreArchiver
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>s3</code><br>
+<em>
+<a href="#temporal.io/v1beta1.S3Archiver">
+S3Archiver
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>gcs</code><br>
+<em>
+<a href="#temporal.io/v1beta1.GCSArchiver">
+GCSArchiver
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ArchivalProviderKind">ArchivalProviderKind
+(<code>string</code> alias)</h3>
+<h3 id="temporal.io/v1beta1.ArchivalSpec">ArchivalSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ClusterArchivalSpec">ClusterArchivalSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalNamespaceArchivalSpec">TemporalNamespaceArchivalSpec</a>)
+</p>
+<p>ArchivalSpec is the archival configuration for a particular persistence type (history or visibilitty).</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the archival is enabled by default for all namespaces
+or for a particular namespace (depends if it&rsquo;s for a TemporalCluster or a TemporalNamespace).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>paused</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Paused defines if the archival is paused.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableRead</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>EnableRead allows temporal to read from the archived Event History.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>path</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Path is &hellip;</p>
 </td>
 </tr>
 </tbody>
@@ -705,6 +849,83 @@ Kubernetes meta/v1.Duration
 <em>(Optional)</em>
 <p>InternodeCertificate is the &lsquo;duration&rsquo; (i.e. lifetime) of the internode certificate.
 It defaults to 1 year.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ClusterArchivalSpec">ClusterArchivalSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>ClusterArchivalSpec is the configuration for cluster-wide archival config.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Enabled defines if the archival is enabled for the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>provider</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ArchivalProvider">
+ArchivalProvider
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Provider defines the archival provider for the cluster.
+The same provider is used for both history and visibility,
+but some config can be changed using spec.archival.[history|visibility].config.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>history</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ArchivalSpec">
+ArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>History is the default config for the history archival.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>visibility</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ArchivalSpec">
+ArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Visibility is the default config for visibility archival.</p>
 </td>
 </tr>
 </tbody>
@@ -1475,6 +1696,51 @@ bool
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.FilestoreArchiver">FilestoreArchiver
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ArchivalProvider">ArchivalProvider</a>)
+</p>
+<p>FilestoreArchiver is the file store archival provider configuration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>filePermissions</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>FilePermissions sets the file permissions of the archived files.
+It&rsquo;s recommend to leave it empty and use the default value of &ldquo;0666&rdquo; to avoid read/write issues.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dirPermissions</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>DirPermissions sets the directory permissions of the archive directory.
+It&rsquo;s recommend to leave it empty and use the default value of &ldquo;0766&rdquo; to avoid read/write issues.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.FrontendMTLSSpec">FrontendMTLSSpec
 </h3>
 <p>
@@ -1502,6 +1768,40 @@ bool
 <td>
 <em>(Optional)</em>
 <p>Enabled defines if the operator should enable mTLS for cluster&rsquo;s public endpoints.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.GCSArchiver">GCSArchiver
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ArchivalProvider">ArchivalProvider</a>)
+</p>
+<p>GCSArchiver is the GCS archival provider configuration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>credentialsRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#secretkeyselector-v1-core">
+Kubernetes core/v1.SecretKeySelector
+</a>
+</em>
+</td>
+<td>
+<p>SecretAccessKeyRef is the secret key selector containing Google Cloud Storage credentials file.</p>
 </td>
 </tr>
 </tbody>
@@ -2093,6 +2393,123 @@ PrometheusScrapeConfig
 <td>
 <em>(Optional)</em>
 <p>ScrapeConfig is the prometheus scrape configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.S3Archiver">S3Archiver
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ArchivalProvider">ArchivalProvider</a>)
+</p>
+<p>S3Archiver is the S3 archival provider configuration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>region</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Region is the aws s3 region.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>endpoint</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Use Endpoint if you want to use s3-compatible object storage.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>roleName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Use RoleName if you want the temporal service account
+to assume an AWS Identity and Access Management (IAM) role.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>credentials</code><br>
+<em>
+<a href="#temporal.io/v1beta1.S3Credentials">
+S3Credentials
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Use credentials if you want to use aws credentials from secret.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.S3Credentials">S3Credentials
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.S3Archiver">S3Archiver</a>)
+</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>accessKeyIdRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#secretkeyselector-v1-core">
+Kubernetes core/v1.SecretKeySelector
+</a>
+</em>
+</td>
+<td>
+<p>AccessKeyIDRef is the secret key selector containing AWS access key ID.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretKeyRef</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#secretkeyselector-v1-core">
+Kubernetes core/v1.SecretKeySelector
+</a>
+</em>
+</td>
+<td>
+<p>SecretAccessKeyRef is the secret key selector containing AWS secret access key.</p>
 </td>
 </tr>
 </tbody>
@@ -3032,6 +3449,20 @@ DynamicConfigSpec
 <p>DynamicConfig allows advanced configuration for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>archival</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterArchivalSpec">
+ClusterArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3271,6 +3702,21 @@ bool
 CRD is deleted.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>archival</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalNamespaceArchivalSpec">
+TemporalNamespaceArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Archival is a per-namespace archival configuration.
+If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -3284,6 +3730,55 @@ TemporalNamespaceStatus
 </em>
 </td>
 <td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalNamespaceArchivalSpec">TemporalNamespaceArchivalSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>)
+</p>
+<p>TemporalNamespaceArchivalSpec is a per-namespace archival configuration override.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>history</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ArchivalSpec">
+ArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>History is the config for this namespace history archival.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>visibility</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ArchivalSpec">
+ArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Visibility is the config for this namespace visibility archival.</p>
 </td>
 </tr>
 </tbody>
@@ -3429,6 +3924,21 @@ bool
 <em>(Optional)</em>
 <p>AllowDeletion makes the controller delete the Temporal namespace if the
 CRD is deleted.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>archival</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalNamespaceArchivalSpec">
+TemporalNamespaceArchivalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Archival is a per-namespace archival configuration.
+If not set, the default cluster configuration is used.</p>
 </td>
 </tr>
 </tbody>

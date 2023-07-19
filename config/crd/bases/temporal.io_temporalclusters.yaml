@@ -136,6 +136,155 @@ spec:
                           type: object
                       type: object
                   type: object
+                archival:
+                  description: Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.
+                  properties:
+                    enabled:
+                      default: false
+                      description: Enabled defines if the archival is enabled for the cluster.
+                      type: boolean
+                    history:
+                      description: History is the default config for the history archival.
+                      properties:
+                        enableRead:
+                          default: false
+                          description: EnableRead allows temporal to read from the archived Event History.
+                          type: boolean
+                        enabled:
+                          default: false
+                          description: Enabled defines if the archival is enabled by default for all namespaces or for a particular namespace (depends if it's for a TemporalCluster or a TemporalNamespace).
+                          type: boolean
+                        path:
+                          description: Path is ...
+                          type: string
+                        paused:
+                          default: false
+                          description: Paused defines if the archival is paused.
+                          type: boolean
+                      required:
+                        - enableRead
+                        - path
+                        - paused
+                      type: object
+                    provider:
+                      description: Provider defines the archival provider for the cluster. The same provider is used for both history and visibility, but some config can be changed using spec.archival.[history|visibility].config.
+                      properties:
+                        filestore:
+                          description: FilestoreArchiver is the file store archival provider configuration.
+                          properties:
+                            dirPermissions:
+                              default: "0766"
+                              description: DirPermissions sets the directory permissions of the archive directory. It's recommend to leave it empty and use the default value of "0766" to avoid read/write issues.
+                              type: string
+                            filePermissions:
+                              default: "0666"
+                              description: FilePermissions sets the file permissions of the archived files. It's recommend to leave it empty and use the default value of "0666" to avoid read/write issues.
+                              type: string
+                          required:
+                            - dirPermissions
+                            - filePermissions
+                          type: object
+                        gcs:
+                          description: GCSArchiver is the GCS archival provider configuration.
+                          properties:
+                            credentialsRef:
+                              description: SecretAccessKeyRef is the secret key selector containing Google Cloud Storage credentials file.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key must be defined
+                                  type: boolean
+                              required:
+                                - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          required:
+                            - credentialsRef
+                          type: object
+                        s3:
+                          description: S3Archiver is the S3 archival provider configuration.
+                          properties:
+                            credentials:
+                              description: Use credentials if you want to use aws credentials from secret.
+                              properties:
+                                accessKeyIdRef:
+                                  description: AccessKeyIDRef is the secret key selector containing AWS access key ID.
+                                  properties:
+                                    key:
+                                      description: The key of the secret to select from.  Must be a valid secret key.
+                                      type: string
+                                    name:
+                                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                      type: string
+                                    optional:
+                                      description: Specify whether the Secret or its key must be defined
+                                      type: boolean
+                                  required:
+                                    - key
+                                  type: object
+                                  x-kubernetes-map-type: atomic
+                                secretKeyRef:
+                                  description: SecretAccessKeyRef is the secret key selector containing AWS secret access key.
+                                  properties:
+                                    key:
+                                      description: The key of the secret to select from.  Must be a valid secret key.
+                                      type: string
+                                    name:
+                                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                      type: string
+                                    optional:
+                                      description: Specify whether the Secret or its key must be defined
+                                      type: boolean
+                                  required:
+                                    - key
+                                  type: object
+                                  x-kubernetes-map-type: atomic
+                              required:
+                                - accessKeyIdRef
+                                - secretKeyRef
+                              type: object
+                            endpoint:
+                              description: Use Endpoint if you want to use s3-compatible object storage.
+                              type: string
+                            region:
+                              description: Region is the aws s3 region.
+                              type: string
+                            roleName:
+                              description: Use RoleName if you want the temporal service account to assume an AWS Identity and Access Management (IAM) role.
+                              type: string
+                          required:
+                            - region
+                          type: object
+                      type: object
+                    visibility:
+                      description: Visibility is the default config for visibility archival.
+                      properties:
+                        enableRead:
+                          default: false
+                          description: EnableRead allows temporal to read from the archived Event History.
+                          type: boolean
+                        enabled:
+                          default: false
+                          description: Enabled defines if the archival is enabled by default for all namespaces or for a particular namespace (depends if it's for a TemporalCluster or a TemporalNamespace).
+                          type: boolean
+                        path:
+                          description: Path is ...
+                          type: string
+                        paused:
+                          default: false
+                          description: Paused defines if the archival is paused.
+                          type: boolean
+                      required:
+                        - enableRead
+                        - path
+                        - paused
+                      type: object
+                  type: object
                 dynamicConfig:
                   description: DynamicConfig allows advanced configuration for the temporal cluster.
                   properties:

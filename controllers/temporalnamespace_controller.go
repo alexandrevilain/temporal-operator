@@ -115,7 +115,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 	defer client.Close()
 
-	err = client.Register(ctx, temporal.NamespaceToRegisterNamespaceRequest(namespace))
+	err = client.Register(ctx, temporal.NamespaceToRegisterNamespaceRequest(cluster, namespace))
 	if err != nil {
 		var namespaceAlreadyExistsError *serviceerror.NamespaceAlreadyExists
 		ok := errors.As(err, &namespaceAlreadyExistsError)

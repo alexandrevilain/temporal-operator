@@ -19,23 +19,45 @@ package temporal
 
 import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/replication/v1"
 	"go.temporal.io/api/workflowservice/v1"
 )
 
-func NamespaceToRegisterNamespaceRequest(namespace *v1beta1.TemporalNamespace) *workflowservice.RegisterNamespaceRequest {
+func NamespaceToRegisterNamespaceRequest(cluster *v1beta1.TemporalCluster, namespace *v1beta1.TemporalNamespace) *workflowservice.RegisterNamespaceRequest {
 	re := &workflowservice.RegisterNamespaceRequest{
 		Namespace:     namespace.GetName(),
 		Description:   namespace.Spec.Description,
 		OwnerEmail:    namespace.Spec.OwnerEmail,
 		Data:          namespace.Spec.Data,
 		SecurityToken: namespace.Spec.SecurityToken,
-		// Not supported yet:
-		// HistoryArchivalState:    0,
-		// HistoryArchivalUri:      "",
-		// VisibilityArchivalState: 0,
-		// VisibilityArchivalUri:   "",
+	}
+
+	// Allow archival config override only if archival is enabled at the cluster-level.
+	if cluster.Spec.Archival.IsEnabled() && namespace.Spec.Archival != nil {
+		// Check for namespace-level history archival config override.
+		if namespace.Spec.Archival.History != nil {
+			state := enums.ARCHIVAL_STATE_DISABLED
+			if namespace.Spec.Archival.History.Enabled {
+				state = enums.ARCHIVAL_STATE_ENABLED
+			}
+
+			re.HistoryArchivalState = state
+			re.HistoryArchivalUri = archival.URI(cluster.Spec.Archival.Provider, namespace.Spec.Archival.History)
+		}
+
+		// Check for namespace-level visibility archival config override.
+		if namespace.Spec.Archival.Visibility != nil {
+			state := enums.ARCHIVAL_STATE_DISABLED
+			if namespace.Spec.Archival.Visibility.Enabled {
+				state = enums.ARCHIVAL_STATE_ENABLED
+			}
+
+			re.VisibilityArchivalState = state
+			re.VisibilityArchivalUri = archival.URI(cluster.Spec.Archival.Provider, namespace.Spec.Archival.Visibility)
+		}
 	}
 
 	if namespace.Spec.RetentionPeriod != nil {

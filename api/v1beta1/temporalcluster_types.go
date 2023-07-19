@@ -739,6 +739,131 @@ type DynamicConfigSpec struct {
 	Values map[string][]ConstrainedValue `json:"values"`
 }
 
+// ClusterArchivalSpec is the configuration for cluster-wide archival config.
+type ClusterArchivalSpec struct {
+	// Enabled defines if the archival is enabled for the cluster.
+	// +kubebuilder:default:=false
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Provider defines the archival provider for the cluster.
+	// The same provider is used for both history and visibility,
+	// but some config can be changed using spec.archival.[history|visibility].config.
+	// +optional
+	Provider *ArchivalProvider `json:"provider,omitempty"`
+	// History is the default config for the history archival.
+	// +optional
+	History *ArchivalSpec `json:"history,omitempty"`
+	// Visibility is the default config for visibility archival.
+	// +optional
+	Visibility *ArchivalSpec `json:"visibility,omitempty"`
+}
+
+func (s *ClusterArchivalSpec) IsEnabled() bool {
+	return s != nil && s.Enabled
+}
+
+type ArchivalProviderKind string
+
+const (
+	FileStoreArchivalProviderKind ArchivalProviderKind = "filestore"
+	S3ArchivalProviderKind        ArchivalProviderKind = "s3"
+	GCSArchivalProviderKind       ArchivalProviderKind = "gcs"
+	UnknownArchivalProviderKind   ArchivalProviderKind = "unknown"
+)
+
+// ArchivalProvider contains the config for archivers.
+type ArchivalProvider struct {
+	// +optional
+	Filestore *FilestoreArchiver `json:"filestore,omitempty"`
+	// +optional
+	S3 *S3Archiver `json:"s3,omitempty"`
+	// +optional
+	GCS *GCSArchiver `json:"gcs,omitempty"`
+}
+
+func (p *ArchivalProvider) Kind() ArchivalProviderKind {
+	if p.Filestore != nil {
+		return FileStoreArchivalProviderKind
+	}
+
+	if p.S3 != nil {
+		return S3ArchivalProviderKind
+	}
+
+	if p.GCS != nil {
+		return GCSArchivalProviderKind
+	}
+
+	return UnknownArchivalProviderKind
+}
+
+// ArchivalSpec is the archival configuration for a particular persistence type (history or visibilitty).
+type ArchivalSpec struct {
+	// Enabled defines if the archival is enabled by default for all namespaces
+	// or for a particular namespace (depends if it's for a TemporalCluster or a TemporalNamespace).
+	// +kubebuilder:default:=false
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Paused defines if the archival is paused.
+	// +kubebuilder:default:=false
+	Paused bool `json:"paused"`
+	// EnableRead allows temporal to read from the archived Event History.
+	// +kubebuilder:default:=false
+	EnableRead bool `json:"enableRead"`
+	// Path is ...
+	// +kubebuilder:validation:Required
+	Path string `json:"path"`
+}
+
+// FilestoreArchiver is the file store archival provider configuration.
+type FilestoreArchiver struct {
+	// FilePermissions sets the file permissions of the archived files.
+	// It's recommend to leave it empty and use the default value of "0666" to avoid read/write issues.
+	// +kubebuilder:default:="0666"
+	FilePermissions string `json:"filePermissions"`
+	// DirPermissions sets the directory permissions of the archive directory.
+	// It's recommend to leave it empty and use the default value of "0766" to avoid read/write issues.
+	// +kubebuilder:default:="0766"
+	DirPermissions string `json:"dirPermissions"`
+}
+
+// S3Archiver is the S3 archival provider configuration.
+type S3Archiver struct {
+	// Region is the aws s3 region.
+	// +kubebuilder:validation:Required
+	Region string `json:"region"`
+	// Use Endpoint if you want to use s3-compatible object storage.
+	// +optional
+	Endpoint *string `json:"endpoint,omitempty"`
+	// Use RoleName if you want the temporal service account
+	// to assume an AWS Identity and Access Management (IAM) role.
+	// +optional
+	RoleName *string `json:"roleName,omitempty"`
+	// Use credentials if you want to use aws credentials from secret.
+	// +optional
+	Credentials *S3Credentials `json:"credentials,omitempty"`
+}
+
+type S3Credentials struct {
+	// AccessKeyIDRef is the secret key selector containing AWS access key ID.
+	// +kubebuilder:validation:Required
+	AccessKeyIDRef *corev1.SecretKeySelector `json:"accessKeyIdRef"`
+	// SecretAccessKeyRef is the secret key selector containing AWS secret access key.
+	// +kubebuilder:validation:Required
+	SecretAccessKeyRef *corev1.SecretKeySelector `json:"secretKeyRef"`
+}
+
+// GCSArchiver is the GCS archival provider configuration.
+type GCSArchiver struct {
+	// SecretAccessKeyRef is the secret key selector containing Google Cloud Storage credentials file.
+	// +kubebuilder:validation:Required
+	CredentialsRef *corev1.SecretKeySelector `json:"credentialsRef"`
+}
+
+func (GCSArchiver) CredentialsFileMountPath() string {
+	return "/etc/archival/credentials.json"
+}
+
 // TemporalClusterSpec defines the desired state of Cluster.
 type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
@@ -782,6 +907,9 @@ type TemporalClusterSpec struct {
 	// DynamicConfig allows advanced configuration for the temporal cluster.
 	// +optional
 	DynamicConfig *DynamicConfigSpec `json:"dynamicConfig,omitempty"`
+	// Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.
+	// +optional
+	Archival *ClusterArchivalSpec `json:"archival,omitempty"`
 }
 
 // ServiceStatus reports a service status.

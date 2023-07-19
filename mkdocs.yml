@@ -23,6 +23,7 @@ nav:
     - getting-started.md
   - Features:
     - Dynamic config: features/dynamic-config.md
+    - Archival: features/archival.md
     - Temporal UI: features/temporal-ui.md
     - Admin Tools: features/admin-tools.md
     - mTLS:
