@@ -151,7 +151,7 @@ func (b *SchemaScriptsConfigmapBuilder) argsMapToString(m *orderedmap.OrderedMap
 	cmd := []string{}
 	for el := m.Front(); el != nil; el = el.Next() {
 		if el.Value != "" {
-			cmd = append(cmd, fmt.Sprintf("--%s=%s", el.Key, el.Value))
+			cmd = append(cmd, fmt.Sprintf(`--%s="%s"`, el.Key, el.Value))
 		} else {
 			cmd = append(cmd, fmt.Sprintf("--%s", el.Key))
 		}
