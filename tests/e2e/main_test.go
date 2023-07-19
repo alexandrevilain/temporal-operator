@@ -118,17 +118,22 @@ func testMainRun(m *testing.M) int {
 			}
 			return ctx, nil
 		}).
-		// Deploy cert-manager.
+		// Deploy cert-manager and ECK.
 		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
 			manager := helm.New(c.KubeconfigFile())
 			err := manager.RunRepo(helm.WithArgs("add", "jetstack", "https://charts.jetstack.io"))
 			if err != nil {
 				return ctx, setupError(fmt.Errorf("failed to add cert-manager helm chart repo: %w", err))
 			}
+			err = manager.RunRepo(helm.WithArgs("add", "elastic", "https://helm.elastic.co"))
+			if err != nil {
+				return ctx, setupError(fmt.Errorf("failed to add elastic helm chart repo: %w", err))
+			}
 			err = manager.RunRepo(helm.WithArgs("update"))
 			if err != nil {
 				return ctx, setupError(fmt.Errorf("failed to upgrade helm repo: %w", err))
 			}
+
 			err = manager.RunInstall(
 				helm.WithName("cert-manager"),
 				helm.WithNamespace("cert-manager"),
@@ -141,19 +146,6 @@ func testMainRun(m *testing.M) int {
 			)
 			if err != nil {
 				return ctx, setupError(fmt.Errorf("failed to install cert-manager chart: %w", err))
-			}
-			return ctx, nil
-		}).
-		// Deploy ECK.
-		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
-			manager := helm.New(c.KubeconfigFile())
-			err := manager.RunRepo(helm.WithArgs("add", "elastic", "https://helm.elastic.co"))
-			if err != nil {
-				return ctx, setupError(fmt.Errorf("failed to add elastic helm chart repo: %w", err))
-			}
-			err = manager.RunRepo(helm.WithArgs("update"))
-			if err != nil {
-				return ctx, setupError(fmt.Errorf("failed to upgrade helm repo: %w", err))
 			}
 
 			err = manager.RunInstall(
@@ -168,6 +160,7 @@ func testMainRun(m *testing.M) int {
 			if err != nil {
 				return ctx, setupError(fmt.Errorf("failed to install eck-operator chart: %w", err))
 			}
+
 			return ctx, nil
 		}).
 		// Deploy the operator and wait for it.
@@ -233,10 +226,11 @@ func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 	ns := GetNamespaceForFeature(ctx)
 
 	t.Logf("Deleting namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())
+	return ctx, nil
 
-	return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ns,
-		},
-	})
+	// return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
+	// 	ObjectMeta: metav1.ObjectMeta{
+	// 		Name: ns,
+	// 	},
+	// })
 }

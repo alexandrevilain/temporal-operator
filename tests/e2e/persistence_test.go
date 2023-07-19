@@ -60,15 +60,6 @@ func TestPersistence(t *testing.T) {
 						NumHistoryShards:           1,
 						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(initialClusterVersion),
-						MTLS: &v1beta1.MTLSSpec{
-							Provider: v1beta1.CertManagerMTLSProvider,
-							Internode: &v1beta1.InternodeMTLSSpec{
-								Enabled: true,
-							},
-							Frontend: &v1beta1.FrontendMTLSSpec{
-								Enabled: true,
-							},
-						},
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
@@ -116,15 +107,6 @@ func TestPersistence(t *testing.T) {
 						NumHistoryShards:           1,
 						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
-						MTLS: &v1beta1.MTLSSpec{
-							Provider: v1beta1.CertManagerMTLSProvider,
-							Internode: &v1beta1.InternodeMTLSSpec{
-								Enabled: true,
-							},
-							Frontend: &v1beta1.FrontendMTLSSpec{
-								Enabled: true,
-							},
-						},
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
@@ -172,15 +154,6 @@ func TestPersistence(t *testing.T) {
 						NumHistoryShards:           1,
 						JobTTLSecondsAfterFinished: &jobTTL,
 						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
-						MTLS: &v1beta1.MTLSSpec{
-							Provider: v1beta1.CertManagerMTLSProvider,
-							Internode: &v1beta1.InternodeMTLSSpec{
-								Enabled: true,
-							},
-							Frontend: &v1beta1.FrontendMTLSSpec{
-								Enabled: true,
-							},
-						},
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{

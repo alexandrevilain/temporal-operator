@@ -38,6 +38,8 @@ spec:
   #     scrapeConfig:
   #       serviceMonitor:
   #         enabled: true
+  #         labels:
+  #           release: test
   #         metricRelabelings:
   #         - sourceLabels: [__name__]
   #           targetLabel: __name__
