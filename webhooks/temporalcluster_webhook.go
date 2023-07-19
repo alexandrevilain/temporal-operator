@@ -95,7 +95,8 @@ func (w *TemporalClusterWebhook) Default(ctx context.Context, obj runtime.Object
 	return nil
 }
 
-func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluster) field.ErrorList {
+func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluster) (admission.Warnings, field.ErrorList) {
+	var warns admission.Warnings
 	var errs field.ErrorList
 
 	// If mTLS is enabled using cert-manager, but cert-manager support is disabled on the controller
@@ -180,8 +181,19 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
-	// Check new features introduced in cluster version >= 1.20 are not enabled for older version.
+	// Check that the user-specified version is not marked as broken.
+	for _, version := range version.ForbiddenBrokenReleases {
+		if cluster.Spec.Version.Equal(version.Version) {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "version"),
+					fmt.Sprintf("version %s is marked as broken by the operator, please upgrade to %s (if allowed)", cluster.Spec.Version.String(), cluster.Spec.Version.IncPatch().String()),
+				),
+			)
+		}
+	}
 
+	// Check new features introduced in cluster version >= 1.20 are not enabled for older version.
 	if !cluster.Spec.Version.GreaterOrEqual(version.V1_20_0) {
 		// Ensure Internal Frontend is only enabled for cluster version >= 1.20
 		if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend.IsEnabled() {
@@ -207,7 +219,34 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
-	return errs
+	// Check new features introduced in cluster version >= 1.21 are not enabled for older version.
+	if !cluster.Spec.Version.GreaterOrEqual(version.V1_21_0) {
+		if cluster.Spec.Persistence.SecondaryVisibilityStore != nil {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "persistence", "secondaryVisibilityStore"),
+					"temporal cluster version < 1.21.0 doesn't support secondary visibility store",
+				),
+			)
+		}
+	}
+
+	// Check for visibility store depreciations introduced in >= 1.21, that will be removed in >=1.23
+	if cluster.Spec.Version.GreaterOrEqual(version.V1_21_0) {
+		if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+			warns = append(warns,
+				"Starting from temporal >= 1.21 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration. Avanced visibility store usage will be forbidden by the operator for clusters >= 1.23.",
+			)
+		}
+
+		if cluster.Spec.Persistence.VisibilityStore != nil && cluster.Spec.Persistence.VisibilityStore.Cassandra != nil {
+			warns = append(warns,
+				"Support for Cassandra as a Visibility database is deprecated beginning with Temporal Server v1.21.",
+			)
+		}
+	}
+
+	return warns, errs
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
@@ -217,9 +256,9 @@ func (w *TemporalClusterWebhook) ValidateCreate(ctx context.Context, obj runtime
 		return nil, err
 	}
 
-	errs := w.validateCluster(cluster)
+	warns, errs := w.validateCluster(cluster)
 
-	return nil, w.aggregateClusterErrors(cluster, errs)
+	return warns, w.aggregateClusterErrors(cluster, errs)
 }
 
 // ValidateUpdate validates TemporalCluster updates.
@@ -235,7 +274,7 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 		return nil, err
 	}
 
-	errs := w.validateCluster(newCluster)
+	warns, errs := w.validateCluster(newCluster)
 
 	// Ensure user is doing a sequential version upgrade.
 	// See: https://docs.temporal.io/cluster-deployment-guide#upgrade-server
@@ -254,7 +293,7 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 		)
 	}
 
-	return nil, w.aggregateClusterErrors(newCluster, errs)
+	return warns, w.aggregateClusterErrors(newCluster, errs)
 }
 
 // ValidateDelete does nothing.

@@ -44,6 +44,19 @@ const (
 	DefaultSchema    Schema = "default"
 	VisibilitySchema Schema = "visibility"
 
+	CreateDefaultDatabaseScript             = "create-default-database.sh"
+	SetupDefaultSchemaScript                = "setup-default-schema.sh"
+	UpdateDefaultSchemaScript               = "update-default-schema.sh"
+	CreateVisibilityDatabaseScript          = "create-visibility-database.sh"
+	SetupVisibilitySchemaScript             = "setup-visibility-schema.sh"
+	UpdateVisibilitySchemaScript            = "update-visibility-schema.sh"
+	CreateSecondaryVisibilityDatabaseScript = "create-secondary-visibility-database.sh"
+	SetupSecondaryVisibilitySchemaScript    = "setup-secondary-visibility-schema.sh"
+	UpdateSecondaryVisibilitySchemaScript   = "update-secondary-visibility-schema.sh"
+	CreateAdvancedVisibilityDatabaseScript  = "create-advanced-visibility-database.sh"
+	SetupAdvancedVisibilitySchemaScript     = "setup-advanced-visibility-schema.sh"
+	UpdateAdvancedVisibilitySchemaScript    = "update-advanced-visibility-schema.sh"
+
 	defaultSchemaPath    = "temporal"
 	visibilitySchemaPath = "visibility"
 
@@ -87,6 +100,16 @@ func (b *SchemaScriptsConfigmapBuilder) Build() client.Object {
 
 func (b *SchemaScriptsConfigmapBuilder) Enabled() bool {
 	return true
+}
+
+func (b *SchemaScriptsConfigmapBuilder) baseData() baseData {
+	baseData := baseData{}
+
+	if b.instance.Spec.MTLS != nil {
+		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
+	}
+
+	return baseData
 }
 
 func (b *SchemaScriptsConfigmapBuilder) computeSchemaDir(storeType v1beta1.DatastoreType, targetSchema Schema) string {
@@ -233,185 +256,209 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
-	configMap := object.(*corev1.ConfigMap)
-
-	defaultStore := b.instance.Spec.Persistence.DefaultStore
-	visibilityStore := b.instance.Spec.Persistence.VisibilityStore
-
-	defaultStoreType := defaultStore.GetType()
-	visibilityStoreType := visibilityStore.GetType()
-
-	defaultStoreArgs, err := b.getStoreArgs(defaultStore)
-	if err != nil {
-		return fmt.Errorf("can't create default store args: %w", err)
-	}
-
-	visibilityStoreArgs, err := b.getStoreArgs(visibilityStore)
-	if err != nil {
-		return fmt.Errorf("can't create visibility store setup args: %w", err)
-	}
-
-	baseData := baseData{}
-
-	if b.instance.Spec.MTLS != nil {
-		baseData.MTLSProvider = string(b.instance.Spec.MTLS.Provider)
-	}
-
-	createDatabaseTemplateKey := CreateDatabaseTemplate
-	if b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
-		createDatabaseTemplateKey = CreateDatabaseTemplateV1_18
-	}
-
-	defaultStoreTool := "temporal-sql-tool"
-	var renderedCreateDefaultDatabase bytes.Buffer
-	var renderedCreateVisibilityDatabase bytes.Buffer
-	switch {
-	case defaultStore.SkipCreate:
-		err = templates[NoOpTemplate].Execute(&renderedCreateDefaultDatabase, nil)
-		if err != nil {
-			return fmt.Errorf("can't render no-op.sh: %w", err)
-		}
-	case defaultStoreType == v1beta1.CassandraDatastore:
+func (b *SchemaScriptsConfigmapBuilder) getStoreTool(storeType v1beta1.DatastoreType) string {
+	var tool string
+	switch storeType {
+	case v1beta1.PostgresSQLDatastore,
+		v1beta1.PostgresSQL12Datastore,
+		v1beta1.MySQLDatastore,
+		v1beta1.MySQL8Datastore:
+		tool = "temporal-sql-tool"
+	case v1beta1.CassandraDatastore:
 		// Fix for https://github.com/temporalio/temporal/blob/master/tools/cassandra/main.go#L70
 		// Which requires an env var set.
-		defaultStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
+		tool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
+	case v1beta1.UnknownDatastore, v1beta1.ElasticsearchDatastore:
+		tool = ""
+	}
+	return tool
+}
 
-		err = templates[CreateCassandraTemplate].Execute(&renderedCreateDefaultDatabase, createKeyspace{
-			baseData:       baseData,
-			Tool:           defaultStoreTool,
-			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
-			KeyspaceName:   defaultStore.Cassandra.Keyspace,
-		})
-		if err != nil {
-			return fmt.Errorf("can't render create-default-keyspace.sh: %w", err)
-		}
-	default:
-		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateDefaultDatabase, createDatabase{
-			baseData:       baseData,
-			Tool:           defaultStoreTool,
-			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
-			DatabaseName:   defaultStore.SQL.DatabaseName,
-		})
-		if err != nil {
-			return fmt.Errorf("can't render create-default-database.sh: %w", err)
-		}
+func (b *SchemaScriptsConfigmapBuilder) getESVersion(es *v1beta1.ElasticsearchSpec) string {
+	version := es.Version
+	if version == "v8" {
+		// For now, when elasticsearch version 8 is specified, it uses v7 schema.
+		// See: https://github.com/temporalio/temporal/tree/v1.20.3/schema/elasticsearch/visibility
+		version = "v7"
 	}
 
-	visibilityStoreTool := "temporal-sql-tool"
-	switch {
-	case visibilityStore.SkipCreate:
-		err = templates[NoOpTemplate].Execute(&renderedCreateVisibilityDatabase, nil)
-		if err != nil {
-			return fmt.Errorf("can't render no-op.sh: %w", err)
-		}
-	case visibilityStoreType == v1beta1.CassandraDatastore:
-		visibilityStoreTool = "CASSANDRA_PORT=9042 temporal-cassandra-tool"
+	return version
+}
 
-		err = templates[CreateCassandraTemplate].Execute(&renderedCreateVisibilityDatabase, createKeyspace{
-			baseData:       baseData,
-			Tool:           visibilityStoreTool,
-			ConnectionArgs: b.argsMapToString(defaultStoreArgs),
-			KeyspaceName:   visibilityStore.Cassandra.Keyspace,
-		})
-		if err != nil {
-			return fmt.Errorf("can't render create-visibility-keyspace.sh: %w", err)
-		}
-	default:
-		err = templates[createDatabaseTemplateKey].Execute(&renderedCreateVisibilityDatabase, createDatabase{
-			baseData:       baseData,
-			Tool:           visibilityStoreTool,
-			ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
-			DatabaseName:   visibilityStore.SQL.DatabaseName,
-		})
-		if err != nil {
-			return fmt.Errorf("can't render create-visibility-database.sh: %w", err)
-		}
+func (b *SchemaScriptsConfigmapBuilder) renderTemplate(name string, data any) (string, error) {
+	var result bytes.Buffer
+	err := templates[name].Execute(&result, data)
+	if err != nil {
+		return "", fmt.Errorf("can't render %s: %w", name, err)
 	}
 
-	var renderedSetupDefaultSchema bytes.Buffer
-	err = templates[SetupSchemaTemplate].Execute(&renderedSetupDefaultSchema, setupSchemaData{
-		baseData:       baseData,
-		Tool:           defaultStoreTool,
-		ConnectionArgs: b.argsMapToString(defaultStoreArgs),
+	return result.String(), nil
+}
+
+func (b *SchemaScriptsConfigmapBuilder) GetStoreCreateTemplate(spec *v1beta1.DatastoreSpec) (string, error) {
+	storeType := spec.GetType()
+	if spec.SkipCreate || storeType == v1beta1.ElasticsearchDatastore {
+		return b.renderTemplate(noOpTemplate, nil)
+	}
+
+	args, err := b.getStoreArgs(spec)
+	if err != nil {
+		return "", fmt.Errorf("can't get store args: %w", err)
+	}
+
+	if storeType == v1beta1.CassandraDatastore {
+		data := createKeyspace{
+			baseData:       b.baseData(),
+			Tool:           b.getStoreTool(storeType),
+			ConnectionArgs: b.argsMapToString(args),
+			KeyspaceName:   spec.Cassandra.Keyspace,
+		}
+
+		return b.renderTemplate(createCassandraTemplate, data)
+	}
+
+	createDatabaseTemplateKey := createDatabaseTemplate
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
+		createDatabaseTemplateKey = createDatabaseTemplateV1_18
+	}
+
+	data := createDatabase{
+		baseData:       b.baseData(),
+		Tool:           b.getStoreTool(storeType),
+		ConnectionArgs: b.argsMapToString(args),
+		DatabaseName:   spec.SQL.DatabaseName,
+	}
+
+	return b.renderTemplate(createDatabaseTemplateKey, data)
+}
+
+func (b *SchemaScriptsConfigmapBuilder) GetStoreSetupTemplate(spec *v1beta1.DatastoreSpec) (string, error) {
+	storeType := spec.GetType()
+	if storeType == v1beta1.ElasticsearchDatastore {
+		data := esSchemaData{
+			baseData:       b.baseData(),
+			Version:        b.getESVersion(spec.Elasticsearch),
+			URL:            spec.Elasticsearch.URL,
+			Username:       spec.Elasticsearch.Username,
+			PasswordEnvVar: spec.GetPasswordEnvVarName(),
+			Indices:        spec.Elasticsearch.Indices,
+		}
+		return b.renderTemplate(setupESVisibility, data)
+	}
+
+	args, err := b.getStoreArgs(spec)
+	if err != nil {
+		return "", fmt.Errorf("can't get store args: %w", err)
+	}
+
+	data := setupSchemaData{
+		baseData:       b.baseData(),
+		Tool:           b.getStoreTool(storeType),
+		ConnectionArgs: b.argsMapToString(args),
 		InitialVersion: "0.0",
-	})
-	if err != nil {
-		return fmt.Errorf("can't render setup-default-schema.sh: %w", err)
 	}
 
-	var renderedUpdateDefaultSchema bytes.Buffer
-	err = templates[UpdateSchemaTemplate].Execute(&renderedUpdateDefaultSchema, updateSchemaData{
-		baseData:       baseData,
-		Tool:           defaultStoreTool,
-		ConnectionArgs: b.argsMapToString(defaultStoreArgs),
-		SchemaDir:      b.computeSchemaDir(defaultStoreType, DefaultSchema),
-	})
-	if err != nil {
-		return fmt.Errorf("can't render update-default-schema.sh: %w", err)
+	return b.renderTemplate(setupSchemaTemplate, data)
+}
+
+func (b *SchemaScriptsConfigmapBuilder) GetStoreUpdateTemplate(spec *v1beta1.DatastoreSpec, targetSchema Schema) (string, error) {
+	storeType := spec.GetType()
+	if storeType == v1beta1.ElasticsearchDatastore {
+		data := esSchemaData{
+			baseData:       b.baseData(),
+			Version:        b.getESVersion(spec.Elasticsearch),
+			URL:            spec.Elasticsearch.URL,
+			Username:       spec.Elasticsearch.Username,
+			PasswordEnvVar: spec.GetPasswordEnvVarName(),
+			Indices:        spec.Elasticsearch.Indices,
+		}
+		return b.renderTemplate(updateESVisibility, data)
 	}
 
-	var renderedSetupVisibilitySchema bytes.Buffer
-	err = templates[SetupSchemaTemplate].Execute(&renderedSetupVisibilitySchema, setupSchemaData{
-		baseData:       baseData,
-		Tool:           visibilityStoreTool,
-		ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
-		InitialVersion: "0.0",
-	})
+	args, err := b.getStoreArgs(spec)
 	if err != nil {
-		return fmt.Errorf("can't render setup-visibility-schema.sh: %w", err)
+		return "", fmt.Errorf("can't get store args: %w", err)
 	}
 
-	var renderedUpdateVisibilitySchema bytes.Buffer
-	err = templates[UpdateSchemaTemplate].Execute(&renderedUpdateVisibilitySchema, updateSchemaData{
-		baseData:       baseData,
-		Tool:           visibilityStoreTool,
-		ConnectionArgs: b.argsMapToString(visibilityStoreArgs),
-		SchemaDir:      b.computeSchemaDir(visibilityStoreType, VisibilitySchema),
-	})
-	if err != nil {
-		return fmt.Errorf("can't render update-visibility-schema.sh: %w", err)
+	data := updateSchemaData{
+		baseData:       b.baseData(),
+		Tool:           b.getStoreTool(storeType),
+		ConnectionArgs: b.argsMapToString(args),
+		SchemaDir:      b.computeSchemaDir(storeType, targetSchema),
 	}
 
-	configMap.Data = map[string]string{
-		"create-default-database.sh":    renderedCreateDefaultDatabase.String(),
-		"create-visibility-database.sh": renderedCreateVisibilityDatabase.String(),
-		"setup-default-schema.sh":       renderedSetupDefaultSchema.String(),
-		"setup-visibility-schema.sh":    renderedSetupVisibilitySchema.String(),
-		"update-default-schema.sh":      renderedUpdateDefaultSchema.String(),
-		"update-visibility-schema.sh":   renderedUpdateVisibilitySchema.String(),
+	return b.renderTemplate(updateSchemaTemplate, data)
+}
+
+func (b *SchemaScriptsConfigmapBuilder) Update(object client.Object) error {
+	configMap := object.(*corev1.ConfigMap)
+	configMap.Data = map[string]string{}
+
+	var err error
+	configMap.Data[CreateDefaultDatabaseScript], err = b.GetStoreCreateTemplate(b.instance.Spec.Persistence.DefaultStore)
+	if err != nil {
+		return err
+	}
+
+	configMap.Data[SetupDefaultSchemaScript], err = b.GetStoreSetupTemplate(b.instance.Spec.Persistence.DefaultStore)
+	if err != nil {
+		return err
+	}
+
+	configMap.Data[UpdateDefaultSchemaScript], err = b.GetStoreUpdateTemplate(b.instance.Spec.Persistence.DefaultStore, DefaultSchema)
+	if err != nil {
+		return err
+	}
+
+	configMap.Data[CreateVisibilityDatabaseScript], err = b.GetStoreCreateTemplate(b.instance.Spec.Persistence.VisibilityStore)
+	if err != nil {
+		return err
+	}
+
+	configMap.Data[SetupVisibilitySchemaScript], err = b.GetStoreSetupTemplate(b.instance.Spec.Persistence.VisibilityStore)
+	if err != nil {
+		return err
+	}
+
+	configMap.Data[UpdateVisibilitySchemaScript], err = b.GetStoreUpdateTemplate(b.instance.Spec.Persistence.VisibilityStore, VisibilitySchema)
+	if err != nil {
+		return err
+	}
+
+	secondaryVisibilityStore := b.instance.Spec.Persistence.SecondaryVisibilityStore
+	if secondaryVisibilityStore != nil {
+		configMap.Data[CreateSecondaryVisibilityDatabaseScript], err = b.GetStoreCreateTemplate(secondaryVisibilityStore)
+		if err != nil {
+			return err
+		}
+
+		configMap.Data[SetupSecondaryVisibilitySchemaScript], err = b.GetStoreSetupTemplate(secondaryVisibilityStore)
+		if err != nil {
+			return err
+		}
+
+		configMap.Data[UpdateSecondaryVisibilitySchemaScript], err = b.GetStoreUpdateTemplate(secondaryVisibilityStore, VisibilitySchema)
+		if err != nil {
+			return err
+		}
 	}
 
 	advancedVisibilityStore := b.instance.Spec.Persistence.AdvancedVisibilityStore
 	if advancedVisibilityStore != nil {
-		version := advancedVisibilityStore.Elasticsearch.Version
-		if version == "v8" {
-			// For now, when elasticsearch version 8 is specified, it uses v7 schema.
-			// See: https://github.com/temporalio/temporal/tree/v1.20.3/schema/elasticsearch/visibility
-			version = "v7"
-		}
-		data := advancedVisibilityData{
-			baseData:       baseData,
-			Version:        version,
-			URL:            advancedVisibilityStore.Elasticsearch.URL,
-			Username:       advancedVisibilityStore.Elasticsearch.Username,
-			PasswordEnvVar: advancedVisibilityStore.GetPasswordEnvVarName(),
-			Indices:        advancedVisibilityStore.Elasticsearch.Indices,
-		}
-		var renderedSetupAdvancedVisibility bytes.Buffer
-		err = templates[SetupAdvancedVisibility].Execute(&renderedSetupAdvancedVisibility, data)
+		configMap.Data[CreateAdvancedVisibilityDatabaseScript], err = b.GetStoreCreateTemplate(advancedVisibilityStore)
 		if err != nil {
-			return fmt.Errorf("can't render setup-advanced-visibility.sh: %w", err)
+			return err
 		}
 
-		var renderedUpdateAdvancedVisibility bytes.Buffer
-		err = templates[UpdateAdvancedVisibility].Execute(&renderedUpdateAdvancedVisibility, data)
+		configMap.Data[SetupAdvancedVisibilitySchemaScript], err = b.GetStoreSetupTemplate(advancedVisibilityStore)
 		if err != nil {
-			return fmt.Errorf("can't render setup-advanced-visibility.sh: %w", err)
+			return err
 		}
 
-		configMap.Data["setup-advanced-visibility.sh"] = renderedSetupAdvancedVisibility.String()
-		configMap.Data["update-advanced-visibility.sh"] = renderedUpdateAdvancedVisibility.String()
+		configMap.Data[UpdateAdvancedVisibilitySchemaScript], err = b.GetStoreUpdateTemplate(advancedVisibilityStore, VisibilitySchema)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, configMap, b.scheme); err != nil {

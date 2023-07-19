@@ -26,47 +26,54 @@ import (
 )
 
 const (
-	CreateCassandraTemplate     = "create-cassandra.sh"
-	CreateDatabaseTemplate      = "create-database.sh"
-	CreateDatabaseTemplateV1_18 = "create-database-1-8.sh"
-	SetupSchemaTemplate         = "setup-schema.sh"
-	UpdateSchemaTemplate        = "update-schema.sh"
-	SetupAdvancedVisibility     = "setup-advanced-visibility.sh"
-	UpdateAdvancedVisibility    = "update-advanced-visibility.sh"
-	NoOpTemplate                = "no-op.sh"
+	// Create datastores templates.
+	createCassandraTemplate     = "create-cassandra.sh"
+	createDatabaseTemplate      = "create-database.sh"
+	createDatabaseTemplateV1_18 = "create-database-1-8.sh"
+
+	// Setup schemas templates.
+	setupSchemaTemplate = "setup-schema.sh"
+	setupESVisibility   = "setup-es-visibility.sh"
+
+	// Update schemas templates.
+	updateSchemaTemplate = "update-schema.sh"
+	updateESVisibility   = "update-es-visibility.sh"
+
+	// noOpTemplate does nothing.
+	noOpTemplate = "no-op.sh"
 )
 
 var (
 	templates = map[string]*template.Template{}
 
 	templatesContent = map[string]string{
-		NoOpTemplate: dedent.Dedent(`
+		noOpTemplate: dedent.Dedent(`
 			#!/bin/bash
 			echo "No-op"
 		`),
-		CreateCassandraTemplate: dedent.Dedent(`
+		createCassandraTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
 		`),
-		CreateDatabaseTemplate: dedent.Dedent(`
+		createDatabaseTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-database -database {{ .DatabaseName }}
 		`),
-		CreateDatabaseTemplateV1_18: dedent.Dedent(`
+		createDatabaseTemplateV1_18: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create
 		`),
-		SetupSchemaTemplate: dedent.Dedent(`
+		setupSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} setup-schema -v {{ .InitialVersion }}
 			{{ template "scripts" . }}
 		`),
-		UpdateSchemaTemplate: dedent.Dedent(`
+		updateSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} update-schema -d {{ .SchemaDir }}
 			{{ template "scripts" . }}
 		`),
-		SetupAdvancedVisibility: dedent.Dedent(`
+		setupESVisibility: dedent.Dedent(`
 			#!/bin/bash
 			# Change index_patterns from temporal_visibility_v1* to {{ .Indices.Visibility }}* at index_template_{{ .Version }}.json before apply
 			sed 's/temporal_visibility_v1./{{ .Indices.Visibility }}*/g' /etc/temporal/schema/elasticsearch/visibility/index_template_{{ .Version }}.json > /tmp/index_template_{{ .Version }}.json
@@ -80,7 +87,7 @@ var (
 			{{ end }}
 			{{ template "scripts" . }}
 		`),
-		UpdateAdvancedVisibility: dedent.Dedent(`
+		updateESVisibility: dedent.Dedent(`
 			#!/bin/bash
 
 			do_upgrade() {
@@ -147,6 +154,21 @@ var (
 
 						curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
 						;;
+					v5)
+						echo "Upgrading to schema v5"
+
+						new_mapping='
+						{
+							"properties": {
+							  "BuildIds": {
+								"type": "keyword"
+							  }
+							}
+						}
+						'
+
+						curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
+					;;
 				esac
 			}
 
@@ -199,6 +221,15 @@ var (
 				if [ $current_version_found = false ]; then
 					current_version_found=true
 					current_version="v4"
+				fi
+			fi
+
+			# v5 has the "BuildIds" key
+			is_v5=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("BuildIds")')
+			if [ $is_v5 == "true" ]; then
+				if [ $current_version_found = false ]; then
+					current_version_found=true
+					current_version="v5"
 				fi
 			fi
 
@@ -272,7 +303,7 @@ type (
 		SchemaDir      string
 	}
 
-	advancedVisibilityData struct {
+	esSchemaData struct {
 		baseData
 		Version        string
 		URL            string

@@ -323,16 +323,18 @@ const (
 )
 
 const (
-	DefaultStoreName            = "default"
-	VisibilityStoreName         = "visibility"
-	AdvancedVisibilityStoreName = "advancedVisibility"
+	DefaultStoreName             = "default"
+	VisibilityStoreName          = "visibility"
+	SecondaryVisibilityStoreName = "secondaryVisibility"
+	AdvancedVisibilityStoreName  = "advancedVisibility"
 )
 
 // DatastoreSpec contains temporal datastore specifications.
 type DatastoreSpec struct {
-	// Name is the name of the datatstore.
+	// Name is the name of the datastore.
 	// It should be unique and will be referenced within the persitence spec.
-	// Defaults to "default" for default sore, "visibility" for visibility store and
+	// Defaults to "default" for default sore, "visibility" for visibility store,
+	// "secondaryVisibility" for secondary visibility store and
 	// "advancedVisibility" for advanced visibility store.
 	// +optional
 	Name string `json:"name"`
@@ -343,6 +345,7 @@ type DatastoreSpec struct {
 	// +optional
 	Elasticsearch *ElasticsearchSpec `json:"elasticsearch,omitempty"`
 	// Cassandra holds all connection parameters for Cassandra datastore.
+	// Note that cassandra is now deprecated for visibility store.
 	// +optional
 	Cassandra *CassandraSpec `json:"cassandra,omitempty"`
 	// PasswordSecret is the reference to the secret holding the password.
@@ -426,6 +429,10 @@ type TemporalPersistenceSpec struct {
 	DefaultStore *DatastoreSpec `json:"defaultStore"`
 	// VisibilityStore holds the visibility datastore specs.
 	VisibilityStore *DatastoreSpec `json:"visibilityStore"`
+	// SecondaryVisibilityStore holds the secondary visibility datastore specs.
+	// Feature only available for clusters >= 1.21.0.
+	// +optional
+	SecondaryVisibilityStore *DatastoreSpec `json:"secondaryVisibilityStore,omitempty"`
 	// AdvancedVisibilityStore holds the avanced visibility datastore specs.
 	// +optional
 	AdvancedVisibilityStore *DatastoreSpec `json:"advancedVisibilityStore,omitempty"`
@@ -435,6 +442,10 @@ func (p *TemporalPersistenceSpec) GetDatastores() []*DatastoreSpec {
 	stores := []*DatastoreSpec{
 		p.DefaultStore,
 		p.VisibilityStore,
+	}
+
+	if p.SecondaryVisibilityStore != nil {
+		stores = append(stores, p.SecondaryVisibilityStore)
 	}
 
 	if p.AdvancedVisibilityStore != nil {
@@ -448,6 +459,10 @@ func (p *TemporalPersistenceSpec) GetDatastoresMap() map[string]*DatastoreSpec {
 	stores := map[string]*DatastoreSpec{
 		"defaultStore":    p.DefaultStore,
 		"visibilityStore": p.VisibilityStore,
+	}
+
+	if p.SecondaryVisibilityStore != nil {
+		stores["secondaryVisibilityStore"] = p.SecondaryVisibilityStore
 	}
 
 	if p.AdvancedVisibilityStore != nil {
@@ -793,6 +808,9 @@ type TemporalPersistenceStatus struct {
 	DefaultStore *DatastoreStatus `json:"defaultStore"`
 	// VisibilityStore holds the visibility datastore status.
 	VisibilityStore *DatastoreStatus `json:"visibilityStore"`
+	// SecondaryVisibility holds the secondary visibility datastore status.
+	// +optional
+	SecondaryVisibility *DatastoreStatus `json:"secondaryVisibilityStore"`
 	// AdvancedVisibilityStore holds the avanced visibility datastore status.
 	// +optional
 	AdvancedVisibilityStore *DatastoreStatus `json:"advancedVisibilityStore,omitempty"`

@@ -20,6 +20,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -61,6 +62,10 @@ func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.
 	}
 }
 
+func getDatabaseScriptCommand(script string) []string {
+	return []string{path.Join("/etc/scripts", script)}
+}
+
 // reconcilePersistence tries to reconcile the cluster persistence.
 func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	// First of all, ensure status fields are set.
@@ -75,9 +80,11 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 	jobs := []*reconciler.Job{
 		{
 			Name:    "create-default-database",
-			Command: []string{"/etc/scripts/create-default-database.sh"},
+			Command: getDatabaseScriptCommand(persistence.CreateDefaultDatabaseScript),
 			Skip: func(owner runtime.Object) bool {
-				return owner.(*v1beta1.TemporalCluster).Status.Persistence.DefaultStore.Created
+				cluster := owner.(*v1beta1.TemporalCluster)
+				return cluster.Spec.Persistence.DefaultStore.SkipCreate ||
+					cluster.Status.Persistence.DefaultStore.Created
 			},
 			ReportSuccess: func(owner runtime.Object) error {
 				owner.(*v1beta1.TemporalCluster).Status.Persistence.DefaultStore.Created = true
@@ -86,9 +93,11 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		},
 		{
 			Name:    "create-visibility-database",
-			Command: []string{"/etc/scripts/create-visibility-database.sh"},
+			Command: getDatabaseScriptCommand(persistence.CreateVisibilityDatabaseScript),
 			Skip: func(owner runtime.Object) bool {
-				return owner.(*v1beta1.TemporalCluster).Status.Persistence.VisibilityStore.Created
+				cluster := owner.(*v1beta1.TemporalCluster)
+				return cluster.Spec.Persistence.VisibilityStore.SkipCreate ||
+					cluster.Status.Persistence.VisibilityStore.Created
 			},
 			ReportSuccess: func(owner runtime.Object) error {
 				c := owner.(*v1beta1.TemporalCluster)
@@ -98,7 +107,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		},
 		{
 			Name:    "setup-default-schema",
-			Command: []string{"/etc/scripts/setup-default-schema.sh"},
+			Command: getDatabaseScriptCommand(persistence.SetupDefaultSchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				return owner.(*v1beta1.TemporalCluster).Status.Persistence.DefaultStore.Setup
 			},
@@ -110,7 +119,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		},
 		{
 			Name:    "setup-visibility-schema",
-			Command: []string{"/etc/scripts/setup-visibility-schema.sh"},
+			Command: getDatabaseScriptCommand(persistence.SetupVisibilitySchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				return owner.(*v1beta1.TemporalCluster).Status.Persistence.VisibilityStore.Setup
 			},
@@ -122,7 +131,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		},
 		{
 			Name:    fmt.Sprintf("update-default-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
-			Command: []string{"/etc/scripts/update-default-schema.sh"},
+			Command: getDatabaseScriptCommand(persistence.UpdateDefaultSchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				c := owner.(*v1beta1.TemporalCluster)
 				if c.Status.Persistence.DefaultStore.SchemaVersion == nil {
@@ -138,7 +147,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 		},
 		{
 			Name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
-			Command: []string{"/etc/scripts/update-visibility-schema.sh"},
+			Command: getDatabaseScriptCommand(persistence.UpdateVisibilitySchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				c := owner.(*v1beta1.TemporalCluster)
 				if c.Status.Persistence.VisibilityStore.SchemaVersion == nil {
@@ -153,11 +162,67 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			},
 		},
 	}
+
+	if cluster.Spec.Persistence.SecondaryVisibilityStore != nil {
+		jobs = append(jobs,
+			&reconciler.Job{
+				Name:    "create-secondary-visibility-database",
+				Command: getDatabaseScriptCommand(persistence.CreateSecondaryVisibilityDatabaseScript),
+				Skip: func(owner runtime.Object) bool {
+					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibility.Created
+				},
+				ReportSuccess: func(owner runtime.Object) error {
+					c := owner.(*v1beta1.TemporalCluster)
+					c.Status.Persistence.SecondaryVisibility.Created = true
+					return nil
+				},
+			},
+			&reconciler.Job{
+				Name:    "setup-secondary-visibility-schema",
+				Command: getDatabaseScriptCommand(persistence.SetupSecondaryVisibilitySchemaScript),
+				Skip: func(owner runtime.Object) bool {
+					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibility.Setup
+				},
+				ReportSuccess: func(owner runtime.Object) error {
+					c := owner.(*v1beta1.TemporalCluster)
+					c.Status.Persistence.SecondaryVisibility.Setup = true
+					return nil
+				},
+			},
+			&reconciler.Job{
+				Name:    fmt.Sprintf("update-secondary-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
+				Command: getDatabaseScriptCommand(persistence.UpdateSecondaryVisibilitySchemaScript),
+				Skip: func(owner runtime.Object) bool {
+					c := owner.(*v1beta1.TemporalCluster)
+					if c.Status.Persistence.SecondaryVisibility.SchemaVersion == nil {
+						return false
+					}
+					return c.Status.Persistence.SecondaryVisibility.SchemaVersion.GreaterOrEqual(c.Spec.Version)
+				},
+				ReportSuccess: func(owner runtime.Object) error {
+					c := owner.(*v1beta1.TemporalCluster)
+					c.Status.Persistence.SecondaryVisibility.SchemaVersion = c.Spec.Version.DeepCopy()
+					return nil
+				},
+			})
+	}
 	if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
 		jobs = append(jobs,
 			&reconciler.Job{
-				Name:    "setup-advanced-visibility",
-				Command: []string{"/etc/scripts/setup-advanced-visibility.sh"},
+				Name:    "create-advanced-visibility-database",
+				Command: getDatabaseScriptCommand(persistence.CreateAdvancedVisibilityDatabaseScript),
+				Skip: func(owner runtime.Object) bool {
+					return owner.(*v1beta1.TemporalCluster).Status.Persistence.AdvancedVisibilityStore.Created
+				},
+				ReportSuccess: func(owner runtime.Object) error {
+					c := owner.(*v1beta1.TemporalCluster)
+					c.Status.Persistence.AdvancedVisibilityStore.Created = true
+					return nil
+				},
+			},
+			&reconciler.Job{
+				Name:    "setup-advanced-visibility-schema",
+				Command: getDatabaseScriptCommand(persistence.SetupAdvancedVisibilitySchemaScript),
 				Skip: func(owner runtime.Object) bool {
 					return owner.(*v1beta1.TemporalCluster).Status.Persistence.AdvancedVisibilityStore.Setup
 				},
@@ -168,8 +233,8 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				},
 			},
 			&reconciler.Job{
-				Name:    fmt.Sprintf("update-advanced-visibility-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
-				Command: []string{"/etc/scripts/update-advanced-visibility.sh"},
+				Name:    fmt.Sprintf("update-advanced-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
+				Command: getDatabaseScriptCommand(persistence.UpdateAdvancedVisibilitySchemaScript),
 				Skip: func(owner runtime.Object) bool {
 					c := owner.(*v1beta1.TemporalCluster)
 					if c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion == nil {

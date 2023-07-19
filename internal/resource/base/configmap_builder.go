@@ -106,8 +106,14 @@ func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error)
 		DataStores:       map[string]config.DataStore{},
 	}
 
+	// Instroduced in >= 1.21.x
+	if b.instance.Spec.Persistence.SecondaryVisibilityStore != nil {
+		cfg.SecondaryVisibilityStore = b.instance.Spec.Persistence.SecondaryVisibilityStore.Name
+	}
+
+	// This will be removed for clusters >= 1.23.x
 	if b.instance.Spec.Persistence.AdvancedVisibilityStore != nil {
-		cfg.AdvancedVisibilityStore = v1beta1.AdvancedVisibilityStoreName
+		cfg.AdvancedVisibilityStore = b.instance.Spec.Persistence.AdvancedVisibilityStore.Name
 	}
 
 	for _, store := range b.instance.Spec.Persistence.GetDatastores() {
