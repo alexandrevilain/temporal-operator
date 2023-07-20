@@ -169,6 +169,13 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/crd > ${RELEASE_PATH}/temporal-operator.crds.yaml
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
+.PHONY: artifacts
+helm: kustomize helmify
+	$(HELMIFY) -f ${RELEASE_PATH}/temporal-operator.crds.yaml \
+		-f ${RELEASE_PATH}/temporal-operator.yaml \
+		-crd-dir -image-pull-secrets -generate-defaults \
+		temporal-operator
+
 .PHONY: bundle
 bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests -q
@@ -190,6 +197,7 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
+HELMIFY ?= $(LOCALBIN)/helmify
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 CONTROLLER_GEN ?= GOFLAGS=-mod=mod $(LOCALBIN)/controller-gen
@@ -201,6 +209,7 @@ YQ ?= $(LOCALBIN)/yq
 KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
 
 ## Tool Versions
+HELMIFY_VERSION ?= v0.4.5
 KUSTOMIZE_VERSION ?= v4.5.7
 OPERATOR_SDK_VERSION ?= 1.26.1
 CONTROLLER_TOOLS_VERSION ?=  v0.11.3
@@ -209,6 +218,15 @@ GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.52.2
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
+
+.PHONY: helmify
+helmify: $(HELMIFY) ## Download helmify locally if necessary. If wrong version is installed, it will be removed before downloading.
+$(HELMIFY): $(LOCALBIN)
+	@if test -x $(LOCALBIN)/kustomize && ! $(LOCALBIN)/helmify version | grep -q $(HELMIFY_VERSION); then \
+		echo "$(LOCALBIN)/helmifyversion is not expected $(HELMIFY_VERSION). Removing it before installing."; \
+		rm -rf $(LOCALBIN)/helmify; \
+	fi
+	test -s $(LOCALBIN)/helmify|| GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@${HELMIFY_VERSION}
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
