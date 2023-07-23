@@ -343,6 +343,11 @@ spec:
                                 description: Enabled defines if the operator should
                                   create a ServiceMonitor for each services.
                                 type: boolean
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Labels adds extra labels to the ServiceMonitor.
+                                type: object
                               metricRelabelings:
                                 description: MetricRelabelConfigs to apply to samples
                                   before ingestion.
@@ -1218,7 +1223,8 @@ spec:
                     properties:
                       cassandra:
                         description: Cassandra holds all connection parameters for
-                          Cassandra datastore.
+                          Cassandra datastore. Note that cassandra is now deprecated
+                          for visibility store.
                         properties:
                           connectTimeout:
                             description: ConnectTimeout is a timeout for initial dial
@@ -1343,11 +1349,11 @@ spec:
                         - version
                         type: object
                       name:
-                        description: Name is the name of the datatstore. It should
+                        description: Name is the name of the datastore. It should
                           be unique and will be referenced within the persitence spec.
                           Defaults to "default" for default sore, "visibility" for
-                          visibility store and "advancedVisibility" for advanced visibility
-                          store.
+                          visibility store, "secondaryVisibility" for secondary visibility
+                          store and "advancedVisibility" for advanced visibility store.
                         type: string
                       passwordSecretRef:
                         description: PasswordSecret is the reference to the secret
@@ -1362,6 +1368,12 @@ spec:
                         required:
                         - name
                         type: object
+                      skipCreate:
+                        description: SkipCreate instructs the operator to skip creating
+                          the database for SQL datastores or to skip creating keyspace
+                          for Cassandra. Use this option if your database or keyspace
+                          has already been provisioned by an administrator.
+                        type: boolean
                       sql:
                         description: SQL holds all connection parameters for SQL datastores.
                         properties:
@@ -1481,7 +1493,8 @@ spec:
                     properties:
                       cassandra:
                         description: Cassandra holds all connection parameters for
-                          Cassandra datastore.
+                          Cassandra datastore. Note that cassandra is now deprecated
+                          for visibility store.
                         properties:
                           connectTimeout:
                             description: ConnectTimeout is a timeout for initial dial
@@ -1606,11 +1619,11 @@ spec:
                         - version
                         type: object
                       name:
-                        description: Name is the name of the datatstore. It should
+                        description: Name is the name of the datastore. It should
                           be unique and will be referenced within the persitence spec.
                           Defaults to "default" for default sore, "visibility" for
-                          visibility store and "advancedVisibility" for advanced visibility
-                          store.
+                          visibility store, "secondaryVisibility" for secondary visibility
+                          store and "advancedVisibility" for advanced visibility store.
                         type: string
                       passwordSecretRef:
                         description: PasswordSecret is the reference to the secret
@@ -1625,6 +1638,283 @@ spec:
                         required:
                         - name
                         type: object
+                      skipCreate:
+                        description: SkipCreate instructs the operator to skip creating
+                          the database for SQL datastores or to skip creating keyspace
+                          for Cassandra. Use this option if your database or keyspace
+                          has already been provisioned by an administrator.
+                        type: boolean
+                      sql:
+                        description: SQL holds all connection parameters for SQL datastores.
+                        properties:
+                          connectAddr:
+                            description: ConnectAddr is the remote addr of the database.
+                            type: string
+                          connectAttributes:
+                            additionalProperties:
+                              type: string
+                            description: ConnectAttributes is a set of key-value attributes
+                              to be sent as part of connect data_source_name url
+                            type: object
+                          connectProtocol:
+                            description: ConnectProtocol is the protocol that goes
+                              with the ConnectAddr.
+                            type: string
+                          databaseName:
+                            description: DatabaseName is the name of SQL database
+                              to connect to.
+                            type: string
+                          maxConnLifetime:
+                            description: MaxConnLifetime is the maximum time a connection
+                              can be alive
+                            type: string
+                          maxConns:
+                            description: MaxConns the max number of connections to
+                              this datastore.
+                            type: integer
+                          maxIdleConns:
+                            description: MaxIdleConns is the max number of idle connections
+                              to this datastore.
+                            type: integer
+                          pluginName:
+                            description: PluginName is the name of SQL plugin.
+                            enum:
+                            - postgres
+                            - postgres12
+                            - mysql
+                            - mysql8
+                            type: string
+                          taskScanPartitions:
+                            description: TaskScanPartitions is the number of partitions
+                              to sequentially scan during ListTaskQueue operations.
+                            type: integer
+                          user:
+                            description: User is the username to be used for the connection.
+                            type: string
+                        required:
+                        - connectAddr
+                        - databaseName
+                        - pluginName
+                        - user
+                        type: object
+                      tls:
+                        description: TLS is an optional option to connect to the datastore
+                          using TLS.
+                        properties:
+                          caFileRef:
+                            description: CaFileRef is a reference to a secret containing
+                              the ca file.
+                            properties:
+                              key:
+                                description: Key in the Secret.
+                                type: string
+                              name:
+                                description: Name of the Secret.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          certFileRef:
+                            description: CertFileRef is a reference to a secret containing
+                              the cert file.
+                            properties:
+                              key:
+                                description: Key in the Secret.
+                                type: string
+                              name:
+                                description: Name of the Secret.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          enableHostVerification:
+                            description: EnableHostVerification defines if the hostname
+                              should be verified when connecting to the datastore.
+                            type: boolean
+                          enabled:
+                            description: Enabled defines if the cluster should use
+                              a TLS connection to connect to the datastore.
+                            type: boolean
+                          keyFileRef:
+                            description: KeyFileRef is a reference to a secret containing
+                              the key file.
+                            properties:
+                              key:
+                                description: Key in the Secret.
+                                type: string
+                              name:
+                                description: Name of the Secret.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          serverName:
+                            description: ServerName the datastore should present.
+                            type: string
+                        required:
+                        - enableHostVerification
+                        - enabled
+                        type: object
+                    required:
+                    - passwordSecretRef
+                    type: object
+                  secondaryVisibilityStore:
+                    description: SecondaryVisibilityStore holds the secondary visibility
+                      datastore specs. Feature only available for clusters >= 1.21.0.
+                    properties:
+                      cassandra:
+                        description: Cassandra holds all connection parameters for
+                          Cassandra datastore. Note that cassandra is now deprecated
+                          for visibility store.
+                        properties:
+                          connectTimeout:
+                            description: ConnectTimeout is a timeout for initial dial
+                              to cassandra server.
+                            type: string
+                          consistency:
+                            description: Consistency configuration.
+                            properties:
+                              consistency:
+                                description: Consistency sets the default consistency
+                                  level. Values identical to gocql Consistency values.
+                                  (defaults to LOCAL_QUORUM if not set).
+                                enum:
+                                - ANY
+                                - ONE
+                                - TWO
+                                - THREE
+                                - QUORUM
+                                - ALL
+                                - LOCAL_QUORUM
+                                - EACH_QUORUM
+                                - LOCAL_ONE
+                                type: integer
+                              serialConsistency:
+                                description: SerialConsistency sets the consistency
+                                  for the serial prtion of queries. Values identical
+                                  to gocql SerialConsistency values. (defaults to
+                                  LOCAL_SERIAL if not set)
+                                enum:
+                                - SERIAL
+                                - LOCAL_SERIAL
+                                type: integer
+                            type: object
+                          datacenter:
+                            description: Datacenter is the data center filter arg
+                              for cassandra.
+                            type: string
+                          disableInitialHostLookup:
+                            description: DisableInitialHostLookup instructs the gocql
+                              client to connect only using the supplied hosts.
+                            type: boolean
+                          hosts:
+                            description: Hosts is a list of cassandra endpoints.
+                            items:
+                              type: string
+                            type: array
+                          keyspace:
+                            description: Keyspace is the cassandra keyspace.
+                            type: string
+                          maxConns:
+                            description: MaxConns is the max number of connections
+                              to this datastore for a single keyspace.
+                            type: integer
+                          port:
+                            description: Port is the cassandra port used for connection
+                              by gocql client.
+                            type: integer
+                          user:
+                            description: User is the cassandra user used for authentication
+                              by gocql client.
+                            type: string
+                        required:
+                        - datacenter
+                        - hosts
+                        - keyspace
+                        - port
+                        - user
+                        type: object
+                      elasticsearch:
+                        description: Elasticsearch holds all connection parameters
+                          for Elasticsearch datastores.
+                        properties:
+                          closeIdleConnectionsInterval:
+                            description: CloseIdleConnectionsInterval is the max duration
+                              a connection stay open while idle.
+                            type: string
+                          enableHealthcheck:
+                            description: EnableHealthcheck enables or disables healthcheck
+                              on the temporal cluster's es client.
+                            type: boolean
+                          enableSniff:
+                            description: EnableSniff enables or disables sniffer on
+                              the temporal cluster's es client.
+                            type: boolean
+                          indices:
+                            description: Indices holds visibility index names.
+                            properties:
+                              secondaryVisibility:
+                                description: SecondaryVisibility defines secondary
+                                  visibility's index name.
+                                type: string
+                              visibility:
+                                default: temporal_visibility_v1
+                                description: Visibility defines visibility's index
+                                  name.
+                                type: string
+                            required:
+                            - visibility
+                            type: object
+                          logLevel:
+                            description: LogLevel defines the temporal cluster's es
+                              client logger level.
+                            type: string
+                          url:
+                            description: URL is the connection url to connect to the
+                              instance.
+                            pattern: ^https?:\/\/.+$
+                            type: string
+                          username:
+                            description: Username is the username to be used for the
+                              connection.
+                            type: string
+                          version:
+                            default: v7
+                            description: Version defines the elasticsearch version.
+                            pattern: ^v(6|7|8)$
+                            type: string
+                        required:
+                        - indices
+                        - url
+                        - username
+                        - version
+                        type: object
+                      name:
+                        description: Name is the name of the datastore. It should
+                          be unique and will be referenced within the persitence spec.
+                          Defaults to "default" for default sore, "visibility" for
+                          visibility store, "secondaryVisibility" for secondary visibility
+                          store and "advancedVisibility" for advanced visibility store.
+                        type: string
+                      passwordSecretRef:
+                        description: PasswordSecret is the reference to the secret
+                          holding the password.
+                        properties:
+                          key:
+                            description: Key in the Secret.
+                            type: string
+                          name:
+                            description: Name of the Secret.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      skipCreate:
+                        description: SkipCreate instructs the operator to skip creating
+                          the database for SQL datastores or to skip creating keyspace
+                          for Cassandra. Use this option if your database or keyspace
+                          has already been provisioned by an administrator.
+                        type: boolean
                       sql:
                         description: SQL holds all connection parameters for SQL datastores.
                         properties:
@@ -1744,7 +2034,8 @@ spec:
                     properties:
                       cassandra:
                         description: Cassandra holds all connection parameters for
-                          Cassandra datastore.
+                          Cassandra datastore. Note that cassandra is now deprecated
+                          for visibility store.
                         properties:
                           connectTimeout:
                             description: ConnectTimeout is a timeout for initial dial
@@ -1869,11 +2160,11 @@ spec:
                         - version
                         type: object
                       name:
-                        description: Name is the name of the datatstore. It should
+                        description: Name is the name of the datastore. It should
                           be unique and will be referenced within the persitence spec.
                           Defaults to "default" for default sore, "visibility" for
-                          visibility store and "advancedVisibility" for advanced visibility
-                          store.
+                          visibility store, "secondaryVisibility" for secondary visibility
+                          store and "advancedVisibility" for advanced visibility store.
                         type: string
                       passwordSecretRef:
                         description: PasswordSecret is the reference to the secret
@@ -1888,6 +2179,12 @@ spec:
                         required:
                         - name
                         type: object
+                      skipCreate:
+                        description: SkipCreate instructs the operator to skip creating
+                          the database for SQL datastores or to skip creating keyspace
+                          for Cassandra. Use this option if your database or keyspace
+                          has already been provisioned by an administrator.
+                        type: boolean
                       sql:
                         description: SQL holds all connection parameters for SQL datastores.
                         properties:
@@ -3078,6 +3375,24 @@ spec:
                     type: object
                   defaultStore:
                     description: DefaultStore holds the default datastore status.
+                    properties:
+                      created:
+                        description: Created indicates if the database or keyspace
+                          has been created.
+                        type: boolean
+                      schemaVersion:
+                        description: SchemaVersion report the current schema version.
+                        type: string
+                      setup:
+                        description: Setup indicates if tables have been set up.
+                        type: boolean
+                    required:
+                    - created
+                    - setup
+                    type: object
+                  secondaryVisibilityStore:
+                    description: SecondaryVisibility holds the secondary visibility
+                      datastore status.
                     properties:
                       created:
                         description: Created indicates if the database or keyspace
