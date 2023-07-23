@@ -4,4 +4,4 @@ resources:
 - manager.yaml
 images:
 - name: ghcr.io/alexandrevilain/temporal-operator
-  newTag: v0.13.3
+  newTag: v0.14.0
