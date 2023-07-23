@@ -93,6 +93,21 @@ func (b *ServiceMonitorBuilder) applySpecOverride(sm *monitoringv1.ServiceMonito
 func (b *ServiceMonitorBuilder) Update(object client.Object) error {
 	sm := object.(*monitoringv1.ServiceMonitor)
 
+	extraLabels := b.instance.Spec.Metrics.Prometheus.ScrapeConfig.ServiceMonitor.Labels
+	if extraLabels == nil {
+		extraLabels = map[string]string{}
+	}
+
+	sm.Labels = metadata.Merge(
+		sm.GetLabels(),
+		extraLabels,
+	)
+
+	sm.Annotations = metadata.Merge(
+		sm.GetAnnotations(),
+		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
+	)
+
 	sm.Spec = monitoringv1.ServiceMonitorSpec{
 		NamespaceSelector: monitoringv1.NamespaceSelector{
 			MatchNames: []string{

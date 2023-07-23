@@ -931,9 +931,10 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Name is the name of the datatstore.
+<p>Name is the name of the datastore.
 It should be unique and will be referenced within the persitence spec.
-Defaults to &ldquo;default&rdquo; for default sore, &ldquo;visibility&rdquo; for visibility store and
+Defaults to &ldquo;default&rdquo; for default sore, &ldquo;visibility&rdquo; for visibility store,
+&ldquo;secondaryVisibility&rdquo; for secondary visibility store and
 &ldquo;advancedVisibility&rdquo; for advanced visibility store.</p>
 </td>
 </tr>
@@ -976,7 +977,8 @@ CassandraSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>Cassandra holds all connection parameters for Cassandra datastore.</p>
+<p>Cassandra holds all connection parameters for Cassandra datastore.
+Note that cassandra is now deprecated for visibility store.</p>
 </td>
 </tr>
 <tr>
@@ -1991,6 +1993,18 @@ bool
 <td>
 <em>(Optional)</em>
 <p>Enabled defines if the operator should create a ServiceMonitor for each services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>labels</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Labels adds extra labels to the ServiceMonitor.</p>
 </td>
 </tr>
 <tr>
@@ -3500,6 +3514,21 @@ DatastoreSpec
 </tr>
 <tr>
 <td>
+<code>secondaryVisibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreSpec">
+DatastoreSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecondaryVisibilityStore holds the secondary visibility datastore specs.
+Feature only available for clusters &gt;= 1.21.0.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>advancedVisibilityStore</code><br>
 <em>
 <a href="#temporal.io/v1beta1.DatastoreSpec">
@@ -3557,6 +3586,20 @@ DatastoreStatus
 </td>
 <td>
 <p>VisibilityStore holds the visibility datastore status.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secondaryVisibilityStore</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreStatus">
+DatastoreStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecondaryVisibility holds the secondary visibility datastore status.</p>
 </td>
 </tr>
 <tr>

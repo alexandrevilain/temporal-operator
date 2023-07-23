@@ -15,6 +15,7 @@ spec:
       containers:
         - name: postgres
           image: postgres:13
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
           volumeMounts:

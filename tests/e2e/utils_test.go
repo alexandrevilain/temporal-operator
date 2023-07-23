@@ -21,6 +21,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httputil"
+	"strings"
 	"testing"
 	"time"
 
@@ -33,6 +36,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
@@ -141,7 +145,78 @@ func deployAndWaitForElasticSearch(ctx context.Context, cfg *envconf.Config, nam
 		return val == "green" && found
 	})
 
-	return wait.For(cond, wait.WithTimeout(time.Minute*10))
+	err = wait.For(cond, wait.WithTimeout(time.Minute*10))
+	if err != nil {
+		return err
+	}
+
+	selector, err := metav1.LabelSelectorAsSelector(
+		&metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "elasticsearch.k8s.elastic.co/cluster-name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"elasticsearch"},
+				},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	secret := &corev1.Secret{}
+	err = cfg.Client().Resources(namespace).Get(ctx, "elasticsearch-es-elastic-user", namespace, secret)
+	if err != nil {
+		return err
+	}
+
+	password, ok := secret.Data["elastic"]
+	if !ok {
+		return errors.New("can't get elasticsearch user")
+	}
+
+	connectAddr, closePortForward, err := forwardPortToPod(ctx, cfg, &testing.T{}, namespace, selector, 9200)
+	if err != nil {
+		return err
+	}
+
+	defer closePortForward()
+
+	body := `
+	{
+		"persistent": {
+		  "cluster": {
+			"routing": {
+			  "allocation.disk.threshold_enabled": false
+			}
+		  }
+		}
+	}`
+
+	url := fmt.Sprintf("http://%s/_cluster/settings", connectAddr)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, strings.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth("elastic", string(password))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	content, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s \n", content)
+	return nil
 }
 
 func deployAndWaitForCassandra(ctx context.Context, cfg *envconf.Config, namespace string) error {
@@ -245,8 +320,12 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 		return "", nil, err
 	}
 
+	return forwardPortToPod(ctx, cfg, t, cluster.GetNamespace(), selector, 7233)
+}
+
+func forwardPortToPod(ctx context.Context, cfg *envconf.Config, t *testing.T, namespace string, selector labels.Selector, port int) (string, func(), error) {
 	podList := &corev1.PodList{}
-	err = cfg.Client().Resources(cluster.GetNamespace()).List(ctx, podList, resources.WithLabelSelector(selector.String()))
+	err := cfg.Client().Resources(namespace).List(ctx, podList, resources.WithLabelSelector(selector.String()))
 	if err != nil {
 		return "", nil, err
 	}
@@ -271,7 +350,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 	out := &testLogWriter{t}
 
 	go func() {
-		err := kubernetesutil.ForwardPortToPod(cfg.Client().RESTConfig(), &selectedPod, localPort, out, stopCh, readyCh)
+		err := kubernetesutil.ForwardPortToPod(cfg.Client().RESTConfig(), &selectedPod, localPort, port, out, stopCh, readyCh)
 		if err != nil {
 			panic(err)
 		}

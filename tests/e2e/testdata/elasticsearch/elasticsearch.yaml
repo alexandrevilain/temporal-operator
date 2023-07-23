@@ -9,6 +9,11 @@ spec:
     count: 1
     config:
       node.store.allow_mmap: false
+    podTemplate:
+      spec:
+        volumes:
+        - name: elasticsearch-data
+          emptyDir: {}
   http:
     tls:
       selfSignedCertificate:

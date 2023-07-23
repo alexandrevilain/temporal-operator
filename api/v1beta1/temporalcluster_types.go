@@ -652,6 +652,9 @@ type PrometheusScrapeConfigServiceMonitor struct {
 	// Enabled defines if the operator should create a ServiceMonitor for each services.
 	// +optional
 	Enabled bool `json:"enabled"`
+	// Labels adds extra labels to the ServiceMonitor.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
 	// Override allows customization of the created ServiceMonitor.
 	// All fields can be overritten except "endpoints", "selector" and "namespaceSelector".
 	// +optional

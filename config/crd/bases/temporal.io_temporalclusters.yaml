@@ -272,6 +272,11 @@ spec:
                                 enabled:
                                   description: Enabled defines if the operator should create a ServiceMonitor for each services.
                                   type: boolean
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: Labels adds extra labels to the ServiceMonitor.
+                                  type: object
                                 metricRelabelings:
                                   description: MetricRelabelConfigs to apply to samples before ingestion.
                                   items:
