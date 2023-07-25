@@ -16,8 +16,8 @@ spec:
   # [...]
   admintools:
     enabled: true
-    # You can specify ui version if needed.
-    # Check available tag you can check by link below
+    # You can specify the admin tools version if needed.
+    # Check available tag you can check by the link below
     # https://hub.docker.com/r/temporalio/admin-tools/tags
     version: 1.20.3
 ```
