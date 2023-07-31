@@ -169,8 +169,8 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/crd > ${RELEASE_PATH}/temporal-operator.crds.yaml
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
-.PHONY: artifacts
-helm: manifests helmify
+.PHONY: helm
+helm: artifacts helmify
 	cat ${RELEASE_PATH}/temporal-operator.crds.yaml ${RELEASE_PATH}/temporal-operator.yaml | \
 	$(HELMIFY) -crd-dir -image-pull-secrets -generate-defaults charts/temporal-operator
 
