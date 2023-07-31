@@ -172,7 +172,7 @@ artifacts: kustomize
 .PHONY: artifacts
 helm: kustomize helmify
 	cat ${RELEASE_PATH}/temporal-operator.crds.yaml ${RELEASE_PATH}/temporal-operator.yaml | \
-	$(HELMIFY) -crd-dir -image-pull-secrets -generate-defaults temporal-operator
+	$(HELMIFY) -crd-dir -image-pull-secrets -generate-defaults charts/temporal-operator
 
 .PHONY: bundle
 bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
