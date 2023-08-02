@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
 - ../crd
 - ../default
+- demo
 
 patchesStrategicMerge:
 - |-
