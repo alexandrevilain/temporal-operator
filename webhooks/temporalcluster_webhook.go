@@ -293,6 +293,17 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 		)
 	}
 
+	// Ensure user can't update the spec.numHistoryShards.
+	// In a temporal cluster, the number of shards is set once and forever.
+	if newCluster.Spec.NumHistoryShards != oldCluster.Spec.NumHistoryShards {
+		errs = append(errs,
+			field.Forbidden(
+				field.NewPath("spec", "numHistoryShards"),
+				"Number of history shards is immutable",
+			),
+		)
+	}
+
 	return warns, w.aggregateClusterErrors(newCluster, errs)
 }
 
