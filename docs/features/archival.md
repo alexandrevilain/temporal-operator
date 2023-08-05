@@ -25,16 +25,18 @@ spec:
     enabled: true
     provider:
       s3:
-        roleName: my-role
+        roleName: "arn:aws:iam::<account_id>:role/<aws_iam_role_id>"
         region: eu-west-1
     history:
       enabled: true
       enabledRead: true
       path: "my-bucket-name"
+      paused: false
     visibility:
       enabled: true
       enabledRead: true
       path: "my-bucket-name2"
+      paused: false
 ```
 
 ## Set up Archival using S3 on an s3-compatible object storage
@@ -72,10 +74,12 @@ spec:
       enabled: true
       enableRead: true
       path: "dev-temporal-archival"
+      paused: false
     visibility:
       enabled: true
       enableRead: true
       path: "dev-temporal-archival-visibility"
+      paused: false
 ```
 
 ## Set up Archival using Filestore
@@ -114,9 +118,11 @@ spec:
       enabled: true
       enableRead: true
       path: "/etc/archival/history"
+      paused: false
     visibility:
       enabled: true
       enableRead: true
       path: "/etc/archival/visibility"
+      paused: false
 ```
 
