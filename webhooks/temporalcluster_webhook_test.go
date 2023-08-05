@@ -282,7 +282,8 @@ func TestValidateUpdate(t *testing.T) {
 					Name: "fake",
 				},
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: version.MustNewVersionFromString("1.18.4"),
+					Version:          version.MustNewVersionFromString("1.18.4"),
+					NumHistoryShards: int32(512),
 				},
 			},
 			newObject: &v1beta1.TemporalCluster{
@@ -291,7 +292,8 @@ func TestValidateUpdate(t *testing.T) {
 					Name: "fake",
 				},
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: version.MustNewVersionFromString("1.19.0"),
+					Version:          version.MustNewVersionFromString("1.19.0"),
+					NumHistoryShards: int32(512),
 				},
 			},
 		},
@@ -334,6 +336,29 @@ func TestValidateUpdate(t *testing.T) {
 				Status: v1beta1.TemporalClusterStatus{},
 			},
 			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x)",
+		},
+		"immutable numHistoryShards": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:          version.MustNewVersionFromString("1.19.4"),
+					NumHistoryShards: int32(256),
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:          version.MustNewVersionFromString("1.19.4"),
+					NumHistoryShards: int32(512),
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.numHistoryShards: Forbidden: Number of history shards is immutable",
 		},
 	}
 
