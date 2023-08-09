@@ -63,8 +63,26 @@ func (b *ServiceAccountBuilder) Enabled() bool {
 	return isBuilderEnabled(b.instance, b.serviceName)
 }
 
+func (b *ServiceAccountBuilder) getArchivalAnnotations() map[string]string {
+	if b.instance.Spec.Archival.IsEnabled() &&
+		b.instance.Spec.Archival.Provider.S3 != nil &&
+		b.instance.Spec.Archival.Provider.S3.RoleName != nil {
+		return map[string]string{
+			"eks.amazonaws.com/role-arn": *b.instance.Spec.Archival.Provider.S3.RoleName,
+		}
+	}
+
+	return map[string]string{}
+}
+
 func (b *ServiceAccountBuilder) Update(object client.Object) error {
 	sa := object.(*corev1.ServiceAccount)
+
+	sa.Annotations = metadata.Merge(
+		sa.Annotations,
+		b.getArchivalAnnotations(),
+	)
+
 	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)
 	}

@@ -19,6 +19,7 @@ package base
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -164,6 +165,54 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			MountPath: "/etc/temporal/config/dynamic_config.yaml",
 			SubPath:   "dynamic_config.yaml",
 		})
+	}
+
+	if b.instance.Spec.Archival.IsEnabled() {
+		if b.instance.Spec.Archival.Provider.Kind() == v1beta1.S3ArchivalProviderKind &&
+			b.instance.Spec.Archival.Provider.S3.Credentials != nil {
+			envVars = append(envVars,
+				corev1.EnvVar{
+					Name: "AWS_ACCESS_KEY_ID",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: b.instance.Spec.Archival.Provider.S3.Credentials.AccessKeyIDRef,
+					},
+				},
+				corev1.EnvVar{
+					Name: "AWS_SECRET_ACCESS_KEY",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: b.instance.Spec.Archival.Provider.S3.Credentials.SecretAccessKeyRef,
+					},
+				},
+			)
+		}
+
+		if b.instance.Spec.Archival.Provider.Kind() == v1beta1.GCSArchivalProviderKind &&
+			b.instance.Spec.Archival.Provider.GCS.CredentialsRef != nil {
+			key := b.instance.Spec.Archival.Provider.GCS.CredentialsRef.Key
+			if key == "" {
+				key = "credentials.json"
+			}
+			volumes = append(volumes, corev1.Volume{
+				Name: "archival",
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: b.instance.Spec.Archival.Provider.GCS.CredentialsRef.Name,
+						Items: []corev1.KeyToPath{
+							{
+								Key:  key,
+								Path: filepath.Base(b.instance.Spec.Archival.Provider.GCS.CredentialsFileMountPath()),
+							},
+						},
+						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+					},
+				},
+			})
+
+			volumeMounts = append(volumeMounts, corev1.VolumeMount{
+				Name:      "archival",
+				MountPath: filepath.Dir(b.instance.Spec.Archival.Provider.GCS.CredentialsFileMountPath()),
+			})
+		}
 	}
 
 	if b.instance.MTLSWithCertManagerEnabled() {

@@ -21,6 +21,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// TemporalNamespaceArchivalSpec is a per-namespace archival configuration override.
+type TemporalNamespaceArchivalSpec struct {
+	// History is the config for this namespace history archival.
+	// +optional
+	History *ArchivalSpec `json:"history,omitempty"`
+	// Visibility is the config for this namespace visibility archival.
+	// +optional
+	Visibility *ArchivalSpec `json:"visibility,omitempty"`
+}
+
 // TemporalNamespaceSpec defines the desired state of Namespace.
 type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
@@ -53,6 +63,10 @@ type TemporalNamespaceSpec struct {
 	// CRD is deleted.
 	// +optional
 	AllowDeletion bool `json:"allowDeletion,omitempty"`
+	// Archival is a per-namespace archival configuration.
+	// If not set, the default cluster configuration is used.
+	// +optional
+	Archival *TemporalNamespaceArchivalSpec `json:"archival,omitempty"`
 }
 
 // TemporalNamespaceStatus defines the observed state of Namespace.

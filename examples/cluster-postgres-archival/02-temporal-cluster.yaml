@@ -1,0 +1,52 @@
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.21.2
+  numHistoryShards: 1
+  persistence:
+    defaultStore:
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal
+        connectAddr: postgres.demo.svc.cluster.local:5432
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+    visibilityStore:
+      sql:
+        user: temporal
+        pluginName: postgres
+        databaseName: temporal_visibility
+        connectAddr: postgres.demo.svc.cluster.local:5432
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: postgres-password
+        key: PASSWORD
+  admintools:
+    enabled: true
+  archival:
+    enabled: true
+    provider:
+      s3:
+        region: gra
+        endpoint: s3.gra.io.cloud.ovh.net
+        credentials:
+            accessKeyIdRef:
+                name: archival-credentials
+                key: AWS_ACCESS_KEY_ID
+            secretKeyRef:
+                name: archival-credentials
+                key: AWS_SECRET_ACCESS_KEY
+    history:
+      enabled: true
+      enableRead: true
+      path: "dev-temporal-archival"
+    visibility:
+      enabled: true
+      enableRead: true
+      path: "dev-temporal-archival-visibility"
