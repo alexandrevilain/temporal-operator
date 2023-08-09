@@ -188,6 +188,10 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 
 		if b.instance.Spec.Archival.Provider.Kind() == v1beta1.GCSArchivalProviderKind &&
 			b.instance.Spec.Archival.Provider.GCS.CredentialsRef != nil {
+			key := b.instance.Spec.Archival.Provider.GCS.CredentialsRef.Key
+			if key == "" {
+				key = "credentials.json"
+			}
 			volumes = append(volumes, corev1.Volume{
 				Name: "archival",
 				VolumeSource: corev1.VolumeSource{
@@ -195,7 +199,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 						SecretName: b.instance.Spec.Archival.Provider.GCS.CredentialsRef.Name,
 						Items: []corev1.KeyToPath{
 							{
-								Key:  b.instance.Spec.Archival.Provider.GCS.CredentialsRef.Key,
+								Key:  key,
 								Path: filepath.Base(b.instance.Spec.Archival.Provider.GCS.CredentialsFileMountPath()),
 							},
 						},
