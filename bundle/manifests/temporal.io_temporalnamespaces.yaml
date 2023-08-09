@@ -43,6 +43,65 @@ spec:
                 description: AllowDeletion makes the controller delete the Temporal
                   namespace if the CRD is deleted.
                 type: boolean
+              archival:
+                description: Archival is a per-namespace archival configuration. If
+                  not set, the default cluster configuration is used.
+                properties:
+                  history:
+                    description: History is the config for this namespace history
+                      archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                  visibility:
+                    description: Visibility is the config for this namespace visibility
+                      archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                type: object
               clusterRef:
                 description: Reference to the temporal cluster the namespace will
                   be created.

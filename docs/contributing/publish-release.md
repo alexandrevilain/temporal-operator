@@ -15,10 +15,11 @@ Then run: `make prepare-release`
 Once done create a new release branch and submit a Pull Request:
 
 ```
-git checkout -b release/v0.13.0
-git commit -am "Prepare release v0.13.0"
-git push origin/release/v0.13.0
-gh pr create --title "Prepare release v0.13.0" --base main --head release/v0.13.0
+VERSION=$(cat VERSION)
+git checkout -b release/v$VERSION
+git commit -am "Prepare release $VERSION"
+git push origin/release/v$VERSION
+gh pr create --title "Prepare release v$VERSION" --base main --head release/v$VERSION
 ```
 
 Once the PR has been approved and merged, publish a new tag from the `main` branch

@@ -63,6 +63,8 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 
 | Temporal Operator | Temporal           | Kubernetes     |
 |-------------------|--------------------|----------------|
+| v0.15.x           | v1.18.x to v1.21.x | v1.24 to v1.27 |
+| v0.14.x           | v1.18.x to v1.21.x | v1.24 to v1.27 |
 | v0.13.x           | v1.18.x to v1.20.x | v1.24 to v1.27 |
 | v0.12.x           | v1.18.x to v1.20.x | v1.23 to v1.26 |
 | v0.11.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
@@ -85,6 +87,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 - [x] Cluster version upgrades.
 - [x] Cluster monitoring.
 - [x] Complete end2end test suite.
+- [x] Archival.
 - [ ] Auto scaling.
 - [ ] Multi cluster replication.
 
