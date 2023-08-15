@@ -47,14 +47,16 @@ type DeploymentBuilder struct {
 	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
 	service     *v1beta1.ServiceSpec
+	configHash  string
 }
 
-func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *DeploymentBuilder {
+func NewDeploymentBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec, configHash string) *DeploymentBuilder {
 	return &DeploymentBuilder{
 		serviceName: serviceName,
 		instance:    instance,
 		scheme:      scheme,
 		service:     service,
+		configHash:  configHash,
 	}
 }
 
@@ -331,7 +333,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName, b.configHash),
 		Spec: corev1.PodSpec{
 			ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 			DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),

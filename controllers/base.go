@@ -30,8 +30,8 @@ type Base struct {
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
 
-	Jobs     *reconciler.JosbReconciler
-	Builders *reconciler.BuildersReconciler
+	Jobs       *reconciler.JosbReconciler
+	Reconciler *reconciler.Reconciler
 }
 
 func New(crclient client.Client, scheme *runtime.Scheme, recorder record.EventRecorder, discoveryMgr discovery.Manager) Base {
@@ -44,7 +44,7 @@ func New(crclient client.Client, scheme *runtime.Scheme, recorder record.EventRe
 			Scheme:   scheme,
 			Recorder: recorder,
 		},
-		Builders: &reconciler.BuildersReconciler{
+		Reconciler: &reconciler.Reconciler{
 			Client:    crclient,
 			Scheme:    scheme,
 			Recorder:  recorder,

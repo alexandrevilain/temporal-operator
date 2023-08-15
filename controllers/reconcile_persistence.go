@@ -36,14 +36,6 @@ func sanitizeVersionToName(version *version.Version) string {
 	return strings.ReplaceAll(version.String(), ".", "-")
 }
 
-func (r *TemporalClusterReconciler) reconcileSchemaScriptsConfigmap(ctx context.Context, cluster *v1beta1.TemporalCluster) error {
-	builders := []resource.Builder{
-		persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme),
-	}
-	_, _, err := r.Builders.Reconcile(ctx, cluster, builders)
-	return err
-}
-
 func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.TemporalCluster) {
 	if cluster.Status.Persistence == nil {
 		cluster.Status.Persistence = new(v1beta1.TemporalPersistenceStatus)
@@ -70,8 +62,9 @@ func getDatabaseScriptCommand(script string) []string {
 func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cluster *v1beta1.TemporalCluster) (time.Duration, error) {
 	// First of all, ensure status fields are set.
 	r.reconcilePersistenceStatus(cluster)
+
 	// Ensure the configmap containing scripts is up-to-date
-	err := r.reconcileSchemaScriptsConfigmap(ctx, cluster)
+	_, err := r.Reconciler.ReconcileBuilder(ctx, cluster, persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme))
 	if err != nil {
 		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)
 	}

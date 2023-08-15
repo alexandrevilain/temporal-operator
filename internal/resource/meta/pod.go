@@ -26,8 +26,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	configHashKey = "operator.temporal.io/config"
+)
+
 // BuildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
-func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav1.ObjectMeta {
+func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service, configHash string) metav1.ObjectMeta {
 	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, v string) bool {
 		return k != "kubectl.kubernetes.io/last-applied-configuration"
 	})
@@ -42,6 +46,9 @@ func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service string) metav
 			istio.GetAnnotations(instance),
 			prometheus.GetAnnotations(instance),
 			metadata.GetAnnotations(instance.Name, instanceAnnotations),
+			map[string]string{
+				configHashKey: configHash,
+			},
 		),
 	}
 }

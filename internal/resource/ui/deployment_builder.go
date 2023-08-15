@@ -39,14 +39,16 @@ const (
 )
 
 type DeploymentBuilder struct {
-	instance *v1beta1.TemporalCluster
-	scheme   *runtime.Scheme
+	instance   *v1beta1.TemporalCluster
+	scheme     *runtime.Scheme
+	configHash string
 }
 
-func NewDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *DeploymentBuilder {
+func NewDeploymentBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, configHash string) *DeploymentBuilder {
 	return &DeploymentBuilder{
-		instance: instance,
-		scheme:   scheme,
+		instance:   instance,
+		scheme:     scheme,
+		configHash: configHash,
 	}
 }
 
@@ -119,7 +121,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		MatchLabels: metadata.LabelsSelector(b.instance, "ui"),
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui"),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui", b.configHash),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{

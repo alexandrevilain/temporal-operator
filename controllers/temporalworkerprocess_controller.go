@@ -129,15 +129,6 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 	return r.handleSuccess(ctx, worker)
 }
 
-// Reconcile worker process builder configmaps.
-func (r *TemporalWorkerProcessReconciler) reconcileWorkerScriptsConfigmap(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (time.Duration, error) {
-	builders := []resource.Builder{
-		workerprocessbuilder.NewJobScriptsConfigmapBuilder(worker, r.Scheme),
-	}
-	_, requeueAfter, err := r.Builders.Reconcile(ctx, worker, builders)
-	return requeueAfter, err
-}
-
 func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (time.Duration, error) {
 	if !worker.Spec.Builder.BuilderEnabled() {
 		return 0, nil
@@ -149,8 +140,12 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 	}
 
 	// First of all, ensure the configmap containing scripts is up-to-date
-	if requeueAfter, err := r.reconcileWorkerScriptsConfigmap(ctx, worker); err != nil || requeueAfter > 0 {
-		return requeueAfter, err
+	_, err := r.Reconciler.ReconcileBuilder(ctx,
+		worker,
+		workerprocessbuilder.NewJobScriptsConfigmapBuilder(worker, r.Scheme),
+	)
+	if err != nil {
+		return 0, err
 	}
 
 	jobs := []*reconciler.Job{
@@ -190,21 +185,37 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 }
 
 func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context, temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
-	builders := r.resourceBuilders(temporalWorkerProcess, temporalCluster)
+	clusterClientBuilder := workerprocess.NewClusterClientBuilder(temporalWorkerProcess, temporalCluster, r.Scheme)
+	if clusterClientBuilder.Enabled() {
+		clusterClient, err := r.Reconciler.ReconcileBuilder(ctx, temporalWorkerProcess, clusterClientBuilder)
+		if err != nil {
+			return 0, err
+		}
 
-	statuses, requeueAfter, err := r.Builders.Reconcile(ctx, temporalCluster, builders)
+		status, err := resource.GetStatus(clusterClient)
+		if err != nil {
+			return 0, err
+		}
+
+		if !status.Ready {
+			log.FromContext(ctx).Info("Waiting for cluster client to be ready, requeing workerprocess")
+			return 5 * time.Second, nil
+		}
+	}
+
+	deployment, err := r.Reconciler.ReconcileBuilder(ctx,
+		temporalWorkerProcess,
+		workerprocess.NewDeploymentBuilder(temporalWorkerProcess, temporalCluster, r.Scheme))
 	if err != nil {
-		return requeueAfter, err
-	}
-	if requeueAfter > 0 {
-		return requeueAfter, nil
+		return 0, err
 	}
 
-	if len(statuses) == 1 {
-		temporalWorkerProcess.Status.Ready = statuses[0].Ready
-	} else {
-		temporalWorkerProcess.Status.Ready = false
+	deploymentStatus, err := resource.GetStatus(deployment)
+	if err != nil {
+		return 0, err
 	}
+
+	temporalWorkerProcess.Status.Ready = deploymentStatus.Ready
 
 	if status.IsWorkerProcessReady(temporalWorkerProcess) {
 		v1beta1.SetTemporalWorkerProcessReady(temporalWorkerProcess, metav1.ConditionTrue, v1beta1.ServicesReadyReason, "")
@@ -214,13 +225,6 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 	}
 
 	return 0, nil
-}
-
-func (r *TemporalWorkerProcessReconciler) resourceBuilders(temporalWorkerProcess *v1beta1.TemporalWorkerProcess, temporalCluster *v1beta1.TemporalCluster) []resource.Builder {
-	return []resource.Builder{
-		workerprocess.NewClusterClientBuilder(temporalWorkerProcess, temporalCluster, r.Scheme),
-		workerprocess.NewDeploymentBuilder(temporalWorkerProcess, temporalCluster, r.Scheme),
-	}
 }
 
 func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
