@@ -2,24 +2,23 @@
 
 Temporal-operator supports configuring archival for Temporal clusters. You can get more informations about Event histories backup on [Temporal documentation](https://docs.temporal.io/clusters#archival).
 The operator supports the following providers:
+
 - AWS s3 (and any s3-compatible provider)
 - Google Cloud storage
 - Filestore
 
 ## Set up Archival using S3 on an Amazon EKS cluster
 
-On EKS clusters, to connect and archive data with s3 you first need to create an IAM role with enough permissions to upload files to s3. 
+On EKS clusters, to connect and archive data with s3 you first need to create an IAM role with enough permissions to upload files to s3.
 
 First, create an IAM role with the following s3 policy:
+
 ```json
 {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::<account_id>:role/<iam_role>"
-            },
             "Action": [
                 "s3:PutObjectAcl",
                 "s3:PutObject",
@@ -31,9 +30,6 @@ First, create an IAM role with the following s3 policy:
         },
         {
             "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::<account_id>:role/<iam_role>"
-            },
             "Action": "s3:ListBucket",
             "Resource": "arn:aws:s3:::<bucket_name>"
         }
@@ -55,7 +51,7 @@ Then create a trust relationships for your EKS cluster:
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringEquals": {
-                    "oidc.eks.<aws_region>.amazonaws.com/id/<cluster_id>:sub": ["system:serviceaccount:<temporal_ns>:<temporal_sa>"]
+                    "oidc.eks.<aws_region>.amazonaws.com/id/<cluster_id>:sub": ["system:serviceaccount:<temporal_ns>:<temporal_history_sa>"]
                 }
             }
         }
@@ -83,12 +79,12 @@ spec:
         region: eu-west-1
     history:
       enabled: true
-      enabledRead: true
+      enableRead: true
       path: "my-bucket-name"
       paused: false
     visibility:
       enabled: true
-      enabledRead: true
+      enableRead: true
       path: "my-bucket-name2"
       paused: false
 ```
@@ -139,7 +135,6 @@ spec:
 ## Set up Archival using Filestore
 
 Warning: To use your the storage you desired for filestore archival, you'll need to use overrides.
-
 
 ```yaml
 apiVersion: temporal.io/v1beta1
