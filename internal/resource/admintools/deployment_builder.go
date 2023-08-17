@@ -79,10 +79,15 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		metadata.GetAnnotations(b.instance.Name, b.instance.Annotations),
 	)
 
+	address := fmt.Sprintf("%s:%d", b.instance.ChildResourceName(meta.FrontendService), *b.instance.Spec.Services.Frontend.Port)
 	env := []corev1.EnvVar{
 		{
-			Name:  "TEMPORAL_CLI_ADDRESS",
-			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName(meta.FrontendService), *b.instance.Spec.Services.Frontend.Port),
+			Name:  "TEMPORAL_CLI_ADDRESS", // tctl
+			Value: address,
+		},
+		{
+			Name:  "TEMPORAL_ADDRESS", // temporal
+			Value: address,
 		},
 	}
 
