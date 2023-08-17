@@ -140,6 +140,8 @@ func (r *TemporalNamespaceReconciler) ensureFinalizer(ctx context.Context, names
 }
 
 func (r *TemporalNamespaceReconciler) ensureNamespaceDeleted(ctx context.Context, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
+	logger := log.FromContext(ctx)
+
 	if !controllerutil.ContainsFinalizer(namespace, deletionFinalizer) {
 		return nil
 	}
@@ -152,7 +154,12 @@ func (r *TemporalNamespaceReconciler) ensureNamespaceDeleted(ctx context.Context
 
 	_, err = client.OperatorService().DeleteNamespace(ctx, temporal.NamespaceToDeleteNamespaceRequest(namespace))
 	if err != nil {
-		return fmt.Errorf("can't delete \"%s\" namespace: %w", namespace.GetName(), err)
+		var namespaceNotFoundError *serviceerror.NamespaceNotFound
+		if errors.As(err, &namespaceNotFoundError) {
+			logger.Info("try to delete but not found", "namespace", namespace.GetName())
+		} else {
+			return fmt.Errorf("can't delete \"%s\" namespace: %w", namespace.GetName(), err)
+		}
 	}
 
 	_ = controllerutil.RemoveFinalizer(namespace, deletionFinalizer)
