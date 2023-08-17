@@ -22,6 +22,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"go.temporal.io/server/common/primitives"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ObservedVersionMatchesDesiredVersion returns true if all services status
@@ -62,7 +63,7 @@ var deployGVK = schema.GroupVersionKind{
 	Kind:    "Deployment",
 }
 
-func ResourceStatusToServiceStatuses(c *v1beta1.TemporalCluster, statuses []*resource.Status) []*v1beta1.ServiceStatus {
+func ResourciledObjectsToServiceStatuses(c *v1beta1.TemporalCluster, objects []client.Object) ([]*v1beta1.ServiceStatus, error) {
 	services := []primitives.ServiceName{
 		primitives.FrontendService,
 		primitives.HistoryService,
@@ -73,12 +74,21 @@ func ResourceStatusToServiceStatuses(c *v1beta1.TemporalCluster, statuses []*res
 
 	result := []*v1beta1.ServiceStatus{}
 
-	for _, service := range services {
-		serviceName := string(service)
+	for _, object := range objects {
+		if object.GetObjectKind().GroupVersionKind() != deployGVK {
+			continue
+		}
 
-		for _, status := range statuses {
-			if status.GVK == deployGVK && status.Name == c.ChildResourceName(serviceName) && status.Namespace == c.GetNamespace() {
-				version, ok := status.Labels["app.kubernetes.io/version"]
+		status, err := resource.GetStatus(object)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, service := range services {
+			serviceName := string(service)
+
+			if object.GetName() == c.ChildResourceName(serviceName) && object.GetNamespace() == c.GetNamespace() {
+				version, ok := object.GetLabels()["app.kubernetes.io/version"]
 				if !ok {
 					version = "0.0.0"
 				}
@@ -92,5 +102,5 @@ func ResourceStatusToServiceStatuses(c *v1beta1.TemporalCluster, statuses []*res
 		}
 	}
 
-	return result
+	return result, nil
 }

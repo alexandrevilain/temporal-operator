@@ -20,7 +20,6 @@ package workerprocess
 import (
 	"fmt"
 
-	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
@@ -171,18 +170,4 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	return nil
-}
-
-func (b *DeploymentBuilder) Dependencies() []*resource.Dependency {
-	if !(b.cluster.MTLSWithCertManagerEnabled() && b.cluster.Spec.MTLS.FrontendEnabled()) {
-		return []*resource.Dependency{}
-	}
-
-	return []*resource.Dependency{
-		{
-			Object:    &v1beta1.TemporalClusterClient{},
-			Name:      b.instance.ChildResourceName("cluster-client"),
-			Namespace: b.instance.GetNamespace(),
-		},
-	}
 }

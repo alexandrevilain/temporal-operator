@@ -19,6 +19,8 @@ package controllers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"go.temporal.io/server/common/primitives"
@@ -44,10 +46,12 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/alexandrevilain/controller-tools/pkg/hash"
 	"github.com/alexandrevilain/controller-tools/pkg/patch"
 	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/admintools"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/base"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/config"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/prometheus"
@@ -136,37 +140,49 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 	}
 
-	if requeueAfter, err := r.reconcileResources(ctx, cluster); err != nil || requeueAfter > 0 {
-		if err != nil {
-			logger.Error(err, "Can't reconcile resources")
-			if requeueAfter == 0 {
-				requeueAfter = 2 * time.Second
-			}
-			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
-		}
-		if requeueAfter > 0 {
-			return reconcile.Result{RequeueAfter: requeueAfter}, nil
-		}
+	if err := r.reconcileResources(ctx, cluster); err != nil {
+		logger.Error(err, "Can't reconcile resources")
+		return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
 	return r.handleSuccess(ctx, cluster)
 }
 
-func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) (time.Duration, error) {
-	builders, err := r.resourceBuilders(temporalCluster)
+func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) error {
+	// reconcile configmap first, then compute its hash.
+	configMapObject, err := r.Reconciler.ReconcileBuilder(ctx,
+		temporalCluster,
+		config.NewConfigmapBuilder(temporalCluster, r.Scheme))
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("can't reconcile configmap: %w", err)
 	}
 
-	statuses, requeueAfter, err := r.Builders.Reconcile(ctx, temporalCluster, builders)
-	if err != nil {
-		return requeueAfter, err
-	}
-	if requeueAfter > 0 {
-		return requeueAfter, nil
+	configMap, ok := configMapObject.(*corev1.ConfigMap)
+	if !ok {
+		return errors.New("can't cast configmap object to *corev1.ConfigMap")
 	}
 
-	for _, status := range status.ResourceStatusToServiceStatuses(temporalCluster, statuses) {
+	configHash, err := hash.Sha256(configMap.Data)
+	if err != nil {
+		return fmt.Errorf("can't compute configmap hash: %w", err)
+	}
+
+	builders, err := r.resourceBuilders(temporalCluster, configHash)
+	if err != nil {
+		return err
+	}
+
+	objects, err := r.Reconciler.ReconcileBuilders(ctx, temporalCluster, builders)
+	if err != nil {
+		return err
+	}
+
+	statuses, err := status.ResourciledObjectsToServiceStatuses(temporalCluster, objects)
+	if err != nil {
+		return err
+	}
+
+	for _, status := range statuses {
 		temporalCluster.Status.AddServiceStatus(status)
 	}
 
@@ -180,12 +196,11 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		v1beta1.SetTemporalClusterReady(temporalCluster, metav1.ConditionFalse, v1beta1.ServicesNotReadyReason, "")
 	}
 
-	return 0, nil
+	return nil
 }
 
-func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.TemporalCluster) ([]resource.Builder, error) {
+func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.TemporalCluster, configHash string) ([]resource.Builder, error) {
 	builders := []resource.Builder{
-		base.NewConfigmapBuilder(temporalCluster, r.Scheme),
 		base.NewFrontendServiceBuilder(temporalCluster, r.Scheme),
 	}
 
@@ -206,7 +221,7 @@ func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.Te
 		serviceName := string(service)
 
 		builders = append(builders, base.NewServiceAccountBuilder(serviceName, temporalCluster, r.Scheme, specs))
-		builders = append(builders, base.NewDeploymentBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, base.NewDeploymentBuilder(serviceName, temporalCluster, r.Scheme, specs, configHash))
 		builders = append(builders, base.NewHeadlessServiceBuilder(serviceName, temporalCluster, r.Scheme, specs))
 
 		builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, temporalCluster, r.Scheme, specs))
@@ -228,12 +243,12 @@ func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.Te
 		certmanager.NewMTLSFrontendCertificateBuilder(temporalCluster, r.Scheme),
 		certmanager.NewWorkerFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
 		// UI:
-		ui.NewDeploymentBuilder(temporalCluster, r.Scheme),
+		ui.NewDeploymentBuilder(temporalCluster, r.Scheme, configHash),
 		ui.NewServiceBuilder(temporalCluster, r.Scheme),
 		ui.NewIngressBuilder(temporalCluster, r.Scheme),
 		ui.NewFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
 		// Admin tools:
-		admintools.NewDeploymentBuilder(temporalCluster, r.Scheme),
+		admintools.NewDeploymentBuilder(temporalCluster, r.Scheme, configHash),
 		admintools.NewFrontendClientCertificateBuilder(temporalCluster, r.Scheme),
 	)
 
