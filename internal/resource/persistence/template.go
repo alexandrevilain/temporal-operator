@@ -206,8 +206,8 @@ var (
 				fi
 			fi
 
-			# v3 has the "TemporalNamespaceDivision"
-			is_v3=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalNamespaceDivision")')
+			# v3 does not have the "HistorySizeBytes" property
+			is_v3=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("HistorySizeBytes") | not')
 			if [ $is_v3 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
@@ -215,8 +215,8 @@ var (
 				fi
 			fi
 
-			# v4 has the "HistorySizeBytes"
-			is_v4=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("HistorySizeBytes")')
+			# v4 does not have the "BuildIds" property
+			is_v4=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("BuildIds") | not')
 			if [ $is_v4 == "true" ]; then
 				if [ $current_version_found = false ]; then
 					current_version_found=true
