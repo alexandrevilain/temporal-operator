@@ -4,7 +4,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.21.4
   numHistoryShards: 1
   jobTtlSecondsAfterFinished: 300 
   persistence:
@@ -31,13 +31,11 @@ spec:
     advancedVisibilityStore:
       elasticsearch:
         version: v8
-        username: admin
-        url: http://elasticsearch-master.demo:9200
-        indices:
-          visibility: temporal_visibility_v1_dev
+        username: elastic
+        url: http://elasticsearch-es-http:9200
       passwordSecretRef:
-        name: es-password
-        key: PASSWORD
+        name: elasticsearch-es-elastic-user
+        key: elastic
   ui:
     enabled: true
   admintools:
