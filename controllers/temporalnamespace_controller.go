@@ -123,6 +123,10 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			err = fmt.Errorf("can't create \"%s\" namespace: %w", namespace.GetName(), err)
 			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
 		}
+		err = client.Update(ctx, temporal.NamespaceToUpdateNamespaceRequest(cluster, namespace))
+		if err != nil {
+			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+		}
 	}
 
 	logger.Info("Successfully reconciled namespace", "namespace", namespace.GetName())

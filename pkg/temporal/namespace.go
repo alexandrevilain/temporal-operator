@@ -21,6 +21,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
 	"go.temporal.io/api/enums/v1"
+	namespacev1 "go.temporal.io/api/namespace/v1"
 	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/replication/v1"
 	"go.temporal.io/api/workflowservice/v1"
@@ -86,4 +87,63 @@ func NamespaceToDeleteNamespaceRequest(namespace *v1beta1.TemporalNamespace) *op
 	return &operatorservice.DeleteNamespaceRequest{
 		Namespace: namespace.GetName(),
 	}
+}
+
+func NamespaceToUpdateNamespaceRequest(cluster *v1beta1.TemporalCluster, namespace *v1beta1.TemporalNamespace) *workflowservice.UpdateNamespaceRequest {
+	re := &workflowservice.UpdateNamespaceRequest{
+		Namespace: namespace.GetName(),
+		UpdateInfo: &namespacev1.UpdateNamespaceInfo{
+			Description: namespace.Spec.Description,
+			OwnerEmail:  namespace.Spec.OwnerEmail,
+			Data:        namespace.Spec.Data,
+		},
+		Config:            &namespacev1.NamespaceConfig{},
+		ReplicationConfig: &replication.NamespaceReplicationConfig{},
+	}
+
+	// Allow archival config override only if archival is enabled at the cluster-level.
+	if cluster.Spec.Archival.IsEnabled() && namespace.Spec.Archival != nil {
+		// Check for namespace-level history archival config override.
+		if namespace.Spec.Archival.History != nil {
+			state := enums.ARCHIVAL_STATE_DISABLED
+			if namespace.Spec.Archival.History.Enabled {
+				state = enums.ARCHIVAL_STATE_ENABLED
+			}
+
+			re.Config.HistoryArchivalState = state
+			re.Config.HistoryArchivalUri = archival.URI(cluster.Spec.Archival.Provider, namespace.Spec.Archival.History)
+		}
+
+		// Check for namespace-level visibility archival config override.
+		if namespace.Spec.Archival.Visibility != nil {
+			state := enums.ARCHIVAL_STATE_DISABLED
+			if namespace.Spec.Archival.Visibility.Enabled {
+				state = enums.ARCHIVAL_STATE_ENABLED
+			}
+
+			re.Config.VisibilityArchivalState = state
+			re.Config.VisibilityArchivalUri = archival.URI(cluster.Spec.Archival.Provider, namespace.Spec.Archival.Visibility)
+		}
+	}
+
+	if namespace.Spec.RetentionPeriod != nil {
+		re.Config.WorkflowExecutionRetentionTtl = &namespace.Spec.RetentionPeriod.Duration
+	}
+
+	if namespace.Spec.IsGlobalNamespace {
+		re.PromoteNamespace = true
+
+		if len(namespace.Spec.Clusters) > 0 {
+			re.ReplicationConfig.Clusters = make([]*replication.ClusterReplicationConfig, 0, len(namespace.Spec.Clusters))
+			for _, name := range namespace.Spec.Clusters {
+				re.ReplicationConfig.Clusters = append(re.ReplicationConfig.Clusters, &replication.ClusterReplicationConfig{
+					ClusterName: name,
+				})
+			}
+		}
+
+		re.ReplicationConfig.ActiveClusterName = namespace.Spec.ActiveClusterName
+	}
+
+	return re
 }
