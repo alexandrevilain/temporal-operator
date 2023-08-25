@@ -120,6 +120,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 							Name:                     "schema-script-runner",
 							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
 							ImagePullPolicy:          corev1.PullAlways,
+							Resources:                b.instance.Spec.JobResources,
 							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 							TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 							Command:                  append([]string{"/bin/sh", "-c"}, b.command...),
