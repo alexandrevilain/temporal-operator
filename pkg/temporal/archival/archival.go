@@ -67,7 +67,7 @@ func S3ArchiverToTemporalS3Archiver(a *v1beta1.S3Archiver) *config.S3Archiver {
 	return &config.S3Archiver{
 		Region:           a.Region,
 		Endpoint:         a.Endpoint,
-		S3ForcePathStyle: false, // TODO(alexandrevilain): See implications
+		S3ForcePathStyle: a.S3ForcePathStyle,
 	}
 }
 

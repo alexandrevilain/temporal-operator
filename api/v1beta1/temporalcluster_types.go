@@ -842,6 +842,9 @@ type S3Archiver struct {
 	// Use credentials if you want to use aws credentials from secret.
 	// +optional
 	Credentials *S3Credentials `json:"credentials,omitempty"`
+	// Use s3ForcePathStyle if you want to use s3 path style.
+	// +optional
+	S3ForcePathStyle bool `json:"s3ForcePathStyle"`
 }
 
 type S3Credentials struct {
@@ -879,6 +882,9 @@ type TemporalClusterSpec struct {
 	//+kubebuilder:default:=300
 	//+kubebuilder:validation:Minimum=1
 	JobTTLSecondsAfterFinished *int32 `json:"jobTtlSecondsAfterFinished"`
+	// JobResources allows set resources for setup/update jobs.
+	// +optional
+	JobResources corev1.ResourceRequirements `json:"jobResources,omitempty"`
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1
