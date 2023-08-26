@@ -27,12 +27,14 @@ import (
 	"go.temporal.io/api/serviceerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -41,7 +43,10 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 )
 
-const deletionFinalizer = "deletion.finalizers.temporal.io"
+const (
+	deletionFinalizer = "deletion.finalizers.temporal.io"
+	clusterRefField   = "spec.clusterRef.name"
+)
 
 // TemporalNamespaceReconciler reconciles a Namespace object.
 type TemporalNamespaceReconciler struct {
@@ -191,13 +196,58 @@ func (r *TemporalNamespaceReconciler) handleErrorWithRequeue(ctx context.Context
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
+func (r *TemporalNamespaceReconciler) clusterToNamespacesMapfunc(ctx context.Context, o client.Object) []reconcile.Request {
+	cluster, ok := o.(*v1beta1.TemporalCluster)
+	if !ok {
+		return nil
+	}
+
+	temporalNamespaces := &v1beta1.TemporalNamespaceList{}
+	listOps := &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(clusterRefField, cluster.GetName()),
+	}
+
+	err := r.Client.List(ctx, temporalNamespaces, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	result := []reconcile.Request{}
+	for _, namespace := range temporalNamespaces.Items {
+		namespace := namespace
+		// As we're only indexing on spec.clusterRef.Name, ensure that referenced namespace is watching the cluster's namespace.
+		if namespace.Spec.ClusterRef.NamespacedName(&namespace) != client.ObjectKeyFromObject(cluster) {
+			continue
+		}
+		result = append(result, reconcile.Request{
+			NamespacedName: client.ObjectKeyFromObject(&namespace),
+		})
+	}
+
+	return result
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalNamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1beta1.TemporalNamespace{}, clusterRefField, func(rawObj client.Object) []string {
+		temporalNamespace := rawObj.(*v1beta1.TemporalNamespace)
+		if temporalNamespace.Spec.ClusterRef.Name == "" {
+			return nil
+		}
+		return []string{temporalNamespace.Spec.ClusterRef.Name}
+	}); err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1beta1.TemporalNamespace{}, builder.WithPredicates(predicate.Or(
 			predicate.GenerationChangedPredicate{},
 			predicate.LabelChangedPredicate{},
 			predicate.AnnotationChangedPredicate{},
 		))).
+		Watches(
+			&v1beta1.TemporalCluster{},
+			handler.EnqueueRequestsFromMapFunc(r.clusterToNamespacesMapfunc),
+		).
 		Complete(r)
 }
