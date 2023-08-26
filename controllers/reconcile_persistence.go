@@ -49,6 +49,10 @@ func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.
 		cluster.Status.Persistence.VisibilityStore = new(v1beta1.DatastoreStatus)
 	}
 
+	if cluster.Status.Persistence.SecondaryVisibility == nil && cluster.Spec.Persistence.SecondaryVisibilityStore != nil {
+		cluster.Status.Persistence.SecondaryVisibility = new(v1beta1.DatastoreStatus)
+	}
+
 	if cluster.Status.Persistence.AdvancedVisibilityStore == nil && cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
 		cluster.Status.Persistence.AdvancedVisibilityStore = new(v1beta1.DatastoreStatus)
 	}
