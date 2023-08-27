@@ -36,6 +36,19 @@ func sanitizeVersionToName(version *version.Version) string {
 	return strings.ReplaceAll(version.String(), ".", "-")
 }
 
+// applyStatusDatastoreTypeDefaultValue sets default value on the status.persistence.[store].type for clusters created with operator =< 0.15.1.
+// This field was added in the status type to run temporal-sql-tool's update-schema when SQL plugin is updated from postgres to postgres12.
+// To run this the operator should track the datastore type when its created.
+func (r *TemporalClusterReconciler) applyStatusDatastoreTypeDefaultValue(status *v1beta1.DatastoreStatus, datastore *v1beta1.DatastoreSpec) {
+	if status == nil || datastore == nil {
+		return
+	}
+
+	if status.Created && status.Setup && status.SchemaVersion != nil && status.Type == "" {
+		status.Type = datastore.GetType()
+	}
+}
+
 func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.TemporalCluster) {
 	if cluster.Status.Persistence == nil {
 		cluster.Status.Persistence = new(v1beta1.TemporalPersistenceStatus)
@@ -45,16 +58,28 @@ func (r *TemporalClusterReconciler) reconcilePersistenceStatus(cluster *v1beta1.
 		cluster.Status.Persistence.DefaultStore = new(v1beta1.DatastoreStatus)
 	}
 
+	r.applyStatusDatastoreTypeDefaultValue(cluster.Status.Persistence.DefaultStore, cluster.Spec.Persistence.DefaultStore)
+
 	if cluster.Status.Persistence.VisibilityStore == nil {
 		cluster.Status.Persistence.VisibilityStore = new(v1beta1.DatastoreStatus)
 	}
 
-	if cluster.Status.Persistence.SecondaryVisibility == nil && cluster.Spec.Persistence.SecondaryVisibilityStore != nil {
-		cluster.Status.Persistence.SecondaryVisibility = new(v1beta1.DatastoreStatus)
+	r.applyStatusDatastoreTypeDefaultValue(cluster.Status.Persistence.VisibilityStore, cluster.Spec.Persistence.VisibilityStore)
+
+	if cluster.Spec.Persistence.SecondaryVisibilityStore != nil {
+		if cluster.Status.Persistence.SecondaryVisibilityStore == nil {
+			cluster.Status.Persistence.SecondaryVisibilityStore = new(v1beta1.DatastoreStatus)
+		}
+
+		r.applyStatusDatastoreTypeDefaultValue(cluster.Status.Persistence.SecondaryVisibilityStore, cluster.Spec.Persistence.SecondaryVisibilityStore)
 	}
 
-	if cluster.Status.Persistence.AdvancedVisibilityStore == nil && cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
-		cluster.Status.Persistence.AdvancedVisibilityStore = new(v1beta1.DatastoreStatus)
+	if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+		if cluster.Status.Persistence.AdvancedVisibilityStore == nil {
+			cluster.Status.Persistence.AdvancedVisibilityStore = new(v1beta1.DatastoreStatus)
+		}
+
+		r.applyStatusDatastoreTypeDefaultValue(cluster.Status.Persistence.AdvancedVisibilityStore, cluster.Spec.Persistence.AdvancedVisibilityStore)
 	}
 }
 
@@ -84,7 +109,8 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 					cluster.Status.Persistence.DefaultStore.Created
 			},
 			ReportSuccess: func(owner runtime.Object) error {
-				owner.(*v1beta1.TemporalCluster).Status.Persistence.DefaultStore.Created = true
+				c := owner.(*v1beta1.TemporalCluster)
+				c.Status.Persistence.DefaultStore.Created = true
 				return nil
 			},
 		},
@@ -139,15 +165,19 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			ReportSuccess: func(owner runtime.Object) error {
 				c := owner.(*v1beta1.TemporalCluster)
 				c.Status.Persistence.DefaultStore.SchemaVersion = c.Spec.Version.DeepCopy()
+				c.Status.Persistence.DefaultStore.Type = c.Spec.Persistence.DefaultStore.GetType()
 				return nil
 			},
 		},
 		{
-			Name:    fmt.Sprintf("update-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
+			Name:    fmt.Sprintf("update-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), cluster.Spec.Persistence.VisibilityStore.GetType()),
 			Command: getDatabaseScriptCommand(persistence.UpdateVisibilitySchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				c := owner.(*v1beta1.TemporalCluster)
 				if c.Status.Persistence.VisibilityStore.SchemaVersion == nil {
+					return false
+				}
+				if c.Status.Persistence.VisibilityStore.Type != c.Spec.Persistence.VisibilityStore.GetType() {
 					return false
 				}
 				return c.Status.Persistence.VisibilityStore.SchemaVersion.GreaterOrEqual(c.Spec.Version)
@@ -155,6 +185,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			ReportSuccess: func(owner runtime.Object) error {
 				c := owner.(*v1beta1.TemporalCluster)
 				c.Status.Persistence.VisibilityStore.SchemaVersion = c.Spec.Version.DeepCopy()
+				c.Status.Persistence.VisibilityStore.Type = c.Spec.Persistence.VisibilityStore.GetType()
 				return nil
 			},
 		},
@@ -166,11 +197,11 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				Name:    "create-secondary-visibility-database",
 				Command: getDatabaseScriptCommand(persistence.CreateSecondaryVisibilityDatabaseScript),
 				Skip: func(owner runtime.Object) bool {
-					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibility.Created
+					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibilityStore.Created
 				},
 				ReportSuccess: func(owner runtime.Object) error {
 					c := owner.(*v1beta1.TemporalCluster)
-					c.Status.Persistence.SecondaryVisibility.Created = true
+					c.Status.Persistence.SecondaryVisibilityStore.Created = true
 					return nil
 				},
 			},
@@ -178,27 +209,31 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				Name:    "setup-secondary-visibility-schema",
 				Command: getDatabaseScriptCommand(persistence.SetupSecondaryVisibilitySchemaScript),
 				Skip: func(owner runtime.Object) bool {
-					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibility.Setup
+					return owner.(*v1beta1.TemporalCluster).Status.Persistence.SecondaryVisibilityStore.Setup
 				},
 				ReportSuccess: func(owner runtime.Object) error {
 					c := owner.(*v1beta1.TemporalCluster)
-					c.Status.Persistence.SecondaryVisibility.Setup = true
+					c.Status.Persistence.SecondaryVisibilityStore.Setup = true
 					return nil
 				},
 			},
 			&reconciler.Job{
-				Name:    fmt.Sprintf("update-secondary-visibility-schema-v-%s", sanitizeVersionToName(cluster.Spec.Version)),
+				Name:    fmt.Sprintf("update-secondary-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), cluster.Spec.Persistence.SecondaryVisibilityStore.GetType()),
 				Command: getDatabaseScriptCommand(persistence.UpdateSecondaryVisibilitySchemaScript),
 				Skip: func(owner runtime.Object) bool {
 					c := owner.(*v1beta1.TemporalCluster)
-					if c.Status.Persistence.SecondaryVisibility.SchemaVersion == nil {
+					if c.Status.Persistence.SecondaryVisibilityStore.SchemaVersion == nil {
 						return false
 					}
-					return c.Status.Persistence.SecondaryVisibility.SchemaVersion.GreaterOrEqual(c.Spec.Version)
+					if c.Status.Persistence.VisibilityStore.Type != c.Spec.Persistence.VisibilityStore.GetType() {
+						return false
+					}
+					return c.Status.Persistence.SecondaryVisibilityStore.SchemaVersion.GreaterOrEqual(c.Spec.Version)
 				},
 				ReportSuccess: func(owner runtime.Object) error {
 					c := owner.(*v1beta1.TemporalCluster)
-					c.Status.Persistence.SecondaryVisibility.SchemaVersion = c.Spec.Version.DeepCopy()
+					c.Status.Persistence.SecondaryVisibilityStore.SchemaVersion = c.Spec.Version.DeepCopy()
+					c.Status.Persistence.VisibilityStore.Type = c.Spec.Persistence.VisibilityStore.GetType()
 					return nil
 				},
 			})
@@ -242,6 +277,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				ReportSuccess: func(owner runtime.Object) error {
 					c := owner.(*v1beta1.TemporalCluster)
 					c.Status.Persistence.AdvancedVisibilityStore.SchemaVersion = c.Spec.Version.DeepCopy()
+					c.Status.Persistence.AdvancedVisibilityStore.Type = c.Spec.Persistence.AdvancedVisibilityStore.GetType()
 					return nil
 				},
 			})

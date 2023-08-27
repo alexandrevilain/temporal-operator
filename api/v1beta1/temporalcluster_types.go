@@ -27,6 +27,7 @@ import (
 	"github.com/gosimple/slug"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"go.temporal.io/server/common/primitives"
+	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -322,6 +323,8 @@ const (
 	UnknownDatastore       DatastoreType = "unknown"
 )
 
+var SQLDataStores = []DatastoreType{MySQLDatastore, MySQL8Datastore, PostgresSQLDatastore, PostgresSQL12Datastore}
+
 const (
 	DefaultStoreName             = "default"
 	VisibilityStoreName          = "visibility"
@@ -359,6 +362,7 @@ type DatastoreSpec struct {
 	SkipCreate bool `json:"skipCreate,omitempty"`
 }
 
+// GetType returns datastore type.
 func (s *DatastoreSpec) GetType() DatastoreType {
 	if s.SQL != nil {
 		switch s.SQL.PluginName {
@@ -379,6 +383,11 @@ func (s *DatastoreSpec) GetType() DatastoreType {
 		return CassandraDatastore
 	}
 	return UnknownDatastore
+}
+
+// IsSQL returns true if the datastore is an SQL datastore.
+func (s *DatastoreSpec) IsSQL() bool {
+	return slices.Contains[DatastoreType](SQLDataStores, s.GetType())
 }
 
 const (
@@ -934,6 +943,9 @@ type DatastoreStatus struct {
 	Created bool `json:"created"`
 	// Setup indicates if tables have been set up.
 	Setup bool `json:"setup"`
+	// Type indicates the datastore stype.
+	// +optional
+	Type DatastoreType `json:"type"`
 	// SchemaVersion report the current schema version.
 	// +optional
 	SchemaVersion *version.Version `json:"schemaVersion,omitempty"`
@@ -945,9 +957,9 @@ type TemporalPersistenceStatus struct {
 	DefaultStore *DatastoreStatus `json:"defaultStore"`
 	// VisibilityStore holds the visibility datastore status.
 	VisibilityStore *DatastoreStatus `json:"visibilityStore"`
-	// SecondaryVisibility holds the secondary visibility datastore status.
+	// SecondaryVisibilityStore holds the secondary visibility datastore status.
 	// +optional
-	SecondaryVisibility *DatastoreStatus `json:"secondaryVisibilityStore"`
+	SecondaryVisibilityStore *DatastoreStatus `json:"secondaryVisibilityStore"`
 	// AdvancedVisibilityStore holds the avanced visibility datastore status.
 	// +optional
 	AdvancedVisibilityStore *DatastoreStatus `json:"advancedVisibilityStore,omitempty"`

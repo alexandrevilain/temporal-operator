@@ -104,6 +104,20 @@ Defaults to 300 seconds.</p>
 </tr>
 <tr>
 <td>
+<code>jobResources</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
+Kubernetes core/v1.ResourceRequirements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobResources allows set resources for setup/update jobs.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>numHistoryShards</code><br>
 <em>
 int32
@@ -1286,6 +1300,20 @@ bool
 </tr>
 <tr>
 <td>
+<code>type</code><br>
+<em>
+<a href="#temporal.io/v1beta1.DatastoreType">
+DatastoreType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Type indicates the datastore stype.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>schemaVersion</code><br>
 <em>
 github.com/alexandrevilain/temporal-operator/pkg/version.Version
@@ -1399,6 +1427,10 @@ string
 </div>
 <h3 id="temporal.io/v1beta1.DatastoreType">DatastoreType
 (<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.DatastoreStatus">DatastoreStatus</a>)
+</p>
 <h3 id="temporal.io/v1beta1.DeploymentOverride">DeploymentOverride
 </h3>
 <p>
@@ -2466,6 +2498,18 @@ S3Credentials
 <p>Use credentials if you want to use aws credentials from secret.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>s3ForcePathStyle</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Use s3ForcePathStyle if you want to use s3 path style.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3327,6 +3371,20 @@ Defaults to 300 seconds.</p>
 </tr>
 <tr>
 <td>
+<code>jobResources</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
+Kubernetes core/v1.ResourceRequirements
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobResources allows set resources for setup/update jobs.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>numHistoryShards</code><br>
 <em>
 int32
@@ -4109,7 +4167,7 @@ DatastoreStatus
 </td>
 <td>
 <em>(Optional)</em>
-<p>SecondaryVisibility holds the secondary visibility datastore status.</p>
+<p>SecondaryVisibilityStore holds the secondary visibility datastore status.</p>
 </td>
 </tr>
 <tr>

@@ -1175,6 +1175,7 @@ func (in *TemporalClusterSpec) DeepCopyInto(out *TemporalClusterSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	in.JobResources.DeepCopyInto(&out.JobResources)
 	if in.Services != nil {
 		in, out := &in.Services, &out.Services
 		*out = new(ServicesSpec)
@@ -1452,8 +1453,8 @@ func (in *TemporalPersistenceStatus) DeepCopyInto(out *TemporalPersistenceStatus
 		*out = new(DatastoreStatus)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.SecondaryVisibility != nil {
-		in, out := &in.SecondaryVisibility, &out.SecondaryVisibility
+	if in.SecondaryVisibilityStore != nil {
+		in, out := &in.SecondaryVisibilityStore, &out.SecondaryVisibilityStore
 		*out = new(DatastoreStatus)
 		(*in).DeepCopyInto(*out)
 	}
