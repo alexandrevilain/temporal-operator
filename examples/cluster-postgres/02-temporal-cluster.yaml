@@ -20,7 +20,7 @@ spec:
     visibilityStore:
       sql:
         user: temporal
-        pluginName: postgres
+        pluginName: postgres12
         databaseName: temporal_visibility
         connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp

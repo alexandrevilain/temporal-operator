@@ -258,8 +258,7 @@ spec:
                               description: Use RoleName if you want the temporal service account to assume an AWS Identity and Access Management (IAM) role.
                               type: string
                             s3ForcePathStyle:
-                              default: false
-                              description: s3ForcePathStyle defines if the archival should use s3 path style.
+                              description: Use s3ForcePathStyle if you want to use s3 path style.
                               type: boolean
                           required:
                             - region
@@ -343,14 +342,8 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   type: array
-                jobTtlSecondsAfterFinished:
-                  default: 300
-                  description: JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed. Defaults to 300 seconds.
-                  format: int32
-                  minimum: 1
-                  type: integer
                 jobResources:
-                  description: 'Compute Resources required by jobs. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                  description: JobResources allows set resources for setup/update jobs.
                   properties:
                     claims:
                       description: "Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container. \n This is an alpha field and requires enabling the DynamicResourceAllocation feature gate. \n This field is immutable. It can only be set for containers."
@@ -386,6 +379,12 @@ spec:
                       description: 'Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       type: object
                   type: object
+                jobTtlSecondsAfterFinished:
+                  default: 300
+                  description: JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed. Defaults to 300 seconds.
+                  format: int32
+                  minimum: 1
+                  type: integer
                 mTLS:
                   description: MTLS allows configuration of the network traffic encryption for the cluster.
                   properties:
@@ -2734,6 +2733,9 @@ spec:
                         setup:
                           description: Setup indicates if tables have been set up.
                           type: boolean
+                        type:
+                          description: Type indicates the datastore stype.
+                          type: string
                       required:
                         - created
                         - setup
@@ -2750,12 +2752,15 @@ spec:
                         setup:
                           description: Setup indicates if tables have been set up.
                           type: boolean
+                        type:
+                          description: Type indicates the datastore stype.
+                          type: string
                       required:
                         - created
                         - setup
                       type: object
                     secondaryVisibilityStore:
-                      description: SecondaryVisibility holds the secondary visibility datastore status.
+                      description: SecondaryVisibilityStore holds the secondary visibility datastore status.
                       properties:
                         created:
                           description: Created indicates if the database or keyspace has been created.
@@ -2766,6 +2771,9 @@ spec:
                         setup:
                           description: Setup indicates if tables have been set up.
                           type: boolean
+                        type:
+                          description: Type indicates the datastore stype.
+                          type: string
                       required:
                         - created
                         - setup
@@ -2782,6 +2790,9 @@ spec:
                         setup:
                           description: Setup indicates if tables have been set up.
                           type: boolean
+                        type:
+                          description: Type indicates the datastore stype.
+                          type: string
                       required:
                         - created
                         - setup

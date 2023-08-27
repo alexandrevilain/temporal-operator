@@ -19,6 +19,7 @@ require (
 	go.temporal.io/api v1.23.0
 	go.temporal.io/sdk v1.23.1
 	go.temporal.io/server v1.21.4
+	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20230713061407-06047cce866f
@@ -126,7 +127,6 @@ require (
 	go.uber.org/fx v1.19.1 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
