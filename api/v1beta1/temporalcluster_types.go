@@ -34,6 +34,34 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// LogSpec contains the temporal logging configuration.
+type LogSpec struct {
+	// Stdout is true if the output needs to goto standard out; default is stderr.
+	// +optional
+	// +kubebuilder:default=true
+	Stdout *bool `json:"stdout"`
+	// Level is the desired log level; see colocated zap_logger.go::parseZapLevel()
+	// +optional
+	// +kubebuilder:validation:Enum=debug;info;warn;error;dpanic;panic;fatal
+	// +kubebuilder:default=info
+	Level string `json:"level"`
+	// OutputFile is the path to the log output file.
+	// +optional
+	OutputFile string `json:"outputFile"`
+	// Format determines the format of each log file printed to the output.
+	// Use "console" if you want stack traces to appear on multiple lines.
+	// +kubebuilder:validation:Enum=json;console
+	// +kubebuilder:default=json
+	// +optional
+	Format string `json:"format"`
+	// Development determines whether the logger is run in Development (== Test) or in
+	// Production mode.  Default is Production.  Production-stage disables panics from
+	// DPanic logging.
+	// +kubebuilder:default=false
+	// +optional
+	Development bool `json:"development"`
+}
+
 // ServiceSpec contains a temporal service specifications.
 type ServiceSpec struct {
 	// Port defines a custom gRPC port for the service.
@@ -885,6 +913,9 @@ type TemporalClusterSpec struct {
 	// This version impacts the underlying persistence schemas versions.
 	// +optional
 	Version *version.Version `json:"version"`
+	// Log defines temporal cluster's logger configuration.
+	// +optional
+	Log *LogSpec `json:"log,omitempty"`
 	// JobTTLSecondsAfterFinished is amount of time to keep job pods after jobs are completed.
 	// Defaults to 300 seconds.
 	// +optional

@@ -27,6 +27,8 @@ spec:
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
+  log:
+    level: debug
   ui:
     enabled: true
   admintools:

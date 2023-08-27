@@ -29,12 +29,12 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
 	archivalutil "github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
-	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
 	"go.temporal.io/server/common/primitives"
 	"gopkg.in/yaml.v3"
@@ -218,11 +218,8 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			},
 		},
 		Persistence: *persistenceConfig,
-		Log: log.Config{
-			Stdout: true,
-			Level:  "info",
-		},
-		Archival: *archivalConfig,
+		Log:         log.NewSQLConfigFromDatastoreSpec(b.instance.Spec.Log),
+		Archival:    *archivalConfig,
 		NamespaceDefaults: config.NamespaceDefaults{
 			Archival: *archivalNamespaceDefaults,
 		},

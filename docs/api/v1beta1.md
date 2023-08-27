@@ -91,6 +91,20 @@ This version impacts the underlying persistence schemas versions.</p>
 </tr>
 <tr>
 <td>
+<code>log</code><br>
+<em>
+<a href="#temporal.io/v1beta1.LogSpec">
+LogSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Log defines temporal cluster&rsquo;s logger configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>jobTtlSecondsAfterFinished</code><br>
 <em>
 int32
@@ -2002,6 +2016,90 @@ bool
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.LogSpec">LogSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>LogSpec contains the temporal logging configuration.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>stdout</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Stdout is true if the output needs to goto standard out; default is stderr.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>level</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Level is the desired log level; see colocated zap_logger.go::parseZapLevel()</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>outputFile</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>OutputFile is the path to the log output file.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>format</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Format determines the format of each log file printed to the output.
+Use &ldquo;console&rdquo; if you want stack traces to appear on multiple lines.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>development</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Development determines whether the logger is run in Development (== Test) or in
+Production mode.  Default is Production.  Production-stage disables panics from
+DPanic logging.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.MTLSProvider">MTLSProvider
 (<code>string</code> alias)</h3>
 <p>
@@ -3354,6 +3452,20 @@ github.com/alexandrevilain/temporal-operator/pkg/version.Version
 <em>(Optional)</em>
 <p>Version defines the temporal version the cluster to be deployed.
 This version impacts the underlying persistence schemas versions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>log</code><br>
+<em>
+<a href="#temporal.io/v1beta1.LogSpec">
+LogSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Log defines temporal cluster&rsquo;s logger configuration.</p>
 </td>
 </tr>
 <tr>
