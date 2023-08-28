@@ -385,6 +385,40 @@ spec:
                   format: int32
                   minimum: 1
                   type: integer
+                log:
+                  description: Log defines temporal cluster's logger configuration.
+                  properties:
+                    development:
+                      default: false
+                      description: Development determines whether the logger is run in Development (== Test) or in Production mode.  Default is Production.  Production-stage disables panics from DPanic logging.
+                      type: boolean
+                    format:
+                      default: json
+                      description: Format determines the format of each log file printed to the output. Use "console" if you want stack traces to appear on multiple lines.
+                      enum:
+                        - json
+                        - console
+                      type: string
+                    level:
+                      default: info
+                      description: Level is the desired log level; see colocated zap_logger.go::parseZapLevel()
+                      enum:
+                        - debug
+                        - info
+                        - warn
+                        - error
+                        - dpanic
+                        - panic
+                        - fatal
+                      type: string
+                    outputFile:
+                      description: OutputFile is the path to the log output file.
+                      type: string
+                    stdout:
+                      default: true
+                      description: Stdout is true if the output needs to goto standard out; default is stderr.
+                      type: boolean
+                  type: object
                 mTLS:
                   description: MTLS allows configuration of the network traffic encryption for the cluster.
                   properties:

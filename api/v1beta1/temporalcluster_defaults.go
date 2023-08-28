@@ -64,6 +64,20 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Image == "" {
 		c.Spec.Image = defaultTemporalImage
 	}
+
+	if c.Spec.Log == nil {
+		c.Spec.Log = new(LogSpec)
+		if c.Spec.Log.Stdout == nil {
+			c.Spec.Log.Stdout = pointer.Bool(true)
+		}
+		if c.Spec.Log.Level == "" {
+			c.Spec.Log.Level = "info"
+		}
+		if c.Spec.Log.Format == "" {
+			c.Spec.Log.Format = "json"
+		}
+	}
+
 	if c.Spec.Services == nil {
 		c.Spec.Services = new(ServicesSpec)
 	}
