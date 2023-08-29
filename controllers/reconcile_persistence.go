@@ -36,6 +36,25 @@ func sanitizeVersionToName(version *version.Version) string {
 	return strings.ReplaceAll(version.String(), ".", "-")
 }
 
+func datastoreTypeShortName(datastore v1beta1.DatastoreType) string {
+	switch datastore {
+	case v1beta1.CassandraDatastore:
+		return "cass"
+	case v1beta1.ElasticsearchDatastore:
+		return "es"
+	case v1beta1.PostgresSQLDatastore:
+		return "pg"
+	case v1beta1.PostgresSQL12Datastore:
+		return "pg12"
+	case v1beta1.MySQLDatastore:
+		return "my"
+	case v1beta1.MySQL8Datastore:
+		return "my8"
+	default:
+		return ""
+	}
+}
+
 // applyStatusDatastoreTypeDefaultValue sets default value on the status.persistence.[store].type for clusters created with operator =< 0.15.1.
 // This field was added in the status type to run temporal-sql-tool's update-schema when SQL plugin is updated from postgres to postgres12.
 // To run this the operator should track the datastore type when its created.
@@ -170,7 +189,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 			},
 		},
 		{
-			Name:    fmt.Sprintf("update-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), cluster.Spec.Persistence.VisibilityStore.GetType()),
+			Name:    fmt.Sprintf("update-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), datastoreTypeShortName(cluster.Spec.Persistence.VisibilityStore.GetType())),
 			Command: getDatabaseScriptCommand(persistence.UpdateVisibilitySchemaScript),
 			Skip: func(owner runtime.Object) bool {
 				c := owner.(*v1beta1.TemporalCluster)
@@ -218,7 +237,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 				},
 			},
 			&reconciler.Job{
-				Name:    fmt.Sprintf("update-secondary-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), cluster.Spec.Persistence.SecondaryVisibilityStore.GetType()),
+				Name:    fmt.Sprintf("update-2nd-visibility-schema-v-%s-%s", sanitizeVersionToName(cluster.Spec.Version), datastoreTypeShortName(cluster.Spec.Persistence.SecondaryVisibilityStore.GetType())),
 				Command: getDatabaseScriptCommand(persistence.UpdateSecondaryVisibilitySchemaScript),
 				Skip: func(owner runtime.Object) bool {
 					c := owner.(*v1beta1.TemporalCluster)
