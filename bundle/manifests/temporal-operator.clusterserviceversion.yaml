@@ -119,8 +119,8 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
     containerImage: ghcr.io/alexandrevilain/temporal-operator
-    createdAt: "2023-08-29T17:49:54Z"
-    operators.operatorframework.io/builder: operator-sdk-v1.26.1
+    createdAt: "2023-09-03T13:04:30Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.30.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: temporal-operator.v0.15.3
   namespace: placeholder
@@ -564,7 +564,7 @@ spec:
   - distributed
   links:
   - name: Temporal Operator
-    url: github.com/alexandrevilain/temporal-operator/
+    url: https://github.com/alexandrevilain/temporal-operator
   maintainers:
   - email: alexandre.vilain@me.com
     name: alexandrevilain
@@ -575,7 +575,7 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.9.1
+  replaces: temporal-operator.v0.15.2
   version: 0.15.3
   webhookdefinitions:
   - admissionReviewVersions:

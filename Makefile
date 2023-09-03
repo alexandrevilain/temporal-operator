@@ -177,8 +177,15 @@ bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metada
 
 .PHONY: prepare-release
 prepare-release: kustomize
+	$(eval OLD_VERSION := $(shell curl -s https://api.github.com/repos/alexandrevilain/temporal-operator/releases | jq -r '.[1].tag_name'))
 	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/alexandrevilain/temporal-operator:v$(VERSION)
+	sed -i 's/replaces: temporal-operator.v.*/replaces: temporal-operator.$(OLD_VERSION)/' config/manifests/bases/temporal-operator.clusterserviceversion.yaml
 	$(MAKE) bundle
+
+OPERATOR_HUB_FORK_REPOSITORY ?= git@github.com:alexandrevilain/community-operators.git
+.PHONY: operatorhub
+operatorhub:
+	VERSION=$(VERSION) FORK_REPOSITORY=$(OPERATOR_HUB_FORK_REPOSITORY) ./hack/operatorhub.sh
 
 ##@ Build Dependencies
 
@@ -202,7 +209,7 @@ KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
-OPERATOR_SDK_VERSION ?= 1.26.1
+OPERATOR_SDK_VERSION ?= 1.30.0
 CONTROLLER_TOOLS_VERSION ?=  v0.11.3
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
