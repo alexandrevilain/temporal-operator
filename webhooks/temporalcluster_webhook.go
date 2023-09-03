@@ -64,7 +64,7 @@ func (w *TemporalClusterWebhook) aggregateClusterErrors(cluster *v1beta1.Tempora
 }
 
 // Default ensures empty fields have their default value.
-func (w *TemporalClusterWebhook) Default(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalClusterWebhook) Default(_ context.Context, obj runtime.Object) error {
 	cluster, err := w.getClusterFromRequest(obj)
 	if err != nil {
 		return err
@@ -273,7 +273,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
-func (w *TemporalClusterWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
 	cluster, err := w.getClusterFromRequest(obj)
 	if err != nil {
 		return nil, err
@@ -286,7 +286,7 @@ func (w *TemporalClusterWebhook) ValidateCreate(ctx context.Context, obj runtime
 
 // ValidateUpdate validates TemporalCluster updates.
 // It mainly check for sequential version upgrades.
-func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
+func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	oldCluster, err := w.getClusterFromRequest(oldObj)
 	if err != nil {
 		return nil, err
@@ -331,7 +331,7 @@ func (w *TemporalClusterWebhook) ValidateUpdate(ctx context.Context, oldObj, new
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalClusterWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (w *TemporalClusterWebhook) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	// No delete validation needed.
 	return nil, nil
 }

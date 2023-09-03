@@ -199,9 +199,7 @@ func testMainRun(m *testing.M) int {
 		BeforeEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 			return createNSForTest(ctx, cfg, t, f, runID)
 		}).
-		AfterEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
-			return deleteNSForTest(ctx, cfg, t, f, runID)
-		})
+		AfterEachFeature(deleteNSForTest)
 
 	return testenv.Run(m)
 }
@@ -222,7 +220,7 @@ func createNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 }
 
 // deleteNSForTest looks up the namespace corresponding to the given test and deletes it.
-func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature, runID string) (context.Context, error) {
+func deleteNSForTest(ctx context.Context, _ *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 	ns := GetNamespaceForFeature(ctx)
 
 	t.Logf("Deleting namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())

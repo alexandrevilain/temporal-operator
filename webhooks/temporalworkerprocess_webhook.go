@@ -69,7 +69,7 @@ func (w *TemporalWorkerProcessWebhook) aggregateWorkerProcessErrors(wp *v1beta1.
 }
 
 // Default ensures empty fields have their default value.
-func (w *TemporalWorkerProcessWebhook) Default(ctx context.Context, obj runtime.Object) error {
+func (w *TemporalWorkerProcessWebhook) Default(_ context.Context, obj runtime.Object) error {
 	wp, err := w.getWorkerProcessFromRequest(obj)
 	if err != nil {
 		return err
@@ -80,10 +80,8 @@ func (w *TemporalWorkerProcessWebhook) Default(ctx context.Context, obj runtime.
 	return nil
 }
 
-func (w *TemporalWorkerProcessWebhook) validateWorkerProcess(workerprocess *v1beta1.TemporalWorkerProcess, cluster *v1beta1.TemporalCluster) field.ErrorList {
-	var errs field.ErrorList
-
-	return errs
+func (w *TemporalWorkerProcessWebhook) validateWorkerProcess(_ *v1beta1.TemporalWorkerProcess, _ *v1beta1.TemporalCluster) field.ErrorList {
+	return nil
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
@@ -136,7 +134,7 @@ func (w *TemporalWorkerProcessWebhook) ValidateUpdate(ctx context.Context, oldOb
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalWorkerProcessWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (w *TemporalWorkerProcessWebhook) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	// No delete validation needed.
 	return nil, nil
 }

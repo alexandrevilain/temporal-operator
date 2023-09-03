@@ -93,7 +93,7 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 			if requeueAfter == 0 {
 				requeueAfter = 2 * time.Second
 			}
-			return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
+			return r.handleErrorWithRequeue(worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
@@ -104,7 +104,7 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 	err = r.Get(ctx, worker.Spec.ClusterRef.NamespacedName(worker), cluster)
 	if err != nil {
 		logger.Error(err, "Can't find referenced temporal cluster")
-		return r.handleError(ctx, worker, v1beta1.ReconcileErrorReason, err)
+		return r.handleError(worker, v1beta1.ReconcileErrorReason, err)
 	}
 
 	if !cluster.IsReady() {
@@ -119,14 +119,14 @@ func (r *TemporalWorkerProcessReconciler) Reconcile(ctx context.Context, req ctr
 			if requeueAfter == 0 {
 				requeueAfter = 2 * time.Second
 			}
-			return r.handleErrorWithRequeue(ctx, worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
+			return r.handleErrorWithRequeue(worker, v1beta1.ResourcesReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
 		}
 	}
 
-	return r.handleSuccess(ctx, worker)
+	return r.handleSuccess(worker)
 }
 
 func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (time.Duration, error) {
@@ -227,7 +227,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileResources(ctx context.Context
 	return 0, nil
 }
 
-func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(worker *v1beta1.TemporalWorkerProcess, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
@@ -235,15 +235,15 @@ func (r *TemporalWorkerProcessReconciler) handleErrorWithRequeue(ctx context.Con
 	return reconcile.Result{RequeueAfter: requeueAfter}, err
 }
 
-func (r *TemporalWorkerProcessReconciler) handleError(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, worker, reason, err, 0)
+func (r *TemporalWorkerProcessReconciler) handleError(worker *v1beta1.TemporalWorkerProcess, reason string, err error) (ctrl.Result, error) {
+	return r.handleErrorWithRequeue(worker, reason, err, 0)
 }
 
-func (r *TemporalWorkerProcessReconciler) handleSuccess(ctx context.Context, worker *v1beta1.TemporalWorkerProcess) (ctrl.Result, error) {
-	return r.handleSuccessWithRequeue(ctx, worker, 0)
+func (r *TemporalWorkerProcessReconciler) handleSuccess(worker *v1beta1.TemporalWorkerProcess) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(worker, 0)
 }
 
-func (r *TemporalWorkerProcessReconciler) handleSuccessWithRequeue(ctx context.Context, worker *v1beta1.TemporalWorkerProcess, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalWorkerProcessReconciler) handleSuccessWithRequeue(worker *v1beta1.TemporalWorkerProcess, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalWorkerProcessReconcileSuccess(worker, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }

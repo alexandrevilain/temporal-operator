@@ -77,7 +77,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	cluster := &v1beta1.TemporalCluster{}
 	err = r.Get(ctx, namespace.Spec.ClusterRef.NamespacedName(namespace), cluster)
 	if err != nil {
-		return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 	}
 
 	if !cluster.IsReady() {
@@ -105,18 +105,18 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 		err := r.ensureNamespaceDeleted(ctx, namespace, cluster)
 		if err != nil {
-			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+			return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 		}
 		return reconcile.Result{}, nil
 	}
 
 	// Ensure the namespace have a deletion marker if the AllowDeletion is set to true.
-	r.ensureFinalizer(ctx, namespace)
+	r.ensureFinalizer(namespace)
 
 	client, err := temporal.GetClusterNamespaceClient(ctx, r.Client, cluster)
 	if err != nil {
 		err = fmt.Errorf("can't create cluster namespace client: %w", err)
-		return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 	}
 	defer client.Close()
 
@@ -126,11 +126,11 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		ok := errors.As(err, &namespaceAlreadyExistsError)
 		if !ok {
 			err = fmt.Errorf("can't create \"%s\" namespace: %w", namespace.GetName(), err)
-			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+			return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 		}
 		err = client.Update(ctx, temporal.NamespaceToUpdateNamespaceRequest(cluster, namespace))
 		if err != nil {
-			return r.handleError(ctx, namespace, v1beta1.ReconcileErrorReason, err)
+			return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 		}
 	}
 
@@ -138,11 +138,11 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	v1beta1.SetTemporalNamespaceReady(namespace, metav1.ConditionTrue, v1beta1.TemporalNamespaceCreatedReason, "Namespace successfully created")
 
-	return r.handleSuccess(ctx, namespace)
+	return r.handleSuccess(namespace)
 }
 
 // ensureFinalizer ensures the deletion finalizer is set on the object if the user allowed namespace deletion using the CRD.
-func (r *TemporalNamespaceReconciler) ensureFinalizer(ctx context.Context, namespace *v1beta1.TemporalNamespace) {
+func (r *TemporalNamespaceReconciler) ensureFinalizer(namespace *v1beta1.TemporalNamespace) {
 	if namespace.ObjectMeta.DeletionTimestamp.IsZero() && namespace.Spec.AllowDeletion {
 		_ = controllerutil.AddFinalizer(namespace, deletionFinalizer)
 	}
@@ -175,20 +175,20 @@ func (r *TemporalNamespaceReconciler) ensureNamespaceDeleted(ctx context.Context
 	return nil
 }
 
-func (r *TemporalNamespaceReconciler) handleSuccess(ctx context.Context, namespace *v1beta1.TemporalNamespace) (ctrl.Result, error) {
-	return r.handleSuccessWithRequeue(ctx, namespace, 0)
+func (r *TemporalNamespaceReconciler) handleSuccess(namespace *v1beta1.TemporalNamespace) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(namespace, 0)
 }
 
-func (r *TemporalNamespaceReconciler) handleError(ctx context.Context, namespace *v1beta1.TemporalNamespace, reason string, err error) (ctrl.Result, error) {
-	return r.handleErrorWithRequeue(ctx, namespace, reason, err, 0)
+func (r *TemporalNamespaceReconciler) handleError(namespace *v1beta1.TemporalNamespace, reason string, err error) (ctrl.Result, error) { //nolint:unparam
+	return r.handleErrorWithRequeue(namespace, reason, err, 0)
 }
 
-func (r *TemporalNamespaceReconciler) handleSuccessWithRequeue(ctx context.Context, namespace *v1beta1.TemporalNamespace, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) handleSuccessWithRequeue(namespace *v1beta1.TemporalNamespace, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalNamespaceReconcileSuccess(namespace, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
-func (r *TemporalNamespaceReconciler) handleErrorWithRequeue(ctx context.Context, namespace *v1beta1.TemporalNamespace, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalNamespaceReconciler) handleErrorWithRequeue(namespace *v1beta1.TemporalNamespace, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
