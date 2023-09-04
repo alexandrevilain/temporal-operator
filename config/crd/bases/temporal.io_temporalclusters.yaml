@@ -2692,6 +2692,17 @@ spec:
                     - defaultStore
                     - visibilityStore
                   type: object
+                replication:
+                  properties:
+                    enableGlobalNamespace:
+                      type: boolean
+                    initialFailoverVersion:
+                      format: int64
+                      type: integer
+                  required:
+                    - enableGlobalNamespace
+                    - initialFailoverVersion
+                  type: object
                 services:
                   description: Services allows customizations for each temporal services deployment.
                   properties:
