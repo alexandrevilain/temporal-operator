@@ -252,7 +252,7 @@ func deployTestManifest(ctx context.Context, cfg *envconf.Config, name, namespac
 	return decoder.ApplyWithManifestDir(ctx, cfg.Client().Resources(namespace), path, "*", []resources.CreateOption{}, decoder.MutateNamespace(namespace))
 }
 
-func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Deployment) error {
+func waitForDeployment(_ context.Context, cfg *envconf.Config, dep *appsv1.Deployment) error {
 	err := wait.For(
 		conditions.New(cfg.Client().Resources()).ResourcesFound(&appsv1.DeploymentList{Items: []appsv1.Deployment{*dep}}),
 		wait.WithTimeout(time.Minute*10),
@@ -264,21 +264,21 @@ func waitForDeployment(ctx context.Context, cfg *envconf.Config, dep *appsv1.Dep
 }
 
 // waitForCluster waits for the temporal cluster's components to be up and running (reporting Ready condition).
-func waitForCluster(ctx context.Context, cfg *envconf.Config, cluster *v1beta1.TemporalCluster) error {
+func waitForCluster(_ context.Context, cfg *envconf.Config, cluster *v1beta1.TemporalCluster) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(cluster, func(object k8s.Object) bool {
 		return object.(*v1beta1.TemporalCluster).IsReady()
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
-func waitForClusterClient(ctx context.Context, cfg *envconf.Config, clusterClient *v1beta1.TemporalClusterClient) error {
+func waitForClusterClient(_ context.Context, cfg *envconf.Config, clusterClient *v1beta1.TemporalClusterClient) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(clusterClient, func(object k8s.Object) bool {
 		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
 
-func waitForWorkerProcess(ctx context.Context, cfg *envconf.Config, worker *v1beta1.TemporalWorkerProcess) error {
+func waitForWorkerProcess(_ context.Context, cfg *envconf.Config, worker *v1beta1.TemporalWorkerProcess) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(worker, func(object k8s.Object) bool {
 		return object.(*v1beta1.TemporalWorkerProcess).Status.Ready
 	})

@@ -129,12 +129,12 @@ func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error)
 	return cfg, nil
 }
 
-func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.ArchivalNamespaceDefaults, error) {
+func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.ArchivalNamespaceDefaults) {
 	cfg := &config.Archival{}
 	namespaceDefaults := &config.ArchivalNamespaceDefaults{}
 
 	if !b.instance.Spec.Archival.IsEnabled() {
-		return cfg, namespaceDefaults, nil
+		return cfg, namespaceDefaults
 	}
 
 	archival := b.instance.Spec.Archival
@@ -194,7 +194,7 @@ func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.Arch
 		}
 	}
 
-	return cfg, namespaceDefaults, nil
+	return cfg, namespaceDefaults
 }
 
 func (b *ConfigmapBuilder) Update(object client.Object) error {
@@ -205,10 +205,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		return fmt.Errorf("can't build persistence config: %w", err)
 	}
 
-	archivalConfig, archivalNamespaceDefaults, err := b.buildArchivalConfig()
-	if err != nil {
-		return fmt.Errorf("can't build archival config: %w", err)
-	}
+	archivalConfig, archivalNamespaceDefaults := b.buildArchivalConfig()
 
 	temporalCfg := config.Config{
 		Global: config.Global{

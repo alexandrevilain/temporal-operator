@@ -54,5 +54,5 @@ func (a *sdkLogAdapter) Warn(msg string, keyvals ...interface{}) {
 }
 
 func (a *sdkLogAdapter) Error(msg string, keyvals ...interface{}) {
-	a.l.V(0).Info(msg)
+	a.l.V(0).Info(msg, keyvals...)
 }

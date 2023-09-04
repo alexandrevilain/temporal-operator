@@ -133,7 +133,7 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			if requeueAfter == 0 {
 				requeueAfter = 2 * time.Second
 			}
-			return r.handleErrorWithRequeue(ctx, cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
+			return r.handleErrorWithRequeue(cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
 		}
 		if requeueAfter > 0 {
 			return reconcile.Result{RequeueAfter: requeueAfter}, nil
@@ -142,10 +142,10 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	if err := r.reconcileResources(ctx, cluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(ctx, cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		return r.handleErrorWithRequeue(cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
 	}
 
-	return r.handleSuccess(ctx, cluster)
+	return r.handleSuccess(cluster)
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) error {
@@ -255,16 +255,16 @@ func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.Te
 	return builders, nil
 }
 
-func (r *TemporalClusterReconciler) handleSuccess(ctx context.Context, cluster *v1beta1.TemporalCluster) (ctrl.Result, error) {
-	return r.handleSuccessWithRequeue(ctx, cluster, 0)
+func (r *TemporalClusterReconciler) handleSuccess(cluster *v1beta1.TemporalCluster) (ctrl.Result, error) {
+	return r.handleSuccessWithRequeue(cluster, 0)
 }
 
-func (r *TemporalClusterReconciler) handleSuccessWithRequeue(ctx context.Context, cluster *v1beta1.TemporalCluster, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalClusterReconciler) handleSuccessWithRequeue(cluster *v1beta1.TemporalCluster, requeueAfter time.Duration) (ctrl.Result, error) {
 	v1beta1.SetTemporalClusterReconcileSuccess(cluster, metav1.ConditionTrue, v1beta1.ReconcileSuccessReason, "")
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
-func (r *TemporalClusterReconciler) handleErrorWithRequeue(ctx context.Context, cluster *v1beta1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalClusterReconciler) handleErrorWithRequeue(cluster *v1beta1.TemporalCluster, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
 	r.Recorder.Event(cluster, corev1.EventTypeWarning, "ProcessingError", err.Error())
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason

@@ -49,8 +49,7 @@ linters:
   - unused
   - usestdlibvars
   - whitespace
-  # Disabled for now, but will be enabled as soon as possible
-  # - unparam
+  - unparam
 
 linters-settings:
   ginkgolinter:
@@ -131,10 +130,9 @@ linters-settings:
       - name: redefines-builtin-id
       - name: bool-literal-in-expr
       - name: constant-logical-expr
-      # Disabled for now, but will be enabled as soon as possible
-      # - name: exported
-      # - name: package-comments
-      # - name: unused-parameter
+      - name: exported
+      - name: unused-parameter
+      - name: package-comments
 issues:
   max-same-issues: 0
   max-issues-per-linter: 0

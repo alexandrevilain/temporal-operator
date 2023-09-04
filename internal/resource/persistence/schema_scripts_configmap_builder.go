@@ -185,7 +185,7 @@ func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.DatastoreSpec) 
 	return args, nil
 }
 
-func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.DatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
+func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.DatastoreSpec) *orderedmap.OrderedMap[string, string] {
 	// schema.CLIOptReplicationFactor because it's set at the keyspace creation
 	// the script doesn't create the keyspace.
 	args := orderedmap.NewOrderedMap[string, string]()
@@ -205,7 +205,7 @@ func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.Datastore
 		args.Set(schema.CLIFlagDisableInitialHostLookup, "")
 	}
 
-	return args, nil
+	return args
 }
 
 func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec) (*orderedmap.OrderedMap[string, string], error) {
@@ -214,10 +214,7 @@ func (b *SchemaScriptsConfigmapBuilder) getStoreArgs(spec *v1beta1.DatastoreSpec
 
 	switch spec.GetType() {
 	case v1beta1.CassandraDatastore:
-		args, err = b.getCassandraArgs(spec)
-		if err != nil {
-			return nil, err
-		}
+		args = b.getCassandraArgs(spec)
 	case v1beta1.PostgresSQLDatastore,
 		v1beta1.PostgresSQL12Datastore,
 		v1beta1.MySQLDatastore,
