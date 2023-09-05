@@ -5,7 +5,7 @@ For some usecases, you may want to override some properites of temporal componen
 - Set extra properties on created pod like custom resources limits and request
 - Add sidecars on temporal services pods
 - Add init containers on temporal services pods
-- Mount extra volumes 
+- Mount extra volumes
 - Get environment variable for secretRef
 
 Overrides allows you to override every fields you want in temporal services deployments.
@@ -14,7 +14,6 @@ The API provides you the ability to apply your overrides:
 
 - per temporal service (using `spec.services.[frontend|history|matching|worker].overrides`)
 - for all services (using `spec.services.overrides`)
-
 
 ## Overrides for all services
 
@@ -38,7 +37,7 @@ spec:
             spec:
               containers:
                 - name: service
-                # anything you want 
+                # anything you want
 ```
 
 ### Example: mount an extra volume to all pods
@@ -158,7 +157,7 @@ spec:
               spec:
                 containers:
                   - name: service
-                    # anything you want 
+                    # anything you want
 ```
 
 ### Example: Add labels to the frontend pod
@@ -259,3 +258,7 @@ spec:
                       - secretRef:
                           name: frontend
 ```
+
+## Override UI deployment
+
+See [Temporal UI / Override UI deployment](../temporal-ui/#override-ui-deployment)
