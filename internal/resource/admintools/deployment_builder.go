@@ -19,6 +19,8 @@ package admintools
 
 import (
 	"fmt"
+	"net"
+	"strings"
 
 	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -91,6 +93,31 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			Name:  "TEMPORAL_ADDRESS", // temporal
 			Value: address,
 		},
+	}
+	sql := b.instance.Spec.Persistence.DefaultStore.SQL
+	if strings.HasPrefix(sql.PluginName, "postgres") {
+		host, port, err := net.SplitHostPort(sql.ConnectAddr)
+		if err != nil {
+			return fmt.Errorf("error split host port from  sql connectionAddress `%s`: %w", sql.ConnectAddr, err)
+		}
+		env = append(env, []corev1.EnvVar{
+			{
+				Name:  "PGHOST",
+				Value: host,
+			},
+			{
+				Name:  "PGPORT",
+				Value: port,
+			},
+			{
+				Name:  "PGUSER",
+				Value: sql.User,
+			},
+			{
+				Name:  "PGDATABASE",
+				Value: sql.DatabaseName,
+			},
+		}...)
 	}
 
 	volumes := []corev1.Volume{}
