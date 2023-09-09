@@ -3,7 +3,9 @@
 This page is WIP. Feel free to contribute [on github](https://github.com/alexandrevilain/temporal-operator/edit/main/docs/features/temporal-ui.md).
 
 ## Enable UI and set version
+
 Example:
+
 ```yaml
 apiVersion: temporal.io/v1beta1
 kind: TemporalCluster
@@ -25,6 +27,7 @@ spec:
 ## Create Ingress
 
 Example:
+
 ```yaml
 apiVersion: temporal.io/v1beta1
 kind: TemporalCluster
@@ -48,6 +51,7 @@ spec:
 ## Set UI replicas and resources
 
 Example:
+
 ```yaml
 apiVersion: temporal.io/v1beta1
 kind: TemporalCluster
@@ -69,4 +73,31 @@ spec:
       requests:
         cpu: 10m
         memory: 20Mi
+```
+
+## Override UI deployment
+
+Example:
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.21.2
+  numHistoryShards: 1
+  ui:
+    enabled: true
+    overrides:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                - name: ui
+                  env:
+                    - name: TEMPORAL_SHOW_TEMPORAL_SYSTEM_NAMESPACE
+                      value: "true"
 ```
