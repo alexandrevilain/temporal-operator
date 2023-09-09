@@ -233,7 +233,7 @@ spec:
   - distributed
   links:
   - name: Temporal Operator
-    url: github.com/alexandrevilain/temporal-operator/
+    url: https://github.com/alexandrevilain/temporal-operator
   maintainers:
   - email: alexandre.vilain@me.com
     name: alexandrevilain
@@ -244,7 +244,7 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.9.1
+  replaces: temporal-operator.v0.15.2
   version: 0.10.0
   webhookdefinitions:
   - admissionReviewVersions:
