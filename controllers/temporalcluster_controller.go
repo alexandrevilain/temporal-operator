@@ -177,7 +177,7 @@ func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temp
 		return err
 	}
 
-	statuses, err := status.ResourciledObjectsToServiceStatuses(temporalCluster, objects)
+	statuses, err := status.ReconciledObjectsToServiceStatuses(temporalCluster, objects)
 	if err != nil {
 		return err
 	}

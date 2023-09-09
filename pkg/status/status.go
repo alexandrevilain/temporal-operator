@@ -63,7 +63,9 @@ var deployGVK = schema.GroupVersionKind{
 	Kind:    "Deployment",
 }
 
-func ResourciledObjectsToServiceStatuses(c *v1beta1.TemporalCluster, objects []client.Object) ([]*v1beta1.ServiceStatus, error) {
+// ReconciledObjectsToServiceStatuses returns a list of service statuses from a list of reconciled objects.
+// It filters for deployments and only returns the ones that match the cluster's services.
+func ReconciledObjectsToServiceStatuses(c *v1beta1.TemporalCluster, objects []client.Object) ([]*v1beta1.ServiceStatus, error) {
 	services := []primitives.ServiceName{
 		primitives.FrontendService,
 		primitives.HistoryService,
@@ -79,26 +81,28 @@ func ResourciledObjectsToServiceStatuses(c *v1beta1.TemporalCluster, objects []c
 			continue
 		}
 
-		status, err := resource.GetStatus(object)
-		if err != nil {
-			return nil, err
-		}
-
 		for _, service := range services {
 			serviceName := string(service)
 
-			if object.GetName() == c.ChildResourceName(serviceName) && object.GetNamespace() == c.GetNamespace() {
-				version, ok := object.GetLabels()["app.kubernetes.io/version"]
-				if !ok {
-					version = "0.0.0"
-				}
-
-				result = append(result, &v1beta1.ServiceStatus{
-					Name:    serviceName,
-					Version: version,
-					Ready:   status.Ready,
-				})
+			if object.GetName() != c.ChildResourceName(serviceName) || object.GetNamespace() != c.GetNamespace() {
+				continue
 			}
+
+			version, ok := object.GetLabels()["app.kubernetes.io/version"]
+			if !ok {
+				version = "0.0.0"
+			}
+
+			status, err := resource.GetStatus(object)
+			if err != nil {
+				return nil, err
+			}
+
+			result = append(result, &v1beta1.ServiceStatus{
+				Name:    serviceName,
+				Version: version,
+				Ready:   status.Ready,
+			})
 		}
 	}
 
