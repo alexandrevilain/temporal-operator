@@ -2905,12 +2905,26 @@ int
 </td>
 <td>
 <em>(Optional)</em>
-<p>Port defines a custom membership port for the service.
+<p>MembershipPort defines a custom membership port for the service.
 Default values are:
 6933 for Frontend service
 6934 for History service
 6935 for Matching service
 6939 for Worker service</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>httpPort</code><br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HTTPPort defines a custom http port for the service.
+Default values are:
+7243 for Frontend service</p>
 </td>
 </tr>
 <tr>

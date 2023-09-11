@@ -2013,8 +2013,11 @@ spec:
                     frontend:
                       description: Frontend service custom specifications.
                       properties:
+                        httpPort:
+                          description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
+                          type: integer
                         membershipPort:
-                          description: 'Port defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
+                          description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
                         overrides:
                           description: Overrides adds some overrides to the resources deployed for the service. Those overrides takes precedence over spec.services.overrides.
@@ -2113,8 +2116,11 @@ spec:
                     history:
                       description: History service custom specifications.
                       properties:
+                        httpPort:
+                          description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
+                          type: integer
                         membershipPort:
-                          description: 'Port defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
+                          description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
                         overrides:
                           description: Overrides adds some overrides to the resources deployed for the service. Those overrides takes precedence over spec.services.overrides.
@@ -2217,8 +2223,11 @@ spec:
                           default: false
                           description: Enabled defines if we want to spawn the internal frontend service.
                           type: boolean
+                        httpPort:
+                          description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
+                          type: integer
                         membershipPort:
-                          description: 'Port defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
+                          description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
                         overrides:
                           description: Overrides adds some overrides to the resources deployed for the service. Those overrides takes precedence over spec.services.overrides.
@@ -2317,8 +2326,11 @@ spec:
                     matching:
                       description: Matching service custom specifications.
                       properties:
+                        httpPort:
+                          description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
+                          type: integer
                         membershipPort:
-                          description: 'Port defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
+                          description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
                         overrides:
                           description: Overrides adds some overrides to the resources deployed for the service. Those overrides takes precedence over spec.services.overrides.
@@ -2465,8 +2477,11 @@ spec:
                     worker:
                       description: Worker service custom specifications.
                       properties:
+                        httpPort:
+                          description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
+                          type: integer
                         membershipPort:
-                          description: 'Port defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
+                          description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
                         overrides:
                           description: Overrides adds some overrides to the resources deployed for the service. Those overrides takes precedence over spec.services.overrides.

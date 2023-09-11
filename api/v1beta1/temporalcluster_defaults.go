@@ -94,6 +94,9 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Services.Frontend.MembershipPort == nil {
 		c.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
 	}
+	if c.Spec.Services.Frontend.HTTPPort == nil {
+		c.Spec.Services.Frontend.HTTPPort = pointer.Int(7243)
+	}
 	// Internal Frontend specs
 	if c.Spec.Services.InternalFrontend.IsEnabled() {
 		if c.Spec.Services.InternalFrontend.Replicas == nil {
@@ -104,6 +107,9 @@ func (c *TemporalCluster) Default() {
 		}
 		if c.Spec.Services.InternalFrontend.MembershipPort == nil {
 			c.Spec.Services.InternalFrontend.MembershipPort = pointer.Int(6936)
+		}
+		if c.Spec.Services.InternalFrontend.HTTPPort == nil {
+			c.Spec.Services.InternalFrontend.HTTPPort = pointer.Int(0)
 		}
 	}
 	// History specs
@@ -119,6 +125,9 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Services.History.MembershipPort == nil {
 		c.Spec.Services.History.MembershipPort = pointer.Int(6934)
 	}
+	if c.Spec.Services.History.HTTPPort == nil {
+		c.Spec.Services.History.HTTPPort = pointer.Int(0)
+	}
 	// Matching specs
 	if c.Spec.Services.Matching == nil {
 		c.Spec.Services.Matching = new(ServiceSpec)
@@ -132,6 +141,9 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Services.Matching.MembershipPort == nil {
 		c.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
 	}
+	if c.Spec.Services.Matching.HTTPPort == nil {
+		c.Spec.Services.Matching.HTTPPort = pointer.Int(0)
+	}
 	// Worker specs
 	if c.Spec.Services.Worker == nil {
 		c.Spec.Services.Worker = new(ServiceSpec)
@@ -144,6 +156,9 @@ func (c *TemporalCluster) Default() {
 	}
 	if c.Spec.Services.Worker.MembershipPort == nil {
 		c.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
+	}
+	if c.Spec.Services.Worker.HTTPPort == nil {
+		c.Spec.Services.Worker.HTTPPort = pointer.Int(0)
 	}
 
 	if c.Spec.Persistence.DefaultStore != nil {

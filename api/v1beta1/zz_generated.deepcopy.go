@@ -894,6 +894,11 @@ func (in *ServiceSpec) DeepCopyInto(out *ServiceSpec) {
 		*out = new(int)
 		**out = **in
 	}
+	if in.HTTPPort != nil {
+		in, out := &in.HTTPPort, &out.HTTPPort
+		*out = new(int)
+		**out = **in
+	}
 	if in.Replicas != nil {
 		in, out := &in.Replicas, &out.Replicas
 		*out = new(int32)
