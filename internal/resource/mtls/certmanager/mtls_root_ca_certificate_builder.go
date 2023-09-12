@@ -62,11 +62,12 @@ func (b *MTLSRootCACertificateBuilder) Update(object client.Object) error {
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		IsCA:       true,
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.RootCACertificate,
-		SecretName: b.instance.ChildResourceName(rootCaCertificate),
-		CommonName: "Root CA certificate",
-		PrivateKey: caCertificatePrivateKey,
+		IsCA:        true,
+		Duration:    b.instance.Spec.MTLS.CertificatesDuration.RootCACertificate,
+		RenewBefore: b.instance.Spec.MTLS.RenewBefore,
+		SecretName:  b.instance.ChildResourceName(rootCaCertificate),
+		CommonName:  "Root CA certificate",
+		PrivateKey:  caCertificatePrivateKey,
 		DNSNames: []string{
 			b.instance.ServerName(),
 		},

@@ -674,6 +674,12 @@ type MTLSSpec struct {
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	RefreshInterval *metav1.Duration `json:"refreshInterval"`
+	// RenewBefore is defines how long before the currently issued certificate's expiry
+	// cert-manager should renew the certificate. The default is 2/3 of the
+	// issued certificate's duration. Minimum accepted value is 5 minutes.
+	// Useless if mTLS provider is not cert-manager.
+	// +optional
+	RenewBefore *metav1.Duration `json:"renewBefore,omitempty"`
 }
 
 func (m *MTLSSpec) InternodeEnabled() bool {

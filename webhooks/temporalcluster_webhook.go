@@ -111,6 +111,10 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		)
 	}
 
+	mTLSWarnings, mTLSErrors := cluster.Spec.MTLS.Validate()
+	warns = append(warns, mTLSWarnings...)
+	errs = append(errs, mTLSErrors...)
+
 	// Validate that the cluster version is a supported one.
 	err := cluster.Spec.Version.Validate()
 	if err != nil {

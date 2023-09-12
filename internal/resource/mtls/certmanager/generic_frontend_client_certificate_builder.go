@@ -61,9 +61,10 @@ func (b *GenericFrontendClientCertificateBuilder) Update(object client.Object) e
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName(GetCertificateSecretName(b.name)),
-		CommonName: fmt.Sprintf("%s client certificate", b.name),
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.ClientCertificates,
+		SecretName:  b.instance.ChildResourceName(GetCertificateSecretName(b.name)),
+		CommonName:  fmt.Sprintf("%s client certificate", b.name),
+		Duration:    b.instance.Spec.MTLS.CertificatesDuration.ClientCertificates,
+		RenewBefore: b.instance.Spec.MTLS.RenewBefore,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,

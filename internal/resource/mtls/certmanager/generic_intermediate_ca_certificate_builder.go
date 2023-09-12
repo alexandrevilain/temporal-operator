@@ -56,11 +56,12 @@ func (b *GenericItermediateCACertificateBuilder) Update(object client.Object) er
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		IsCA:       true,
-		SecretName: b.instance.ChildResourceName(b.secretName),
-		CommonName: b.commonName,
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
-		PrivateKey: caCertificatePrivateKey,
+		IsCA:        true,
+		SecretName:  b.instance.ChildResourceName(b.secretName),
+		CommonName:  b.commonName,
+		Duration:    b.instance.Spec.MTLS.CertificatesDuration.IntermediateCAsCertificates,
+		RenewBefore: b.instance.Spec.MTLS.RenewBefore,
+		PrivateKey:  caCertificatePrivateKey,
 		DNSNames: []string{
 			b.instance.ServerName(),
 		},
