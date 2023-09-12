@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY }}/alexandrevilain/temporal-operator
@@ -54,7 +54,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       - name: Docker meta bundle
         id: metabundle
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY }}/alexandrevilain/temporal-operator-bundle
@@ -70,7 +70,7 @@ jobs:
           labels: ${{ steps.metabundle.outputs.labels }}
       - name: Docker meta example worker-process
         id: workerprocess
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY }}/alexandrevilain/example-worker-process
