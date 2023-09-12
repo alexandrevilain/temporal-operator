@@ -47,7 +47,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
       - name: Build
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: false
@@ -56,7 +56,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           outputs: type=docker,dest=${{ env.OPERATOR_IMAGE_PATH }}
       - name: Build worker-process
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ./examples/worker-process/helloworld
           push: false
