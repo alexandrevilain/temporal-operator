@@ -2199,6 +2199,23 @@ Defaults to 1 hour.
 Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>renewBefore</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RenewBefore is defines how long before the currently issued certificate&rsquo;s expiry
+cert-manager should renew the certificate. The default is <sup>2</sup>&frasl;<sub>3</sub> of the
+issued certificate&rsquo;s duration. Minimum accepted value is 5 minutes.
+Useless if mTLS provider is not cert-manager.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>

@@ -62,9 +62,10 @@ func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName(InternodeCertificate),
-		CommonName: "Internode Certificate",
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.InternodeCertificate,
+		SecretName:  b.instance.ChildResourceName(InternodeCertificate),
+		CommonName:  "Internode Certificate",
+		Duration:    b.instance.Spec.MTLS.CertificatesDuration.InternodeCertificate,
+		RenewBefore: b.instance.Spec.MTLS.RenewBefore,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,

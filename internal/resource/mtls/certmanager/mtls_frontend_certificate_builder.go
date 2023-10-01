@@ -62,9 +62,10 @@ func (b *MTLSFrontendCertificateBuilder) Update(object client.Object) error {
 	certificate.Labels = object.GetLabels()
 	certificate.Annotations = object.GetAnnotations()
 	certificate.Spec = certmanagerv1.CertificateSpec{
-		SecretName: b.instance.ChildResourceName(FrontendCertificate),
-		CommonName: "Frontend Certificate",
-		Duration:   b.instance.Spec.MTLS.CertificatesDuration.FrontendCertificate,
+		SecretName:  b.instance.ChildResourceName(FrontendCertificate),
+		CommonName:  "Frontend Certificate",
+		Duration:    b.instance.Spec.MTLS.CertificatesDuration.FrontendCertificate,
+		RenewBefore: b.instance.Spec.MTLS.RenewBefore,
 		PrivateKey: &certmanagerv1.CertificatePrivateKey{
 			RotationPolicy: certmanagerv1.RotationPolicyAlways,
 			Encoding:       certmanagerv1.PKCS8,
