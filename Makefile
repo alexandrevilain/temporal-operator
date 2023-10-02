@@ -169,6 +169,10 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/crd > ${RELEASE_PATH}/temporal-operator.crds.yaml
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
+.PHONY: helm
+helm: manifests
+	cp ${RELEASE_PATH}/temporal-operator.crds.yaml charts/temporal-operator/crds
+
 .PHONY: bundle
 bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests -q
