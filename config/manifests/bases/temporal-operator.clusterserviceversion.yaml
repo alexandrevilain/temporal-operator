@@ -244,7 +244,7 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.15.2
+  replaces: temporal-operator.v0.15.3
   version: 0.10.0
   webhookdefinitions:
   - admissionReviewVersions:

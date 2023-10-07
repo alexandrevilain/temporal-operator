@@ -586,6 +586,13 @@ spec:
                       of certificates in the cluster components. Defaults to 1 hour.
                       Useless if mTLS provider is not cert-manager.
                     type: string
+                  renewBefore:
+                    description: RenewBefore is defines how long before the currently
+                      issued certificate's expiry cert-manager should renew the certificate.
+                      The default is 2/3 of the issued certificate's duration. Minimum
+                      accepted value is 5 minutes. Useless if mTLS provider is not
+                      cert-manager.
+                    type: string
                 type: object
               metrics:
                 description: Metrics allows configuration of scraping endpoints for
