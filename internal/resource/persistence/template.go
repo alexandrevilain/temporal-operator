@@ -333,8 +333,6 @@ var proxyShutdownScriptsContent = dedent.Dedent(`
 
 func init() {
 	for name, content := range templatesContent {
-		//combinedContent := proxyShutdownScriptsContent + content
-		//templates[name] = template.Must(template.New(name).Parse(combinedContent))
 		templates[name] = template.Must(template.New(name).Parse(proxyShutdownScriptsContent))
 		template.Must(templates[name].Parse(content))
 	}
