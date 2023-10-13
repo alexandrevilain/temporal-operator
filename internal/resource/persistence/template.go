@@ -50,14 +50,17 @@ var (
 		noOpTemplate: dedent.Dedent(`
 			#!/bin/bash
 			echo "No-op"
+			{{ template "scripts" . }}
 		`),
 		createCassandraTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
+			{{ template "scripts" . }}
 		`),
 		createDatabaseTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-database -database {{ .DatabaseName }}
+			{{ template "scripts" . }}
 		`),
 		createDatabaseTemplateV1_18: dedent.Dedent(`
 			#!/bin/bash
@@ -330,6 +333,8 @@ var proxyShutdownScriptsContent = dedent.Dedent(`
 
 func init() {
 	for name, content := range templatesContent {
+		//combinedContent := proxyShutdownScriptsContent + content
+		//templates[name] = template.Must(template.New(name).Parse(combinedContent))
 		templates[name] = template.Must(template.New(name).Parse(proxyShutdownScriptsContent))
 		template.Must(templates[name].Parse(content))
 	}
