@@ -38,22 +38,15 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+        uses: docker/setup-buildx-action@v3
       - name: Build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: false
           tags: temporal-operator:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha
           outputs: type=docker,dest=${{ env.OPERATOR_IMAGE_PATH }}
       - name: Build worker-process
         uses: docker/build-push-action@v5
@@ -61,23 +54,17 @@ jobs:
           context: ./examples/worker-process/helloworld
           push: false
           tags: example-worker-process:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha
           outputs: type=docker,dest=${{ env.WORKER_PROCESS_IMAGE_PATH }}
-      -
-        # Temp fix
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
-        name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       # e2e-framework uses kind v0.12.0 as default value
       - name: Install kind
         uses: helm/kind-action@v1.8.0
         with:
           version: ${{ env.KIND_VERSION }}
           install_only: true
+      - name: Free some disk space
+        run: sudo rm -rf /usr/share/dotnet && sudo rm -rf /opt/ghc && sudo rm -rf "/usr/local/share/boost"
       - name: Run e2e test suite
         run: make test-e2e
         env:
