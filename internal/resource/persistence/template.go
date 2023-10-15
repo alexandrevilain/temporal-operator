@@ -50,14 +50,17 @@ var (
 		noOpTemplate: dedent.Dedent(`
 			#!/bin/bash
 			echo "No-op"
+			{{ template "scripts" . }}
 		`),
 		createCassandraTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-Keyspace -k {{ .KeyspaceName }}
+			{{ template "scripts" . }}
 		`),
 		createDatabaseTemplate: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create-database -database {{ .DatabaseName }}
+			{{ template "scripts" . }}
 		`),
 		createDatabaseTemplateV1_18: dedent.Dedent(`
 			#!/bin/bash
