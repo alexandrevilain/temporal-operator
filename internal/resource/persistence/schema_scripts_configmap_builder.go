@@ -295,7 +295,7 @@ func (b *SchemaScriptsConfigmapBuilder) renderTemplate(name string, data any) (s
 func (b *SchemaScriptsConfigmapBuilder) GetStoreCreateTemplate(spec *v1beta1.DatastoreSpec) (string, error) {
 	storeType := spec.GetType()
 	if spec.SkipCreate || storeType == v1beta1.ElasticsearchDatastore {
-		return b.renderTemplate(noOpTemplate, nil)
+		return b.renderTemplate(noOpTemplate, b.baseData())
 	}
 
 	args, err := b.getStoreArgs(spec)
