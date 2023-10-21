@@ -44,6 +44,16 @@ metadata:
             },
             "ui": {
               "enabled": true
+              "overrides": {
+                "service": {
+                  "annotations": {
+                    "foo": "bar"
+                  },
+                  "labels": {
+                    "baz": "baf"
+                  }
+                }
+              }
             },
             "version": "1.17.4"
           }

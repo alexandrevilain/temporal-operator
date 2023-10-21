@@ -119,3 +119,21 @@ func ApplyDeploymentOverrides(deployment *appsv1.Deployment, override *v1beta1.D
 
 	return nil
 }
+
+// ApplyServiceOverrides applies the provided ServiceOverride to the provided Service.
+func ApplyServiceOverrides(deployment *corev1.Service, override *v1beta1.ServiceOverride) error {
+	if override == nil {
+		return nil
+	}
+
+	if override.ObjectMetaOverride != nil {
+		if len(override.Labels) > 0 {
+			deployment.Labels = metadata.Merge(deployment.Labels, override.Labels)
+		}
+
+		if len(override.Annotations) > 0 {
+			deployment.Annotations = metadata.Merge(deployment.Annotations, override.Annotations)
+		}
+	}
+	return nil
+}
