@@ -311,7 +311,7 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 func TestApplyServiceOverrides(t *testing.T) {
 	tests := map[string]struct {
 		original *corev1.Service
-		override *v1beta1.ServiceOverride
+		override *v1beta1.ObjectMetaOverride
 		expected *corev1.Service
 	}{
 		"works with nil override": {
@@ -348,14 +348,12 @@ func TestApplyServiceOverrides(t *testing.T) {
 					},
 				},
 			},
-			override: &v1beta1.ServiceOverride{
-				ObjectMetaOverride: &v1beta1.ObjectMetaOverride{
-					Annotations: map[string]string{
-						"1": "2",
-					},
-					Labels: map[string]string{
-						"3": "4",
-					},
+			override: &v1beta1.ObjectMetaOverride{
+				Annotations: map[string]string{
+					"1": "2",
+				},
+				Labels: map[string]string{
+					"3": "4",
 				},
 			},
 			expected: &corev1.Service{

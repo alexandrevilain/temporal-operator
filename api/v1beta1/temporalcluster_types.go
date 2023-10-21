@@ -200,11 +200,6 @@ type ObjectMetaOverride struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-// ServiceOverride provides the ability to override a Service resource meta.
-type ServiceOverride struct {
-	*ObjectMetaOverride `json:"metadata,omitempty"`
-}
-
 // SecretKeyReference contains enough information to locate the referenced Kubernetes Secret object in the same
 // namespace.
 type SecretKeyReference struct {
@@ -552,10 +547,9 @@ type TemporalUISpec struct {
 	// If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.
 	// +optional
 	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
-
 	// Service is an optional service resource configuration for the UI.
 	// +optional
-	Service *ServiceOverride `json:"service,omitempty"`
+	Service *ObjectMetaOverride `json:"service,omitempty"`
 }
 
 // TemporalAdminToolsSpec defines parameters for the temporal admin tools within a Temporal cluster deployment.
