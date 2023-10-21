@@ -238,6 +238,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
+					HTTPPort:        *b.instance.Spec.Services.Frontend.HTTPPort,
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
@@ -275,6 +276,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.InternalFrontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.InternalFrontend.MembershipPort,
+					HTTPPort:        *b.instance.Spec.Services.InternalFrontend.HTTPPort,
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},

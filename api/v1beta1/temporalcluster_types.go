@@ -72,7 +72,7 @@ type ServiceSpec struct {
 	// 7239 for Worker service
 	// +optional
 	Port *int `json:"port"`
-	// Port defines a custom membership port for the service.
+	// MembershipPort defines a custom membership port for the service.
 	// Default values are:
 	// 6933 for Frontend service
 	// 6934 for History service
@@ -80,6 +80,11 @@ type ServiceSpec struct {
 	// 6939 for Worker service
 	// +optional
 	MembershipPort *int `json:"membershipPort"`
+	// HTTPPort defines a custom http port for the service.
+	// Default values are:
+	// 7243 for Frontend service
+	// +optional
+	HTTPPort *int `json:"httpPort"`
 	// Number of desired replicas for the service. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
