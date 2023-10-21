@@ -77,8 +77,8 @@ func (b *ServiceBuilder) Update(object client.Object) error {
 		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
 
-	if b.instance.Spec.UI.Overrides != nil && b.instance.Spec.UI.Overrides.Service != nil {
-		err := kubernetes.ApplyServiceOverrides(service, b.instance.Spec.UI.Overrides.Service)
+	if b.instance.Spec.UI.Service != nil {
+		err := kubernetes.ApplyServiceOverrides(service, b.instance.Spec.UI.Service)
 		if err != nil {
 			return fmt.Errorf("failed applying service overrides: %w", err)
 		}

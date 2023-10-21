@@ -1449,8 +1449,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.ServiceSpecOverride">ServiceSpecOverride</a>, 
-<a href="#temporal.io/v1beta1.UIServiceSpecOverride">UIServiceSpecOverride</a>)
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">ServiceSpecOverride</a>)
 </p>
 <p>DeploymentOverride provides the ability to override a Deployment.</p>
 <div class="md-typeset__scrollwrap">
@@ -2867,7 +2866,7 @@ string
 </h3>
 <p>
 (<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.UIServiceSpecOverride">UIServiceSpecOverride</a>)
+<a href="#temporal.io/v1beta1.TemporalUISpec">TemporalUISpec</a>)
 </p>
 <p>ServiceOverride provides the ability to override a Service resource meta.</p>
 <div class="md-typeset__scrollwrap">
@@ -3000,7 +2999,8 @@ Those overrides takes precedence over spec.services.overrides.</p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.ServiceSpec">ServiceSpec</a>, 
 <a href="#temporal.io/v1beta1.ServicesSpec">ServicesSpec</a>, 
-<a href="#temporal.io/v1beta1.TemporalAdminToolsSpec">TemporalAdminToolsSpec</a>)
+<a href="#temporal.io/v1beta1.TemporalAdminToolsSpec">TemporalAdminToolsSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalUISpec">TemporalUISpec</a>)
 </p>
 <p>ServiceSpecOverride provides the ability to override the generated manifests of a temporal service.</p>
 <div class="md-typeset__scrollwrap">
@@ -4502,8 +4502,8 @@ More info: <a href="https://kubernetes.io/docs/concepts/configuration/manage-res
 <td>
 <code>overrides</code><br>
 <em>
-<a href="#temporal.io/v1beta1.UIServiceSpecOverride">
-UIServiceSpecOverride
+<a href="#temporal.io/v1beta1.ServiceSpecOverride">
+ServiceSpecOverride
 </a>
 </em>
 </td>
@@ -4525,6 +4525,20 @@ TemporalUIIngressSpec
 <em>(Optional)</em>
 <p>Ingress is an optional ingress configuration for the UI.
 If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ServiceOverride">
+ServiceOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service is an optional service resource configuration for the UI.</p>
 </td>
 </tr>
 </tbody>
@@ -4843,54 +4857,6 @@ int32
 </td>
 <td>
 <p>Conditions represent the latest available observations of the worker process state.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.UIServiceSpecOverride">UIServiceSpecOverride
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalUISpec">TemporalUISpec</a>)
-</p>
-<p>UIServiceSpecOverride allows the overriding of both deployment and service resources
-for UI service</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>deployment</code><br>
-<em>
-<a href="#temporal.io/v1beta1.DeploymentOverride">
-DeploymentOverride
-</a>
-</em>
-</td>
-<td>
-<p>Override configuration for the temporal service Deployment.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>service</code><br>
-<em>
-<a href="#temporal.io/v1beta1.ServiceOverride">
-ServiceOverride
-</a>
-</em>
-</td>
-<td>
-<p>Override configuration for the temporal service Service resource.</p>
 </td>
 </tr>
 </tbody>

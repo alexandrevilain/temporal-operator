@@ -547,20 +547,14 @@ type TemporalUISpec struct {
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// Overrides adds some overrides to the resources deployed for the ui.
 	// +optional
-	Overrides *UIServiceSpecOverride `json:"overrides,omitempty"`
+	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
 	// Ingress is an optional ingress configuration for the UI.
 	// If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.
 	// +optional
 	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
-}
 
-// UIServiceSpecOverride allows the overriding of both deployment and service resources
-// for UI service
-type UIServiceSpecOverride struct {
-	// Override configuration for the temporal service Deployment.
-	Deployment *DeploymentOverride `json:"deployment,omitempty"`
-
-	// Override configuration for the temporal service Service resource.
+	// Service is an optional service resource configuration for the UI.
+	// +optional
 	Service *ServiceOverride `json:"service,omitempty"`
 }
 
