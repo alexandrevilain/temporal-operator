@@ -552,6 +552,9 @@ type TemporalUISpec struct {
 	// If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.
 	// +optional
 	Ingress *TemporalUIIngressSpec `json:"ingress,omitempty"`
+	// Service is an optional service resource configuration for the UI.
+	// +optional
+	Service *ObjectMetaOverride `json:"service,omitempty"`
 }
 
 // TemporalAdminToolsSpec defines parameters for the temporal admin tools within a Temporal cluster deployment.

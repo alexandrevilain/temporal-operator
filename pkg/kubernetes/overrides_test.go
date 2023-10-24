@@ -308,6 +308,78 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 	}
 }
 
+func TestApplyServiceOverrides(t *testing.T) {
+	tests := map[string]struct {
+		original *corev1.Service
+		override *v1beta1.ObjectMetaOverride
+		expected *corev1.Service
+	}{
+		"works with nil override": {
+			original: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"a": "b",
+					},
+					Labels: map[string]string{
+						"c": "d",
+					},
+				},
+			},
+			override: nil,
+			expected: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"a": "b",
+					},
+					Labels: map[string]string{
+						"c": "d",
+					},
+				},
+			},
+		},
+		"add both": {
+			original: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"a": "b",
+					},
+					Labels: map[string]string{
+						"c": "d",
+					},
+				},
+			},
+			override: &v1beta1.ObjectMetaOverride{
+				Annotations: map[string]string{
+					"1": "2",
+				},
+				Labels: map[string]string{
+					"3": "4",
+				},
+			},
+			expected: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"a": "b",
+						"1": "2",
+					},
+					Labels: map[string]string{
+						"c": "d",
+						"3": "4",
+					},
+				},
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(tt *testing.T) {
+			err := kubernetes.ApplyServiceOverrides(test.original, test.override)
+			require.NoError(tt, err)
+
+			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
+		})
+	}
+}
+
 func TestApplyPodTemplateSpecOverrides(t *testing.T) {
 	tests := map[string]struct {
 		original *corev1.PodTemplateSpec

@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -74,6 +75,13 @@ func (b *ServiceBuilder) Update(object client.Object) error {
 
 	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)
+	}
+
+	if b.instance.Spec.UI.Service != nil {
+		err := kubernetes.ApplyServiceOverrides(service, b.instance.Spec.UI.Service)
+		if err != nil {
+			return fmt.Errorf("failed applying service overrides: %w", err)
+		}
 	}
 	return nil
 }

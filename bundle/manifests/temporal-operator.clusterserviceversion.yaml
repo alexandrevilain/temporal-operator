@@ -119,7 +119,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
     containerImage: ghcr.io/alexandrevilain/temporal-operator
-    createdAt: "2023-10-01T11:30:15Z"
+    createdAt: "2023-10-21T18:00:22Z"
     operators.operatorframework.io/builder: operator-sdk-v1.30.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: temporal-operator.v0.15.4

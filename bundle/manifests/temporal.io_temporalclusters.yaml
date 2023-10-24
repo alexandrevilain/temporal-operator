@@ -3553,6 +3553,30 @@ spec:
                           Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                  service:
+                    description: Service is an optional service resource configuration
+                      for the UI.
+                    properties:
+                      metadata:
+                        description: ObjectMetaOverride provides the ability to override
+                          an object metadata. It's a subset of the fields included
+                          in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an unstructured key value
+                              map stored with a resource that may be set by external
+                              tools to store and retrieve arbitrary metadata.
+                            type: object
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Map of string keys and values that can be
+                              used to organize and categorize (scope and select) objects.
+                            type: object
+                        type: object
+                    type: object
                   version:
                     description: Version defines the temporal ui version the instance
                       should run.

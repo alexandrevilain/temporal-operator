@@ -2271,7 +2271,8 @@ PrometheusSpec
 <p>
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.DeploymentOverride">DeploymentOverride</a>, 
-<a href="#temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride</a>)
+<a href="#temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride</a>, 
+<a href="#temporal.io/v1beta1.TemporalUISpec">TemporalUISpec</a>)
 </p>
 <p>ObjectMetaOverride provides the ability to override an object metadata.
 It&rsquo;s a subset of the fields included in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.</p>
@@ -4505,6 +4506,20 @@ TemporalUIIngressSpec
 <em>(Optional)</em>
 <p>Ingress is an optional ingress configuration for the UI.
 If lived empty, no ingress configuration will be created and the UI will only by available trough ClusterIP service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>service</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ObjectMetaOverride">
+ObjectMetaOverride
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Service is an optional service resource configuration for the UI.</p>
 </td>
 </tr>
 </tbody>

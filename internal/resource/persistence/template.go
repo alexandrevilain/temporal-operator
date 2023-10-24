@@ -65,6 +65,7 @@ var (
 		createDatabaseTemplateV1_18: dedent.Dedent(`
 			#!/bin/bash
 			{{ .Tool }} {{ .ConnectionArgs }} create
+			{{ template "scripts" . }}
 		`),
 		setupSchemaTemplate: dedent.Dedent(`
 			#!/bin/bash
@@ -244,11 +245,13 @@ var (
 
 			if [ $current_version_int -eq $expected_version_int ]; then
 				echo "Current schema version is already at the expected version"
+				{{ template "scripts" . }}
 				exit 0
 			fi
 
 			if [ $current_version_int -gt $expected_version_int ]; then
 				echo "Current schema version is already to a newer version"
+				{{ template "scripts" . }}
 				exit 0
 			fi
 
@@ -259,6 +262,7 @@ var (
 
 			if [ $expected_next_version -ne $expected_version_int ]; then
 				echo "Can't do Elasticsearch schema upgrade for no-following version numbers. (eg. from v1 to v2, but not from v1 to v3)"
+				{{ template "scripts" . }}
 				exit 1
 			fi
 
