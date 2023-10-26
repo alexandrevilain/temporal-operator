@@ -47,21 +47,30 @@ func (c *SecretCopier) Copy(ctx context.Context, owner client.Object, original c
 		return fmt.Errorf("can't retrieve original secret: %w", err)
 	}
 
-	destinationSecret := secret.DeepCopy()
-	// Override object meta to ensure no UUID or resource version can conflict.
-	destinationSecret.ObjectMeta = metav1.ObjectMeta{
+	secretMeta := metav1.ObjectMeta{
 		Name:        secret.GetName(),
 		Namespace:   destinationNS,
 		Labels:      secret.Labels,
 		Annotations: secret.Annotations,
 	}
 
-	err = controllerutil.SetOwnerReference(owner, destinationSecret, c.scheme)
-	if err != nil {
-		return fmt.Errorf("failed setting controller reference: %w", err)
-	}
+	destinationSecret := &corev1.Secret{}
+	destinationSecret.ObjectMeta = secretMeta
 
 	_, err = controllerutil.CreateOrUpdate(ctx, c.Client, destinationSecret, func() error {
+		destinationSecret.Labels = secretMeta.Labels
+		destinationSecret.Annotations = secretMeta.Annotations
+
+		destinationSecret.Data = secret.Data
+		destinationSecret.StringData = secret.StringData
+		destinationSecret.Immutable = secret.Immutable
+		destinationSecret.Type = secret.Type
+
+		err = controllerutil.SetOwnerReference(owner, destinationSecret, c.scheme)
+		if err != nil {
+			return fmt.Errorf("failed setting controller reference: %w", err)
+		}
+
 		return nil
 	})
 	if err != nil {
