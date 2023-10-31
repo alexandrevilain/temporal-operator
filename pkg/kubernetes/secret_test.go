@@ -38,6 +38,7 @@ func TestSecretCopier(t *testing.T) {
 	tests := map[string]struct {
 		original    client.Object
 		owner       client.Object
+		update      client.Object
 		destination string
 		expected    client.Object
 		expectedErr string
@@ -84,6 +85,57 @@ func TestSecretCopier(t *testing.T) {
 				},
 			},
 		},
+		"works when secret is updated": {
+			original: &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "test",
+				},
+				StringData: map[string]string{
+					"test": "test",
+				},
+			},
+			update: &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "test",
+				},
+				StringData: map[string]string{
+					"test": "new-value",
+				},
+			},
+			owner: &v1beta1.TemporalCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "fakecluster",
+					Namespace: "default",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.20.0"),
+				},
+			},
+			destination: "default",
+			expected: &corev1.Secret{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "default",
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "temporal.io/v1beta1",
+							Kind:       "TemporalCluster",
+							Name:       "fakecluster",
+						},
+					},
+					ResourceVersion: "2",
+				},
+				StringData: map[string]string{
+					"test": "new-value",
+				},
+			},
+		},
 		"error with cross namespace owner reference": {
 			original: &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -126,6 +178,14 @@ func TestSecretCopier(t *testing.T) {
 				return
 			}
 			assert.NoError(tt, err)
+
+			if test.update != nil {
+				err := fakeClient.Update(ctx, test.update)
+				require.NoError(tt, err)
+				err = copier.Copy(ctx, test.owner, client.ObjectKeyFromObject(test.update), test.destination)
+				assert.NoError(tt, err)
+			}
+
 			result := &corev1.Secret{}
 			require.NoError(tt, fakeClient.Get(ctx, client.ObjectKey{Name: test.original.GetName(), Namespace: test.destination}, result))
 
