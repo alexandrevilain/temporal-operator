@@ -34,7 +34,7 @@ func GetAnnotations(instance *v1beta1.TemporalCluster) map[string]string {
 			"prometheus.io/scrape": "true",
 			"prometheus.io/scheme": "http",
 			"prometheus.io/path":   "/metrics",
-			"prometheus.io/port":   fmt.Sprintf("%d", instance.Spec.Metrics.Prometheus.ListenPort),
+			"prometheus.io/port":   fmt.Sprintf("%d", *instance.Spec.Metrics.Prometheus.ListenPort),
 		}
 	}
 	return map[string]string{}
