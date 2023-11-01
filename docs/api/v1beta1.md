@@ -268,6 +268,20 @@ ClusterArchivalSpec
 <p>Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>authorization</code><br>
+<em>
+<a href="#temporal.io/v1beta1.AuthorizationSpec">
+AuthorizationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Authorization allows authorization configuration for the temporal cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -602,6 +616,132 @@ string
 </td>
 <td>
 <p>Path is &hellip;</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.AuthorizationSpec">AuthorizationSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>AuthorizationSpec defines the specifications for authorization in the temporal cluster. It contains fields
+that configure how JWT tokens are validated, how permissions are managed, and how claims are mapped.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>jwtKeyProvider</code><br>
+<em>
+<a href="#temporal.io/v1beta1.AuthorizationSpecJWTKeyProvider">
+AuthorizationSpecJWTKeyProvider
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JWTKeyProvider specifies the signing key provider used for validating JWT tokens.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>permissionsClaimName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PermissionsClaimName is the name of the claim within the JWT token that contains the user&rsquo;s permissions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>authorizer</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Authorizer defines the authorization mechanism to be used. It can be left as an empty string to
+use a no-operation authorizer (noopAuthorizer), or set to &ldquo;default&rdquo; to use the temporal&rsquo;s default
+authorizer (defaultAuthorizer).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>claimMapper</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClaimMapper specifies the claim mapping mechanism used for handling JWT claims. Similar to the Authorizer,
+it can be left as an empty string to use a no-operation claim mapper (noopClaimMapper), or set to &ldquo;default&rdquo;
+to use the default JWT claim mapper (defaultJWTClaimMapper).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.AuthorizationSpecJWTKeyProvider">AuthorizationSpecJWTKeyProvider
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.AuthorizationSpec">AuthorizationSpec</a>)
+</p>
+<p>AuthorizationSpecJWTKeyProvider defines the configuration for a JWT key provider within the AuthorizationSpec.
+It specifies where to source the JWT keys from and how often they should be refreshed.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>keySourceURIs</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KeySourceURIs is a list of URIs where the JWT signing keys can be obtained. These URIs are used by the
+authorization system to fetch the public keys necessary for validating JWT tokens.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>refreshInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RefreshInterval defines the time interval at which temporal should refresh the JWT signing keys from
+the specified URIs.</p>
 </td>
 </tr>
 </tbody>
@@ -3663,6 +3803,20 @@ ClusterArchivalSpec
 <td>
 <em>(Optional)</em>
 <p>Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>authorization</code><br>
+<em>
+<a href="#temporal.io/v1beta1.AuthorizationSpec">
+AuthorizationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Authorization allows authorization configuration for the temporal cluster.</p>
 </td>
 </tr>
 </tbody>

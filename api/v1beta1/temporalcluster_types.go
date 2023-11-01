@@ -878,6 +878,44 @@ type FilestoreArchiver struct {
 	DirPermissions string `json:"dirPermissions"`
 }
 
+// AuthorizationSpec defines the specifications for authorization in the temporal cluster. It contains fields
+// that configure how JWT tokens are validated, how permissions are managed, and how claims are mapped.
+type AuthorizationSpec struct {
+	// JWTKeyProvider specifies the signing key provider used for validating JWT tokens.
+	// +optional
+	JWTKeyProvider AuthorizationSpecJWTKeyProvider `json:"jwtKeyProvider"`
+
+	// PermissionsClaimName is the name of the claim within the JWT token that contains the user's permissions.
+	// +optional
+	PermissionsClaimName string `json:"permissionsClaimName"`
+
+	// Authorizer defines the authorization mechanism to be used. It can be left as an empty string to
+	// use a no-operation authorizer (noopAuthorizer), or set to "default" to use the temporal's default
+	// authorizer (defaultAuthorizer).
+	// +optional
+	Authorizer string `json:"authorizer"`
+
+	// ClaimMapper specifies the claim mapping mechanism used for handling JWT claims. Similar to the Authorizer,
+	// it can be left as an empty string to use a no-operation claim mapper (noopClaimMapper), or set to "default"
+	// to use the default JWT claim mapper (defaultJWTClaimMapper).
+	// +optional
+	ClaimMapper string `json:"claimMapper"`
+}
+
+// AuthorizationSpecJWTKeyProvider defines the configuration for a JWT key provider within the AuthorizationSpec.
+// It specifies where to source the JWT keys from and how often they should be refreshed.
+type AuthorizationSpecJWTKeyProvider struct {
+	// KeySourceURIs is a list of URIs where the JWT signing keys can be obtained. These URIs are used by the
+	// authorization system to fetch the public keys necessary for validating JWT tokens.
+	// +optional
+	KeySourceURIs []string `json:"keySourceURIs"`
+
+	// RefreshInterval defines the time interval at which temporal should refresh the JWT signing keys from
+	// the specified URIs.
+	// +optional
+	RefreshInterval *metav1.Duration `json:"refreshInterval"`
+}
+
 // S3Archiver is the S3 archival provider configuration.
 type S3Archiver struct {
 	// Region is the aws s3 region.
@@ -970,6 +1008,9 @@ type TemporalClusterSpec struct {
 	// Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.
 	// +optional
 	Archival *ClusterArchivalSpec `json:"archival,omitempty"`
+	// Authorization allows authorization configuration for the temporal cluster.
+	// +optional
+	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 }
 
 // ServiceStatus reports a service status.
