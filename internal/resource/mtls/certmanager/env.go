@@ -50,6 +50,10 @@ func GetTLSEnvironmentVariables(instance *v1beta1.TemporalCluster, envPrefix, ce
 			Value: "true",
 		},
 		{
+			Name:  addPrefix(envPrefix, "TLS_DISABLE_HOST_VERIFICATION"),
+			Value: "false",
+		},
+		{
 			Name:  addPrefix(envPrefix, "TLS_SERVER_NAME"),
 			Value: instance.Spec.MTLS.Frontend.ServerName(instance.ServerName()),
 		},
