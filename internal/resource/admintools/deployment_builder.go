@@ -115,7 +115,10 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			},
 		)
 
+		// Add tctl environment variables
 		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL_CLI", admintoolsCertsMountPath)...)
+		// Add temporal cli environment variables (>= 0.9.0)
+		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL", admintoolsCertsMountPath)...)
 	}
 
 	deployment.Spec.Replicas = pointer.Int32(1)
