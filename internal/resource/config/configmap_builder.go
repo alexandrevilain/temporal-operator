@@ -29,6 +29,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
 	archivalutil "github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal/authorization"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
@@ -213,6 +214,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				MaxJoinDuration:  30 * time.Second,
 				BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
 			},
+			Authorization: authorization.ToTemporalAuthorization(b.instance.Spec.Authorization),
 		},
 		Persistence: *persistenceConfig,
 		Log:         log.NewSQLConfigFromDatastoreSpec(b.instance.Spec.Log),

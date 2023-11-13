@@ -288,6 +288,31 @@ spec:
                         - paused
                       type: object
                   type: object
+                authorization:
+                  description: Authorization allows authorization configuration for the temporal cluster.
+                  properties:
+                    authorizer:
+                      description: Authorizer defines the authorization mechanism to be used. It can be left as an empty string to use a no-operation authorizer (noopAuthorizer), or set to "default" to use the temporal's default authorizer (defaultAuthorizer).
+                      type: string
+                    claimMapper:
+                      description: ClaimMapper specifies the claim mapping mechanism used for handling JWT claims. Similar to the Authorizer, it can be left as an empty string to use a no-operation claim mapper (noopClaimMapper), or set to "default" to use the default JWT claim mapper (defaultJWTClaimMapper).
+                      type: string
+                    jwtKeyProvider:
+                      description: JWTKeyProvider specifies the signing key provider used for validating JWT tokens.
+                      properties:
+                        keySourceURIs:
+                          description: KeySourceURIs is a list of URIs where the JWT signing keys can be obtained. These URIs are used by the authorization system to fetch the public keys necessary for validating JWT tokens.
+                          items:
+                            type: string
+                          type: array
+                        refreshInterval:
+                          description: RefreshInterval defines the time interval at which temporal should refresh the JWT signing keys from the specified URIs.
+                          type: string
+                      type: object
+                    permissionsClaimName:
+                      description: PermissionsClaimName is the name of the claim within the JWT token that contains the user's permissions.
+                      type: string
+                  type: object
                 dynamicConfig:
                   description: DynamicConfig allows advanced configuration for the temporal cluster.
                   properties:
