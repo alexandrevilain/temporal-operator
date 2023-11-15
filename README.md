@@ -47,6 +47,7 @@ To start using the Operator and deploy you first cluster in a matter of minutes,
 ## Examples
 
 Somes examples are available to help you get started:
+
 - [Temporal Cluster with PostgreSQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-postgres)
 - [Temporal Cluster with MySQL](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-mysql)
 - [Temporal Cluster with Cassandra](https://github.com/alexandrevilain/temporal-operator/blob/main/examples/cluster-cassandra)
@@ -73,7 +74,8 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 
 ## Roadmap
 
-### Features:
+### Features
+
 - [x] Deploy a new temporal cluster.
 - [x] Ability to deploy multiple clusters.
 - [x] Support for SQL datastores.
@@ -94,7 +96,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 ## Contributing
 
 Feel free to contribute to the project ! All issues and PRs are welcome!
-To start hacking on the project, you can follow the [local development](https://alexandrevilain.github.io/temporal-operator/contributing/local-development/) documentation page. 
+To start hacking on the project, you can follow the [local development](https://alexandrevilain.github.io/temporal-operator/contributing/local-development/) documentation page.
 
 ## License
 

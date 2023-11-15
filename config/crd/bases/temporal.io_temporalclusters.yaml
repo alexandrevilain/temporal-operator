@@ -1176,7 +1176,6 @@ spec:
                               description: User is the cassandra user used for authentication by gocql client.
                               type: string
                           required:
-                            - datacenter
                             - hosts
                             - keyspace
                             - port
@@ -1403,7 +1402,6 @@ spec:
                               description: User is the cassandra user used for authentication by gocql client.
                               type: string
                           required:
-                            - datacenter
                             - hosts
                             - keyspace
                             - port
@@ -1630,7 +1628,6 @@ spec:
                               description: User is the cassandra user used for authentication by gocql client.
                               type: string
                           required:
-                            - datacenter
                             - hosts
                             - keyspace
                             - port
@@ -1857,7 +1854,6 @@ spec:
                               description: User is the cassandra user used for authentication by gocql client.
                               type: string
                           required:
-                            - datacenter
                             - hosts
                             - keyspace
                             - port

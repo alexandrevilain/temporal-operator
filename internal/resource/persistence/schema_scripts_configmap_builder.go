@@ -194,7 +194,10 @@ func (b *SchemaScriptsConfigmapBuilder) getCassandraArgs(spec *v1beta1.Datastore
 	args.Set(schema.CLIOptUser, spec.Cassandra.User)
 	args.Set(schema.CLIOptPassword, fmt.Sprintf("$%s", spec.GetPasswordEnvVarName()))
 	args.Set(schema.CLIOptKeyspace, spec.Cassandra.Keyspace)
-	args.Set(schema.CLIOptDatacenter, spec.Cassandra.Datacenter)
+	if spec.Cassandra.Datacenter != "" {
+		args.Set(schema.CLIOptDatacenter, spec.Cassandra.Datacenter)
+	}
+
 	if spec.Cassandra.Consistency != nil {
 		args.Set(schema.CLIOptConsistency, spec.Cassandra.Consistency.Consistency.String())
 	}

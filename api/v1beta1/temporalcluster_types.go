@@ -329,6 +329,7 @@ type CassandraSpec struct {
 	// Keyspace is the cassandra keyspace.
 	Keyspace string `json:"keyspace"`
 	// Datacenter is the data center filter arg for cassandra.
+	// +optional
 	Datacenter string `json:"datacenter"`
 	// MaxConns is the max number of connections to this datastore for a single keyspace.
 	// +optional

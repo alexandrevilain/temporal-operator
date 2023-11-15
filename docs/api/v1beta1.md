@@ -868,6 +868,7 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>Datacenter is the data center filter arg for cassandra.</p>
 </td>
 </tr>
