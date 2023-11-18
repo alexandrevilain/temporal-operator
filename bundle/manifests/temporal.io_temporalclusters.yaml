@@ -364,6 +364,46 @@ spec:
                     - paused
                     type: object
                 type: object
+              authorization:
+                description: Authorization allows authorization configuration for
+                  the temporal cluster.
+                properties:
+                  authorizer:
+                    description: Authorizer defines the authorization mechanism to
+                      be used. It can be left as an empty string to use a no-operation
+                      authorizer (noopAuthorizer), or set to "default" to use the
+                      temporal's default authorizer (defaultAuthorizer).
+                    type: string
+                  claimMapper:
+                    description: ClaimMapper specifies the claim mapping mechanism
+                      used for handling JWT claims. Similar to the Authorizer, it
+                      can be left as an empty string to use a no-operation claim mapper
+                      (noopClaimMapper), or set to "default" to use the default JWT
+                      claim mapper (defaultJWTClaimMapper).
+                    type: string
+                  jwtKeyProvider:
+                    description: JWTKeyProvider specifies the signing key provider
+                      used for validating JWT tokens.
+                    properties:
+                      keySourceURIs:
+                        description: KeySourceURIs is a list of URIs where the JWT
+                          signing keys can be obtained. These URIs are used by the
+                          authorization system to fetch the public keys necessary
+                          for validating JWT tokens.
+                        items:
+                          type: string
+                        type: array
+                      refreshInterval:
+                        description: RefreshInterval defines the time interval at
+                          which temporal should refresh the JWT signing keys from
+                          the specified URIs.
+                        type: string
+                    type: object
+                  permissionsClaimName:
+                    description: PermissionsClaimName is the name of the claim within
+                      the JWT token that contains the user's permissions.
+                    type: string
+                type: object
               dynamicConfig:
                 description: DynamicConfig allows advanced configuration for the temporal
                   cluster.
@@ -1575,7 +1615,6 @@ spec:
                               by gocql client.
                             type: string
                         required:
-                        - datacenter
                         - hosts
                         - keyspace
                         - port
@@ -1845,7 +1884,6 @@ spec:
                               by gocql client.
                             type: string
                         required:
-                        - datacenter
                         - hosts
                         - keyspace
                         - port
@@ -2116,7 +2154,6 @@ spec:
                               by gocql client.
                             type: string
                         required:
-                        - datacenter
                         - hosts
                         - keyspace
                         - port
@@ -2386,7 +2423,6 @@ spec:
                               by gocql client.
                             type: string
                         required:
-                        - datacenter
                         - hosts
                         - keyspace
                         - port
@@ -2598,11 +2634,15 @@ spec:
                   frontend:
                     description: Frontend service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -2738,11 +2778,15 @@ spec:
                   history:
                     description: History service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -2884,11 +2928,15 @@ spec:
                         description: Enabled defines if we want to spawn the internal
                           frontend service.
                         type: boolean
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -3024,11 +3072,15 @@ spec:
                   matching:
                     description: Matching service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -3231,11 +3283,15 @@ spec:
                   worker:
                     description: Worker service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -3557,24 +3613,18 @@ spec:
                     description: Service is an optional service resource configuration
                       for the UI.
                     properties:
-                      metadata:
-                        description: ObjectMetaOverride provides the ability to override
-                          an object metadata. It's a subset of the fields included
-                          in k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta.
-                        properties:
-                          annotations:
-                            additionalProperties:
-                              type: string
-                            description: Annotations is an unstructured key value
-                              map stored with a resource that may be set by external
-                              tools to store and retrieve arbitrary metadata.
-                            type: object
-                          labels:
-                            additionalProperties:
-                              type: string
-                            description: Map of string keys and values that can be
-                              used to organize and categorize (scope and select) objects.
-                            type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is an unstructured key value map
+                          stored with a resource that may be set by external tools
+                          to store and retrieve arbitrary metadata.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Map of string keys and values that can be used
+                          to organize and categorize (scope and select) objects.
                         type: object
                     type: object
                   version:
