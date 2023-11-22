@@ -38,6 +38,7 @@ var (
 	V1_18_0 = MustNewVersionFromString("1.18.0") //nolint:stylecheck,revive
 	V1_20_0 = MustNewVersionFromString("1.20.0") //nolint:stylecheck,revive
 	V1_21_0 = MustNewVersionFromString("1.21.0") //nolint:stylecheck,revive
+	V1_22_0 = MustNewVersionFromString("1.22.0") //nolint:stylecheck,revive
 )
 
 // Version is a wrapper around semver.Version which supports correct
