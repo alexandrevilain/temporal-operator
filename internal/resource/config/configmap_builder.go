@@ -240,7 +240,6 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				RPC: config.RPC{
 					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
 					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
-					HTTPPort:        *b.instance.Spec.Services.Frontend.HTTPPort,
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
@@ -289,6 +288,16 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	if !b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
 		temporalCfg.PublicClient = config.PublicClient{
 			HostPort: b.instance.GetPublicClientAddress(),
+		}
+	}
+
+	// Temporal >= 1.22 provides HTTP endpoint for the frontend
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_22_0) &&
+		b.instance.Spec.Services.Frontend.HTTPPort != nil {
+		frontend, ok := temporalCfg.Services[string(primitives.FrontendService)]
+		if ok {
+			frontend.RPC.HTTPPort = *b.instance.Spec.Services.Frontend.HTTPPort
+			temporalCfg.Services[string(primitives.FrontendService)] = frontend
 		}
 	}
 
