@@ -501,6 +501,13 @@ spec:
                     enabled:
                       description: Enabled defines if the operator should enable metrics exposition on temporal components.
                       type: boolean
+                    perUnitHistogramBoundaries:
+                      additionalProperties:
+                        items:
+                          type: string
+                        type: array
+                      description: "PerUnitHistogramBoundaries defines the default histogram bucket boundaries. Configuration of histogram boundaries for given metric unit. \n Supported values: - \"dimensionless\" - \"milliseconds\" - \"bytes\""
+                      type: object
                     prometheus:
                       description: Prometheus reporter configuration.
                       properties:

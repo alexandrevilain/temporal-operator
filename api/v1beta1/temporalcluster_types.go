@@ -743,6 +743,15 @@ type PrometheusSpec struct {
 type MetricsSpec struct {
 	// Enabled defines if the operator should enable metrics exposition on temporal components.
 	Enabled bool `json:"enabled"`
+	// PerUnitHistogramBoundaries defines the default histogram bucket boundaries.
+	// Configuration of histogram boundaries for given metric unit.
+	//
+	// Supported values:
+	// - "dimensionless"
+	// - "milliseconds"
+	// - "bytes"
+	// +optional
+	PerUnitHistogramBoundaries map[string][]string `json:"perUnitHistogramBoundaries,omitempty"`
 	// Prometheus reporter configuration.
 	// +optional
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`

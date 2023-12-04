@@ -273,6 +273,24 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
+	// Check for per unit histogram boundaries if metrics is enabled
+	if cluster.Spec.Metrics.IsEnabled() && cluster.Spec.Metrics.PerUnitHistogramBoundaries != nil {
+		p := cluster.Spec.Metrics.PerUnitHistogramBoundaries
+		for _, value := range p {
+			for _, str := range value {
+				_, err := strconv.ParseFloat(str, 64)
+				if err != nil {
+					errs = append(errs,
+						field.Forbidden(
+							field.NewPath("spec", "metrics", "perUnitHistogramBoundaries"),
+							fmt.Sprintf("can't parse this strings value to float64: %s ", str),
+						),
+					)
+				}
+			}
+		}
+	}
+
 	return warns, errs
 }
 
