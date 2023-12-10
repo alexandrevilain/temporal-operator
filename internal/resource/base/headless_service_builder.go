@@ -24,7 +24,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/prometheus"
-	"go.temporal.io/server/common/primitives"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -83,6 +82,8 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 	service.Spec.Type = corev1.ServiceTypeClusterIP
 	service.Spec.ClusterIP = corev1.ClusterIPNone
 	service.Spec.Selector = metadata.LabelsSelector(b.instance, b.serviceName)
+	// align with https://github.com/temporalio/helm-charts/blob/master/templates/server-service.yaml#L62C33-L62C33
+	service.Spec.PublishNotReadyAddresses = true
 
 	service.Spec.Ports = []corev1.ServicePort{
 		{
@@ -91,34 +92,20 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 			Protocol:   corev1.ProtocolTCP,
 			Port:       9090,
 		},
-	}
-
-	if b.serviceName != string(primitives.WorkerService) {
-		service.Spec.Ports = append(service.Spec.Ports,
-			corev1.ServicePort{
-				// Here "tcp-" is used instead of "grpc-" because temporal uses
-				// pod-to-pod traffic over ip. Because no "Host" header is set,
-				// istio can't create mTLS for gRPC.
-				Name:       "tcp-rpc",
-				TargetPort: intstr.FromString("rpc"),
-				Protocol:   corev1.ProtocolTCP,
-				Port:       int32(*b.service.Port),
-			},
-			corev1.ServicePort{
-				Name:       "tcp-membership",
-				TargetPort: intstr.FromString("membership"),
-				Protocol:   corev1.ProtocolTCP,
-				Port:       int32(*b.service.MembershipPort),
-			},
-		)
-	}
-
-	service.Spec.Ports = []corev1.ServicePort{
 		{
-			Name:       "http-metrics",
-			TargetPort: prometheus.MetricsPortName,
+			// Here "tcp-" is used instead of "grpc-" because temporal uses
+			// pod-to-pod traffic over ip. Because no "Host" header is set,
+			// istio can't create mTLS for gRPC.
+			Name:       "tcp-rpc",
+			TargetPort: intstr.FromString("rpc"),
 			Protocol:   corev1.ProtocolTCP,
-			Port:       9090,
+			Port:       int32(*b.service.Port),
+		},
+		{
+			Name:       "tcp-membership",
+			TargetPort: intstr.FromString("membership"),
+			Protocol:   corev1.ProtocolTCP,
+			Port:       int32(*b.service.MembershipPort),
 		},
 	}
 

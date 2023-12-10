@@ -213,10 +213,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
 	}
 
-	if c.MTLSWithCertManagerEnabled() {
+	if c.Spec.MTLS != nil {
 		if c.Spec.MTLS.RefreshInterval == nil {
 			c.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
 		}
+	}
+
+	if c.MTLSWithCertManagerEnabled() {
 		if c.Spec.MTLS.CertificatesDuration == nil {
 			c.Spec.MTLS.CertificatesDuration = &CertificatesDurationSpec{}
 		}
