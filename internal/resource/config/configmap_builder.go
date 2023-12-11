@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/alexandrevilain/controller-tools/pkg/resource"
@@ -314,6 +315,25 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				Tags: map[string]string{"type": "{{ .Env.SERVICES }}"},
 			},
 		}
+
+		if b.instance.Spec.Metrics.PerUnitHistogramBoundaries != nil {
+			buckets := make(map[string][]float64)
+			p := b.instance.Spec.Metrics.PerUnitHistogramBoundaries
+			// Convert map[string][]string to map[string][]float64
+			for key, value := range p {
+				var floatSlice []float64
+				for _, str := range value {
+					floatVal, err := strconv.ParseFloat(str, 64)
+					if err != nil {
+						return fmt.Errorf("can't build metrics config: Error converting %s to float: %w", str, err)
+					}
+					floatSlice = append(floatSlice, floatVal)
+				}
+				buckets[key] = floatSlice
+			}
+			temporalCfg.Global.Metrics.ClientConfig.PerUnitHistogramBoundaries = buckets
+		}
+
 		if b.instance.Spec.Metrics.Prometheus != nil && b.instance.Spec.Metrics.Prometheus.ListenPort != nil {
 			temporalCfg.Global.Metrics.Prometheus = &metrics.PrometheusConfig{
 				TimerType:     "histogram",
