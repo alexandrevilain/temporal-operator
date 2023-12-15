@@ -421,7 +421,7 @@ func (s *DatastoreSpec) GetType() DatastoreType {
 
 // IsSQL returns true if the datastore is an SQL datastore.
 func (s *DatastoreSpec) IsSQL() bool {
-	return slices.Contains[DatastoreType](SQLDataStores, s.GetType())
+	return slices.Contains(SQLDataStores, s.GetType())
 }
 
 const (

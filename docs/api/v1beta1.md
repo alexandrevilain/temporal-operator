@@ -2391,6 +2391,23 @@ bool
 </tr>
 <tr>
 <td>
+<code>perUnitHistogramBoundaries</code><br>
+<em>
+map[string][]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PerUnitHistogramBoundaries defines the default histogram bucket boundaries.
+Configuration of histogram boundaries for given metric unit.</p>
+<p>Supported values:
+- &ldquo;dimensionless&rdquo;
+- &ldquo;milliseconds&rdquo;
+- &ldquo;bytes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>prometheus</code><br>
 <em>
 <a href="#temporal.io/v1beta1.PrometheusSpec">
