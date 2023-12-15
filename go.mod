@@ -17,7 +17,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.67.0
 	github.com/stretchr/testify v1.8.4
 	go.temporal.io/api v1.24.0
-	go.temporal.io/sdk v1.23.1
+	go.temporal.io/sdk v1.25.1
 	go.temporal.io/server v1.22.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	google.golang.org/protobuf v1.31.0
