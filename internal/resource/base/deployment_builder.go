@@ -35,7 +35,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -141,7 +141,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: b.instance.ChildResourceName(meta.ServiceConfig),
 					},
-					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
+					DefaultMode: ptr.To[int32](corev1.ConfigMapVolumeSourceDefaultMode),
 				},
 			},
 		},
@@ -157,7 +157,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: b.instance.ChildResourceName(meta.ServiceDynamicConfig),
 					},
-					DefaultMode: pointer.Int32(corev1.ConfigMapVolumeSourceDefaultMode),
+					DefaultMode: ptr.To[int32](corev1.ConfigMapVolumeSourceDefaultMode),
 				},
 			},
 		})
@@ -205,7 +205,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 								Path: filepath.Base(b.instance.Spec.Archival.Provider.GCS.CredentialsFileMountPath()),
 							},
 						},
-						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+						DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			})
@@ -236,7 +236,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName:  b.instance.ChildResourceName(certmanager.InternodeIntermediateCACertificate),
-							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+							DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -245,7 +245,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName:  b.instance.ChildResourceName(certmanager.InternodeCertificate),
-							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+							DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -269,7 +269,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName:  b.instance.ChildResourceName(certmanager.FrontendIntermediateCACertificate),
-							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+							DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -278,7 +278,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName:  b.instance.ChildResourceName(certmanager.FrontendCertificate),
-							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+							DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				},
@@ -295,7 +295,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeSource: corev1.VolumeSource{
 						Secret: &corev1.SecretVolumeSource{
 							SecretName:  b.instance.ChildResourceName(certmanager.WorkerFrontendClientCertificate),
-							DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+							DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 						},
 					},
 				})
@@ -347,7 +347,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 					SecurityContext: &corev1.SecurityContext{
-						AllowPrivilegeEscalation: pointer.Bool(false),
+						AllowPrivilegeEscalation: ptr.To(false),
 						Capabilities: &corev1.Capabilities{
 							Drop: []corev1.Capability{"ALL"},
 						},
@@ -359,14 +359,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				},
 			},
 			RestartPolicy:                 corev1.RestartPolicyAlways,
-			TerminationGracePeriodSeconds: pointer.Int64(30),
+			TerminationGracePeriodSeconds: ptr.To[int64](30),
 			DNSPolicy:                     corev1.DNSClusterFirst,
 			SchedulerName:                 corev1.DefaultSchedulerName,
 			SecurityContext: &corev1.PodSecurityContext{
-				RunAsUser:    pointer.Int64(1000),
-				RunAsGroup:   pointer.Int64(1000),
-				FSGroup:      pointer.Int64(1000),
-				RunAsNonRoot: pointer.Bool(true),
+				RunAsUser:    ptr.To[int64](1000),
+				RunAsGroup:   ptr.To[int64](1000),
+				FSGroup:      ptr.To[int64](1000),
+				RunAsNonRoot: ptr.To(true),
 			},
 			Volumes: volumes,
 		},

@@ -22,7 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -68,7 +68,7 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Log == nil {
 		c.Spec.Log = new(LogSpec)
 		if c.Spec.Log.Stdout == nil {
-			c.Spec.Log.Stdout = pointer.Bool(true)
+			c.Spec.Log.Stdout = ptr.To(true)
 		}
 		if c.Spec.Log.Level == "" {
 			c.Spec.Log.Level = "info"
@@ -86,30 +86,30 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.Frontend = new(ServiceSpec)
 	}
 	if c.Spec.Services.Frontend.Replicas == nil {
-		c.Spec.Services.Frontend.Replicas = pointer.Int32(1)
+		c.Spec.Services.Frontend.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Frontend.Port == nil {
-		c.Spec.Services.Frontend.Port = pointer.Int(7233)
+		c.Spec.Services.Frontend.Port = ptr.To(7233)
 	}
 	if c.Spec.Services.Frontend.MembershipPort == nil {
-		c.Spec.Services.Frontend.MembershipPort = pointer.Int(6933)
+		c.Spec.Services.Frontend.MembershipPort = ptr.To(6933)
 	}
 	if c.Spec.Services.Frontend.HTTPPort == nil {
-		c.Spec.Services.Frontend.HTTPPort = pointer.Int(7243)
+		c.Spec.Services.Frontend.HTTPPort = ptr.To(7243)
 	}
 	// Internal Frontend specs
 	if c.Spec.Services.InternalFrontend.IsEnabled() {
 		if c.Spec.Services.InternalFrontend.Replicas == nil {
-			c.Spec.Services.InternalFrontend.Replicas = pointer.Int32(1)
+			c.Spec.Services.InternalFrontend.Replicas = ptr.To[int32](1)
 		}
 		if c.Spec.Services.InternalFrontend.Port == nil {
-			c.Spec.Services.InternalFrontend.Port = pointer.Int(7236)
+			c.Spec.Services.InternalFrontend.Port = ptr.To(7236)
 		}
 		if c.Spec.Services.InternalFrontend.MembershipPort == nil {
-			c.Spec.Services.InternalFrontend.MembershipPort = pointer.Int(6936)
+			c.Spec.Services.InternalFrontend.MembershipPort = ptr.To(6936)
 		}
 		if c.Spec.Services.InternalFrontend.HTTPPort == nil {
-			c.Spec.Services.InternalFrontend.HTTPPort = pointer.Int(0)
+			c.Spec.Services.InternalFrontend.HTTPPort = ptr.To(0)
 		}
 	}
 	// History specs
@@ -117,48 +117,48 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.History = new(ServiceSpec)
 	}
 	if c.Spec.Services.History.Replicas == nil {
-		c.Spec.Services.History.Replicas = pointer.Int32(1)
+		c.Spec.Services.History.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.History.Port == nil {
-		c.Spec.Services.History.Port = pointer.Int(7234)
+		c.Spec.Services.History.Port = ptr.To(7234)
 	}
 	if c.Spec.Services.History.MembershipPort == nil {
-		c.Spec.Services.History.MembershipPort = pointer.Int(6934)
+		c.Spec.Services.History.MembershipPort = ptr.To(6934)
 	}
 	if c.Spec.Services.History.HTTPPort == nil {
-		c.Spec.Services.History.HTTPPort = pointer.Int(0)
+		c.Spec.Services.History.HTTPPort = ptr.To(0)
 	}
 	// Matching specs
 	if c.Spec.Services.Matching == nil {
 		c.Spec.Services.Matching = new(ServiceSpec)
 	}
 	if c.Spec.Services.Matching.Replicas == nil {
-		c.Spec.Services.Matching.Replicas = pointer.Int32(1)
+		c.Spec.Services.Matching.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Matching.Port == nil {
-		c.Spec.Services.Matching.Port = pointer.Int(7235)
+		c.Spec.Services.Matching.Port = ptr.To(7235)
 	}
 	if c.Spec.Services.Matching.MembershipPort == nil {
-		c.Spec.Services.Matching.MembershipPort = pointer.Int(6935)
+		c.Spec.Services.Matching.MembershipPort = ptr.To(6935)
 	}
 	if c.Spec.Services.Matching.HTTPPort == nil {
-		c.Spec.Services.Matching.HTTPPort = pointer.Int(0)
+		c.Spec.Services.Matching.HTTPPort = ptr.To(0)
 	}
 	// Worker specs
 	if c.Spec.Services.Worker == nil {
 		c.Spec.Services.Worker = new(ServiceSpec)
 	}
 	if c.Spec.Services.Worker.Replicas == nil {
-		c.Spec.Services.Worker.Replicas = pointer.Int32(1)
+		c.Spec.Services.Worker.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Worker.Port == nil {
-		c.Spec.Services.Worker.Port = pointer.Int(7239)
+		c.Spec.Services.Worker.Port = ptr.To(7239)
 	}
 	if c.Spec.Services.Worker.MembershipPort == nil {
-		c.Spec.Services.Worker.MembershipPort = pointer.Int(6939)
+		c.Spec.Services.Worker.MembershipPort = ptr.To(6939)
 	}
 	if c.Spec.Services.Worker.HTTPPort == nil {
-		c.Spec.Services.Worker.HTTPPort = pointer.Int(0)
+		c.Spec.Services.Worker.HTTPPort = ptr.To(0)
 	}
 
 	if c.Spec.Persistence.DefaultStore != nil {
@@ -202,7 +202,7 @@ func (c *TemporalCluster) Default() {
 	}
 
 	if c.Spec.UI.Replicas == nil {
-		c.Spec.UI.Replicas = pointer.Int32(1)
+		c.Spec.UI.Replicas = ptr.To[int32](1)
 	}
 
 	if c.Spec.AdminTools == nil {
@@ -243,7 +243,7 @@ func (c *TemporalCluster) Default() {
 	if c.Spec.Metrics.IsEnabled() {
 		if c.Spec.Metrics.Prometheus != nil {
 			if c.Spec.Metrics.Prometheus.ListenPort == nil {
-				c.Spec.Metrics.Prometheus.ListenPort = pointer.Int32(9090)
+				c.Spec.Metrics.Prometheus.ListenPort = ptr.To[int32](9090)
 			}
 		}
 	}

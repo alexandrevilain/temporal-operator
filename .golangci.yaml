@@ -13,7 +13,6 @@ linters:
   - bidichk
   - bodyclose
   - containedctx
-  - depguard
   - dogsled
   - dupword
   - durationcheck
@@ -79,8 +78,6 @@ linters-settings:
         alias: appsv1
       - pkg: k8s.io/api/batch/v1
         alias: batchv1
-      - pkg: k8s.io/api/core/v1
-        alias: corev1
       - pkg: k8s.io/api/networking/v1
         alias: networkingv1
       # Cert Manager
@@ -103,14 +100,12 @@ linters-settings:
         alias: ctrl
   nolintlint:
     allow-unused: false
-    allow-leading-space: false
     require-specific: true
   revive:
     rules:
       - name: blank-imports
       - name: context-as-argument
       - name: context-keys-type
-      - name: dot-imports
       - name: error-return
       - name: error-strings
       - name: error-naming

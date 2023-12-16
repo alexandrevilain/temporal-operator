@@ -30,7 +30,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -109,7 +109,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
 						SecretName:  b.instance.ChildResourceName(certmanager.AdmintoolsFrontendClientCertificate),
-						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+						DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			},
@@ -121,7 +121,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		env = append(env, certmanager.GetTLSEnvironmentVariables(b.instance, "TEMPORAL", admintoolsCertsMountPath)...)
 	}
 
-	deployment.Spec.Replicas = pointer.Int32(1)
+	deployment.Spec.Replicas = ptr.To[int32](1)
 
 	deployment.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: metadata.LabelsSelector(b.instance, "admintools"),
@@ -153,13 +153,13 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 						FailureThreshold:    3,
 					},
 					SecurityContext: &corev1.SecurityContext{
-						AllowPrivilegeEscalation: pointer.Bool(false),
+						AllowPrivilegeEscalation: ptr.To(false),
 					},
 					VolumeMounts: volumeMounts,
 				},
 			},
 			RestartPolicy:                 corev1.RestartPolicyAlways,
-			TerminationGracePeriodSeconds: pointer.Int64(30),
+			TerminationGracePeriodSeconds: ptr.To[int64](30),
 			DNSPolicy:                     corev1.DNSClusterFirst,
 			SecurityContext:               &corev1.PodSecurityContext{},
 			SchedulerName:                 corev1.DefaultSchedulerName,
