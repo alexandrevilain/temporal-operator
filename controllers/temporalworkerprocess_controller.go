@@ -27,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -157,7 +156,7 @@ func (r *TemporalWorkerProcessReconciler) reconcileBuilder(ctx context.Context, 
 					return false
 				}
 
-				if pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Spec.Builder.BuildAttempt) != pointer.Int32(*owner.(*v1beta1.TemporalWorkerProcess).Status.BuildAttempt) {
+				if *owner.(*v1beta1.TemporalWorkerProcess).Spec.Builder.BuildAttempt != *owner.(*v1beta1.TemporalWorkerProcess).Status.BuildAttempt {
 					return false
 				}
 

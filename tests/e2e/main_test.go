@@ -30,7 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2/klogr"
+	"k8s.io/klog/v2/textlogger"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
@@ -50,7 +50,10 @@ var (
 	workerProcessJobTTL int32 = 300
 	replicas            int32 = 1
 	listAddress               = "0.0.0.0:9090"
-	logger                    = klogr.New()
+	config                    = textlogger.NewConfig(
+		textlogger.Output(os.Stdout),
+	)
+	logger = textlogger.NewLogger(config)
 )
 
 func TestMain(m *testing.M) {

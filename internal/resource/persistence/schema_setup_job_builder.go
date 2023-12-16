@@ -28,7 +28,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -83,7 +83,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: b.instance.ChildResourceName("schema-scripts"),
 					},
-					DefaultMode: pointer.Int32(0o777),
+					DefaultMode: ptr.To[int32](0o777),
 				},
 			},
 		},
@@ -126,12 +126,12 @@ func (b *SchemaJobBuilder) Build() client.Object {
 							Command:                  append([]string{"/bin/sh", "-c"}, b.command...),
 							Env:                      envVars,
 							SecurityContext: &corev1.SecurityContext{
-								AllowPrivilegeEscalation: pointer.Bool(false),
+								AllowPrivilegeEscalation: ptr.To(false),
 							},
 							VolumeMounts: volumeMounts,
 						},
 					},
-					TerminationGracePeriodSeconds: pointer.Int64(30),
+					TerminationGracePeriodSeconds: ptr.To[int64](30),
 					DNSPolicy:                     corev1.DNSClusterFirst,
 					SecurityContext:               &corev1.PodSecurityContext{},
 					SchedulerName:                 corev1.DefaultSchedulerName,

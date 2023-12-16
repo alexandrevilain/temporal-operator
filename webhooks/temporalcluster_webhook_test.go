@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 func TestDefault(t *testing.T) {
@@ -81,7 +81,7 @@ func TestDefault(t *testing.T) {
 						Metrics: &v1beta1.MetricsSpec{
 							Enabled: true,
 							Prometheus: &v1beta1.PrometheusSpec{
-								ListenPort: pointer.Int32(8080),
+								ListenPort: ptr.To[int32](8080),
 							},
 						},
 					},

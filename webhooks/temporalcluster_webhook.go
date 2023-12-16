@@ -31,7 +31,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -84,7 +84,7 @@ func (w *TemporalClusterWebhook) Default(_ context.Context, obj runtime.Object) 
 					return fmt.Errorf("can't parse prometheus spec.metrics.prometheus.listenAddress port: %w", err)
 				}
 				cluster.Spec.Metrics.Prometheus.ListenAddress = "" // Empty the listen address
-				cluster.Spec.Metrics.Prometheus.ListenPort = pointer.Int32(int32(portInt))
+				cluster.Spec.Metrics.Prometheus.ListenPort = ptr.To(int32(portInt))
 			}
 		}
 	}

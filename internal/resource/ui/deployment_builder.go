@@ -29,7 +29,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -106,7 +106,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
 						SecretName:  b.instance.ChildResourceName(certmanager.UIFrontendClientCertificate),
-						DefaultMode: pointer.Int32(corev1.SecretVolumeSourceDefaultMode),
+						DefaultMode: ptr.To[int32](corev1.SecretVolumeSourceDefaultMode),
 					},
 				},
 			},
@@ -145,7 +145,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			},
 			Volumes:                       volumes,
 			RestartPolicy:                 corev1.RestartPolicyAlways,
-			TerminationGracePeriodSeconds: pointer.Int64(30),
+			TerminationGracePeriodSeconds: ptr.To[int64](30),
 			DNSPolicy:                     corev1.DNSClusterFirst,
 			SchedulerName:                 corev1.DefaultSchedulerName,
 			SecurityContext:               &corev1.PodSecurityContext{},
