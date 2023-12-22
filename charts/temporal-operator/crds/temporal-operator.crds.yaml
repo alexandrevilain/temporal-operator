@@ -251,6 +251,197 @@ spec:
                         type: object
                     type: object
                 type: object
+              archival:
+                description: Archival allows Workflow Execution Event Histories and
+                  Visibility data backups for the temporal cluster.
+                properties:
+                  enabled:
+                    default: false
+                    description: Enabled defines if the archival is enabled for the
+                      cluster.
+                    type: boolean
+                  history:
+                    description: History is the default config for the history archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                  provider:
+                    description: Provider defines the archival provider for the cluster.
+                      The same provider is used for both history and visibility, but
+                      some config can be changed using spec.archival.[history|visibility].config.
+                    properties:
+                      filestore:
+                        description: FilestoreArchiver is the file store archival
+                          provider configuration.
+                        properties:
+                          dirPermissions:
+                            default: "0766"
+                            description: DirPermissions sets the directory permissions
+                              of the archive directory. It's recommend to leave it
+                              empty and use the default value of "0766" to avoid read/write
+                              issues.
+                            type: string
+                          filePermissions:
+                            default: "0666"
+                            description: FilePermissions sets the file permissions
+                              of the archived files. It's recommend to leave it empty
+                              and use the default value of "0666" to avoid read/write
+                              issues.
+                            type: string
+                        required:
+                        - dirPermissions
+                        - filePermissions
+                        type: object
+                      gcs:
+                        description: GCSArchiver is the GCS archival provider configuration.
+                        properties:
+                          credentialsRef:
+                            description: SecretAccessKeyRef is the secret key selector
+                              containing Google Cloud Storage credentials file.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                            x-kubernetes-map-type: atomic
+                        required:
+                        - credentialsRef
+                        type: object
+                      s3:
+                        description: S3Archiver is the S3 archival provider configuration.
+                        properties:
+                          credentials:
+                            description: Use credentials if you want to use aws credentials
+                              from secret.
+                            properties:
+                              accessKeyIdRef:
+                                description: AccessKeyIDRef is the secret key selector
+                                  containing AWS access key ID.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                                x-kubernetes-map-type: atomic
+                              secretKeyRef:
+                                description: SecretAccessKeyRef is the secret key
+                                  selector containing AWS secret access key.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                                x-kubernetes-map-type: atomic
+                            required:
+                            - accessKeyIdRef
+                            - secretKeyRef
+                            type: object
+                          endpoint:
+                            description: Use Endpoint if you want to use s3-compatible
+                              object storage.
+                            type: string
+                          region:
+                            description: Region is the aws s3 region.
+                            type: string
+                          roleName:
+                            description: Use RoleName if you want the temporal service
+                              account to assume an AWS Identity and Access Management
+                              (IAM) role.
+                            type: string
+                          s3ForcePathStyle:
+                            description: Use s3ForcePathStyle if you want to use s3
+                              path style.
+                            type: boolean
+                        required:
+                        - region
+                        type: object
+                    type: object
+                  visibility:
+                    description: Visibility is the default config for visibility archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                type: object
               dynamicConfig:
                 description: DynamicConfig allows advanced configuration for the temporal
                   cluster.
@@ -316,6 +507,54 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
+              jobResources:
+                description: JobResources allows set resources for setup/update jobs.
+                properties:
+                  claims:
+                    description: "Claims lists the names of resources, defined in
+                      spec.resourceClaims, that are used by this container. \n This
+                      is an alpha field and requires enabling the DynamicResourceAllocation
+                      feature gate. \n This field is immutable. It can only be set
+                      for containers."
+                    items:
+                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                      properties:
+                        name:
+                          description: Name must match the name of one entry in pod.spec.resourceClaims
+                            of the Pod where this field is used. It makes that resource
+                            available inside a container.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: 'Limits describes the maximum amount of compute resources
+                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    type: object
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: 'Requests describes the minimum amount of compute
+                      resources required. If Requests is omitted for a container,
+                      it defaults to Limits if that is explicitly specified, otherwise
+                      to an implementation-defined value. Requests cannot exceed Limits.
+                      More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                    type: object
+                type: object
               jobTtlSecondsAfterFinished:
                 default: 300
                 description: JobTTLSecondsAfterFinished is amount of time to keep
@@ -323,6 +562,45 @@ spec:
                 format: int32
                 minimum: 1
                 type: integer
+              log:
+                description: Log defines temporal cluster's logger configuration.
+                properties:
+                  development:
+                    default: false
+                    description: Development determines whether the logger is run
+                      in Development (== Test) or in Production mode.  Default is
+                      Production.  Production-stage disables panics from DPanic logging.
+                    type: boolean
+                  format:
+                    default: json
+                    description: Format determines the format of each log file printed
+                      to the output. Use "console" if you want stack traces to appear
+                      on multiple lines.
+                    enum:
+                    - json
+                    - console
+                    type: string
+                  level:
+                    default: info
+                    description: Level is the desired log level; see colocated zap_logger.go::parseZapLevel()
+                    enum:
+                    - debug
+                    - info
+                    - warn
+                    - error
+                    - dpanic
+                    - panic
+                    - fatal
+                    type: string
+                  outputFile:
+                    description: OutputFile is the path to the log output file.
+                    type: string
+                  stdout:
+                    default: true
+                    description: Stdout is true if the output needs to goto standard
+                      out; default is stderr.
+                    type: boolean
+                type: object
               mTLS:
                 description: MTLS allows configuration of the network traffic encryption
                   for the cluster.
@@ -386,6 +664,13 @@ spec:
                       of certificates in the cluster components. Defaults to 1 hour.
                       Useless if mTLS provider is not cert-manager.
                     type: string
+                  renewBefore:
+                    description: RenewBefore is defines how long before the currently
+                      issued certificate's expiry cert-manager should renew the certificate.
+                      The default is 2/3 of the issued certificate's duration. Minimum
+                      accepted value is 5 minutes. Useless if mTLS provider is not
+                      cert-manager.
+                    type: string
                 type: object
               metrics:
                 description: Metrics allows configuration of scraping endpoints for
@@ -421,21 +706,27 @@ spec:
                                 description: Enabled defines if the operator should
                                   create a ServiceMonitor for each services.
                                 type: boolean
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Labels adds extra labels to the ServiceMonitor.
+                                type: object
                               metricRelabelings:
                                 description: MetricRelabelConfigs to apply to samples
                                   before ingestion.
                                 items:
-                                  description: 'RelabelConfig allows dynamic rewriting
-                                    of the label set, being applied to samples before
-                                    ingestion. It defines `<metric_relabel_configs>`-section
-                                    of Prometheus configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                                  description: "RelabelConfig allows dynamic rewriting
+                                    of the label set for targets, alerts, scraped
+                                    samples and remote write samples. \n More info:
+                                    https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config"
                                   properties:
                                     action:
                                       default: replace
-                                      description: Action to perform based on regex
-                                        matching. Default is 'replace'. uppercase
-                                        and lowercase actions require Prometheus >=
-                                        2.36.
+                                      description: "Action to perform based on the
+                                        regex matching. \n `Uppercase` and `Lowercase`
+                                        actions require Prometheus >= v2.36.0. `DropEqual`
+                                        and `KeepEqual` actions require Prometheus
+                                        >= v2.41.0. \n Default: \"Replace\""
                                       enum:
                                       - replace
                                       - Replace
@@ -461,31 +752,30 @@ spec:
                                       - DropEqual
                                       type: string
                                     modulus:
-                                      description: Modulus to take of the hash of
-                                        the source label values.
+                                      description: "Modulus to take of the hash of
+                                        the source label values. \n Only applicable
+                                        when the action is `HashMod`."
                                       format: int64
                                       type: integer
                                     regex:
                                       description: Regular expression against which
-                                        the extracted value is matched. Default is
-                                        '(.*)'
+                                        the extracted value is matched.
                                       type: string
                                     replacement:
-                                      description: Replacement value against which
-                                        a regex replace is performed if the regular
-                                        expression matches. Regex capture groups are
-                                        available. Default is '$1'
+                                      description: "Replacement value against which
+                                        a Replace action is performed if the regular
+                                        expression matches. \n Regex capture groups
+                                        are available."
                                       type: string
                                     separator:
-                                      description: Separator placed between concatenated
-                                        source label values. default is ';'.
+                                      description: Separator is the string between
+                                        concatenated SourceLabels.
                                       type: string
                                     sourceLabels:
                                       description: The source labels select values
                                         from existing labels. Their content is concatenated
-                                        using the configured separator and matched
-                                        against the configured regular expression
-                                        for the replace, keep, and drop actions.
+                                        using the configured Separator and matched
+                                        against the configured regular expression.
                                       items:
                                         description: LabelName is a valid Prometheus
                                           label name which may only contain ASCII
@@ -494,10 +784,11 @@ spec:
                                         type: string
                                       type: array
                                     targetLabel:
-                                      description: Label to which the resulting value
-                                        is written in a replace action. It is mandatory
-                                        for replace actions. Regex capture groups
-                                        are available.
+                                      description: "Label to which the resulting string
+                                        is written in a replacement. \n It is mandatory
+                                        for `Replace`, `HashMod`, `Lowercase`, `Uppercase`,
+                                        `KeepEqual` and `DropEqual` actions. \n Regex
+                                        capture groups are available."
                                       type: string
                                   type: object
                                 type: array
@@ -527,8 +818,9 @@ spec:
                                             endpoint
                                           properties:
                                             credentials:
-                                              description: The secret's key that contains
-                                                the credentials of the request
+                                              description: Selects a key of a Secret
+                                                in the namespace that contains the
+                                                credentials for authentication.
                                               properties:
                                                 key:
                                                   description: The key of the secret
@@ -550,9 +842,10 @@ spec:
                                               type: object
                                               x-kubernetes-map-type: atomic
                                             type:
-                                              description: Set the authentication
-                                                type. Defaults to Bearer, Basic will
-                                                cause an error
+                                              description: "Defines the authentication
+                                                type. The value is case-insensitive.
+                                                \n \"Basic\" is not a supported value.
+                                                \n Default: \"Bearer\""
                                               type: string
                                           type: object
                                         basicAuth:
@@ -671,19 +964,20 @@ spec:
                                           description: MetricRelabelConfigs to apply
                                             to samples before ingestion.
                                           items:
-                                            description: 'RelabelConfig allows dynamic
-                                              rewriting of the label set, being applied
-                                              to samples before ingestion. It defines
-                                              `<metric_relabel_configs>`-section of
-                                              Prometheus configuration. More info:
-                                              https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                                            description: "RelabelConfig allows dynamic
+                                              rewriting of the label set for targets,
+                                              alerts, scraped samples and remote write
+                                              samples. \n More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config"
                                             properties:
                                               action:
                                                 default: replace
-                                                description: Action to perform based
-                                                  on regex matching. Default is 'replace'.
-                                                  uppercase and lowercase actions
-                                                  require Prometheus >= 2.36.
+                                                description: "Action to perform based
+                                                  on the regex matching. \n `Uppercase`
+                                                  and `Lowercase` actions require
+                                                  Prometheus >= v2.36.0. `DropEqual`
+                                                  and `KeepEqual` actions require
+                                                  Prometheus >= v2.41.0. \n Default:
+                                                  \"Replace\""
                                                 enum:
                                                 - replace
                                                 - Replace
@@ -709,35 +1003,32 @@ spec:
                                                 - DropEqual
                                                 type: string
                                               modulus:
-                                                description: Modulus to take of the
+                                                description: "Modulus to take of the
                                                   hash of the source label values.
+                                                  \n Only applicable when the action
+                                                  is `HashMod`."
                                                 format: int64
                                                 type: integer
                                               regex:
                                                 description: Regular expression against
                                                   which the extracted value is matched.
-                                                  Default is '(.*)'
                                                 type: string
                                               replacement:
-                                                description: Replacement value against
-                                                  which a regex replace is performed
+                                                description: "Replacement value against
+                                                  which a Replace action is performed
                                                   if the regular expression matches.
-                                                  Regex capture groups are available.
-                                                  Default is '$1'
+                                                  \n Regex capture groups are available."
                                                 type: string
                                               separator:
-                                                description: Separator placed between
-                                                  concatenated source label values.
-                                                  default is ';'.
+                                                description: Separator is the string
+                                                  between concatenated SourceLabels.
                                                 type: string
                                               sourceLabels:
                                                 description: The source labels select
                                                   values from existing labels. Their
                                                   content is concatenated using the
-                                                  configured separator and matched
-                                                  against the configured regular expression
-                                                  for the replace, keep, and drop
-                                                  actions.
+                                                  configured Separator and matched
+                                                  against the configured regular expression.
                                                 items:
                                                   description: LabelName is a valid
                                                     Prometheus label name which may
@@ -747,10 +1038,12 @@ spec:
                                                   type: string
                                                 type: array
                                               targetLabel:
-                                                description: Label to which the resulting
-                                                  value is written in a replace action.
-                                                  It is mandatory for replace actions.
-                                                  Regex capture groups are available.
+                                                description: "Label to which the resulting
+                                                  string is written in a replacement.
+                                                  \n It is mandatory for `Replace`,
+                                                  `HashMod`, `Lowercase`, `Uppercase`,
+                                                  `KeepEqual` and `DropEqual` actions.
+                                                  \n Regex capture groups are available."
                                                 type: string
                                             type: object
                                           type: array
@@ -885,19 +1178,20 @@ spec:
                                             `__tmp_prometheus_job_name` label. More
                                             info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
                                           items:
-                                            description: 'RelabelConfig allows dynamic
-                                              rewriting of the label set, being applied
-                                              to samples before ingestion. It defines
-                                              `<metric_relabel_configs>`-section of
-                                              Prometheus configuration. More info:
-                                              https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                                            description: "RelabelConfig allows dynamic
+                                              rewriting of the label set for targets,
+                                              alerts, scraped samples and remote write
+                                              samples. \n More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config"
                                             properties:
                                               action:
                                                 default: replace
-                                                description: Action to perform based
-                                                  on regex matching. Default is 'replace'.
-                                                  uppercase and lowercase actions
-                                                  require Prometheus >= 2.36.
+                                                description: "Action to perform based
+                                                  on the regex matching. \n `Uppercase`
+                                                  and `Lowercase` actions require
+                                                  Prometheus >= v2.36.0. `DropEqual`
+                                                  and `KeepEqual` actions require
+                                                  Prometheus >= v2.41.0. \n Default:
+                                                  \"Replace\""
                                                 enum:
                                                 - replace
                                                 - Replace
@@ -923,35 +1217,32 @@ spec:
                                                 - DropEqual
                                                 type: string
                                               modulus:
-                                                description: Modulus to take of the
+                                                description: "Modulus to take of the
                                                   hash of the source label values.
+                                                  \n Only applicable when the action
+                                                  is `HashMod`."
                                                 format: int64
                                                 type: integer
                                               regex:
                                                 description: Regular expression against
                                                   which the extracted value is matched.
-                                                  Default is '(.*)'
                                                 type: string
                                               replacement:
-                                                description: Replacement value against
-                                                  which a regex replace is performed
+                                                description: "Replacement value against
+                                                  which a Replace action is performed
                                                   if the regular expression matches.
-                                                  Regex capture groups are available.
-                                                  Default is '$1'
+                                                  \n Regex capture groups are available."
                                                 type: string
                                               separator:
-                                                description: Separator placed between
-                                                  concatenated source label values.
-                                                  default is ';'.
+                                                description: Separator is the string
+                                                  between concatenated SourceLabels.
                                                 type: string
                                               sourceLabels:
                                                 description: The source labels select
                                                   values from existing labels. Their
                                                   content is concatenated using the
-                                                  configured separator and matched
-                                                  against the configured regular expression
-                                                  for the replace, keep, and drop
-                                                  actions.
+                                                  configured Separator and matched
+                                                  against the configured regular expression.
                                                 items:
                                                   description: LabelName is a valid
                                                     Prometheus label name which may
@@ -961,10 +1252,12 @@ spec:
                                                   type: string
                                                 type: array
                                               targetLabel:
-                                                description: Label to which the resulting
-                                                  value is written in a replace action.
-                                                  It is mandatory for replace actions.
-                                                  Regex capture groups are available.
+                                                description: "Label to which the resulting
+                                                  string is written in a replacement.
+                                                  \n It is mandatory for `Replace`,
+                                                  `HashMod`, `Lowercase`, `Uppercase`,
+                                                  `KeepEqual` and `DropEqual` actions.
+                                                  \n Regex capture groups are available."
                                                 type: string
                                             type: object
                                           type: array
@@ -2383,11 +2676,15 @@ spec:
                   frontend:
                     description: Frontend service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -2523,11 +2820,15 @@ spec:
                   history:
                     description: History service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -2669,11 +2970,15 @@ spec:
                         description: Enabled defines if we want to spawn the internal
                           frontend service.
                         type: boolean
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -2809,11 +3114,15 @@ spec:
                   matching:
                     description: Matching service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -3016,11 +3325,15 @@ spec:
                   worker:
                     description: Worker service custom specifications.
                     properties:
+                      httpPort:
+                        description: 'HTTPPort defines a custom http port for the
+                          service. Default values are: 7243 for Frontend service'
+                        type: integer
                       membershipPort:
-                        description: 'Port defines a custom membership port for the
-                          service. Default values are: 6933 for Frontend service 6934
-                          for History service 6935 for Matching service 6939 for Worker
-                          service'
+                        description: 'MembershipPort defines a custom membership port
+                          for the service. Default values are: 6933 for Frontend service
+                          6934 for History service 6935 for Matching service 6939
+                          for Worker service'
                         type: integer
                       overrides:
                         description: Overrides adds some overrides to the resources
@@ -3338,6 +3651,24 @@ spec:
                           Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
+                  service:
+                    description: Service is an optional service resource configuration
+                      for the UI.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations is an unstructured key value map
+                          stored with a resource that may be set by external tools
+                          to store and retrieve arbitrary metadata.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Map of string keys and values that can be used
+                          to organize and categorize (scope and select) objects.
+                        type: object
+                    type: object
                   version:
                     description: Version defines the temporal ui version the instance
                       should run.
@@ -3442,6 +3773,9 @@ spec:
                       setup:
                         description: Setup indicates if tables have been set up.
                         type: boolean
+                      type:
+                        description: Type indicates the datastore stype.
+                        type: string
                     required:
                     - created
                     - setup
@@ -3459,12 +3793,15 @@ spec:
                       setup:
                         description: Setup indicates if tables have been set up.
                         type: boolean
+                      type:
+                        description: Type indicates the datastore stype.
+                        type: string
                     required:
                     - created
                     - setup
                     type: object
                   secondaryVisibilityStore:
-                    description: SecondaryVisibility holds the secondary visibility
+                    description: SecondaryVisibilityStore holds the secondary visibility
                       datastore status.
                     properties:
                       created:
@@ -3477,6 +3814,9 @@ spec:
                       setup:
                         description: Setup indicates if tables have been set up.
                         type: boolean
+                      type:
+                        description: Type indicates the datastore stype.
+                        type: string
                     required:
                     - created
                     - setup
@@ -3494,6 +3834,9 @@ spec:
                       setup:
                         description: Setup indicates if tables have been set up.
                         type: boolean
+                      type:
+                        description: Type indicates the datastore stype.
+                        type: string
                     required:
                     - created
                     - setup
@@ -3579,6 +3922,65 @@ spec:
                 description: AllowDeletion makes the controller delete the Temporal
                   namespace if the CRD is deleted.
                 type: boolean
+              archival:
+                description: Archival is a per-namespace archival configuration. If
+                  not set, the default cluster configuration is used.
+                properties:
+                  history:
+                    description: History is the config for this namespace history
+                      archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                  visibility:
+                    description: Visibility is the config for this namespace visibility
+                      archival.
+                    properties:
+                      enableRead:
+                        default: false
+                        description: EnableRead allows temporal to read from the archived
+                          Event History.
+                        type: boolean
+                      enabled:
+                        default: false
+                        description: Enabled defines if the archival is enabled by
+                          default for all namespaces or for a particular namespace
+                          (depends if it's for a TemporalCluster or a TemporalNamespace).
+                        type: boolean
+                      path:
+                        description: Path is ...
+                        type: string
+                      paused:
+                        default: false
+                        description: Paused defines if the archival is paused.
+                        type: boolean
+                    required:
+                    - enableRead
+                    - path
+                    - paused
+                    type: object
+                type: object
               clusterRef:
                 description: Reference to the temporal cluster the namespace will
                   be created.

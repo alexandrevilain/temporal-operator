@@ -5,7 +5,8 @@ manager:
     allowPrivilegeEscalation: false
   image:
     repository: ghcr.io/alexandrevilain/temporal-operator
-    tag: v0.13.3
+    # Will use AppVersion as the image tag by default
+    # tag: v0.0.0 
   resources:
     limits:
       cpu: 500m
