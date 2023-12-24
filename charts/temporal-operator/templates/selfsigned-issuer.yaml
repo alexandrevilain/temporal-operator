@@ -1,0 +1,10 @@
+{{- if not .Values.webhook.certManager.certificate.useCustomIssuer }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "temporal-operator.fullname" . }}-selfsigned-issuer
+  labels:
+  {{- include "temporal-operator.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}

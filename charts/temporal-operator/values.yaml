@@ -1,0 +1,36 @@
+manager:
+  args:
+  - --leader-elect
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+  image:
+    repository: ghcr.io/alexandrevilain/temporal-operator
+    # Will use AppVersion as the image tag by default
+    # tag: v0.0.0 
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  replicas: 1
+  serviceAccount:
+    annotations: {}
+
+webhook:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 9443
+  type: ClusterIP
+  certManager:
+    certificate:
+      enabled: true
+      useCustomIssuer: false
+      # Issuer references if you want to use custom issuer
+      # In other case will be used selfSigned issuer
+      issuerRef: {}
+
+imagePullSecrets: []
+kubernetesClusterDomain: cluster.local
