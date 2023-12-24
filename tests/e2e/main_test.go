@@ -89,20 +89,16 @@ func testMainRun(m *testing.M) int {
 
 	setupError := func(err error) error {
 		logger.Error(err, "setup error")
-
-		cluster := kind.NewCluster(kindClusterName)
-		if err := cluster.ExportLogs(clusterLogsOutPath); err != nil {
-			logger.Error(err, "can't export cluster logs")
-		}
-
 		return err
 	}
+
+	kindCluster := kind.NewProvider().WithOpts(kind.WithImage(kindImage))
 
 	testenv = env.
 		NewWithConfig(cfg).
 		// Create the cluster
 		Setup(
-			envfuncs.CreateKindClusterWithConfig(kindClusterName, kindImage, "kind-config.yaml"),
+			envfuncs.CreateCluster(kindCluster, kindClusterName),
 			envfuncs.LoadImageArchiveToCluster(kindClusterName, operatorImagePath),
 			envfuncs.LoadImageArchiveToCluster(kindClusterName, exampleWorkerProcessImagePath),
 			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
@@ -195,9 +191,9 @@ func testMainRun(m *testing.M) int {
 			return ctx, err
 		}).
 		Finish(
-			envfuncs.ExportKindClusterLogs(kindClusterName, clusterLogsOutPath),
+			envfuncs.ExportClusterLogs(kindClusterName, clusterLogsOutPath),
 			envfuncs.TeardownCRDs("../../out/release/artifacts", "*.crds.yaml"),
-			envfuncs.DestroyKindCluster(kindClusterName),
+			envfuncs.DestroyCluster(kindClusterName),
 		).
 		BeforeEachFeature(func(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 			return createNSForTest(ctx, cfg, t, f, runID)
