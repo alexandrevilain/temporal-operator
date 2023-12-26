@@ -85,7 +85,7 @@ func TestNamespaceCreation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = wait.For(func() (done bool, err error) {
+			err = wait.For(func(ctx context.Context) (done bool, err error) {
 				// If no error while describing the namespace, it works.
 				_, err = nsClient.Describe(ctx, temporalNamespace.GetName())
 				if err != nil {
@@ -122,7 +122,7 @@ func TestNamespaceCreation(t *testing.T) {
 			}
 
 			// Wait for controller to set finalizer.
-			err = wait.For(func() (done bool, err error) {
+			err = wait.For(func(ctx context.Context) (done bool, err error) {
 				err = cfg.Client().Resources(namespace).Get(ctx, temporalNamespace.GetName(), temporalNamespace.GetNamespace(), temporalNamespace)
 				if err != nil {
 					t.Fatal(err)
