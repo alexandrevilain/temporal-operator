@@ -2,6 +2,8 @@
 
 This page is WIP. Feel free to contribute [on github](https://github.com/alexandrevilain/temporal-operator/edit/main/docs/features/temporal-ui.md).
 
+Temporal-operator supports configuring web UI for Temporal clusters. You can get more information about web UI on [Temporal documentation](https://docs.temporal.io/web-ui).
+
 ## Enable UI and set version
 
 Example:
@@ -25,6 +27,8 @@ spec:
 ```
 
 ## Create Ingress
+
+Ingress is an optional ingress configuration for the UI. If leaved empty, no ingress configuration will be created and the UI will only by available through ClusterIP service.
 
 Example:
 
@@ -77,6 +81,8 @@ spec:
 
 ## Override UI deployment
 
+Web UI overrides can be used to set [web UI environment variables](https://docs.temporal.io/references/web-ui-environment-variables).
+
 Example:
 
 ```yaml
@@ -100,4 +106,7 @@ spec:
                   env:
                     - name: TEMPORAL_SHOW_TEMPORAL_SYSTEM_NAMESPACE
                       value: "true"
+                    # Allows the UI to be served from a subpath
+                    - name: TEMPORAL_UI_PUBLIC_PATH
+                      value: /temporal
 ```
