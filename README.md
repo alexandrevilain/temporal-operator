@@ -38,11 +38,11 @@ spec:
 
 ## Documentation
 
-The documentation is available at: [https://alexandrevilain.github.io/temporal-operator/](https://alexandrevilain.github.io/temporal-operator/).
+The documentation is available at: [https://temporal-operator.pages.dev/](https://temporal-operator.pages.dev/).
 
 ### Quick start
 
-To start using the Operator and deploy you first cluster in a matter of minutes, follow the documentation's [getting started guide](https://alexandrevilain.github.io/temporal-operator/getting-started/).
+To start using the Operator and deploy you first cluster in a matter of minutes, follow the documentation's [getting started guide](https://temporal-operator.pages.dev/getting-started/).
 
 ## Examples
 
@@ -97,7 +97,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 ## Contributing
 
 Feel free to contribute to the project ! All issues and PRs are welcome!
-To start hacking on the project, you can follow the [local development](https://alexandrevilain.github.io/temporal-operator/contributing/local-development/) documentation page.
+To start hacking on the project, you can follow the [local development](https://temporal-operator.pages.dev/contributing/local-development/) documentation page.
 
 ## License
 
