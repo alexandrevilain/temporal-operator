@@ -170,7 +170,7 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
 .PHONY: helm
-helm: manifests
+helm: manifests artifacts
 	cp ${RELEASE_PATH}/temporal-operator.crds.yaml charts/temporal-operator/crds
 
 .PHONY: bundle
