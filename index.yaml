@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  temporal-operator:
+  - apiVersion: v2
+    appVersion: v0.16.1
+    created: "2023-12-29T13:25:01.518350507Z"
+    description: The Temporal Kubernetes operator helm chart
+    digest: 2089e6685e6741e63411cfa37c5d032edbd98e65da1317eb2afd1a96e4a4c518
+    name: temporal-operator
+    type: application
+    urls:
+    - https://github.com/alexandrevilain/temporal-operator/releases/download/helm-chart-0.1.0/temporal-operator-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-12-29T13:25:01.518360476Z"
