@@ -1,20 +1,28 @@
 manager:
+  # -- Arguments to be passed to the controller manager container.
   args:
   - --leader-elect
+  # -- Security context for the controller manager container.
   containerSecurityContext:
+    # -- Disallow privilege escalation for the container.
     allowPrivilegeEscalation: false
   image:
+    # -- Docker image repository for the controller manager container.
     repository: ghcr.io/alexandrevilain/temporal-operator
     # Will use AppVersion as the image tag by default
-    # tag: v0.0.0 
+    # tag: v0.0.0
   resources:
+    # -- Resources limits for the controller manager container.
     limits:
       cpu: 500m
       memory: 128Mi
+    # -- Resources requests for the controller manager container.
     requests:
       cpu: 10m
       memory: 64Mi
+  # -- Number of controller manager replicas to deploy.
   replicas: 1
+  # -- Service account settings for the controller manager container.
   serviceAccount:
     annotations: {}
 
@@ -24,13 +32,19 @@ webhook:
     protocol: TCP
     targetPort: 9443
   type: ClusterIP
+  # -- Certificate manager settings for the webhook server.
   certManager:
+    # -- Webhook certificate configuration using cert-manager. 
     certificate:
+      # -- Enabled defines if cert-manager should be used to manage the webhook certificate.
       enabled: true
+      # -- Defines if cert-manager should use self-signed issuer or custom issuer.
       useCustomIssuer: false
-      # Issuer references if you want to use custom issuer
-      # In other case will be used selfSigned issuer
+      # -- Issuer references if you want to use custom issuer
+      # In other case will be used selfSigned issuer.
       issuerRef: {}
 
+# -- Image pull secrets for accessing private image repositories.
 imagePullSecrets: []
+# -- Domain for the cluster.
 kubernetesClusterDomain: cluster.local
