@@ -28,10 +28,12 @@ import (
 	certmanagermeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -47,6 +49,11 @@ type TemporalClusterClientReconciler struct {
 
 	AvailableAPIs *discovery.AvailableAPIs
 }
+
+var (
+	clusterRefNameField      = "spec.clusterRef.name"
+	clusterRefNamespaceField = "spec.clusterRef.namespace"
+)
 
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=temporal.io,resources=temporalclusterclients/status,verbs=get;update;patch
@@ -148,13 +155,87 @@ func (r *TemporalClusterClientReconciler) SetupWithManager(mgr ctrl.Manager) err
 	controller := ctrl.NewControllerManagedBy(mgr).
 		For(&v1beta1.TemporalClusterClient{})
 
+	err := mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&v1beta1.TemporalClusterClient{},
+		clusterRefNameField,
+		func(rawObj client.Object) []string {
+			clusterClient := rawObj.(*v1beta1.TemporalClusterClient)
+			return []string{clusterClient.Spec.ClusterRef.Name}
+		})
+	if err != nil {
+		return err
+	}
+
+	err = mgr.GetFieldIndexer().IndexField(
+		context.Background(),
+		&v1beta1.TemporalClusterClient{},
+		clusterRefNamespaceField,
+		func(rawObj client.Object) []string {
+			clusterClient := rawObj.(*v1beta1.TemporalClusterClient)
+			return []string{clusterClient.Spec.ClusterRef.Namespace}
+		})
+	if err != nil {
+		return err
+	}
+
 	if r.AvailableAPIs.CertManager {
 		controller = controller.
-			Owns(&certmanagerv1.Issuer{}).
-			Owns(&certmanagerv1.Certificate{})
+			Watches(
+				&certmanagerv1.Certificate{},
+				handler.EnqueueRequestsFromMapFunc(
+					EnqueueRequestForClusterClientReferencingOwnerCluster(r.Client),
+				)).
+			Watches(
+				&certmanagerv1.Issuer{},
+				handler.EnqueueRequestsFromMapFunc(
+					EnqueueRequestForClusterClientReferencingOwnerCluster(r.Client),
+				))
 	}
 
 	controller.Owns(&corev1.Secret{})
 
 	return controller.Complete(r)
+}
+
+// EnqueueRequestForClusterClientReferencingOwnerCluster returns a reconcile request for any TemporalClusterClient
+// referencing the given the TemporalCluster owner for the provided object.
+func EnqueueRequestForClusterClientReferencingOwnerCluster(c client.Client) handler.MapFunc {
+	return func(ctx context.Context, object client.Object) []reconcile.Request {
+		log := log.FromContext(ctx)
+		result := []reconcile.Request{}
+
+		// from the object get the owner cluster.
+		// then get the cluster client from the cluster.
+		for _, owner := range object.GetOwnerReferences() {
+			if owner.Kind != v1beta1.TemporalClusterTypeMeta.Kind {
+				continue
+			}
+			list := &v1beta1.TemporalClusterClientList{}
+			err := c.List(ctx,
+				list,
+				client.MatchingFields{
+					clusterRefNameField: owner.Name,
+				},
+				client.MatchingFields{
+					clusterRefNamespaceField: object.GetNamespace(),
+				},
+			)
+			if err != nil {
+				log.Error(err, "Failed to get TemporalClusterClient referencing owner TemporalCluster, skipping mapping.")
+				return nil
+			}
+
+			for _, client := range list.Items {
+				result = append(result, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      client.GetName(),
+						Namespace: client.GetNamespace(),
+					},
+				})
+			}
+		}
+
+		return result
+	}
 }
