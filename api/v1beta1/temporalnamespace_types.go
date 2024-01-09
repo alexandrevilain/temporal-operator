@@ -55,6 +55,9 @@ type TemporalNamespaceSpec struct {
 	// Only applicable if the namespace is a global namespace.
 	// +optional
 	Clusters []string `json:"clusters,omitempty"`
+	// CustomSearchAttributes is a key-value map for create Custom Search Attributes.
+	// +optional
+	CustomSearchAttributes map[string]string `json:"customSearchAttributes,omitempty"`
 	// The name of active Temporal Cluster.
 	// Only applicable if the namespace is a global namespace.
 	// +optional

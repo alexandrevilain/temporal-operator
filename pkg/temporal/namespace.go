@@ -29,11 +29,12 @@ import (
 
 func NamespaceToRegisterNamespaceRequest(cluster *v1beta1.TemporalCluster, namespace *v1beta1.TemporalNamespace) *workflowservice.RegisterNamespaceRequest {
 	re := &workflowservice.RegisterNamespaceRequest{
-		Namespace:     namespace.GetName(),
-		Description:   namespace.Spec.Description,
-		OwnerEmail:    namespace.Spec.OwnerEmail,
-		Data:          namespace.Spec.Data,
-		SecurityToken: namespace.Spec.SecurityToken,
+		Namespace:              namespace.GetName(),
+		Description:            namespace.Spec.Description,
+		OwnerEmail:             namespace.Spec.OwnerEmail,
+		Data:                   namespace.Spec.Data,
+		SecurityToken:          namespace.Spec.SecurityToken,
+		CustomSearchAttributes: namespace.Spec.CustomSearchAttributes,
 	}
 
 	// Allow archival config override only if archival is enabled at the cluster-level.
@@ -93,9 +94,10 @@ func NamespaceToUpdateNamespaceRequest(cluster *v1beta1.TemporalCluster, namespa
 	re := &workflowservice.UpdateNamespaceRequest{
 		Namespace: namespace.GetName(),
 		UpdateInfo: &namespacev1.UpdateNamespaceInfo{
-			Description: namespace.Spec.Description,
-			OwnerEmail:  namespace.Spec.OwnerEmail,
-			Data:        namespace.Spec.Data,
+			Description:            namespace.Spec.Description,
+			OwnerEmail:             namespace.Spec.OwnerEmail,
+			Data:                   namespace.Spec.Data,
+			CustomSearchAttributes: namespace.Spec.CustomSearchAttributes,
 		},
 		Config:            &namespacev1.NamespaceConfig{},
 		ReplicationConfig: &replication.NamespaceReplicationConfig{},
