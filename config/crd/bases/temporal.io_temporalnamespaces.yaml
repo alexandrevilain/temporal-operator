@@ -121,6 +121,12 @@ spec:
                 items:
                   type: string
                 type: array
+              customSearchAttributes:
+                additionalProperties:
+                  type: string
+                description: CustomSearchAttributes is a key-value map for create
+                  Custom Search Attributes.
+                type: object
               data:
                 additionalProperties:
                   type: string

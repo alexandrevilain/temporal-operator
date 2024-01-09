@@ -4052,6 +4052,18 @@ Only applicable if the namespace is a global namespace.</p>
 </tr>
 <tr>
 <td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is a key-value map for create Custom Search Attributes.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>activeClusterName</code><br>
 <em>
 string
@@ -4272,6 +4284,18 @@ bool
 <em>(Optional)</em>
 <p>List of clusters names to which the namespace can fail over.
 Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is a key-value map for create Custom Search Attributes.</p>
 </td>
 </tr>
 <tr>
