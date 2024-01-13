@@ -170,8 +170,9 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/default > ${RELEASE_PATH}/temporal-operator.yaml
 
 .PHONY: helm
-helm: manifests artifacts
+helm: helm-docs manifests artifacts 
 	cp ${RELEASE_PATH}/temporal-operator.crds.yaml charts/temporal-operator/crds
+	$(HELM_DOCS) --chart-search-root=charts/temporal-operator --template-files=hack/helm/template/README.md.gotmpl
 
 .PHONY: bundle
 bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
@@ -210,6 +211,7 @@ GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 YQ ?= $(LOCALBIN)/yq
 KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
+HELM_DOCS ?= $(LOCALBIN)/helm-docs
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
@@ -220,6 +222,7 @@ GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
 GOLANGCI_LINT_VERSION ?= v1.55.2
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
+HELM_DOCS_VERSION ?= v1.12.0
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -274,3 +277,8 @@ kind-with-registry: $(KIND_WITH_REGISTRY)
 $(KIND_WITH_REGISTRY): $(LOCALBIN)
 	curl -sLo $(KIND_WITH_REGISTRY) https://raw.githubusercontent.com/kubernetes-sigs/kind/v$(KIND_WITH_REGISTRY_VERSION)/site/static/examples/kind-with-registry.sh
 	chmod +x $(KIND_WITH_REGISTRY)
+
+.PHONY: helm-docs
+helm-docs: $(HELM_DOCS) ## Generate helm documentation
+$(HELM_DOCS): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@$(HELM_DOCS_VERSION)

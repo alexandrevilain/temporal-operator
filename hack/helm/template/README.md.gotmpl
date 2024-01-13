@@ -1,0 +1,30 @@
+# Temporal Operator Helm Chart
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+This Helm chart deploys the Temporal Operator to manage a Temporal Cluster in a Kubernetes cluster.
+
+## Prerequisites
+
+- Kubernetes 1.22+
+- Helm 3+
+
+## Get repository
+
+To add the Temporal Operator repository, use the following Helm command:
+
+```bash
+helm repo add temporal-operator https://alexandrevilain.github.io/temporal-operator
+helm repo update
+```
+
+## Install Chart
+
+To install the chart, use the following command:
+
+```bash
+helm install [RELEASE_NAME] temporal-operator/temporal-operator
+```
+
+{{ template "chart.valuesSection" . }}
