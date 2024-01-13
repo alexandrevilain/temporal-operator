@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: '0 2 * * *'
 
-env:
-  GO_VERSION: "1.21.5"
-
 jobs:
   analyze:
     name: Analyze
@@ -22,18 +19,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Use go modules caches
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
     - uses: actions/setup-go@v5
       with:
-        go-version: ${{ env.GO_VERSION }}
+        go-version-file: 'go.mod'
         check-latest: true
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
