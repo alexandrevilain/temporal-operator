@@ -28,7 +28,7 @@ require (
 	istio.io/client-go v1.20.2
 	k8s.io/api v0.29.0
 	k8s.io/apiextensions-apiserver v0.28.4
-	k8s.io/apimachinery v0.29.0
+	k8s.io/apimachinery v0.29.1
 	k8s.io/client-go v0.29.0
 	k8s.io/klog/v2 v2.120.0
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
