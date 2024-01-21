@@ -262,8 +262,17 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 	if cluster.Spec.Version.GreaterOrEqual(version.V1_21_0) {
 		if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
 			warns = append(warns,
-				"Starting from temporal >= 1.21 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration. Avanced visibility store usage will be forbidden by the operator for clusters >= 1.23.",
+				"Starting from temporal >= 1.21 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration. Advanced visibility store usage will be forbidden by the operator for clusters >= 1.23.",
 			)
+
+			if cluster.Spec.Persistence.AdvancedVisibilityStore.GetType() != v1beta1.ElasticsearchDatastore {
+				errs = append(errs,
+					field.Forbidden(
+						field.NewPath("spec", "persistence", "advancedVisibilityStore"),
+						"Temporal cluster version >= 1.21.0 only supports Elasticsearch as an advanced visibility store, use standard visibility store instead.",
+					),
+				)
+			}
 		}
 
 		if cluster.Spec.Persistence.VisibilityStore != nil && cluster.Spec.Persistence.VisibilityStore.Cassandra != nil {

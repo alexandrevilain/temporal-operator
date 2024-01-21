@@ -561,7 +561,7 @@ GCSArchiver
 <a href="#temporal.io/v1beta1.ClusterArchivalSpec">ClusterArchivalSpec</a>, 
 <a href="#temporal.io/v1beta1.TemporalNamespaceArchivalSpec">TemporalNamespaceArchivalSpec</a>)
 </p>
-<p>ArchivalSpec is the archival configuration for a particular persistence type (history or visibilitty).</p>
+<p>ArchivalSpec is the archival configuration for a particular persistence type (history or visibility).</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -1322,7 +1322,7 @@ string
 <td>
 <em>(Optional)</em>
 <p>Name is the name of the datastore.
-It should be unique and will be referenced within the persitence spec.
+It should be unique and will be referenced within the persistence spec.
 Defaults to &ldquo;default&rdquo; for default sore, &ldquo;visibility&rdquo; for visibility store,
 &ldquo;secondaryVisibility&rdquo; for secondary visibility store and
 &ldquo;advancedVisibility&rdquo; for advanced visibility store.</p>
@@ -1464,7 +1464,7 @@ DatastoreType
 </td>
 <td>
 <em>(Optional)</em>
-<p>Type indicates the datastore stype.</p>
+<p>Type indicates the datastore type.</p>
 </td>
 </tr>
 <tr>
@@ -1715,7 +1715,7 @@ map[string][]./api/v1beta1.ConstrainedValue
 </em>
 </td>
 <td>
-<p>Values contains all dynamic config keys and their constained values.</p>
+<p>Values contains all dynamic config keys and their constrained values.</p>
 </td>
 </tr>
 </tbody>
@@ -2625,7 +2625,7 @@ github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.Servic
 <td>
 <em>(Optional)</em>
 <p>Override allows customization of the created ServiceMonitor.
-All fields can be overritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdquo; and &ldquo;namespaceSelector&rdquo;.</p>
+All fields can be overwritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rdquo; and &ldquo;namespaceSelector&rdquo;.</p>
 </td>
 </tr>
 <tr>
@@ -4422,7 +4422,7 @@ DatastoreSpec
 </td>
 <td>
 <em>(Optional)</em>
-<p>AdvancedVisibilityStore holds the avanced visibility datastore specs.</p>
+<p>AdvancedVisibilityStore holds the advanced visibility datastore specs.</p>
 </td>
 </tr>
 </tbody>
@@ -4497,7 +4497,7 @@ DatastoreStatus
 </td>
 <td>
 <em>(Optional)</em>
-<p>AdvancedVisibilityStore holds the avanced visibility datastore status.</p>
+<p>AdvancedVisibilityStore holds the advanced visibility datastore status.</p>
 </td>
 </tr>
 </tbody>
@@ -4529,7 +4529,7 @@ map[string]string
 </em>
 </td>
 <td>
-<p>Annotations allows custom annotations on the ingress ressource.</p>
+<p>Annotations allows custom annotations on the ingress resource.</p>
 </td>
 </tr>
 <tr>
