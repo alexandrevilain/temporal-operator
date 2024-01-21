@@ -148,6 +148,7 @@ func (s *TemporalWorkerProcessStatus) AddWorkerDeploymentStatus(status *Temporal
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:webhook:path=/mutate-temporal-io-v1beta1-temporalworkerprocess,mutating=true,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=mtemporalworkerprocess.kb.io,admissionReviewVersions=v1
 // +kubebuilder:webhook:path=/validate-temporal-io-v1beta1-temporalworkerprocess,mutating=false,failurePolicy=fail,sideEffects=None,groups=temporal.io,resources=temporalworkerprocesses,verbs=create;update,versions=v1beta1,name=vtemporalworkerprocess.kb.io,admissionReviewVersions=v1
+// +kubebuilder:deprecatedversion:warning="temporal.io/v1beta1 TemporalWorkerProcess is deprecated and will be removed in TemporalOperator >= 0.18.0. Please use TemporalClusterClient with your own deployment instead."
 
 // TemporalWorkerProcess is the Schema for the temporalworkerprocesses API.
 type TemporalWorkerProcess struct {
