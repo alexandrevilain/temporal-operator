@@ -369,7 +369,7 @@ const (
 // DatastoreSpec contains temporal datastore specifications.
 type DatastoreSpec struct {
 	// Name is the name of the datastore.
-	// It should be unique and will be referenced within the persitence spec.
+	// It should be unique and will be referenced within the persistence spec.
 	// Defaults to "default" for default sore, "visibility" for visibility store,
 	// "secondaryVisibility" for secondary visibility store and
 	// "advancedVisibility" for advanced visibility store.
@@ -476,7 +476,7 @@ type TemporalPersistenceSpec struct {
 	// Feature only available for clusters >= 1.21.0.
 	// +optional
 	SecondaryVisibilityStore *DatastoreSpec `json:"secondaryVisibilityStore,omitempty"`
-	// AdvancedVisibilityStore holds the avanced visibility datastore specs.
+	// AdvancedVisibilityStore holds the advanced visibility datastore specs.
 	// +optional
 	AdvancedVisibilityStore *DatastoreSpec `json:"advancedVisibilityStore,omitempty"`
 }
@@ -517,7 +517,7 @@ func (p *TemporalPersistenceSpec) GetDatastoresMap() map[string]*DatastoreSpec {
 
 // TemporalUIIngressSpec contains all configurations options for the UI ingress.
 type TemporalUIIngressSpec struct {
-	// Annotations allows custom annotations on the ingress ressource.
+	// Annotations allows custom annotations on the ingress resource.
 	Annotations map[string]string `json:"annotations,omitempty"`
 	// IngressClassName is the name of the IngressClass the deployed ingress resource should use.
 	IngressClassName *string `json:"ingressClassName,omitempty"`
@@ -708,7 +708,7 @@ type PrometheusScrapeConfigServiceMonitor struct {
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 	// Override allows customization of the created ServiceMonitor.
-	// All fields can be overritten except "endpoints", "selector" and "namespaceSelector".
+	// All fields can be overwritten except "endpoints", "selector" and "namespaceSelector".
 	// +optional
 	Override *monitoringv1.ServiceMonitorSpec `json:"override,omitempty"`
 	// MetricRelabelConfigs to apply to samples before ingestion.
@@ -796,7 +796,7 @@ type DynamicConfigSpec struct {
 	// Defaults to 10s.
 	// +optional
 	PollInterval *metav1.Duration `json:"pollInterval"`
-	// Values contains all dynamic config keys and their constained values.
+	// Values contains all dynamic config keys and their constrained values.
 	Values map[string][]ConstrainedValue `json:"values"`
 }
 
@@ -858,7 +858,7 @@ func (p *ArchivalProvider) Kind() ArchivalProviderKind {
 	return UnknownArchivalProviderKind
 }
 
-// ArchivalSpec is the archival configuration for a particular persistence type (history or visibilitty).
+// ArchivalSpec is the archival configuration for a particular persistence type (history or visibility).
 type ArchivalSpec struct {
 	// Enabled defines if the archival is enabled by default for all namespaces
 	// or for a particular namespace (depends if it's for a TemporalCluster or a TemporalNamespace).
@@ -1039,7 +1039,7 @@ type DatastoreStatus struct {
 	Created bool `json:"created"`
 	// Setup indicates if tables have been set up.
 	Setup bool `json:"setup"`
-	// Type indicates the datastore stype.
+	// Type indicates the datastore type.
 	// +optional
 	Type DatastoreType `json:"type"`
 	// SchemaVersion report the current schema version.
@@ -1056,7 +1056,7 @@ type TemporalPersistenceStatus struct {
 	// SecondaryVisibilityStore holds the secondary visibility datastore status.
 	// +optional
 	SecondaryVisibilityStore *DatastoreStatus `json:"secondaryVisibilityStore"`
-	// AdvancedVisibilityStore holds the avanced visibility datastore status.
+	// AdvancedVisibilityStore holds the advanced visibility datastore status.
 	// +optional
 	AdvancedVisibilityStore *DatastoreStatus `json:"advancedVisibilityStore,omitempty"`
 }
