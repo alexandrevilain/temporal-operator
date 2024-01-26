@@ -69,7 +69,7 @@ func TestWorkerProcess(t *testing.T) {
 								ConnectAddr:     connectAddr,
 								ConnectProtocol: "tcp",
 							},
-							PasswordSecretRef: v1beta1.SecretKeyReference{
+							PasswordSecretRef: &v1beta1.SecretKeyReference{
 								Name: "postgres-password",
 								Key:  "PASSWORD",
 							},
@@ -82,7 +82,7 @@ func TestWorkerProcess(t *testing.T) {
 								ConnectAddr:     connectAddr,
 								ConnectProtocol: "tcp",
 							},
-							PasswordSecretRef: v1beta1.SecretKeyReference{
+							PasswordSecretRef: &v1beta1.SecretKeyReference{
 								Name: "postgres-password",
 								Key:  "PASSWORD",
 							},

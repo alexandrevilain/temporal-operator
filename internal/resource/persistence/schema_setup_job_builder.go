@@ -131,6 +131,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 							VolumeMounts: volumeMounts,
 						},
 					},
+					InitContainers: b.instance.Spec.JobInitContainers,
 					TerminationGracePeriodSeconds: ptr.To[int64](30),
 					DNSPolicy:                     corev1.DNSClusterFirst,
 					SecurityContext:               &corev1.PodSecurityContext{},

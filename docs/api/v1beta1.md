@@ -132,6 +132,20 @@ Kubernetes core/v1.ResourceRequirements
 </tr>
 <tr>
 <td>
+<code>jobInitContainers</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#container-v1-core">
+[]Kubernetes core/v1.Container
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobInitContainers adds a list of init containers to the setup&rsquo;s jobs.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>numHistoryShards</code><br>
 <em>
 int32
@@ -1381,6 +1395,7 @@ SecretKeyReference
 </em>
 </td>
 <td>
+<em>(Optional)</em>
 <p>PasswordSecret is the reference to the secret holding the password.</p>
 </td>
 </tr>
@@ -3128,6 +3143,20 @@ ServiceSpecOverride
 Those overrides takes precedence over spec.services.overrides.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>initContainers</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#container-v1-core">
+[]Kubernetes core/v1.Container
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>InitContainers adds a list of init containers to the service&rsquo;s deployment.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3683,6 +3712,20 @@ Kubernetes core/v1.ResourceRequirements
 <td>
 <em>(Optional)</em>
 <p>JobResources allows set resources for setup/update jobs.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jobInitContainers</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#container-v1-core">
+[]Kubernetes core/v1.Container
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>JobInitContainers adds a list of init containers to the setup&rsquo;s jobs.</p>
 </td>
 </tr>
 <tr>

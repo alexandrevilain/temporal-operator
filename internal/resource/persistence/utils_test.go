@@ -39,7 +39,7 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "testSecret",
 					},
 				},
@@ -62,7 +62,7 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "testSecret",
 						Key:  "my-password",
 					},
@@ -86,14 +86,14 @@ func TestGetDatastoresEnvironmentVariables(t *testing.T) {
 			datastores: []*v1beta1.DatastoreSpec{
 				{
 					Name: "test",
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "testSecret",
 						Key:  "password",
 					},
 				},
 				{
 					Name: "test-test",
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "testSecret2",
 						Key:  "my-password",
 					},

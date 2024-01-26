@@ -87,7 +87,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
 					},
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "postgres-password",
 						Key:  "PASSWORD",
 					},
@@ -100,7 +100,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
 					},
-					PasswordSecretRef: v1beta1.SecretKeyReference{
+					PasswordSecretRef: &v1beta1.SecretKeyReference{
 						Name: "postgres-password",
 						Key:  "PASSWORD",
 					},
