@@ -25,6 +25,8 @@ manager:
   # -- Service account settings for the controller manager container.
   serviceAccount:
     annotations: {}
+  nodeSelector: {}
+  tolerations: []
 
 webhook:
   ports:
