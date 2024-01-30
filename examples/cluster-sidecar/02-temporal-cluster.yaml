@@ -14,6 +14,7 @@ spec:
         databaseName: temporal
         connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
+        gcpServiceAccount: test@test
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD
@@ -24,6 +25,7 @@ spec:
         databaseName: temporal_visibility
         connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
+        gcpServiceAccount: test@test
       passwordSecretRef:
         name: postgres-password
         key: PASSWORD

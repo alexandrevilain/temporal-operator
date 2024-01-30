@@ -27,6 +27,7 @@ import (
 	"github.com/alexandrevilain/controller-tools/pkg/reconciler"
 	"github.com/alexandrevilain/controller-tools/pkg/resource"
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/base"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -115,6 +116,13 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 	_, err := r.Reconciler.ReconcileBuilder(ctx, cluster, persistence.NewSchemaScriptsConfigmapBuilder(cluster, r.Scheme))
 	if err != nil {
 		return 0, fmt.Errorf("can't reconcile schema script configmap: %w", err)
+	}
+
+	// Ensure the serviceaccount used by jobs is up-to-date
+	serviceAccountBuilder := base.NewServiceAccountBuilder(persistence.ServiceNameSuffix, cluster, r.Scheme, &v1beta1.ServiceSpec{})
+	_, err = r.Reconciler.ReconcileBuilders(ctx, cluster, []resource.Builder{serviceAccountBuilder})
+	if err != nil {
+		return 0, fmt.Errorf("can't reconcile schema serviceaccount: %w", err)
 	}
 
 	// Then for each stores actions, check if the corresponding job is created and has successfully ran.

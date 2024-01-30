@@ -100,6 +100,7 @@ type ServiceSpec struct {
 	// InitContainers adds a list of init containers to the service's deployment.
 	// +optional
 	InitContainers []corev1.Container `json:"initContainers,omitempty"`
+	// ServiceAccountOverride
 }
 
 // InternalFrontendServiceSpec contains temporal internal frontend service specifications.
@@ -248,6 +249,9 @@ type SQLSpec struct {
 	// TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
 	// +optional
 	TaskScanPartitions int `json:"taskScanPartitions"`
+	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+	// +optional
+	GCPServiceAccount *string `json:"gcpServiceAccount"`
 }
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.

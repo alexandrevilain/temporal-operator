@@ -2116,6 +2116,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -2339,6 +2342,9 @@ spec:
                               type: string
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
+                              type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
                               type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
@@ -2564,6 +2570,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -2787,6 +2796,9 @@ spec:
                               type: string
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
+                              type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
                               type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive

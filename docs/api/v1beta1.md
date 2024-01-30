@@ -2984,6 +2984,18 @@ int
 <p>TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>gcpServiceAccount</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
