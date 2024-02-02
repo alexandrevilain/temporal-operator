@@ -30,6 +30,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+const (
+	gcpServiceAccountAnnotation = "iam.gke.io/gcp-service-account"
+	awsRoleArnAnnotation = "eks.amazonaws.com/role-arn"
+)
+
 var _ resource.Builder = (*ServiceAccountBuilder)(nil)
 
 type ServiceAccountBuilder struct {
@@ -61,42 +66,30 @@ func (b *ServiceAccountBuilder) Enabled() bool {
 	return isBuilderEnabled(b.instance, b.serviceName)
 }
 
-// func (b *ServiceAccountBuilder) getArchivalAnnotations() map[string]string {
-// 	if b.instance.Spec.Archival.IsEnabled() &&
-// 		b.instance.Spec.Archival.Provider.S3 != nil &&
-// 		b.instance.Spec.Archival.Provider.S3.RoleName != nil {
-// 		return map[string]string{
-// 			"eks.amazonaws.com/role-arn": *b.instance.Spec.Archival.Provider.S3.RoleName,
-// 		}
-// 	}
-
-// 	return map[string]string{}
-// }
-
 func (b *ServiceAccountBuilder) getIAMAnnotations() map[string]string {
 	annotations := make(map[string]string)
 	if b.instance.Spec.Archival.IsEnabled() &&
 		b.instance.Spec.Archival.Provider.S3 != nil &&
 		b.instance.Spec.Archival.Provider.S3.RoleName != nil {
-		annotations["eks.amazonaws.com/role-arn"] = *b.instance.Spec.Archival.Provider.S3.RoleName
+		annotations[awsRoleArnAnnotation] = *b.instance.Spec.Archival.Provider.S3.RoleName
 	}
 	if b.instance.Spec.Persistence.DefaultStore.SQL != nil &&
 		b.instance.Spec.Persistence.DefaultStore.SQL.GCPServiceAccount != nil {
-		annotations["iam.gke.io/gcp-service-account"] = *b.instance.Spec.Persistence.DefaultStore.SQL.GCPServiceAccount
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.DefaultStore.SQL.GCPServiceAccount
 	}
 	if b.instance.Spec.Persistence.VisibilityStore.SQL != nil &&
 		b.instance.Spec.Persistence.VisibilityStore.SQL.GCPServiceAccount != nil {
-		annotations["iam.gke.io/gcp-service-account"] = *b.instance.Spec.Persistence.VisibilityStore.SQL.GCPServiceAccount
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.VisibilityStore.SQL.GCPServiceAccount
 	}
 	if b.instance.Spec.Persistence.SecondaryVisibilityStore != nil &&
 		b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL != nil &&
 		b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL.GCPServiceAccount != nil {
-		annotations["iam.gke.io/gcp-service-account"] = *b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL.GCPServiceAccount
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL.GCPServiceAccount
 	}
 	if b.instance.Spec.Persistence.AdvancedVisibilityStore != nil &&
 		b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL != nil &&
 		b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL.GCPServiceAccount != nil {
-		annotations["iam.gke.io/gcp-service-account"] = *b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL.GCPServiceAccount
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL.GCPServiceAccount
 	}
 
 	return annotations
