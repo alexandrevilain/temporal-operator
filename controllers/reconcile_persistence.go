@@ -119,7 +119,7 @@ func (r *TemporalClusterReconciler) reconcilePersistence(ctx context.Context, cl
 	}
 
 	// Ensure the serviceaccount used by jobs is up-to-date
-	serviceAccountBuilder := base.NewServiceAccountBuilder(persistence.ServiceNameSuffix, cluster, r.Scheme, &v1beta1.ServiceSpec{})
+	serviceAccountBuilder := base.NewServiceAccountBuilder(persistence.ServiceNameSuffix, cluster, r.Scheme)
 	_, err = r.Reconciler.ReconcileBuilders(ctx, cluster, []resource.Builder{serviceAccountBuilder})
 	if err != nil {
 		return 0, fmt.Errorf("can't reconcile schema serviceaccount: %w", err)
