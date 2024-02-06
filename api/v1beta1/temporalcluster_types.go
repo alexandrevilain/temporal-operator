@@ -249,7 +249,7 @@ type SQLSpec struct {
 	// TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
 	// +optional
 	TaskScanPartitions int `json:"taskScanPartitions"`
-	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.
 	// +optional
 	GCPServiceAccount *string `json:"gcpServiceAccount"`
 }
