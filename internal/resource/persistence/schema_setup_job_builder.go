@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+// ServiceNameSuffix is used as suffix in resource names for persistence setup jobs in place of a ServiceName.
 const ServiceNameSuffix = "schema-setup"
 
 type SchemaJobBuilder struct {
