@@ -251,7 +251,7 @@ type SQLSpec struct {
 	TaskScanPartitions int `json:"taskScanPartitions"`
 	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.
 	// +optional
-	GCPServiceAccount *string `json:"gcpServiceAccount"`
+	GCPServiceAccount *string `json:"gcpServiceAccount,omitempty"`
 }
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.

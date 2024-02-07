@@ -2993,7 +2993,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL</p>
+<p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.</p>
 </td>
 </tr>
 </tbody>

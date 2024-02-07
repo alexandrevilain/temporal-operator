@@ -32,7 +32,7 @@ import (
 
 const (
 	gcpServiceAccountAnnotation = "iam.gke.io/gcp-service-account"
-	awsRoleArnAnnotation = "eks.amazonaws.com/role-arn"
+	awsRoleArnAnnotation        = "eks.amazonaws.com/role-arn"
 )
 
 var _ resource.Builder = (*ServiceAccountBuilder)(nil)
