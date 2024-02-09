@@ -223,7 +223,6 @@ func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 	ns := GetNamespaceForFeature(ctx)
 
 	t.Logf("Deleting namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())
-	return ctx, nil
 
 	return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
