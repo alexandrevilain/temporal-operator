@@ -209,7 +209,7 @@ func createNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 	ns := envconf.RandomName(runID, 10)
 	ctx = SetNamespaceForFeature(ctx, ns)
 
-	t.Logf("Creating namespace %s for feature  \"%s\" in test %s", ns, f.Name(), t.Name())
+	t.Logf("Creating namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())
 
 	return ctx, cfg.Client().Resources().Create(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -219,15 +219,15 @@ func createNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f f
 }
 
 // deleteNSForTest looks up the namespace corresponding to the given test and deletes it.
-func deleteNSForTest(ctx context.Context, _ *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
+func deleteNSForTest(ctx context.Context, cfg *envconf.Config, t *testing.T, f features.Feature) (context.Context, error) {
 	ns := GetNamespaceForFeature(ctx)
 
 	t.Logf("Deleting namespace %s for feature \"%s\" in test %s", ns, f.Name(), t.Name())
 	return ctx, nil
 
-	// return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: ns,
-	// 	},
-	// })
+	return ctx, cfg.Client().Resources().Delete(ctx, &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ns,
+		},
+	})
 }
