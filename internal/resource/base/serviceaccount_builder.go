@@ -30,21 +30,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+const (
+	gcpServiceAccountAnnotation = "iam.gke.io/gcp-service-account"
+	awsRoleArnAnnotation        = "eks.amazonaws.com/role-arn"
+)
+
 var _ resource.Builder = (*ServiceAccountBuilder)(nil)
 
 type ServiceAccountBuilder struct {
 	serviceName string
 	instance    *v1beta1.TemporalCluster
 	scheme      *runtime.Scheme
-	service     *v1beta1.ServiceSpec
 }
 
-func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme, service *v1beta1.ServiceSpec) *ServiceAccountBuilder {
+func NewServiceAccountBuilder(serviceName string, instance *v1beta1.TemporalCluster, scheme *runtime.Scheme) *ServiceAccountBuilder {
 	return &ServiceAccountBuilder{
 		serviceName: serviceName,
 		instance:    instance,
 		scheme:      scheme,
-		service:     service,
 	}
 }
 
@@ -63,16 +66,33 @@ func (b *ServiceAccountBuilder) Enabled() bool {
 	return isBuilderEnabled(b.instance, b.serviceName)
 }
 
-func (b *ServiceAccountBuilder) getArchivalAnnotations() map[string]string {
+func (b *ServiceAccountBuilder) getIAMAnnotations() map[string]string {
+	annotations := make(map[string]string)
 	if b.instance.Spec.Archival.IsEnabled() &&
 		b.instance.Spec.Archival.Provider.S3 != nil &&
 		b.instance.Spec.Archival.Provider.S3.RoleName != nil {
-		return map[string]string{
-			"eks.amazonaws.com/role-arn": *b.instance.Spec.Archival.Provider.S3.RoleName,
-		}
+		annotations[awsRoleArnAnnotation] = *b.instance.Spec.Archival.Provider.S3.RoleName
+	}
+	if b.instance.Spec.Persistence.DefaultStore.SQL != nil &&
+		b.instance.Spec.Persistence.DefaultStore.SQL.GCPServiceAccount != nil {
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.DefaultStore.SQL.GCPServiceAccount
+	}
+	if b.instance.Spec.Persistence.VisibilityStore.SQL != nil &&
+		b.instance.Spec.Persistence.VisibilityStore.SQL.GCPServiceAccount != nil {
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.VisibilityStore.SQL.GCPServiceAccount
+	}
+	if b.instance.Spec.Persistence.SecondaryVisibilityStore != nil &&
+		b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL != nil &&
+		b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL.GCPServiceAccount != nil {
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.SecondaryVisibilityStore.SQL.GCPServiceAccount
+	}
+	if b.instance.Spec.Persistence.AdvancedVisibilityStore != nil &&
+		b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL != nil &&
+		b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL.GCPServiceAccount != nil {
+		annotations[gcpServiceAccountAnnotation] = *b.instance.Spec.Persistence.AdvancedVisibilityStore.SQL.GCPServiceAccount
 	}
 
-	return map[string]string{}
+	return annotations
 }
 
 func (b *ServiceAccountBuilder) Update(object client.Object) error {
@@ -80,7 +100,7 @@ func (b *ServiceAccountBuilder) Update(object client.Object) error {
 
 	sa.Annotations = metadata.Merge(
 		sa.Annotations,
-		b.getArchivalAnnotations(),
+		b.getIAMAnnotations(),
 	)
 
 	if err := controllerutil.SetControllerReference(b.instance, sa, b.scheme); err != nil {

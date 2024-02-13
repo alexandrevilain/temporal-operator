@@ -69,7 +69,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -82,7 +82,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -116,7 +116,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -129,7 +129,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -163,7 +163,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -176,7 +176,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
@@ -187,7 +187,7 @@ func TestPersistence(t *testing.T) {
 									URL:      "http://elasticsearch-es-http:9200",
 									Username: "elastic",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "elasticsearch-es-elastic-user",
 									Key:  "elastic",
 								},
@@ -221,7 +221,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
@@ -234,7 +234,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
@@ -268,7 +268,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
@@ -281,7 +281,7 @@ func TestPersistence(t *testing.T) {
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "mysql-password",
 									Key:  "PASSWORD",
 								},
@@ -314,7 +314,7 @@ func TestPersistence(t *testing.T) {
 									Keyspace:   "temporal",
 									Datacenter: "datacenter1",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "cassandra-password",
 									Key:  "PASSWORD",
 								},
@@ -326,7 +326,7 @@ func TestPersistence(t *testing.T) {
 									Keyspace:   "temporal_visibility",
 									Datacenter: "datacenter1",
 								},
-								PasswordSecretRef: v1beta1.SecretKeyReference{
+								PasswordSecretRef: &v1beta1.SecretKeyReference{
 									Name: "cassandra-password",
 									Key:  "PASSWORD",
 								},

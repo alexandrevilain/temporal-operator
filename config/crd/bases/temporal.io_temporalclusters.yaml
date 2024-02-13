@@ -367,6 +367,13 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   type: array
+                jobInitContainers:
+                  description: JobInitContainers adds a list of init containers to the setup's jobs.
+                  items:
+                    description: A single application container that you want to run within a pod.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  type: array
                 jobResources:
                   description: JobResources allows set resources for setup/update jobs.
                   properties:
@@ -1275,6 +1282,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -1356,8 +1366,6 @@ spec:
                             - enableHostVerification
                             - enabled
                           type: object
-                      required:
-                        - passwordSecretRef
                       type: object
                     defaultStore:
                       description: DefaultStore holds the default datastore specs.
@@ -1501,6 +1509,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -1582,8 +1593,6 @@ spec:
                             - enableHostVerification
                             - enabled
                           type: object
-                      required:
-                        - passwordSecretRef
                       type: object
                     secondaryVisibilityStore:
                       description: SecondaryVisibilityStore holds the secondary visibility datastore specs. Feature only available for clusters >= 1.21.0.
@@ -1727,6 +1736,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -1808,8 +1820,6 @@ spec:
                             - enableHostVerification
                             - enabled
                           type: object
-                      required:
-                        - passwordSecretRef
                       type: object
                     visibilityStore:
                       description: VisibilityStore holds the visibility datastore specs.
@@ -1953,6 +1963,9 @@ spec:
                             databaseName:
                               description: DatabaseName is the name of SQL database to connect to.
                               type: string
+                            gcpServiceAccount:
+                              description: GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL
+                              type: string
                             maxConnLifetime:
                               description: MaxConnLifetime is the maximum time a connection can be alive
                               type: string
@@ -2034,8 +2047,6 @@ spec:
                             - enableHostVerification
                             - enabled
                           type: object
-                      required:
-                        - passwordSecretRef
                       type: object
                   required:
                     - defaultStore
@@ -2050,6 +2061,13 @@ spec:
                         httpPort:
                           description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
                           type: integer
+                        initContainers:
+                          description: InitContainers adds a list of init containers to the service's deployment.
+                          items:
+                            description: A single application container that you want to run within a pod.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
                         membershipPort:
                           description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
@@ -2153,6 +2171,13 @@ spec:
                         httpPort:
                           description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
                           type: integer
+                        initContainers:
+                          description: InitContainers adds a list of init containers to the service's deployment.
+                          items:
+                            description: A single application container that you want to run within a pod.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
                         membershipPort:
                           description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
@@ -2260,6 +2285,13 @@ spec:
                         httpPort:
                           description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
                           type: integer
+                        initContainers:
+                          description: InitContainers adds a list of init containers to the service's deployment.
+                          items:
+                            description: A single application container that you want to run within a pod.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
                         membershipPort:
                           description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
@@ -2363,6 +2395,13 @@ spec:
                         httpPort:
                           description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
                           type: integer
+                        initContainers:
+                          description: InitContainers adds a list of init containers to the service's deployment.
+                          items:
+                            description: A single application container that you want to run within a pod.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
                         membershipPort:
                           description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer
@@ -2514,6 +2553,13 @@ spec:
                         httpPort:
                           description: 'HTTPPort defines a custom http port for the service. Default values are: 7243 for Frontend service'
                           type: integer
+                        initContainers:
+                          description: InitContainers adds a list of init containers to the service's deployment.
+                          items:
+                            description: A single application container that you want to run within a pod.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
                         membershipPort:
                           description: 'MembershipPort defines a custom membership port for the service. Default values are: 6933 for Frontend service 6934 for History service 6935 for Matching service 6939 for Worker service'
                           type: integer

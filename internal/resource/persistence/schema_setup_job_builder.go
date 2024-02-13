@@ -33,6 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+// ServiceNameSuffix is used as suffix in resource names for persistence setup jobs in place of a ServiceName.
+const ServiceNameSuffix = "schema-setup"
+
 type SchemaJobBuilder struct {
 	instance *v1beta1.TemporalCluster
 	scheme   *runtime.Scheme
@@ -113,8 +116,10 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					),
 				},
 				Spec: corev1.PodSpec{
-					RestartPolicy:    corev1.RestartPolicyOnFailure,
-					ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
+					RestartPolicy:            corev1.RestartPolicyOnFailure,
+					ImagePullSecrets:         b.instance.Spec.ImagePullSecrets,
+					ServiceAccountName:       b.instance.ChildResourceName(ServiceNameSuffix),
+					DeprecatedServiceAccount: b.instance.ChildResourceName(ServiceNameSuffix),
 					Containers: []corev1.Container{
 						{
 							Name:                     "schema-script-runner",
@@ -131,6 +136,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 							VolumeMounts: volumeMounts,
 						},
 					},
+					InitContainers:                b.instance.Spec.JobInitContainers,
 					TerminationGracePeriodSeconds: ptr.To[int64](30),
 					DNSPolicy:                     corev1.DNSClusterFirst,
 					SecurityContext:               &corev1.PodSecurityContext{},

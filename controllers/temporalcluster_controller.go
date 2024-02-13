@@ -220,7 +220,7 @@ func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.Te
 
 		serviceName := string(service)
 
-		builders = append(builders, base.NewServiceAccountBuilder(serviceName, temporalCluster, r.Scheme, specs))
+		builders = append(builders, base.NewServiceAccountBuilder(serviceName, temporalCluster, r.Scheme))
 		builders = append(builders, base.NewDeploymentBuilder(serviceName, temporalCluster, r.Scheme, specs, configHash))
 		builders = append(builders, base.NewHeadlessServiceBuilder(serviceName, temporalCluster, r.Scheme, specs))
 

@@ -166,12 +166,14 @@ func (b *SchemaScriptsConfigmapBuilder) getSQLArgs(spec *v1beta1.DatastoreSpec) 
 	}
 
 	args := orderedmap.NewOrderedMap[string, string]()
-	args.Set(schema.CLIOptEndpoint, host)                                             // --endpoint
-	args.Set(schema.CLIOptPort, port)                                                 // --port
-	args.Set(schema.CLIOptUser, spec.SQL.User)                                        // --user
-	args.Set(schema.CLIOptPassword, fmt.Sprintf("$%s", spec.GetPasswordEnvVarName())) // --password
-	args.Set(schema.CLIOptDatabase, spec.SQL.DatabaseName)                            // --database
-	args.Set(schema.CLIOptPluginName, spec.SQL.PluginName)                            // --plugin
+	args.Set(schema.CLIOptEndpoint, host)      // --endpoint
+	args.Set(schema.CLIOptPort, port)          // --port
+	args.Set(schema.CLIOptUser, spec.SQL.User) // --user
+	if spec.PasswordSecretRef != nil {
+		args.Set(schema.CLIOptPassword, fmt.Sprintf("$%s", spec.GetPasswordEnvVarName())) // --password
+	}
+	args.Set(schema.CLIOptDatabase, spec.SQL.DatabaseName) // --database
+	args.Set(schema.CLIOptPluginName, spec.SQL.PluginName) // --plugin
 	// TODO(alexandrevilain): support schema.CLIOptTimeout
 
 	if len(spec.SQL.ConnectAttributes) > 0 {

@@ -33,23 +33,25 @@ const (
 func GetDatastoresEnvironmentVariables(datastores []*v1beta1.DatastoreSpec) []corev1.EnvVar {
 	vars := []corev1.EnvVar{}
 	for _, datastore := range datastores {
-		key := datastore.PasswordSecretRef.Key
-		if key == "" {
-			key = defaultPasswordSecretKey
-		}
-		vars = append(vars,
-			corev1.EnvVar{
-				Name: datastore.GetPasswordEnvVarName(),
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: datastore.PasswordSecretRef.Name,
+		if datastore.PasswordSecretRef != nil {
+			key := datastore.PasswordSecretRef.Key
+			if key == "" {
+				key = defaultPasswordSecretKey
+			}
+			vars = append(vars,
+				corev1.EnvVar{
+					Name: datastore.GetPasswordEnvVarName(),
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: datastore.PasswordSecretRef.Name,
+							},
+							Key: key,
 						},
-						Key: key,
 					},
 				},
-			},
-		)
+			)
+		}
 	}
 	return vars
 }

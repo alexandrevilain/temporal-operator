@@ -97,6 +97,10 @@ type ServiceSpec struct {
 	// Those overrides takes precedence over spec.services.overrides.
 	// +optional
 	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
+	// InitContainers adds a list of init containers to the service's deployment.
+	// +optional
+	InitContainers []corev1.Container `json:"initContainers,omitempty"`
+	// ServiceAccountOverride
 }
 
 // InternalFrontendServiceSpec contains temporal internal frontend service specifications.
@@ -245,6 +249,9 @@ type SQLSpec struct {
 	// TaskScanPartitions is the number of partitions to sequentially scan during ListTaskQueue operations.
 	// +optional
 	TaskScanPartitions int `json:"taskScanPartitions"`
+	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.
+	// +optional
+	GCPServiceAccount *string `json:"gcpServiceAccount,omitempty"`
 }
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.
@@ -386,8 +393,8 @@ type DatastoreSpec struct {
 	// +optional
 	Cassandra *CassandraSpec `json:"cassandra,omitempty"`
 	// PasswordSecret is the reference to the secret holding the password.
-	// +required
-	PasswordSecretRef SecretKeyReference `json:"passwordSecretRef"`
+	// +optional
+	PasswordSecretRef *SecretKeyReference `json:"passwordSecretRef,omitempty"`
 	// TLS is an optional option to connect to the datastore using TLS.
 	// +optional
 	TLS *DatastoreTLSSpec `json:"tls,omitempty"`
@@ -987,6 +994,9 @@ type TemporalClusterSpec struct {
 	// JobResources allows set resources for setup/update jobs.
 	// +optional
 	JobResources corev1.ResourceRequirements `json:"jobResources,omitempty"`
+	// JobInitContainers adds a list of init containers to the setup's jobs.
+	// +optional
+	JobInitContainers []corev1.Container `json:"jobInitContainers,omitempty"`
 	// NumHistoryShards is the desired number of history shards.
 	// This field is immutable.
 	//+kubebuilder:validation:Minimum=1

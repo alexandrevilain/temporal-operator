@@ -358,6 +358,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 					VolumeMounts:  volumeMounts,
 				},
 			},
+			InitContainers:                b.service.InitContainers,
 			RestartPolicy:                 corev1.RestartPolicyAlways,
 			TerminationGracePeriodSeconds: ptr.To[int64](30),
 			DNSPolicy:                     corev1.DNSClusterFirst,
