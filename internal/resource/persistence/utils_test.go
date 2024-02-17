@@ -358,7 +358,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-ca-file",
-					MountPath: "/etc/tls/datastores/test",
+					MountPath: "/etc/tls/datastores/ca/test",
 				},
 			},
 		},
@@ -377,7 +377,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-cert-file",
-					MountPath: "/etc/tls/datastores/test",
+					MountPath: "/etc/tls/datastores/cert/test",
 				},
 			},
 		},
@@ -396,7 +396,7 @@ func TestGetDatastoresVolumeMounts(t *testing.T) {
 			expectedEnvVars: []corev1.VolumeMount{
 				{
 					Name:      "test-tls-key-file",
-					MountPath: "/etc/tls/datastores/test",
+					MountPath: "/etc/tls/datastores/key/test",
 				},
 			},
 		},
