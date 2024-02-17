@@ -433,9 +433,15 @@ func (s *DatastoreSpec) IsSQL() bool {
 
 const (
 	dataStoreTLSCertificateBasePath = "/etc/tls/datastores"
-	DataStoreClientTLSCertFileName  = "client.pem"
-	DataStoreClientTLSKeyFileName   = "client.key"
-	DataStoreClientTLSCaFileName    = "ca.pem"
+	dataStoreTLSCAPrefix            = "ca"
+	dataStoreTLSCertPrefix          = "cert"
+	dataStoreTLSKeyPrefix           = "key"
+	// DataStoreClientTLSCertFileName is the default client TLS cert file name.
+	DataStoreClientTLSCertFileName = "client.pem"
+	// DataStoreClientTLSKeyFileName is the default client TLS key file name.
+	DataStoreClientTLSKeyFileName = "client.key"
+	// DataStoreClientTLSCaFileName is the default client TLS ca file name.
+	DataStoreClientTLSCaFileName = "ca.pem"
 )
 
 // GetTLSKeyFileMountPath returns the client TLS cert mount path.
@@ -445,7 +451,7 @@ func (s *DatastoreSpec) GetTLSCertFileMountPath() string {
 		return ""
 	}
 
-	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSCertFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, dataStoreTLSCertPrefix, s.Name, DataStoreClientTLSCertFileName)
 }
 
 // GetTLSKeyFileMountPath returns the client TLS key mount path.
@@ -454,7 +460,7 @@ func (s *DatastoreSpec) GetTLSKeyFileMountPath() string {
 	if s.TLS == nil || s.TLS.KeyFileRef == nil {
 		return ""
 	}
-	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSKeyFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, dataStoreTLSKeyPrefix, s.Name, DataStoreClientTLSKeyFileName)
 }
 
 // GetTLSCaFileMountPath  returns the CA key mount path.
@@ -463,7 +469,7 @@ func (s *DatastoreSpec) GetTLSCaFileMountPath() string {
 	if s.TLS == nil || s.TLS.CaFileRef == nil {
 		return ""
 	}
-	return path.Join(dataStoreTLSCertificateBasePath, s.Name, DataStoreClientTLSCaFileName)
+	return path.Join(dataStoreTLSCertificateBasePath, dataStoreTLSCAPrefix, s.Name, DataStoreClientTLSCaFileName)
 }
 
 // GetPasswordEnvVarName crafts the environment variable name for the datastore.
