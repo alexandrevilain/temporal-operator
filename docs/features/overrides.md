@@ -176,7 +176,8 @@ spec:
           spec:
             template:
               metadata:
-                labels:
+                annotations:
+                    ad.datadoghq.com/<CONTAINER_IDENTIFIER>.logs: '[{ "source": "golang", "service": "<CONTAINER_IDENTIFIER>" }]'
                     ad.datadoghq.com/<CONTAINER_IDENTIFIER>.checks: |
                     {
                         "<INTEGRATION_NAME>": {
