@@ -756,6 +756,11 @@ type PrometheusSpec struct {
 type MetricsSpec struct {
 	// Enabled defines if the operator should enable metrics exposition on temporal components.
 	Enabled bool `json:"enabled"`
+	// ExcludeTags is a map from tag name string to tag values string list.
+	// Each value present in keys will have relevant tag value replaced with "_tag_excluded_"
+	// Each value in values list will white-list tag values to be reported as usual.
+	// +optional
+	ExcludeTags map[string][]string `json:"excludeTags,omitempty"`
 	// PerUnitHistogramBoundaries defines the default histogram bucket boundaries.
 	// Configuration of histogram boundaries for given metric unit.
 	//
@@ -765,6 +770,9 @@ type MetricsSpec struct {
 	// - "bytes"
 	// +optional
 	PerUnitHistogramBoundaries map[string][]string `json:"perUnitHistogramBoundaries,omitempty"`
+	// Prefix sets the prefix to all outgoing metrics
+	// +optional
+	Prefix *string `json:"prefix,omitempty"`
 	// Prometheus reporter configuration.
 	// +optional
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
