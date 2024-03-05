@@ -316,6 +316,14 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			},
 		}
 
+		if b.instance.Spec.Metrics.ExcludeTags != nil {
+			temporalCfg.Global.Metrics.ClientConfig.ExcludeTags = b.instance.Spec.Metrics.ExcludeTags
+		}
+
+		if b.instance.Spec.Metrics.Prefix != nil {
+			temporalCfg.Global.Metrics.ClientConfig.Prefix = *b.instance.Spec.Metrics.Prefix
+		}
+
 		if b.instance.Spec.Metrics.PerUnitHistogramBoundaries != nil {
 			buckets := make(map[string][]float64)
 			p := b.instance.Spec.Metrics.PerUnitHistogramBoundaries

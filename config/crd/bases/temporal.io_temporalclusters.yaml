@@ -508,6 +508,13 @@ spec:
                     enabled:
                       description: Enabled defines if the operator should enable metrics exposition on temporal components.
                       type: boolean
+                    excludeTags:
+                      additionalProperties:
+                        items:
+                          type: string
+                        type: array
+                      description: ExcludeTags is a map from tag name string to tag values string list. Each value present in keys will have relevant tag value replaced with "_tag_excluded_" Each value in values list will white-list tag values to be reported as usual.
+                      type: object
                     perUnitHistogramBoundaries:
                       additionalProperties:
                         items:
@@ -515,6 +522,9 @@ spec:
                         type: array
                       description: "PerUnitHistogramBoundaries defines the default histogram bucket boundaries. Configuration of histogram boundaries for given metric unit. \n Supported values: - \"dimensionless\" - \"milliseconds\" - \"bytes\""
                       type: object
+                    prefix:
+                      description: Prefix sets the prefix to all outgoing metrics
+                      type: string
                     prometheus:
                       description: Prometheus reporter configuration.
                       properties:

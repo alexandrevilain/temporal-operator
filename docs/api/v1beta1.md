@@ -2406,6 +2406,20 @@ bool
 </tr>
 <tr>
 <td>
+<code>excludeTags</code><br>
+<em>
+map[string][]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExcludeTags is a map from tag name string to tag values string list.
+Each value present in keys will have relevant tag value replaced with &ldquo;_tag<em>excluded</em>&rdquo;
+Each value in values list will white-list tag values to be reported as usual.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>perUnitHistogramBoundaries</code><br>
 <em>
 map[string][]string
@@ -2419,6 +2433,18 @@ Configuration of histogram boundaries for given metric unit.</p>
 - &ldquo;dimensionless&rdquo;
 - &ldquo;milliseconds&rdquo;
 - &ldquo;bytes&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>prefix</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Prefix sets the prefix to all outgoing metrics</p>
 </td>
 </tr>
 <tr>
