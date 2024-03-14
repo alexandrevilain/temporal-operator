@@ -6,7 +6,7 @@ Temporal supports multi-cluster replication. This feature allows you to replicat
 
 To set up multi-cluster replication using the temporal operator, you must first enable global namespaces on the clusters you wish to support, and then assign them a unique failover version.
 This can be configured via the `spec.replicaton` of the `TemporalCluster` resource. Temporal operator automatically configures the remaining fields, and currently hard-codes the failover
-increment to 100. If a cluster fails, the remaining clusters will elect a new primary cluster based with the lowest failover version. The original cluster, if it comes back online, will
+increment to 10, meaning you can have at most one leader and 9 followers. If a cluster fails, the remaining clusters will elect a new primary cluster based with the lowest failover version. The original cluster, if it comes back online, will
 be assigned a new failover version, which is always the lowest multiple of the failover increment (+ initialFailoverVersion) that is greater than the leader cluster's failover version.
 
 ```yaml
@@ -19,6 +19,8 @@ spec:
     enableGlobalNamespace: true
     initialFailoverVersion: 1
 ```
+
+For example, in a setup with a leader with `initialFailoverVersion` 1, and a follower with `initialFailoverVersion` 2, since the increment is set to 10 a failure in the leader will flip control to the follower, and increment the leader's failover version to 11.
 
 ## Starting replication
 
@@ -55,7 +57,7 @@ spec:
   isGlobalNamespace: true
 ```
 
-| **🚨 Note**: Replication does not eagerly push records to the other cluster. If you set up replication with existing workflows on the primary node, make sure to query every workflow on the original node so that they are propagated to prevent data loss.
+| **🚨 Note**: Replication happens at workflow evaluation time, meaning that adding replication to a running cluster requires special care. If you set up replication with existing workflows on the primary node, make sure to query every workflow on the original node so that they are propagated or risk data loss.
 
 ## A mechanism for increasing the history shard count
 
