@@ -15,7 +15,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.23.0
   numHistoryShards: 1
   # [...]
   ui:
@@ -23,7 +23,7 @@ spec:
     # You can specify ui version if needed.
     # Check available tag you can check by link below
     # https://hub.docker.com/r/temporalio/ui/tags
-    version: 2.15.0
+    version: 2.25.0
 ```
 
 ## Create Ingress
@@ -39,12 +39,12 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.23.0
   numHistoryShards: 1
   # [...]
   ui:
     enabled: true
-    version: 2.15.0
+    version: 2.25.0
     ingress:
       hosts:
         - example.com
@@ -63,12 +63,12 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.23.0
   numHistoryShards: 1
   # [...]
   ui:
     enabled: true
-    version: 2.15.0
+    version: 2.25.0
     replicas: 1
     resources:
       limits:
@@ -92,7 +92,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.21.2
+  version: 1.23.0
   numHistoryShards: 1
   ui:
     enabled: true

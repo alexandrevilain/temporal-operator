@@ -44,7 +44,7 @@ func TestNamespaceCreation(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
-			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.19.1")
+			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.23.0")
 			if err != nil {
 				t.Fatal(err)
 			}
