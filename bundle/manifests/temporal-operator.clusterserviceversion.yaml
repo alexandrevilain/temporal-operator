@@ -201,7 +201,7 @@ spec:
             user: temporal
       ui:
         enabled: true
-      version: 1.20.0
+      version: 1.23.0
     </pre>
 
     ### Apply TemporalCluster CustomResource

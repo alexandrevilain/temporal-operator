@@ -11,7 +11,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.23.0
   numHistoryShards: 1
   # [...]
   dynamicConfig:
