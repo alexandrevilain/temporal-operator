@@ -64,6 +64,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 
 | Temporal Operator | Temporal           | Kubernetes     |
 |-------------------|--------------------|----------------|
+| v0.18.x           | v1.19.x to v1.23.x | v1.25 to v1.29 |
 | v0.17.x           | v1.18.x to v1.22.x | v1.25 to v1.29 |
 | v0.16.x           | v1.18.x to v1.22.x | v1.24 to v1.27 |
 | v0.15.x           | v1.18.x to v1.21.x | v1.24 to v1.27 |
