@@ -185,7 +185,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "ca.pem",
-									Path: "ca.pem",
+									Path: v1beta1.DataStoreClientTLSCaFileName,
 								},
 							},
 						},
@@ -199,7 +199,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "ca.pem",
+									Path: v1beta1.DataStoreClientTLSCaFileName,
 								},
 							},
 						},
@@ -238,7 +238,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "client.pem",
-									Path: "client.pem",
+									Path: v1beta1.DataStoreClientTLSCertFileName,
 								},
 							},
 						},
@@ -252,7 +252,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "client.pem",
+									Path: v1beta1.DataStoreClientTLSCertFileName,
 								},
 							},
 						},
@@ -291,7 +291,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "client.key",
-									Path: "client.pem",
+									Path: v1beta1.DataStoreClientTLSKeyFileName,
 								},
 							},
 						},
@@ -305,7 +305,7 @@ func TestGetDatastoresVolumes(t *testing.T) {
 							Items: []corev1.KeyToPath{
 								{
 									Key:  "my-custom-key",
-									Path: "client.pem",
+									Path: v1beta1.DataStoreClientTLSKeyFileName,
 								},
 							},
 						},
