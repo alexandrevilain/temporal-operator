@@ -28,7 +28,7 @@ import (
 
 var (
 	// SupportedVersionsRange holds all supported temporal versions.
-	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.23.0")
+	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.24.0")
 	ForbiddenBrokenReleases = []*Version{
 		// v1.21.0 is reported as broken, see: https://github.com/temporalio/temporal/releases/tag/v1.21.0
 		MustNewVersionFromString("1.21.0"),
@@ -39,6 +39,7 @@ var (
 	V1_20_0 = MustNewVersionFromString("1.20.0") //nolint:stylecheck,revive
 	V1_21_0 = MustNewVersionFromString("1.21.0") //nolint:stylecheck,revive
 	V1_22_0 = MustNewVersionFromString("1.22.0") //nolint:stylecheck,revive
+	V1_23_0 = MustNewVersionFromString("1.23.0") //nolint:stylecheck,revive
 )
 
 // Version is a wrapper around semver.Version which supports correct

@@ -11,7 +11,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.20.0
+  version: 1.23.0
   numHistoryShards: 1
   # [...]
   admintools:
@@ -19,5 +19,5 @@ spec:
     # You can specify the admin tools version if needed.
     # Check available tag you can check by the link below
     # https://hub.docker.com/r/temporalio/admin-tools/tags
-    version: 1.20.3
+    version: 1.23.0
 ```

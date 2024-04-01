@@ -25,6 +25,7 @@ import (
 	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/replication/v1"
 	"go.temporal.io/api/workflowservice/v1"
+	durationpb "google.golang.org/protobuf/types/known/durationpb"
 )
 
 func NamespaceToRegisterNamespaceRequest(cluster *v1beta1.TemporalCluster, namespace *v1beta1.TemporalNamespace) *workflowservice.RegisterNamespaceRequest {
@@ -62,7 +63,7 @@ func NamespaceToRegisterNamespaceRequest(cluster *v1beta1.TemporalCluster, names
 	}
 
 	if namespace.Spec.RetentionPeriod != nil {
-		re.WorkflowExecutionRetentionPeriod = &namespace.Spec.RetentionPeriod.Duration
+		re.WorkflowExecutionRetentionPeriod = durationpb.New(namespace.Spec.RetentionPeriod.Duration)
 	}
 
 	if namespace.Spec.IsGlobalNamespace {
@@ -127,7 +128,7 @@ func NamespaceToUpdateNamespaceRequest(cluster *v1beta1.TemporalCluster, namespa
 	}
 
 	if namespace.Spec.RetentionPeriod != nil {
-		re.Config.WorkflowExecutionRetentionTtl = &namespace.Spec.RetentionPeriod.Duration
+		re.Config.WorkflowExecutionRetentionTtl = durationpb.New(namespace.Spec.RetentionPeriod.Duration)
 	}
 
 	if namespace.Spec.IsGlobalNamespace {
