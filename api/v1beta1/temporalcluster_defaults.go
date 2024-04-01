@@ -26,10 +26,10 @@ import (
 )
 
 const (
-	defaultTemporalVersion = "1.20.0"
+	defaultTemporalVersion = "1.23.0"
 	defaultTemporalImage   = "temporalio/server"
 
-	defaultTemporalUIVersion = "2.10.3"
+	defaultTemporalUIVersion = "2.25.0"
 	defaultTemporalUIImage   = "temporalio/ui"
 
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
