@@ -559,8 +559,8 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 istio.io/api v1.21.0 h1:K/+8GrGoupyCBa7/a/znnEzg34Qk0l1Rpki1PrtSVJY=
 istio.io/api v1.21.0/go.mod h1:TFCMUCAHRjxBv1CsIsFCsYHPHi4axVI4vdIzVr8eFjY=
-istio.io/client-go v1.20.2 h1:FL99qw5f5W+QFPHutLpGOoPmoKgLwNFrGCEemAvLm00=
-istio.io/client-go v1.20.2/go.mod h1:mub0nwPDAj98cjns7KYLzbvDk0Fg9rx0k2o+KZ4UIUY=
+istio.io/client-go v1.21.0 h1:Fr4Tcnmdk3SOXoeeyHzCgpKfTWVgkeuIYm7tRdARo5A=
+istio.io/client-go v1.21.0/go.mod h1:xFI6wdIPsXqUfE1P/sae1ImFN3KXcYCjKn1S24coFZI=
 k8s.io/api v0.29.3 h1:2ORfZ7+bGC3YJqGpV0KSDDEVf8hdGQ6A03/50vj8pmw=
 k8s.io/api v0.29.3/go.mod h1:y2yg2NTyHUUkIoTC+phinTnEa3KFM6RZ3szxt014a80=
 k8s.io/apiextensions-apiserver v0.29.3 h1:9HF+EtZaVpFjStakF4yVufnXGPRppWFEQ87qnO91YeI=
