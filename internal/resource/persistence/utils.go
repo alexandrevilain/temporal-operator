@@ -120,7 +120,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 								Items: []corev1.KeyToPath{
 									{
 										Key:  key,
-										Path: v1beta1.DataStoreClientTLSCertFileName,
+										Path: v1beta1.DataStoreClientTLSKeyFileName,
 									},
 								},
 							},
