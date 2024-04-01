@@ -25,7 +25,7 @@ spec:
         user: cassandra
         keyspace: temporal
         datacenter: datacenter1
-        disableInitialHostLookup: true
+        disableInitialHostLookup: false
       passwordSecretRef:
         name: cassandra-password
         key: PASSWORD
@@ -37,7 +37,7 @@ spec:
         user: cassandra
         keyspace: temporal_visibility
         datacenter: datacenter1
-        disableInitialHostLookup: true
+        disableInitialHostLookup: false
       passwordSecretRef:
         name: cassandra-password
         key: PASSWORD
