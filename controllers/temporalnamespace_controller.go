@@ -74,18 +74,6 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return reconcile.Result{}, err
 	}
 
-	cluster := &v1beta1.TemporalCluster{}
-	err = r.Get(ctx, namespace.Spec.ClusterRef.NamespacedName(namespace), cluster)
-	if err != nil {
-		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
-	}
-
-	if !cluster.IsReady() {
-		logger.Info("Skipping namespace reconciliation until referenced cluster is ready")
-
-		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
-	}
-
 	patchHelper, err := patch.NewHelper(namespace, r.Client)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -98,6 +86,25 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
 	}()
+
+	cluster := &v1beta1.TemporalCluster{}
+	err = r.Get(ctx, namespace.Spec.ClusterRef.NamespacedName(namespace), cluster)
+	if err != nil {
+		if apierrors.IsNotFound(err) && !namespace.ObjectMeta.DeletionTimestamp.IsZero() {
+			// Two ways to get here:
+			//  - TemporalCluster has not been created yet. In this case, if the TemporalNamespace is deleted, no point in waiting for the TemporalCluster to be healthy.
+			//  - TemporalCluster existed at some point, but now is deleted. In this case, the underlying namespace in the Temporal server is already gone.
+			controllerutil.RemoveFinalizer(namespace, deletionFinalizer)
+			return reconcile.Result{}, nil
+		}
+		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
+	}
+
+	if !cluster.IsReady() {
+		logger.Info("Skipping namespace reconciliation until referenced cluster is ready")
+
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
 
 	// Check if the resource has been marked for deletion
 	if !namespace.ObjectMeta.DeletionTimestamp.IsZero() {
