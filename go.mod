@@ -32,7 +32,7 @@ require (
 	k8s.io/client-go v0.29.3
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	sigs.k8s.io/controller-runtime v0.16.3
+	sigs.k8s.io/controller-runtime v0.17.2
 	sigs.k8s.io/e2e-framework v0.3.0
 )
 
@@ -53,7 +53,7 @@ require (
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.8.0 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
