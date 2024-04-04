@@ -64,10 +64,6 @@ func TestSecretCopier(t *testing.T) {
 			},
 			destination: "default",
 			expected: &corev1.Secret{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Secret",
-					APIVersion: "v1",
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "default",
@@ -115,10 +111,6 @@ func TestSecretCopier(t *testing.T) {
 			},
 			destination: "default",
 			expected: &corev1.Secret{
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Secret",
-					APIVersion: "v1",
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "default",
