@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 env:
-  KIND_VERSION: v0.19.0
+  KIND_VERSION: v0.22.0
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
   WORKER_PROCESS_IMAGE_PATH: /tmp/example-worker-process.tar
 
@@ -21,12 +21,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-       kube-version:
-       - v1.25.16
-       - v1.26.14
-       - v1.27.11
-       - v1.28.7
-       - v1.29.2
+        kube-version:
+          - tag: v1.25.16
+            kind-image: kindest/node:v1.25.16@sha256:e8b50f8e06b44bb65a93678a65a26248fae585b3d3c2a669e5ca6c90c69dc519
+          - tag: v1.26.14
+            kind-image: kindest/node:v1.26.14@sha256:5d548739ddef37b9318c70cb977f57bf3e5015e4552be4e27e57280a8cbb8e4f
+          - tag: v1.27.11
+            kind-image: kindest/node:v1.27.11@sha256:681253009e68069b8e01aad36a1e0fa8cf18bb0ab3e5c4069b2e65cafdd70843
+          - tag: v1.28.7
+            kind-image: kindest/node:v1.28.7@sha256:9bc6c451a289cf96ad0bbaf33d416901de6fd632415b076ab05f5fa7e4f65c58
+          - tag: v1.29.2
+            kind-image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
     name: Run generate E2E tests
     steps:
       - name: Checkout
@@ -57,20 +62,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha
           outputs: type=docker,dest=${{ env.WORKER_PROCESS_IMAGE_PATH }}
-      # e2e-framework uses kind v0.12.0 as default value
-      - name: Install kind
-        uses: helm/kind-action@v1.9.0
+
+      - name: Install Kind
+        uses: helm/kind-action@v1
         with:
-          version: ${{ env.KIND_VERSION }}
           install_only: true
+          version: ${{ env.KIND_VERSION }}
+
       - name: Free some disk space
         run: sudo rm -rf /usr/share/dotnet && sudo rm -rf /opt/ghc && sudo rm -rf "/usr/local/share/boost"
+
       - name: Run e2e test suite
         run: make test-e2e
         env:
           OPERATOR_IMAGE_PATH: ${{ env.OPERATOR_IMAGE_PATH }}
           WORKER_PROCESS_IMAGE_PATH: ${{ env.WORKER_PROCESS_IMAGE_PATH }}
-          KUBERNETES_VERSION: ${{ matrix.kube-version }}
+          KUBERNETES_VERSION: ${{ matrix.kube-version.tag }}
+          KIND_IMAGE: ${{ matrix.kube-version.kind-image }}
+
       - name: Archive e2e logs
         uses: actions/upload-artifact@v3
         if: always()

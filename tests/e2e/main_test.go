@@ -30,6 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/discovery"
 	"k8s.io/klog/v2/textlogger"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
@@ -70,11 +71,11 @@ func testMainRun(m *testing.M) int {
 
 	clusterLogsOutPath := path.Join(wd, "..", "..", "out", "tests", "e2e")
 
+	// if set, enforce API server reported version matches this
 	kubernetesVersion := os.Getenv("KUBERNETES_VERSION")
-	if kubernetesVersion == "" {
-		kubernetesVersion = "v1.26.0"
-	}
-	kindImage := fmt.Sprintf("kindest/node:%s", kubernetesVersion)
+
+	// if not set default to Kind's default image
+	kindImage := os.Getenv("KIND_IMAGE")
 
 	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
 	exampleWorkerProcessImagePath := os.Getenv("WORKER_PROCESS_IMAGE_PATH")
@@ -92,7 +93,10 @@ func testMainRun(m *testing.M) int {
 		return err
 	}
 
-	kindCluster := kind.NewProvider().WithOpts(kind.WithImage(kindImage))
+	kindCluster := &FixedKindProvider{
+		Cluster: &kind.Cluster{},
+		image:   kindImage,
+	}
 
 	testenv = env.
 		NewWithConfig(cfg).
@@ -103,6 +107,30 @@ func testMainRun(m *testing.M) int {
 			envfuncs.LoadImageArchiveToCluster(kindClusterName, exampleWorkerProcessImagePath),
 			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
 		).
+		// Make sure the cluster version is what we expect
+		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
+			if kubernetesVersion == "" {
+				return ctx, nil
+			}
+
+			dc, err := discovery.NewDiscoveryClientForConfig(c.Client().RESTConfig())
+
+			if err != nil {
+				return ctx, err
+			}
+
+			sv, err := dc.ServerVersion()
+
+			if err != nil {
+				return ctx, err
+			}
+
+			if sv.GitVersion != kubernetesVersion {
+				return ctx, fmt.Errorf("API server version %v does not match expected value %v", sv.GitVersion, kubernetesVersion)
+			}
+
+			return ctx, nil
+		}).
 		// Add the operators crds to the client scheme.
 		Setup(func(ctx context.Context, c *envconf.Config) (context.Context, error) {
 			fmt.Printf("KUBECONFIG=%s\n", c.KubeconfigFile())
