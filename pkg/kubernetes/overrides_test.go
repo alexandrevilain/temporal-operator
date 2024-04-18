@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	apimachineryresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestApplyDeploymentOverrides(t *testing.T) {
@@ -481,6 +482,50 @@ func TestPatchPodSpecWithOverride(t *testing.T) {
 				Containers: []corev1.Container{
 					{
 						Name: "test",
+					},
+				},
+			},
+		},
+		"works with livenessProbe overrides": {
+			original: &corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name: "test",
+						LivenessProbe: &corev1.Probe{
+							ProbeHandler: corev1.ProbeHandler{
+								TCPSocket: &corev1.TCPSocketAction{
+									Port: intstr.FromString("rpc"),
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name: "test",
+						LivenessProbe: &corev1.Probe{
+							ProbeHandler: corev1.ProbeHandler{
+								Exec: &corev1.ExecAction{
+									Command: []string{"echo", "hi"},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name: "test",
+						LivenessProbe: &corev1.Probe{
+							ProbeHandler: corev1.ProbeHandler{
+								Exec: &corev1.ExecAction{
+									Command: []string{"echo", "hi"},
+								},
+							},
+						},
 					},
 				},
 			},

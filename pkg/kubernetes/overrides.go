@@ -44,6 +44,18 @@ func PatchPodSpecWithOverride(spec, override *corev1.PodSpec) (*corev1.PodSpec, 
 		return nil, fmt.Errorf("can't marshal pod spec override: %w", err)
 	}
 
+	// If any of the override containers have livenessProbe overrides, the entire object should be replaced with the override.
+	for _, overrideContainer := range override.Containers {
+		if overrideContainer.LivenessProbe != nil {
+			for _, originalContainer := range spec.Containers {
+				if originalContainer.Name == overrideContainer.Name {
+					originalContainer.LivenessProbe = nil
+					break
+				}
+			}
+		}
+	}
+	
 	patchedJSON, err := strategicpatch.StrategicMergePatch(orginalSpec, overrideSpec, corev1.PodSpec{})
 	if err != nil {
 		return nil, fmt.Errorf("can't patch pod spec: %w", err)
