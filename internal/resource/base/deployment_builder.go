@@ -326,6 +326,14 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		}
 	}
 
+	if b.serviceName == string(primitives.FrontendService) && b.instance.Spec.Services.Frontend.HTTPPort != nil {
+		containerPorts = append(containerPorts, corev1.ContainerPort{
+			Name:          "http",
+			ContainerPort: int32(*b.instance.Spec.Services.Frontend.HTTPPort),
+			Protocol:      corev1.ProtocolTCP,
+		})
+	}
+
 	deployment.Spec.Replicas = b.service.Replicas
 
 	deployment.Spec.Selector = &metav1.LabelSelector{
