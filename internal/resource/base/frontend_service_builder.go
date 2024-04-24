@@ -83,6 +83,15 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 		},
 	}
 
+	if b.instance.Spec.Services.Frontend.HTTPPort != nil {
+		service.Spec.Ports = append(service.Spec.Ports, corev1.ServicePort{
+			Name:       "http",
+			Protocol:   corev1.ProtocolTCP,
+			Port:       int32(*b.instance.Spec.Services.Frontend.HTTPPort),
+			TargetPort: intstr.FromString("http"),
+		})
+	}
+
 	if err := controllerutil.SetControllerReference(b.instance, service, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)
 	}
