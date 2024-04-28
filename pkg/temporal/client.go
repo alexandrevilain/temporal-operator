@@ -86,7 +86,7 @@ func GetClusterClientTLSConfig(ctx context.Context, client client.Client, cluste
 		return nil, err
 	}
 
-	tlsConfig.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
+	tlsConfig.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster)
 	return tlsConfig, nil
 }
 

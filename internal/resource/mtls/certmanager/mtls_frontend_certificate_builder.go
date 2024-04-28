@@ -73,7 +73,7 @@ func (b *MTLSFrontendCertificateBuilder) Update(object client.Object) error {
 			Size:           4096,
 		},
 		DNSNames: []string{
-			b.instance.Spec.MTLS.Frontend.ServerName(b.instance.ServerName()),
+			b.instance.Spec.MTLS.Frontend.ServerName(b.instance),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
 			Name: b.instance.ChildResourceName(frontendIntermediateCAIssuer),
@@ -83,6 +83,11 @@ func (b *MTLSFrontendCertificateBuilder) Update(object client.Object) error {
 			certmanagerv1.UsageDigitalSignature,
 		},
 	}
+
+	// Add user-supplied extra DNS names.
+	certificate.Spec.DNSNames = append(certificate.Spec.DNSNames,
+		b.instance.Spec.MTLS.Frontend.ExtraDNSNames...,
+	)
 
 	if err := controllerutil.SetControllerReference(b.instance, certificate, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)

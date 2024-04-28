@@ -1972,6 +1972,19 @@ bool
 <p>Enabled defines if the operator should enable mTLS for cluster&rsquo;s public endpoints.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>extraDnsNames</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>ExtraDNSNames is a list of additional DNS names associated with the TemporalCluster.
+These DNS names can be used for accessing the TemporalCluster from external services.
+The DNS names specified here will be added to the TLS certificate for secure communication.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>

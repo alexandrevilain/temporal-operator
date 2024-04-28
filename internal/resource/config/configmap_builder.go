@@ -365,7 +365,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSCert)
 		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSKey)
 		internodeClientTLS := config.ClientTLS{
-			ServerName:              internodeMTLS.ServerName(b.instance.ServerName()),
+			ServerName:              internodeMTLS.ServerName(b.instance),
 			DisableHostVerification: false,
 			RootCAFiles:             []string{internodeIntermediateCAFilePath},
 			ForceTLS:                true,
@@ -410,7 +410,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					},
 				},
 				Client: config.ClientTLS{
-					ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
+					ServerName:              frontendMTLS.ServerName(b.instance),
 					DisableHostVerification: false,
 					RootCAFiles:             []string{frontendIntermediateCAFilePath},
 					ForceTLS:                true,
@@ -424,7 +424,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSCert),
 					KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSKey),
 					Client: config.ClientTLS{
-						ServerName:              frontendMTLS.ServerName(b.instance.ServerName()),
+						ServerName:              frontendMTLS.ServerName(b.instance),
 						DisableHostVerification: false,
 						RootCAFiles:             []string{frontendIntermediateCAFilePath},
 						ForceTLS:                true,
