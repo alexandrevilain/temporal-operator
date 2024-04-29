@@ -110,7 +110,7 @@ func (r *TemporalClusterClientReconciler) Reconcile(ctx context.Context, req ctr
 		return reconcile.Result{Requeue: false}, errors.New("mTLS for frontend not enabled using cert-manager for the cluster, can't create a client")
 	}
 
-	clusterClient.Status.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster.ServerName())
+	clusterClient.Status.ServerName = cluster.Spec.MTLS.Frontend.ServerName(cluster)
 	if clusterClient.Status.SecretRef == nil {
 		clusterClient.Status.SecretRef = &corev1.LocalObjectReference{
 			Name: "",

@@ -34,6 +34,7 @@ spec:
       enabled: true
     frontend:
       enabled: true
+      extraDnsNames: []
     certificatesDuration:
       rootCACertificate: 2h
       intermediateCAsCertificates: 1h30m

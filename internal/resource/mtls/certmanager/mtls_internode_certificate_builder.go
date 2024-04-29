@@ -73,7 +73,7 @@ func (b *MTLSInternodeCertificateBuilder) Update(object client.Object) error {
 			Size:           4096,
 		},
 		DNSNames: []string{
-			b.instance.Spec.MTLS.Internode.ServerName(b.instance.ServerName()),
+			b.instance.Spec.MTLS.Internode.ServerName(b.instance),
 		},
 		IssuerRef: certmanagermeta.ObjectReference{
 			Name: b.instance.ChildResourceName(internodeIntermediateCAIssuer),

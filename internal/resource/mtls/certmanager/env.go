@@ -55,7 +55,7 @@ func GetTLSEnvironmentVariables(instance *v1beta1.TemporalCluster, envPrefix, ce
 		},
 		{
 			Name:  addPrefix(envPrefix, "TLS_SERVER_NAME"),
-			Value: instance.Spec.MTLS.Frontend.ServerName(instance.ServerName()),
+			Value: instance.Spec.MTLS.Frontend.ServerName(instance),
 		},
 	}
 }

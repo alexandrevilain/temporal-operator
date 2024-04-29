@@ -604,11 +604,16 @@ type FrontendMTLSSpec struct {
 	// Enabled defines if the operator should enable mTLS for cluster's public endpoints.
 	// +optional
 	Enabled bool `json:"enabled"`
+	// ExtraDNSNames is a list of additional DNS names associated with the TemporalCluster.
+	// These DNS names can be used for accessing the TemporalCluster from external services.
+	// The DNS names specified here will be added to the TLS certificate for secure communication.
+	// +nullable
+	ExtraDNSNames []string `json:"extraDnsNames,omitempty"`
 }
 
 // ServerName returns frontend servername for mTLS certificates.
-func (FrontendMTLSSpec) ServerName(serverName string) string {
-	return fmt.Sprintf("frontend.%s", serverName)
+func (FrontendMTLSSpec) ServerName(cluster *TemporalCluster) string {
+	return fmt.Sprintf("%s.%s", cluster.ChildResourceName("frontend"), cluster.FQDNSuffix())
 }
 
 // GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
@@ -634,8 +639,8 @@ type InternodeMTLSSpec struct {
 }
 
 // ServerName returns internode servername for mTLS certificates.
-func (InternodeMTLSSpec) ServerName(serverName string) string {
-	return fmt.Sprintf("internode.%s", serverName)
+func (InternodeMTLSSpec) ServerName(cluster *TemporalCluster) string {
+	return fmt.Sprintf("%s.%s", cluster.ChildResourceName("internode"), cluster.FQDNSuffix())
 }
 
 // GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
@@ -1142,7 +1147,12 @@ func (c *TemporalCluster) SelectorLabels() map[string]string {
 
 // ServerName returns cluster's server name.
 func (c *TemporalCluster) ServerName() string {
-	return fmt.Sprintf("%s.%s.svc.cluster.local", c.Name, c.Namespace)
+	return fmt.Sprintf("%s.%s", c.Name, c.FQDNSuffix())
+}
+
+// FQDNSuffix returns the cluster's FQDN suffix.
+func (c *TemporalCluster) FQDNSuffix() string {
+	return fmt.Sprintf("%s.svc.cluster.local", c.Namespace)
 }
 
 // MTLSEnabled returns true if mTLS is enabled for internode or frontend using cert-manager.
