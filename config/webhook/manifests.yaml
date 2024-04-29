@@ -25,26 +25,6 @@ webhooks:
     resources:
     - temporalclusters
   sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /mutate-temporal-io-v1beta1-temporalworkerprocess
-  failurePolicy: Fail
-  name: mtemporalworkerprocess.kb.io
-  rules:
-  - apiGroups:
-    - temporal.io
-    apiVersions:
-    - v1beta1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - temporalworkerprocesses
-  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -71,24 +51,4 @@ webhooks:
     - UPDATE
     resources:
     - temporalclusters
-  sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-temporal-io-v1beta1-temporalworkerprocess
-  failurePolicy: Fail
-  name: vtemporalworkerprocess.kb.io
-  rules:
-  - apiGroups:
-    - temporal.io
-    apiVersions:
-    - v1beta1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - temporalworkerprocesses
   sideEffects: None

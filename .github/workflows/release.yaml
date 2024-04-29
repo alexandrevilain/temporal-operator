@@ -7,7 +7,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  GO_VERSION: "1.21.5"
 
 jobs:
   release:
@@ -68,21 +67,6 @@ jobs:
           push: true
           tags: ${{ steps.metabundle.outputs.tags }}
           labels: ${{ steps.metabundle.outputs.labels }}
-      - name: Docker meta example worker-process
-        id: workerprocess
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY }}/alexandrevilain/example-worker-process
-          tags: |
-            type=ref,event=tag
-      - name: Build and push worker-process docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./examples/worker-process/helloworld
-          push: true
-          tags: ${{ steps.workerprocess.outputs.tags }}
-          labels: ${{ steps.workerprocess.outputs.labels }}
       - name: Release
         uses: softprops/action-gh-release@v2
         with:

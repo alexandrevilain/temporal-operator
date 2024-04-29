@@ -46,12 +46,10 @@ import (
 )
 
 var (
-	testenv             env.Environment
-	jobTTL              int32 = 60
-	workerProcessJobTTL int32 = 300
-	replicas            int32 = 1
-	listAddress               = "0.0.0.0:9090"
-	config                    = textlogger.NewConfig(
+	testenv     env.Environment
+	jobTTL      int32 = 60
+	listAddress       = "0.0.0.0:9090"
+	config            = textlogger.NewConfig(
 		textlogger.Output(os.Stdout),
 	)
 	logger = textlogger.NewLogger(config)
@@ -78,7 +76,6 @@ func testMainRun(m *testing.M) int {
 	kindImage := os.Getenv("KIND_IMAGE")
 
 	operatorImagePath := os.Getenv("OPERATOR_IMAGE_PATH")
-	exampleWorkerProcessImagePath := os.Getenv("WORKER_PROCESS_IMAGE_PATH")
 
 	kindClusterName := envconf.RandomName("temporal", 16)
 	runID := envconf.RandomName("ns", 4)
@@ -104,7 +101,6 @@ func testMainRun(m *testing.M) int {
 		Setup(
 			envfuncs.CreateCluster(kindCluster, kindClusterName),
 			envfuncs.LoadImageArchiveToCluster(kindClusterName, operatorImagePath),
-			envfuncs.LoadImageArchiveToCluster(kindClusterName, exampleWorkerProcessImagePath),
 			envfuncs.SetupCRDs("../../out/release/artifacts", "*.crds.yaml"),
 		).
 		// Make sure the cluster version is what we expect

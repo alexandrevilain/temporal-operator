@@ -13,7 +13,6 @@ defaults:
 env:
   KIND_VERSION: v0.22.0
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
-  WORKER_PROCESS_IMAGE_PATH: /tmp/example-worker-process.tar
 
 jobs:
   run-e2e:
@@ -53,15 +52,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha
           outputs: type=docker,dest=${{ env.OPERATOR_IMAGE_PATH }}
-      - name: Build worker-process
-        uses: docker/build-push-action@v5
-        with:
-          context: ./examples/worker-process/helloworld
-          push: false
-          tags: example-worker-process:latest
-          cache-from: type=gha
-          cache-to: type=gha
-          outputs: type=docker,dest=${{ env.WORKER_PROCESS_IMAGE_PATH }}
 
       - name: Install Kind
         uses: helm/kind-action@v1
@@ -76,7 +66,6 @@ jobs:
         run: make test-e2e
         env:
           OPERATOR_IMAGE_PATH: ${{ env.OPERATOR_IMAGE_PATH }}
-          WORKER_PROCESS_IMAGE_PATH: ${{ env.WORKER_PROCESS_IMAGE_PATH }}
           KUBERNETES_VERSION: ${{ matrix.kube-version.tag }}
           KIND_IMAGE: ${{ matrix.kube-version.kind-image }}
 
