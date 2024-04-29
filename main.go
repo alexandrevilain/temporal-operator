@@ -122,21 +122,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TemporalWorkerProcessReconciler{
-		Base: controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("workerprocess-controller"), discoveryManager),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "WorkerProcess")
-		os.Exit(1)
-	}
-
-	if err = (&webhooks.TemporalWorkerProcessWebhook{
-		AvailableAPIs: availableAPIs,
-		Client:        mgr.GetClient(),
-	}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "TemporalWorkerProcess")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.TemporalClusterClientReconciler{
 		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager),
 		AvailableAPIs: availableAPIs,

@@ -52,11 +52,6 @@ func IsClusterReady(c *v1beta1.TemporalCluster) bool {
 	return true
 }
 
-// IsWorkerProcessReady returns true if status is in ready state.
-func IsWorkerProcessReady(w *v1beta1.TemporalWorkerProcess) bool {
-	return w.Status.Ready
-}
-
 var deployGVK = schema.GroupVersionKind{
 	Group:   "apps",
 	Version: "v1",
