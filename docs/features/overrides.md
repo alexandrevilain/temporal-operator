@@ -260,6 +260,34 @@ spec:
                           name: frontend
 ```
 
+### Example: Replace default liveness probe
+
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    frontend:
+      overrides:
+        deployment:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: service
+                    livenessProbe:
+                      $patch: replace
+                      tcpSocket: null
+                      grpc:
+                        port: 7233
+                        service: frontend.temporal.temporal.svc.cluster.local
+```
+
+Read more in [Strategic Merge Patch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md#strategic-merge-patch).
+
 ## Override UI deployment
 
 See [Temporal UI / Override UI deployment](../temporal-ui/#override-ui-deployment)

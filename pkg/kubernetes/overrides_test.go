@@ -26,9 +26,11 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apimachineryresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestApplyDeploymentOverrides(t *testing.T) {
@@ -130,17 +132,8 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 				},
 				Spec: &v1beta1.DeploymentOverrideSpec{
 					Template: &v1beta1.PodTemplateSpecOverride{
-						Spec: &corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "testcontainer",
-									Resources: corev1.ResourceRequirements{
-										Limits: corev1.ResourceList{
-											corev1.ResourceCPU: apimachineryresource.MustParse("100m"),
-										},
-									},
-								},
-							},
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"containers":[{"name":"testcontainer","resources":{"limits":{"cpu":"100m"}}}]}`),
 						},
 					},
 				},
@@ -194,12 +187,8 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 			override: &v1beta1.DeploymentOverride{
 				Spec: &v1beta1.DeploymentOverrideSpec{
 					Template: &v1beta1.PodTemplateSpecOverride{
-						Spec: &corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "my-sidecar",
-								},
-							},
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"containers":[{"name":"my-sidecar"}]}`),
 						},
 					},
 				},
@@ -250,18 +239,8 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 			override: &v1beta1.DeploymentOverride{
 				Spec: &v1beta1.DeploymentOverrideSpec{
 					Template: &v1beta1.PodTemplateSpecOverride{
-						Spec: &corev1.PodSpec{
-							InitContainers: []corev1.Container{
-								{
-									Name: "my-init",
-									Resources: corev1.ResourceRequirements{
-										Limits: corev1.ResourceList{
-											corev1.ResourceCPU: apimachineryresource.MustParse("50m"),
-										},
-									},
-								},
-							},
-							Containers: []corev1.Container{},
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"initContainers":[{"name":"my-init","resources":{"limits":{"cpu":"50m"}}}]}`),
 						},
 					},
 				},
@@ -296,14 +275,80 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 				},
 			},
 		},
+		"replace liveness probe": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									LivenessProbe: &corev1.Probe{
+										ProbeHandler: corev1.ProbeHandler{
+											TCPSocket: &corev1.TCPSocketAction{
+												Port: intstr.FromString("rpc"),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				Spec: &v1beta1.DeploymentOverrideSpec{
+					Template: &v1beta1.PodTemplateSpecOverride{
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"containers":[{"name":"test","livenessProbe":{"$patch":"replace","tcpSocket":null,"exec":{"command":["echo","hi"]}}}]}`),
+						},
+					},
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Annotations: map[string]string{
+						"a": "b",
+					},
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									LivenessProbe: &corev1.Probe{
+										ProbeHandler: corev1.ProbeHandler{
+											Exec: &corev1.ExecAction{
+												Command: []string{"echo", "hi"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
 			err := kubernetes.ApplyDeploymentOverrides(test.original, test.override)
 			require.NoError(tt, err)
-
-			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
+			if !equality.Semantic.DeepEqual(test.original, test.expected) {
+				tt.Logf("expected: %+v", test.expected)
+				tt.Logf("actual: %+v", test.original)
+				assert.True(tt, false)
+			}
 		})
 	}
 }
