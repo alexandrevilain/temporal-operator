@@ -45,7 +45,7 @@ metadata:
             "ui": {
               "enabled": true
             },
-            "version": "1.20.0"
+            "version": "1.23.0"
           }
         },
         {
@@ -74,55 +74,15 @@ metadata:
             "description": "Accounting team namespace",
             "retentionPeriod": "168h"
           }
-        },
-        {
-          "apiVersion": "temporal.io/v1beta1",
-          "kind": "TemporalWorkerProcess",
-          "metadata": {
-            "name": "temporalworkerprocess-sample"
-          },
-          "spec": {
-            "builder": {
-              "attempt": 3,
-              "buildDir": "samples-go/helloworld",
-              "buildRegistry": {
-                "passwordSecretRef": {
-                  "key": "PASSWORD",
-                  "name": "docker-password"
-                },
-                "repository": "docker.io",
-                "username": "ktenzer"
-              },
-              "enabled": false,
-              "gitRepository": {
-                "reference": {
-                  "branch": "main"
-                },
-                "url": "https://github.com/ktenzer/samples-go.git"
-              },
-              "image": "quay.io/podman/stable",
-              "version": "latest"
-            },
-            "clusterRef": {
-              "name": "prod",
-              "namespace": "temporal"
-            },
-            "image": "ghcr.io/alexandrevilain/example-worker-process:latest",
-            "jobTtlSecondsAfterFinished": 300,
-            "pullPolicy": "Always",
-            "replicas": 3,
-            "temporalNamespace": "default",
-            "version": "latest"
-          }
         }
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
     containerImage: ghcr.io/alexandrevilain/temporal-operator
-    createdAt: "2024-02-24T13:12:36Z"
+    createdAt: "2024-04-30T10:06:00Z"
     operators.operatorframework.io/builder: operator-sdk-v1.30.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.17.0
+  name: temporal-operator.v0.18.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -144,12 +104,6 @@ spec:
       displayName: Temporal Namespace
       kind: TemporalNamespace
       name: temporalnamespaces.temporal.io
-      version: v1beta1
-    - description: TemporalWorkerProcess is the Schema for the temporalworkerprocesses
-        API.
-      displayName: Temporal Worker Process
-      kind: TemporalWorkerProcess
-      name: temporalworkerprocesses.temporal.io
       version: v1beta1
   description: |
     ## Temporal
@@ -422,32 +376,6 @@ spec:
           - get
           - patch
           - update
-        - apiGroups:
-          - temporal.io
-          resources:
-          - temporalworkerprocesses
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - temporal.io
-          resources:
-          - temporalworkerprocesses/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - temporal.io
-          resources:
-          - temporalworkerprocesses/status
-          verbs:
-          - get
-          - patch
-          - update
         serviceAccountName: temporal-operator-controller-manager
       deployments:
       - label:
@@ -471,7 +399,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.17.0
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.18.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -575,8 +503,8 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.helm-chart-0.2.0
-  version: 0.17.0
+  replaces: temporal-operator.v0.17.0
+  version: 0.18.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
@@ -603,26 +531,6 @@ spec:
     containerPort: 443
     deploymentName: temporal-operator-controller-manager
     failurePolicy: Fail
-    generateName: mtemporalworkerprocess.kb.io
-    rules:
-    - apiGroups:
-      - temporal.io
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - temporalworkerprocesses
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-temporal-io-v1beta1-temporalworkerprocess
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: temporal-operator-controller-manager
-    failurePolicy: Fail
     generateName: vtemporalc.kb.io
     rules:
     - apiGroups:
@@ -638,23 +546,3 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-temporal-io-v1beta1-temporalcluster
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: temporal-operator-controller-manager
-    failurePolicy: Fail
-    generateName: vtemporalworkerprocess.kb.io
-    rules:
-    - apiGroups:
-      - temporal.io
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - temporalworkerprocesses
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-temporal-io-v1beta1-temporalworkerprocess

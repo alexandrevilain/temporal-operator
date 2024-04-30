@@ -27,23 +27,3 @@ webhooks:
     resources:
     - temporalclusters
   sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: '{{ include "temporal-operator.fullname" . }}-webhook-service'
-      namespace: '{{ .Release.Namespace }}'
-      path: /validate-temporal-io-v1beta1-temporalworkerprocess
-  failurePolicy: Fail
-  name: vtemporalworkerprocess.kb.io
-  rules:
-  - apiGroups:
-    - temporal.io
-    apiVersions:
-    - v1beta1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - temporalworkerprocesses
-  sideEffects: None
