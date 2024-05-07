@@ -31,7 +31,7 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - name: lint
-        uses: golangci/golangci-lint-action@v5
+        uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ env.GOLANG_CI_VERSION }}
   build:
