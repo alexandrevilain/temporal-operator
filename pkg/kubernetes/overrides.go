@@ -74,22 +74,15 @@ func ApplyPodTemplateSpecOverrides(podTemplate *corev1.PodTemplateSpec, override
 	}
 
 	if override.Spec != nil {
-		// Ensure override has required field initilized so that StrategicMergePatch will work as expected.
-		if len(override.Spec.Containers) == 0 {
-			override.Spec.Containers = []corev1.Container{}
-		}
-
-		if len(override.Spec.InitContainers) == 0 {
-			override.Spec.InitContainers = []corev1.Container{}
-		}
-
-		patchedSpec, err := PatchPodSpecWithOverride(&podTemplate.Spec, override.Spec)
+		original, err := json.Marshal(podTemplate.Spec)
 		if err != nil {
-			return err
+			return fmt.Errorf("can't marshal pod template spec: %w", err)
 		}
-		if patchedSpec != nil {
-			podTemplate.Spec = *patchedSpec
+		patched, err := strategicpatch.StrategicMergePatch(original, override.Spec.Raw, podTemplate.Spec)
+		if err != nil {
+			return fmt.Errorf("can't patch pod template spec: %w", err)
 		}
+		return json.Unmarshal(patched, &podTemplate.Spec)
 	}
 	return nil
 }

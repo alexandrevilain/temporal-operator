@@ -2233,8 +2233,8 @@ ObjectMetaOverride
 <td>
 <code>spec</code><br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podspec-v1-core">
-Kubernetes core/v1.PodSpec
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
 </a>
 </em>
 </td>
