@@ -1,8 +1,7 @@
 module github.com/alexandrevilain/temporal-operator
 
 go 1.21
-
-toolchain go1.21.5
+toolchain go1.22.2
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -28,7 +27,7 @@ require (
 	istio.io/client-go v1.21.1
 	k8s.io/api v0.29.3
 	k8s.io/apiextensions-apiserver v0.29.3
-	k8s.io/apimachinery v0.29.3
+	k8s.io/apimachinery v0.30.1
 	k8s.io/client-go v0.29.3
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
