@@ -350,7 +350,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				{
 					Name:                     "service", // name "service" is here to simplify overrides
 					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.Image, b.instance.Spec.Version),
-					ImagePullPolicy:          corev1.PullAlways,
+					ImagePullPolicy:          corev1.PullIfNotPresent,
 					Resources:                b.service.Resources,
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
