@@ -403,6 +403,11 @@ type DatastoreSpec struct {
 	SkipCreate bool `json:"skipCreate"`
 }
 
+// LowerCaseName returns the datastore name in lower case.
+func (s *DatastoreSpec) LowerCaseName() string {
+	return strings.ToLower(s.Name)
+}
+
 // GetType returns datastore type.
 func (s *DatastoreSpec) GetType() DatastoreType {
 	if s.SQL != nil {
