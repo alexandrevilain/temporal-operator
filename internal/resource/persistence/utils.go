@@ -68,7 +68,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 				}
 				volumes = append(volumes,
 					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-ca-file", datastore.Name),
+						Name: fmt.Sprintf("%s-tls-ca-file", datastore.LowerCaseName()),
 						VolumeSource: corev1.VolumeSource{
 							Secret: &corev1.SecretVolumeSource{
 								SecretName: datastore.TLS.CaFileRef.Name,
@@ -90,7 +90,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 				}
 				volumes = append(volumes,
 					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-cert-file", datastore.Name),
+						Name: fmt.Sprintf("%s-tls-cert-file", datastore.LowerCaseName()),
 						VolumeSource: corev1.VolumeSource{
 							Secret: &corev1.SecretVolumeSource{
 								SecretName: datastore.TLS.CertFileRef.Name,
@@ -113,7 +113,7 @@ func GetDatastoresVolumes(datastores []*v1beta1.DatastoreSpec) []corev1.Volume {
 				}
 				volumes = append(volumes,
 					corev1.Volume{
-						Name: fmt.Sprintf("%s-tls-key-file", datastore.Name),
+						Name: fmt.Sprintf("%s-tls-key-file", datastore.LowerCaseName()),
 						VolumeSource: corev1.VolumeSource{
 							Secret: &corev1.SecretVolumeSource{
 								SecretName: datastore.TLS.KeyFileRef.Name,
@@ -141,20 +141,20 @@ func GetDatastoresVolumeMounts(datastores []*v1beta1.DatastoreSpec) []corev1.Vol
 		if datastore.TLS != nil && datastore.TLS.Enabled {
 			if datastore.TLS.CaFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-ca-file", datastore.Name),
+					Name:      fmt.Sprintf("%s-tls-ca-file", datastore.LowerCaseName()),
 					MountPath: filepath.Dir(datastore.GetTLSCaFileMountPath()),
 				})
 			}
 			if datastore.TLS.CertFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-cert-file", datastore.Name),
+					Name:      fmt.Sprintf("%s-tls-cert-file", datastore.LowerCaseName()),
 					MountPath: filepath.Dir(datastore.GetTLSCertFileMountPath()),
 				})
 			}
 
 			if datastore.TLS.KeyFileRef != nil {
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      fmt.Sprintf("%s-tls-key-file", datastore.Name),
+					Name:      fmt.Sprintf("%s-tls-key-file", datastore.LowerCaseName()),
 					MountPath: filepath.Dir(datastore.GetTLSKeyFileMountPath()),
 				})
 			}
