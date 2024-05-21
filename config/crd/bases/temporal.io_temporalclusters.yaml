@@ -2088,6 +2088,18 @@ spec:
                     - defaultStore
                     - visibilityStore
                   type: object
+                pprof:
+                  description: PProf allows configuration of pprof.
+                  properties:
+                    host:
+                      description: Specifies the host that pprof's web server should run on. Defaults to "localhost" if not provided.
+                      type: string
+                    port:
+                      description: Specifies the port that pprof's web server should run on. This must be specified to enable pprof.
+                      type: integer
+                  required:
+                    - port
+                  type: object
                 services:
                   description: Services allows customizations for each temporal services deployment.
                   properties:
@@ -2157,6 +2169,9 @@ spec:
                           type: object
                         port:
                           description: 'Port defines a custom gRPC port for the service. Default values are: 7233 for Frontend service 7234 for History service 7235 for Matching service 7239 for Worker service'
+                          type: integer
+                        pprofPort:
+                          description: PProfPort defines a custom pprof port for the service. The port is defined by the global config.
                           type: integer
                         replicas:
                           description: Number of desired replicas for the service. Default to 1.
@@ -2267,6 +2282,9 @@ spec:
                           type: object
                         port:
                           description: 'Port defines a custom gRPC port for the service. Default values are: 7233 for Frontend service 7234 for History service 7235 for Matching service 7239 for Worker service'
+                          type: integer
+                        pprofPort:
+                          description: PProfPort defines a custom pprof port for the service. The port is defined by the global config.
                           type: integer
                         replicas:
                           description: Number of desired replicas for the service. Default to 1.
@@ -2382,6 +2400,9 @@ spec:
                         port:
                           description: 'Port defines a custom gRPC port for the service. Default values are: 7233 for Frontend service 7234 for History service 7235 for Matching service 7239 for Worker service'
                           type: integer
+                        pprofPort:
+                          description: PProfPort defines a custom pprof port for the service. The port is defined by the global config.
+                          type: integer
                         replicas:
                           description: Number of desired replicas for the service. Default to 1.
                           format: int32
@@ -2491,6 +2512,9 @@ spec:
                           type: object
                         port:
                           description: 'Port defines a custom gRPC port for the service. Default values are: 7233 for Frontend service 7234 for History service 7235 for Matching service 7239 for Worker service'
+                          type: integer
+                        pprofPort:
+                          description: PProfPort defines a custom pprof port for the service. The port is defined by the global config.
                           type: integer
                         replicas:
                           description: Number of desired replicas for the service. Default to 1.
@@ -2649,6 +2673,9 @@ spec:
                           type: object
                         port:
                           description: 'Port defines a custom gRPC port for the service. Default values are: 7233 for Frontend service 7234 for History service 7235 for Matching service 7239 for Worker service'
+                          type: integer
+                        pprofPort:
+                          description: PProfPort defines a custom pprof port for the service. The port is defined by the global config.
                           type: integer
                         replicas:
                           description: Number of desired replicas for the service. Default to 1.

@@ -85,6 +85,10 @@ type ServiceSpec struct {
 	// 7243 for Frontend service
 	// +optional
 	HTTPPort *int `json:"httpPort"`
+	// PProfPort defines a custom pprof port for the service.
+	// The port is defined by the global config.
+	// +optional
+	PProfPort *int `json:"pprofPort,omitempty"`
 	// Number of desired replicas for the service. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -787,6 +791,15 @@ func (m *MetricsSpec) IsEnabled() bool {
 	return m != nil && m.Enabled
 }
 
+// PProfSpec determines parameters for configuring pprof.
+type PProfSpec struct {
+	// Specifies the port that pprof's web server should run on. This must be specified to enable pprof.
+	Port int `json:"port"`
+	// Specifies the host that pprof's web server should run on. Defaults to "localhost" if not provided.
+	// +optional
+	Host *string `json:"host,omitempty"`
+}
+
 // Constraints is an alias for temporal's dynamicconfig.Constraints.
 // It describes under what conditions a ConstrainedValue should be used.
 type Constraints struct {
@@ -1041,6 +1054,9 @@ type TemporalClusterSpec struct {
 	// Metrics allows configuration of scraping endpoints for stats. prometheus or m3.
 	// +optional
 	Metrics *MetricsSpec `json:"metrics,omitempty"`
+	// PProf allows configuration of pprof.
+	// +optional
+	PProf *PProfSpec `json:"pprof,omitempty"`
 	// DynamicConfig allows advanced configuration for the temporal cluster.
 	// +optional
 	DynamicConfig *DynamicConfigSpec `json:"dynamicConfig,omitempty"`
