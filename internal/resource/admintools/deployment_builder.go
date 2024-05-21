@@ -135,7 +135,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 				{
 					Name:                     "admintools",
 					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
-					ImagePullPolicy:          corev1.PullAlways,
+					ImagePullPolicy:          corev1.PullIfNotPresent,
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,
 					Env:                      env,
