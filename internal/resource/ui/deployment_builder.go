@@ -148,7 +148,11 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			TerminationGracePeriodSeconds: ptr.To[int64](30),
 			DNSPolicy:                     corev1.DNSClusterFirst,
 			SchedulerName:                 corev1.DefaultSchedulerName,
-			SecurityContext:               &corev1.PodSecurityContext{},
+			SecurityContext: &corev1.PodSecurityContext{
+				RunAsUser:    ptr.To[int64](5000),
+				RunAsGroup:   ptr.To[int64](5000),
+				RunAsNonRoot: ptr.To[bool](true),
+			},
 		},
 	}
 
