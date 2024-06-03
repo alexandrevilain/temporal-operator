@@ -5,19 +5,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TemporalClusterReference is a reference to a TemporalCluster.
-type TemporalClusterReference struct {
-	// The name of the TemporalCluster to reference.
+// TemporalReference is a reference to a object.
+type TemporalReference struct {
+	// The name of the temporal object to reference.
 	Name string `json:"name,omitempty"`
-	// The namespace of the TemporalCluster to reference.
+	// The namespace of the temporal object to reference.
 	// Defaults to the namespace of the requested resource if omitted.
 	// +kubebuilder:validation:Optional
 	Namespace string `json:"namespace,omitempty"`
 }
 
-// NamespacedName returns NamespacedName for the referenced TemporalCluster.
+// NamespacedName returns NamespacedName for the referenced temporal object.
 // If the namespace is not set, it uses the provided object's namespace.
-func (r *TemporalClusterReference) NamespacedName(obj client.Object) types.NamespacedName {
+func (r *TemporalReference) NamespacedName(obj client.Object) types.NamespacedName {
 	namespace := r.Namespace
 	if namespace == "" {
 		namespace = obj.GetNamespace()

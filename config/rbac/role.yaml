@@ -211,3 +211,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalschedules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalschedules/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - temporal.io
+  resources:
+  - temporalschedules/status
+  verbs:
+  - get
+  - patch
+  - update

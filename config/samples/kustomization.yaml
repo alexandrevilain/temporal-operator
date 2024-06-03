@@ -3,4 +3,5 @@ resources:
 - temporal.io_v1beta1_temporalcluster.yaml
 - temporal.io_v1beta1_temporalnamespace.yaml
 - temporal.io_v1beta1_temporalclusterclient.yaml
+- temporal.io_v1beta1_temporalschedule.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

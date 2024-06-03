@@ -34,7 +34,7 @@ type TemporalNamespaceArchivalSpec struct {
 // TemporalNamespaceSpec defines the desired state of Namespace.
 type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
-	ClusterRef TemporalClusterReference `json:"clusterRef"`
+	ClusterRef TemporalReference `json:"clusterRef"`
 	// Namespace description.
 	// +optional
 	Description string `json:"description,omitempty"`
@@ -85,6 +85,16 @@ type TemporalNamespace struct {
 
 	Spec   TemporalNamespaceSpec   `json:"spec,omitempty"`
 	Status TemporalNamespaceStatus `json:"status,omitempty"`
+}
+
+// IsReady returns true if the TemporalNamespace's conditions reports it ready.
+func (c *TemporalNamespace) IsReady() bool {
+	for _, condition := range c.Status.Conditions {
+		if condition.Type == ReadyCondition && condition.Status == metav1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 //+kubebuilder:object:root=true

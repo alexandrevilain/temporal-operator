@@ -25,7 +25,7 @@ import (
 // TemporalClusterClientSpec defines the desired state of ClusterClient.
 type TemporalClusterClientSpec struct {
 	// Reference to the temporal cluster the client will get access to.
-	ClusterRef TemporalClusterReference `json:"clusterRef"`
+	ClusterRef TemporalReference `json:"clusterRef"`
 }
 
 // TemporalClusterClientStatus defines the observed state of ClusterClient.

@@ -2430,6 +2430,96 @@ PrometheusScrapeConfig
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.RetryPolicy">RetryPolicy
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleWorkflowAction">ScheduleWorkflowAction</a>)
+</p>
+<p>RetryPolicy defines how retries ought to be handled, usable by both workflows and activities.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>initialInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Interval of the first retry. If retryBackoffCoefficient is 1.0 then it is used for all retries.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>backoffCoefficient</code><br>
+<em>
+k8s.io/apimachinery/pkg/api/resource.Quantity
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Coefficient used to calculate the next retry interval.
+The next retry interval is previous interval multiplied by the coefficient.
+Must be 1 or larger.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maximumInterval</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Maximum interval between retries. Exponential backoff leads to interval increase.
+This value is the cap of the increase. Default is 100x of the initial interval.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maximumAttempts</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Maximum number of attempts. When exceeded the retries stop even if not expired yet.
+1 disables retries. 0 means unlimited (up to the timeouts).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nonRetryableErrorTypes</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Non-Retryable errors types. Will stop retrying if the error type matches this list. Note that
+this is not a substring match, the error <em>type</em> (not message) must match exactly.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.S3Archiver">S3Archiver
 </h3>
 <p>
@@ -2704,6 +2794,1320 @@ string
 <td>
 <em>(Optional)</em>
 <p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.Schedule">Schedule
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec</a>)
+</p>
+<p>Schedule contains all fields related to a schedule</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>action</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleAction">
+ScheduleAction
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleSpec">
+ScheduleSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>calendars</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">
+[]ScheduleCalendarSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Calendars represents calendar-based specifications of times.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>intervals</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleIntervalSpec">
+[]ScheduleIntervalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Intervals represents interval-based specifications of times.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>crons</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Crons are cron based specifications of times.
+Crons is provided for easy migration from legacy Cron Workflows. For new
+use cases, we recommend using ScheduleSpec.Calendars or ScheduleSpec.
+Intervals for readability and maintainability. Once a schedule is created all
+expressions in Crons will be translated to ScheduleSpec.Calendars on the server.</p>
+<p>For example, <code>0 12 * * MON-WED,FRI</code> is every M/Tu/W/F at noon</p>
+<p>The string can have 5, 6, or 7 fields, separated by spaces, and they are interpreted in the
+same way as a ScheduleCalendarSpec:</p>
+<pre><code>- 5 fields:         Minute, Hour, DayOfMonth, Month, DayOfWeek
+- 6 fields:         Minute, Hour, DayOfMonth, Month, DayOfWeek, Year
+- 7 fields: Second, Minute, Hour, DayOfMonth, Month, DayOfWeek, Year
+</code></pre>
+<p>Notes:
+- If Year is not given, it defaults to *.
+- If Second is not given, it defaults to 0.
+- Shorthands @yearly, @monthly, @weekly, @daily, and @hourly are also
+accepted instead of the 5-7 time fields.
+- @every <interval>[/<phase>] is accepted and gets compiled into an
+IntervalSpec instead. <interval> and <phase> should be a decimal integer
+with a unit suffix s, m, h, or d.
+- Optionally, the string can be preceded by CRON_TZ=<time zone name> or
+TZ=<time zone name>, which will get copied to ScheduleSpec.TimeZoneName. (In which case the ScheduleSpec.TimeZone field should be left empty.)
+- Optionally, &ldquo;#&rdquo; followed by a comment can appear at the end of the string.
+- Note that the special case that some cron implementations have for
+treating DayOfMonth and DayOfWeek as &ldquo;or&rdquo; instead of &ldquo;and&rdquo; when both
+are set is not implemented.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>excludeCalendars</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">
+[]ScheduleCalendarSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExcludeCalendars defines any matching times that will be skipped.</p>
+<p>All fields of the ScheduleCalendarSpec including seconds must match a time for the time to be skipped.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartAt represents the start of the schedule. Any times before <code>startAt</code> will be skipped.
+Together, <code>startAt</code> and <code>endAt</code> make an inclusive interval.
+Defaults to the beginning of time.
+For example: 2024-05-13T00:00:00Z</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>endAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EndAt represents the end of the schedule. Any times after <code>endAt</code> will be skipped.
+Defaults to the end of time.
+For example: 2024-05-13T00:00:00Z</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jitter</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Jitter represents a duration that is used to apply a jitter to scheduled times.
+All times will be incremented by a random value from 0 to this amount of jitter, capped
+by the time until the next schedule.
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timezoneName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TimeZoneName represents the IANA time zone name, for example <code>US/Pacific</code>.</p>
+<p>The definition will be loaded by Temporal Server from the environment it runs in.</p>
+<p>Calendar spec matching is based on literal matching of the clock time
+with no special handling of DST: if you write a calendar spec that fires
+at 2:30am and specify a time zone that follows DST, that action will not
+be triggered on the day that has no 2:30am. Similarly, an action that
+fires at 1:30am will be triggered twice on the day that has two 1:30s.</p>
+<p>Note: No actions are taken on leap-seconds (e.g. 23:59:60 UTC).
+Defaults to UTC.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>policy</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SchedulePolicies">
+SchedulePolicies
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>state</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleState">
+ScheduleState
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleAction">ScheduleAction
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.Schedule">Schedule</a>)
+</p>
+<p>ScheduleAction contains the actions that the schedule should perform.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>workflow</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleWorkflowAction">
+ScheduleWorkflowAction
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleSpec">ScheduleSpec</a>)
+</p>
+<p>ScheduleCalendarSpec is an event specification relative to the calendar, similar to a traditional cron specification.
+A timestamp matches if at least one range of each field matches the
+corresponding fields of the timestamp, except for year: if year is missing,
+that means all years match. For all fields besides year, at least one Range must be present to match anything.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>second</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleSecondMinuteRange">
+[]ScheduleSecondMinuteRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Second range to match (0-59).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>minute</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleSecondMinuteRange">
+[]ScheduleSecondMinuteRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Minute range to match (0-59).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>hour</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleHourRange">
+[]ScheduleHourRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Hour range to match (0-23).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dayOfMonth</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleDayOfMonthRange">
+[]ScheduleDayOfMonthRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DayOfMonth range to match (1-31)
+Defaults to match all days.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>month</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleMonthRange">
+[]ScheduleMonthRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Month range to match (1-12).
+Defaults to match all months.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>year</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleYearRange">
+[]ScheduleYearRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Year range to match.
+Defaults to match all years.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dayOfWeek</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleDayOfWeekRange">
+[]ScheduleDayOfWeekRange
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DayOfWeek range to match (0-6; 0 is Sunday)
+Defaults to match all days of the week.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>comment</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Comment describes the intention of this schedule.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleDayOfMonthRange">ScheduleDayOfMonthRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).
+Defaults to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleDayOfWeekRange">ScheduleDayOfWeekRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleHourRange">ScheduleHourRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleIntervalSpec">ScheduleIntervalSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleSpec">ScheduleSpec</a>)
+</p>
+<p>ScheduleIntervalSpec matches times that can be expressed as:</p>
+<pre><code>Epoch + (n * every) + offset
+where n is all integers ≥ 0.
+</code></pre>
+<p>For example, an <code>every</code> of 1 hour with <code>offset</code> of zero would match every hour, on the hour. The same <code>every</code> but an <code>offset</code>
+of 19 minutes would match every <code>xx:19:00</code>. An <code>every</code> of 28 days with <code>offset</code> zero would match <code>2022-02-17T00:00:00Z</code>
+(among other times). The same <code>every</code> with <code>offset</code> of 3 days, 5 hours, and 23 minutes would match <code>2022-02-20T05:23:00Z</code>
+instead.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>every</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>Every describes the period to repeat the interval.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>offset</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Offset is a fixed offset added to the intervals period.
+Defaults to 0.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleMonthRange">ScheduleMonthRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).
+Defaults to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleOverlapPolicy">ScheduleOverlapPolicy
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.SchedulePolicies">SchedulePolicies</a>)
+</p>
+<p>Overlap controls what happens when an Action would be started by a
+Schedule at the same time that an older Action is still running.</p>
+<p>Supported values:</p>
+<p>&ldquo;skip&rdquo; - Default. Nothing happens; the Workflow Execution is not started.</p>
+<p>&ldquo;bufferOne&rdquo; - Starts the Workflow Execution as soon as the current one completes.
+The buffer is limited to one. If another Workflow Execution is supposed to start,
+but one is already in the buffer, only the one in the buffer eventually starts.</p>
+<p>&ldquo;bufferAll&rdquo; - Allows an unlimited number of Workflows to buffer. They are started sequentially.</p>
+<p>&ldquo;cancelOther&rdquo; - Cancels the running Workflow Execution, and then starts the new one
+after the old one completes cancellation.</p>
+<p>&ldquo;terminateOther&rdquo; - Terminates the running Workflow Execution and starts the new one immediately.</p>
+<p>&ldquo;allowAll&rdquo; - Starts any number of concurrent Workflow Executions.
+With this policy (and only this policy), more than one Workflow Execution,
+started by the Schedule, can run simultaneously.</p>
+<h3 id="temporal.io/v1beta1.SchedulePolicies">SchedulePolicies
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.Schedule">Schedule</a>)
+</p>
+<p>SchedulePolicies represent policies for overlaps, catchups, pause on failure, and workflow ID.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>overlap</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleOverlapPolicy">
+ScheduleOverlapPolicy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>catchupWindow</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CatchupWindow The Temporal Server might be down or unavailable at the time
+when a Schedule should take an Action. When the Server comes back up,
+CatchupWindow controls which missed Actions should be taken at that point.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pauseOnFailure</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PauseOnFailure if true, and a workflow run fails or times out, turn on &ldquo;paused&rdquo;.
+This applies after retry policies: the full chain of retries must fail to trigger a pause here.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleSecondMinuteRange">ScheduleSecondMinuteRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleSpec">ScheduleSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.Schedule">Schedule</a>)
+</p>
+<p>ScheduleSpec is a complete description of a set of absolute timestamps.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>calendars</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">
+[]ScheduleCalendarSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Calendars represents calendar-based specifications of times.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>intervals</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleIntervalSpec">
+[]ScheduleIntervalSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Intervals represents interval-based specifications of times.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>crons</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Crons are cron based specifications of times.
+Crons is provided for easy migration from legacy Cron Workflows. For new
+use cases, we recommend using ScheduleSpec.Calendars or ScheduleSpec.
+Intervals for readability and maintainability. Once a schedule is created all
+expressions in Crons will be translated to ScheduleSpec.Calendars on the server.</p>
+<p>For example, <code>0 12 * * MON-WED,FRI</code> is every M/Tu/W/F at noon</p>
+<p>The string can have 5, 6, or 7 fields, separated by spaces, and they are interpreted in the
+same way as a ScheduleCalendarSpec:</p>
+<pre><code>- 5 fields:         Minute, Hour, DayOfMonth, Month, DayOfWeek
+- 6 fields:         Minute, Hour, DayOfMonth, Month, DayOfWeek, Year
+- 7 fields: Second, Minute, Hour, DayOfMonth, Month, DayOfWeek, Year
+</code></pre>
+<p>Notes:
+- If Year is not given, it defaults to *.
+- If Second is not given, it defaults to 0.
+- Shorthands @yearly, @monthly, @weekly, @daily, and @hourly are also
+accepted instead of the 5-7 time fields.
+- @every <interval>[/<phase>] is accepted and gets compiled into an
+IntervalSpec instead. <interval> and <phase> should be a decimal integer
+with a unit suffix s, m, h, or d.
+- Optionally, the string can be preceded by CRON_TZ=<time zone name> or
+TZ=<time zone name>, which will get copied to ScheduleSpec.TimeZoneName. (In which case the ScheduleSpec.TimeZone field should be left empty.)
+- Optionally, &ldquo;#&rdquo; followed by a comment can appear at the end of the string.
+- Note that the special case that some cron implementations have for
+treating DayOfMonth and DayOfWeek as &ldquo;or&rdquo; instead of &ldquo;and&rdquo; when both
+are set is not implemented.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>excludeCalendars</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">
+[]ScheduleCalendarSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExcludeCalendars defines any matching times that will be skipped.</p>
+<p>All fields of the ScheduleCalendarSpec including seconds must match a time for the time to be skipped.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartAt represents the start of the schedule. Any times before <code>startAt</code> will be skipped.
+Together, <code>startAt</code> and <code>endAt</code> make an inclusive interval.
+Defaults to the beginning of time.
+For example: 2024-05-13T00:00:00Z</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>endAt</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EndAt represents the end of the schedule. Any times after <code>endAt</code> will be skipped.
+Defaults to the end of time.
+For example: 2024-05-13T00:00:00Z</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jitter</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Jitter represents a duration that is used to apply a jitter to scheduled times.
+All times will be incremented by a random value from 0 to this amount of jitter, capped
+by the time until the next schedule.
+Defaults to 0.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timezoneName</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TimeZoneName represents the IANA time zone name, for example <code>US/Pacific</code>.</p>
+<p>The definition will be loaded by Temporal Server from the environment it runs in.</p>
+<p>Calendar spec matching is based on literal matching of the clock time
+with no special handling of DST: if you write a calendar spec that fires
+at 2:30am and specify a time zone that follows DST, that action will not
+be triggered on the day that has no 2:30am. Similarly, an action that
+fires at 1:30am will be triggered twice on the day that has two 1:30s.</p>
+<p>Note: No actions are taken on leap-seconds (e.g. 23:59:60 UTC).
+Defaults to UTC.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleState">ScheduleState
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.Schedule">Schedule</a>)
+</p>
+<p>ScheduleState describes the current state of a schedule.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>notes</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Note is an informative human-readable message with contextual notes, e.g. the reason
+a Schedule is paused. The system may overwrite this message on certain
+conditions, e.g. when pause-on-failure happens.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>paused</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Paused is true if the schedule is paused.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>limitedActions</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LimitedActions limits actions. While true RemainingActions will be decremented for each action taken.
+Skipped actions (due to overlap policy) do not count against remaining actions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>remainingActions</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RemainingActions represents the Actions remaining in this Schedule.
+Once this number hits 0, no further Actions are taken.
+manual actions through backfill or ScheduleHandle.Trigger still run.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleWorkflowAction">ScheduleWorkflowAction
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleAction">ScheduleAction</a>)
+</p>
+<p>ScheduleWorkflowAction describes a workflow to launch.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>id</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WorkflowId represents the business identifier of the workflow execution.
+The WorkflowId of the started workflow may not match this exactly,
+it may have a timestamp appended for uniqueness.
+Defaults to a uuid.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>type</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>WorkflowType represents the identifier used by a workflow author to define the workflow
+Workflow type name.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>taskQueue</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>TaskQueue represents a workflow task queue.
+This is also the name of the activity task queue on which activities are scheduled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>inputs</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Inputs contains arguments to pass to the workflow.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>executionTimeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WorkflowExecutionTimeout is the timeout for duration of workflow execution.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>runTimeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<p>WorkflowRunTimeout is the timeout for duration of a single workflow run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>taskTimeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>WorkflowTaskTimeout is The timeout for processing workflow task from the time the worker
+pulled this task.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>retryPolicy</code><br>
+<em>
+<a href="#temporal.io/v1beta1.RetryPolicy">
+RetryPolicy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RetryPolicy is the retry policy for the workflow. If a retry policy is specified,
+in case of workflow failure server will start new workflow execution if
+needed based on the retry policy.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>memo</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Memo is optional non-indexed info that will be shown in list workflow.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>searchAttributes</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SearchAttributes is optional indexed info that can be used in query of List/Scan/Count workflow APIs. The key
+and value type must be registered on Temporal server side. For supported operations on different server versions
+see <a href="https://docs.temporal.io/visibility">Visibility</a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ScheduleYearRange">ScheduleYearRange
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ScheduleCalendarSpec">ScheduleCalendarSpec</a>)
+</p>
+<p>If end &lt; start, then end is interpreted as
+equal to start. This means you can use a Range with start set to a value, and
+end and step unset to represent a single value.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>start</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Start of the range (inclusive).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>end</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>End of the range (inclusive).
+Defaults to start.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>step</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Step to be take between each value.
+Defaults to 1.</p>
 </td>
 </tr>
 </tbody>
@@ -3199,8 +4603,8 @@ TemporalClusterClientSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalClusterReference">
-TemporalClusterReference
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
 </a>
 </em>
 </td>
@@ -3248,8 +4652,8 @@ TemporalClusterClientStatus
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalClusterReference">
-TemporalClusterReference
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
 </a>
 </em>
 </td>
@@ -3300,51 +4704,6 @@ Kubernetes core/v1.LocalObjectReference
 </td>
 <td>
 <p>Reference to the Kubernetes Secret containing the certificate for the client.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<h3 id="temporal.io/v1beta1.TemporalClusterReference">TemporalClusterReference
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
-<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>)
-</p>
-<p>TemporalClusterReference is a reference to a TemporalCluster.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>The name of the TemporalCluster to reference.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>namespace</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>The namespace of the TemporalCluster to reference.
-Defaults to the namespace of the requested resource if omitted.</p>
 </td>
 </tr>
 </tbody>
@@ -3719,8 +5078,8 @@ TemporalNamespaceSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalClusterReference">
-TemporalClusterReference
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
 </a>
 </em>
 </td>
@@ -3943,8 +5302,8 @@ ArchivalSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalClusterReference">
-TemporalClusterReference
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
 </a>
 </em>
 </td>
@@ -4261,6 +5620,302 @@ DatastoreStatus
 <td>
 <em>(Optional)</em>
 <p>AdvancedVisibilityStore holds the advanced visibility datastore status.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalReference">TemporalReference
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec</a>)
+</p>
+<p>TemporalReference is a reference to a object.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The name of the temporal object to reference.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The namespace of the temporal object to reference.
+Defaults to the namespace of the requested resource if omitted.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalSchedule">TemporalSchedule
+</h3>
+<p>A TemporalSchedule creates a schedule in the targeted temporal cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalScheduleSpec">
+TemporalScheduleSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>namespaceRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal namespace the schedule will be created in.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedule</code><br>
+<em>
+<a href="#temporal.io/v1beta1.Schedule">
+Schedule
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>memo</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Memo is optional non-indexed info that will be shown in list workflow.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>searchAttributes</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SearchAttributes is optional indexed info that can be used in query of List/Scan/Count workflow APIs. The key
+and value type must be registered on Temporal server side. For supported operations on different server versions
+see <a href="https://docs.temporal.io/visibility">Visibility</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowDeletion makes the controller delete the Temporal schedule if the
+CRD is deleted.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalScheduleStatus">
+TemporalScheduleStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalSchedule">TemporalSchedule</a>)
+</p>
+<p>TemporalScheduleSpec defines the desired state of Schedule.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>namespaceRef</code><br>
+<em>
+<a href="#temporal.io/v1beta1.TemporalReference">
+TemporalReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to the temporal namespace the schedule will be created in.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schedule</code><br>
+<em>
+<a href="#temporal.io/v1beta1.Schedule">
+Schedule
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>memo</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Memo is optional non-indexed info that will be shown in list workflow.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>searchAttributes</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SearchAttributes is optional indexed info that can be used in query of List/Scan/Count workflow APIs. The key
+and value type must be registered on Temporal server side. For supported operations on different server versions
+see <a href="https://docs.temporal.io/visibility">Visibility</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowDeletion makes the controller delete the Temporal schedule if the
+CRD is deleted.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.TemporalScheduleStatus">TemporalScheduleStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalSchedule">TemporalSchedule</a>)
+</p>
+<p>TemporalScheduleStatus defines the observed state of Schedule.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>conditions</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the Schedule state.</p>
 </td>
 </tr>
 </tbody>

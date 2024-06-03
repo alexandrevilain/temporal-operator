@@ -35,6 +35,7 @@ var (
 	temporalClusterKey       temporalClusterContextKey       = "temporalCluster"
 	temporalClusterClientKey temporalClusterClientContextKey = "temporalClusterClient"
 	temporalNamespaceKey     temporalNamespaceContextKey     = "temporalNamespace"
+	temporalScheduleKey      temporalNamespaceContextKey     = "temporalSchedule"
 
 	namespaceKey namespaceContextKey = "namespace"
 )
@@ -69,4 +70,12 @@ func GetTemporalNamespaceForFeature(ctx context.Context) *v1beta1.TemporalNamesp
 
 func SetTemporalNamespaceForFeature(ctx context.Context, namespace *v1beta1.TemporalNamespace) context.Context {
 	return context.WithValue(ctx, temporalNamespaceKey, namespace)
+}
+
+func GetTemporalScheduleForFeature(ctx context.Context) *v1beta1.TemporalSchedule {
+	return ctx.Value(temporalScheduleKey).(*v1beta1.TemporalSchedule)
+}
+
+func SetTemporalScheduleForFeature(ctx context.Context, Schedule *v1beta1.TemporalSchedule) context.Context {
+	return context.WithValue(ctx, temporalScheduleKey, Schedule)
 }

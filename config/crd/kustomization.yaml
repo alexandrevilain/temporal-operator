@@ -4,6 +4,7 @@ resources:
 - bases/temporal.io_temporalclusters.yaml
 - bases/temporal.io_temporalclusterclients.yaml
 - bases/temporal.io_temporalnamespaces.yaml
+- bases/temporal.io_temporalschedules.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 configurations:
 - kustomizeconfig.yaml

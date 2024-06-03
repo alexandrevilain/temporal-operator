@@ -43,11 +43,6 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal"
 )
 
-const (
-	deletionFinalizer = "deletion.finalizers.temporal.io"
-	clusterRefField   = "spec.clusterRef.name"
-)
-
 // TemporalNamespaceReconciler reconciles a Namespace object.
 type TemporalNamespaceReconciler struct {
 	client.Client

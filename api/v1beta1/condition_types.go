@@ -33,6 +33,8 @@ const (
 	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
 	// TemporalNamespaceCreatedReason signals a successful namespace creation.
 	TemporalNamespaceCreatedReason string = "TemporalNamespaceCreated"
+	// TemporalNamespaceCreatedReason signals a successful namespace creation.
+	TemporalScheduleCreatedReason string = "TemporalScheduleCreated"
 )
 
 // SetTemporalClusterReconcileSuccess sets the ReconcileSuccessCondition status for a temporal cluster.
@@ -93,6 +95,19 @@ func SetTemporalNamespaceReady(c *TemporalNamespace, status metav1.ConditionStat
 	apimeta.SetStatusCondition(&c.Status.Conditions, condition)
 }
 
+// SetTemporalScheduleReady sets the ReadyCondition status for a temporal schedule.
+func SetTemporalScheduleReady(s *TemporalSchedule, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReadyCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: s.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&s.Status.Conditions, condition)
+}
+
 // SetTemporalNamespaceReconcileSuccess sets the ReconcileSuccessCondition status for a temporal namespace.
 func SetTemporalNamespaceReconcileSuccess(n *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
@@ -106,6 +121,19 @@ func SetTemporalNamespaceReconcileSuccess(n *TemporalNamespace, status metav1.Co
 	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
 }
 
+// SetTemporalScheduleReconcileSuccess sets the ReconcileSuccessCondition status for a temporal schedule.
+func SetTemporalScheduleReconcileSuccess(s *TemporalSchedule, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileSuccessCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: s.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&s.Status.Conditions, condition)
+}
+
 // SetTemporalNamespaceReconcileError sets the ReconcileErrorCondition status for a temporal namespace.
 func SetTemporalNamespaceReconcileError(n *TemporalNamespace, status metav1.ConditionStatus, reason, message string) {
 	condition := metav1.Condition{
@@ -117,4 +145,17 @@ func SetTemporalNamespaceReconcileError(n *TemporalNamespace, status metav1.Cond
 		Message:            message,
 	}
 	apimeta.SetStatusCondition(&n.Status.Conditions, condition)
+}
+
+// SetTemporalScheduleReconcileError sets the ReconcileErrorCondition status for a temporal schedule.
+func SetTemporalScheduleReconcileError(s *TemporalSchedule, status metav1.ConditionStatus, reason, message string) {
+	condition := metav1.Condition{
+		Type:               ReconcileErrorCondition,
+		LastTransitionTime: metav1.Now(),
+		ObservedGeneration: s.GetGeneration(),
+		Reason:             reason,
+		Status:             status,
+		Message:            message,
+	}
+	apimeta.SetStatusCondition(&s.Status.Conditions, condition)
 }

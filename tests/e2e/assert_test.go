@@ -196,7 +196,7 @@ func AssertCanCreateTemporalClusterClient() features.Func {
 		clusterClient := &v1beta1.TemporalClusterClient{
 			ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 			Spec: v1beta1.TemporalClusterClientSpec{
-				ClusterRef: v1beta1.TemporalClusterReference{
+				ClusterRef: v1beta1.TemporalReference{
 					Name: cluster.GetName(),
 				},
 			},
@@ -231,7 +231,7 @@ func AssertCanCreateTemporalNamespace(name string) features.Func {
 		temporalNamespace := &v1beta1.TemporalNamespace{
 			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
 			Spec: v1beta1.TemporalNamespaceSpec{
-				ClusterRef: v1beta1.TemporalClusterReference{
+				ClusterRef: v1beta1.TemporalReference{
 					Name: cluster.GetName(),
 				},
 				RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
