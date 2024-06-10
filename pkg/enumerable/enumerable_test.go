@@ -18,30 +18,72 @@
 package enumerable
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestSelect(t *testing.T) {
-	// Test with integers
-	ints := []int{1, 2, 3, 4, 5}
-	squared := func(n int) int {
-		return n * n
+	tests := map[string]struct {
+		input    []any
+		expected []any
+		action   func(any) any
+	}{
+		"Nil slice": {
+			input:    nil,
+			expected: []any{},
+			action: func(v any) any {
+				return v
+			},
+		},
+		"Empty slice": {
+			input:    []any{},
+			expected: []any{},
+			action:   func(v any) any { return v },
+		},
+		"Single element": {
+			input:    []any{2},
+			expected: []any{4},
+			action:   func(v any) any { return v.(int) * v.(int) },
+		},
+		"Multiple elements": {
+			input:    []any{1, 2, 3, 4, 5},
+			expected: []any{1, 4, 9, 16, 25},
+			action:   func(v any) any { return v.(int) * v.(int) },
+		},
+		"Type conversion": {
+			input:    []any{1, 2, 3, 4, 5},
+			expected: []any{"Number: 1", "Number: 2", "Number: 3", "Number: 4", "Number: 5"},
+			action: func(v any) any {
+				return fmt.Sprintf("Number: %d", v)
+			},
+		},
+		"Mixed types": {
+			input:    []any{1, "hello", true},
+			expected: []any{2, "HELLO", false},
+			action: func(v any) any {
+				switch t := v.(type) {
+				case int:
+					return t + 1
+				case string:
+					return strings.ToUpper(t)
+				case bool:
+					return !t
+				default:
+					return v
+				}
+			},
+		},
 	}
-	want := []int{1, 4, 9, 16, 25}
-	got := Select(ints, squared)
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("Select(ints, squared) = %v; want %v", got, want)
-	}
-}
 
-func TestSelectEmpty(t *testing.T) {
-	// Test with integers
-	ints := []int{}
-	noop := func(n int) int { return n }
-	want := []int{}
-	got := Select(ints, noop)
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("Select(ints, noop) = %v; want %v", got, want)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := Select(test.input, test.action)
+
+			if !reflect.DeepEqual(test.expected, actual) {
+				t.Errorf("Select(%v, action) = expected %v, actual %v", test.input, test.expected, actual)
+			}
+		})
 	}
 }
