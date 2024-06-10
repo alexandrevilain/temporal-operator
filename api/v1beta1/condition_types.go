@@ -33,7 +33,7 @@ const (
 	TemporalClusterValidationFailedReason string = "TemporalClusterValidationFailed"
 	// TemporalNamespaceCreatedReason signals a successful namespace creation.
 	TemporalNamespaceCreatedReason string = "TemporalNamespaceCreated"
-	// TemporalNamespaceCreatedReason signals a successful namespace creation.
+	// TemporalScheduleCreatedReason signals a successful schedule creation.
 	TemporalScheduleCreatedReason string = "TemporalScheduleCreated"
 )
 
