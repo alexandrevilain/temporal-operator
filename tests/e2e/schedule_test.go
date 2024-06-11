@@ -172,21 +172,16 @@ func TestScheduleCreation(t *testing.T) {
 }
 
 func TestScheduleDeletionWhenNamespaceDoesNotExist(rt *testing.T) {
-	var temporalClusterName, temporalNamespaceName string
-
 	feature := features.New("schedule can be deleted when temporal namespace does not exist").
 		Setup(func(ctx context.Context, t *testing.T, c *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
-
-			temporalClusterName = "does-not-exist"
-			temporalNamespaceName = "does-not-exist"
 
 			// create TemporalSchedule
 			temporalSchedule := &v1beta1.TemporalSchedule{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalScheduleSpec{
 					NamespaceRef: v1beta1.TemporalReference{
-						Name: temporalNamespaceName,
+						Name: doesNotExistName,
 					},
 					Schedule: v1beta1.Schedule{
 						Action: v1beta1.ScheduleAction{
@@ -207,7 +202,7 @@ func TestScheduleDeletionWhenNamespaceDoesNotExist(rt *testing.T) {
 		}).
 		Assess("TemporalCluster does not exist", func(ctx context.Context, t *testing.T, c *envconf.Config) context.Context {
 			var temporalCluster = &v1beta1.TemporalCluster{}
-			err := c.Client().Resources().Get(ctx, temporalClusterName, GetNamespaceForFeature(ctx), temporalCluster)
+			err := c.Client().Resources().Get(ctx, doesNotExistName, GetNamespaceForFeature(ctx), temporalCluster)
 			if err == nil {
 				t.Fatalf("found cluster: %v", temporalCluster)
 			}
@@ -216,7 +211,7 @@ func TestScheduleDeletionWhenNamespaceDoesNotExist(rt *testing.T) {
 		}).
 		Assess("TemporalNamespace does not exist", func(ctx context.Context, t *testing.T, c *envconf.Config) context.Context {
 			var temporalNamespace = &v1beta1.TemporalNamespace{}
-			err := c.Client().Resources().Get(ctx, temporalNamespaceName, GetNamespaceForFeature(ctx), temporalNamespace)
+			err := c.Client().Resources().Get(ctx, doesNotExistName, GetNamespaceForFeature(ctx), temporalNamespace)
 			if err == nil {
 				t.Fatalf("found namespace: %v", temporalNamespace)
 			}

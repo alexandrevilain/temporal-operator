@@ -498,13 +498,13 @@ type RetryPolicy struct {
 
 // ScheduleWorkflowAction describes a workflow to launch.
 type ScheduleWorkflowAction struct {
-	// WorkflowId represents the business identifier of the workflow execution.
-	// The WorkflowId of the started workflow may not match this exactly,
+	// WorkflowID represents the business identifier of the workflow execution.
+	// The WorkflowID of the started workflow may not match this exactly,
 	// it may have a timestamp appended for uniqueness.
 	// Defaults to a uuid.
 	//
 	// +optional
-	WorkflowId string `json:"id,omitempty"`
+	WorkflowID string `json:"id,omitempty"`
 
 	// WorkflowType represents the identifier used by a workflow author to define the workflow
 	// Workflow type name.
@@ -538,7 +538,7 @@ type ScheduleWorkflowAction struct {
 	WorkflowTaskTimeout *metav1.Duration `json:"taskTimeout,omitempty"`
 
 	// NOTE: This is not supported on scheduled workflows
-	// WorkflowIdReusePolicy WorkflowIdReusePolicy `json:"idReusePolicy,omitempty"`
+	// WorkflowIdReusePolicy `json:"idReusePolicy,omitempty"`
 
 	// RetryPolicy is the retry policy for the workflow. If a retry policy is specified,
 	// in case of workflow failure server will start new workflow execution if
@@ -564,12 +564,12 @@ type ScheduleWorkflowAction struct {
 	SearchAttributes *apiextensionsv1.JSON `json:"searchAttributes,omitempty"`
 }
 
-func (action *ScheduleWorkflowAction) GetWorkflowId() string {
-	if action.WorkflowId == "" {
+func (action *ScheduleWorkflowAction) GetWorkflowID() string {
+	if action.WorkflowID == "" {
 		return uuid.NewString()
 	}
 
-	return action.WorkflowId
+	return action.WorkflowID
 }
 
 // ScheduleAction contains the actions that the schedule should perform.
@@ -606,7 +606,7 @@ type ScheduleState struct {
 	RemainingActions int64 `json:"remainingActions,omitempty"`
 }
 
-// Schedule contains all fields related to a schedule
+// Schedule contains all fields related to a schedule.
 type Schedule struct {
 	Action ScheduleAction    `json:"action,omitempty"`
 	Spec   ScheduleSpec      `json:"spec,omitempty"`

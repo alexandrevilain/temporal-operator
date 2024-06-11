@@ -68,7 +68,7 @@ spec:
                     type: string
                 type: object
               schedule:
-                description: Schedule contains all fields related to a schedule
+                description: Schedule contains all fields related to a schedule.
                 properties:
                   action:
                     description: ScheduleAction contains the actions that the schedule
@@ -83,8 +83,8 @@ spec:
                               duration of workflow execution.
                             type: string
                           id:
-                            description: WorkflowId represents the business identifier
-                              of the workflow execution. The WorkflowId of the started
+                            description: WorkflowID represents the business identifier
+                              of the workflow execution. The WorkflowID of the started
                               workflow may not match this exactly, it may have a timestamp
                               appended for uniqueness. Defaults to a uuid.
                             type: string

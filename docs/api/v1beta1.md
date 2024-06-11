@@ -2806,7 +2806,7 @@ string
 (<em>Appears on:</em>
 <a href="#temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec</a>)
 </p>
-<p>Schedule contains all fields related to a schedule</p>
+<p>Schedule contains all fields related to a schedule.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
 <table>
@@ -3917,8 +3917,8 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>WorkflowId represents the business identifier of the workflow execution.
-The WorkflowId of the started workflow may not match this exactly,
+<p>WorkflowID represents the business identifier of the workflow execution.
+The WorkflowID of the started workflow may not match this exactly,
 it may have a timestamp appended for uniqueness.
 Defaults to a uuid.</p>
 </td>

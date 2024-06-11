@@ -76,6 +76,6 @@ func GetTemporalScheduleForFeature(ctx context.Context) *v1beta1.TemporalSchedul
 	return ctx.Value(temporalScheduleKey).(*v1beta1.TemporalSchedule)
 }
 
-func SetTemporalScheduleForFeature(ctx context.Context, Schedule *v1beta1.TemporalSchedule) context.Context {
-	return context.WithValue(ctx, temporalScheduleKey, Schedule)
+func SetTemporalScheduleForFeature(ctx context.Context, schedule *v1beta1.TemporalSchedule) context.Context {
+	return context.WithValue(ctx, temporalScheduleKey, schedule)
 }

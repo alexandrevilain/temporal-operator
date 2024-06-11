@@ -40,7 +40,7 @@ const (
 	ScheduleClientIdentity = "temporal-operator.temporal.io"
 )
 
-func unmarshalArrayFromJson(j *apiextensionsv1.JSON) (*[]interface{}, error) {
+func unmarshalArrayFromJSON(j *apiextensionsv1.JSON) (*[]interface{}, error) {
 	if j == nil {
 		return nil, nil
 	}
@@ -53,7 +53,7 @@ func unmarshalArrayFromJson(j *apiextensionsv1.JSON) (*[]interface{}, error) {
 	return &object, nil
 }
 
-func unmarshalMapFromJson(j *apiextensionsv1.JSON) (*map[string]interface{}, error) {
+func unmarshalMapFromJSON(j *apiextensionsv1.JSON) (*map[string]interface{}, error) {
 	if j == nil {
 		return nil, nil
 	}
@@ -151,9 +151,9 @@ func buildPayloads(j *apiextensionsv1.JSON) (*commonv1.Payloads, error) {
 		return nil, nil
 	}
 
-	inputArray, err := unmarshalArrayFromJson(j)
+	inputArray, err := unmarshalArrayFromJSON(j)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	inputs, err := encodePayloadArray(inputArray)
 	if err != nil {
@@ -168,7 +168,7 @@ func buildMemo(j *apiextensionsv1.JSON) (*commonv1.Memo, error) {
 		return nil, nil
 	}
 
-	json, err := unmarshalMapFromJson(j)
+	json, err := unmarshalMapFromJSON(j)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func buildSearchAttributes(j *apiextensionsv1.JSON) (*commonv1.SearchAttributes,
 		return nil, nil
 	}
 
-	json, err := unmarshalMapFromJson(j)
+	json, err := unmarshalMapFromJSON(j)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func buildAction(action v1beta1.ScheduleAction) (*schedulev1.ScheduleAction, err
 	}
 
 	startWorkflow := workflowv1.NewWorkflowExecutionInfo{
-		WorkflowId: workflow.GetWorkflowId(),
+		WorkflowId: workflow.GetWorkflowID(),
 		WorkflowType: &commonv1.WorkflowType{
 			Name: workflow.WorkflowType,
 		},
@@ -292,7 +292,7 @@ func buildIntervals(intervals []v1beta1.ScheduleIntervalSpec) []*schedulev1.Inte
 	})
 }
 
-func buildSpec(spec v1beta1.ScheduleSpec) (*schedulev1.ScheduleSpec, error) {
+func buildSpec(spec v1beta1.ScheduleSpec) *schedulev1.ScheduleSpec {
 	re := schedulev1.ScheduleSpec{
 		StructuredCalendar:        buildCalendar(spec.Calendars),
 		CronString:                spec.Crons,
@@ -311,7 +311,7 @@ func buildSpec(spec v1beta1.ScheduleSpec) (*schedulev1.ScheduleSpec, error) {
 		re.Jitter = timestamp.DurationPtr(spec.Jitter.Duration)
 	}
 
-	return &re, nil
+	return &re
 }
 
 func buildOverlapPolicy(p v1beta1.ScheduleOverlapPolicy) enumsv1.ScheduleOverlapPolicy {
@@ -333,9 +333,9 @@ func buildOverlapPolicy(p v1beta1.ScheduleOverlapPolicy) enumsv1.ScheduleOverlap
 	}
 }
 
-func buildPolicies(policies *v1beta1.SchedulePolicies) (*schedulev1.SchedulePolicies, error) {
+func buildPolicies(policies *v1beta1.SchedulePolicies) *schedulev1.SchedulePolicies {
 	if policies == nil {
-		return &schedulev1.SchedulePolicies{}, nil
+		return &schedulev1.SchedulePolicies{}
 	}
 
 	re := schedulev1.SchedulePolicies{
@@ -349,22 +349,22 @@ func buildPolicies(policies *v1beta1.SchedulePolicies) (*schedulev1.SchedulePoli
 		re.CatchupWindow = timestamp.DurationPtr(policies.CatchupWindow.Duration)
 	}
 
-	return &re, nil
+	return &re
 }
 
-func buildState(state *v1beta1.ScheduleState) (*schedulev1.ScheduleState, error) {
+func buildState(state *v1beta1.ScheduleState) *schedulev1.ScheduleState {
 	if state == nil {
-		return &schedulev1.ScheduleState{}, nil
+		return &schedulev1.ScheduleState{}
 	}
 
 	re := &schedulev1.ScheduleState{
 		Notes:            state.Note,
 		Paused:           state.Paused,
 		LimitedActions:   state.LimitedActions,
-		RemainingActions: int64(state.RemainingActions),
+		RemainingActions: state.RemainingActions,
 	}
 
-	return re, nil
+	return re
 }
 
 func buildSchedule(schedule *v1beta1.TemporalSchedule) (*schedulev1.Schedule, error) {
@@ -376,30 +376,18 @@ func buildSchedule(schedule *v1beta1.TemporalSchedule) (*schedulev1.Schedule, er
 	if err != nil {
 		return nil, err
 	}
-	spec, err := buildSpec(schedule.Spec.Schedule.Spec)
-	if err != nil {
-		return nil, err
-	}
-	policies, err := buildPolicies(schedule.Spec.Schedule.Policy)
-	if err != nil {
-		return nil, err
-	}
-	state, err := buildState(schedule.Spec.Schedule.State)
-	if err != nil {
-		return nil, err
-	}
 
 	re := &schedulev1.Schedule{
 		Action:   action,
-		Spec:     spec,
-		Policies: policies,
-		State:    state,
+		Spec:     buildSpec(schedule.Spec.Schedule.Spec),
+		Policies: buildPolicies(schedule.Spec.Schedule.Policy),
+		State:    buildState(schedule.Spec.Schedule.State),
 	}
 
 	return re, nil
 }
 
-func ScheduleToCreateScheduleRequest(cluster *v1beta1.TemporalCluster, schedule *v1beta1.TemporalSchedule) (*workflowservice.CreateScheduleRequest, error) {
+func ScheduleToCreateScheduleRequest(schedule *v1beta1.TemporalSchedule) (*workflowservice.CreateScheduleRequest, error) {
 	sch, err := buildSchedule(schedule)
 	if err != nil {
 		return nil, err

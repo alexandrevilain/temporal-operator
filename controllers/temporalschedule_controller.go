@@ -149,7 +149,7 @@ func (r *TemporalScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	// Ensure the schedule have a deletion marker if the AllowDeletion is set to true.
 	r.ensureFinalizer(schedule)
 
-	request, err := temporal.ScheduleToCreateScheduleRequest(cluster, schedule)
+	request, err := temporal.ScheduleToCreateScheduleRequest(schedule)
 	if err != nil {
 		return r.handleError(ctx, schedule, v1beta1.ReconcileErrorReason, "Constructing create schedule request", err)
 	}
