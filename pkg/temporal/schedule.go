@@ -262,15 +262,15 @@ func buildRange[T ScheduleRange](r T) *schedulev1.Range {
 }
 
 func buildCalendar(calendars []v1beta1.ScheduleCalendarSpec) []*schedulev1.StructuredCalendarSpec {
-	re := enumerable.Select(calendars, func(c v1beta1.ScheduleCalendarSpec) *schedulev1.StructuredCalendarSpec {
+	re := enumerable.Map(calendars, func(c v1beta1.ScheduleCalendarSpec) *schedulev1.StructuredCalendarSpec {
 		return &schedulev1.StructuredCalendarSpec{
-			Second:     enumerable.Select(c.Second, buildRange),
-			Minute:     enumerable.Select(c.Minute, buildRange),
-			Hour:       enumerable.Select(c.Hour, buildRange),
-			DayOfMonth: enumerable.Select(c.DayOfMonth, buildRange),
-			Month:      enumerable.Select(c.Month, buildRange),
-			Year:       enumerable.Select(c.Year, buildRange),
-			DayOfWeek:  enumerable.Select(c.DayOfWeek, buildRange),
+			Second:     enumerable.Map(c.Second, buildRange),
+			Minute:     enumerable.Map(c.Minute, buildRange),
+			Hour:       enumerable.Map(c.Hour, buildRange),
+			DayOfMonth: enumerable.Map(c.DayOfMonth, buildRange),
+			Month:      enumerable.Map(c.Month, buildRange),
+			Year:       enumerable.Map(c.Year, buildRange),
+			DayOfWeek:  enumerable.Map(c.DayOfWeek, buildRange),
 			Comment:    c.Comment,
 		}
 	})
@@ -279,7 +279,7 @@ func buildCalendar(calendars []v1beta1.ScheduleCalendarSpec) []*schedulev1.Struc
 }
 
 func buildIntervals(intervals []v1beta1.ScheduleIntervalSpec) []*schedulev1.IntervalSpec {
-	return enumerable.Select(intervals, func(i v1beta1.ScheduleIntervalSpec) *schedulev1.IntervalSpec {
+	return enumerable.Map(intervals, func(i v1beta1.ScheduleIntervalSpec) *schedulev1.IntervalSpec {
 		re := schedulev1.IntervalSpec{
 			Interval: timestamp.DurationPtr(i.Every.Duration),
 		}

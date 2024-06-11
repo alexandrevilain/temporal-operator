@@ -24,7 +24,7 @@ import (
 	"testing"
 )
 
-func TestSelect(t *testing.T) {
+func TestMap(t *testing.T) {
 	tests := map[string]struct {
 		input    []any
 		expected []any
@@ -79,7 +79,7 @@ func TestSelect(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			actual := Select(test.input, test.action)
+			actual := Map(test.input, test.action)
 
 			if !reflect.DeepEqual(test.expected, actual) {
 				t.Errorf("Select(%v, action) = expected %v, actual %v", test.input, test.expected, actual)

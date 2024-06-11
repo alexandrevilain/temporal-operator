@@ -17,7 +17,7 @@
 
 package enumerable
 
-// Select applies a given function to each element of an input slice and returns a new slice
+// Map applies a given function to each element of an input slice and returns a new slice
 // containing the results. It allows for transforming the elements of a collection into another form.
 //
 // The function is generic and can handle slices of any type.
@@ -33,11 +33,11 @@ package enumerable
 // Example:
 //
 //	input := []int{1, 2, 3, 4}
-//	result := Select(input, func(v int) string {
+//	result := Map(input, func(v int) string {
 //	    return fmt.Sprintf("Number: %d", v)
 //	})
 //	fmt.Println(result) // Output: [Number: 1 Number: 2 Number: 3 Number: 4]
-func Select[T any, TR any](items []T, f func(T) TR) []TR {
+func Map[T any, TR any](items []T, f func(T) TR) []TR {
 	if len(items) == 0 {
 		return []TR{}
 	}
