@@ -2199,6 +2199,52 @@ set by external tools to store and retrieve arbitrary metadata.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.ObjectReference">ObjectReference
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>, 
+<a href="#temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec</a>)
+</p>
+<p>ObjectReference is a reference to a object.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The name of the temporal object to reference.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The namespace of the temporal object to reference.
+Defaults to the namespace of the requested resource if omitted.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride
 </h3>
 <p>
@@ -4603,8 +4649,8 @@ TemporalClusterClientSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -4652,8 +4698,8 @@ TemporalClusterClientStatus
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -5078,8 +5124,8 @@ TemporalNamespaceSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -5302,8 +5348,8 @@ ArchivalSpec
 <td>
 <code>clusterRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -5626,52 +5672,6 @@ DatastoreStatus
 </table>
 </div>
 </div>
-<h3 id="temporal.io/v1beta1.TemporalReference">TemporalReference
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#temporal.io/v1beta1.TemporalClusterClientSpec">TemporalClusterClientSpec</a>, 
-<a href="#temporal.io/v1beta1.TemporalNamespaceSpec">TemporalNamespaceSpec</a>, 
-<a href="#temporal.io/v1beta1.TemporalScheduleSpec">TemporalScheduleSpec</a>)
-</p>
-<p>TemporalReference is a reference to a object.</p>
-<div class="md-typeset__scrollwrap">
-<div class="md-typeset__table">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>name</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>The name of the temporal object to reference.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>namespace</code><br>
-<em>
-string
-</em>
-</td>
-<td>
-<p>The namespace of the temporal object to reference.
-Defaults to the namespace of the requested resource if omitted.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <h3 id="temporal.io/v1beta1.TemporalSchedule">TemporalSchedule
 </h3>
 <p>A TemporalSchedule creates a schedule in the targeted temporal cluster.</p>
@@ -5716,8 +5716,8 @@ TemporalScheduleSpec
 <td>
 <code>namespaceRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>
@@ -5820,8 +5820,8 @@ TemporalScheduleStatus
 <td>
 <code>namespaceRef</code><br>
 <em>
-<a href="#temporal.io/v1beta1.TemporalReference">
-TemporalReference
+<a href="#temporal.io/v1beta1.ObjectReference">
+ObjectReference
 </a>
 </em>
 </td>

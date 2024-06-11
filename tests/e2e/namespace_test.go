@@ -58,7 +58,7 @@ func TestNamespaceCreation(t *testing.T) {
 			temporalNamespace = &v1beta1.TemporalNamespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalNamespaceSpec{
-					ClusterRef: v1beta1.TemporalReference{
+					ClusterRef: v1beta1.ObjectReference{
 						Name: cluster.GetName(),
 					},
 					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
@@ -201,7 +201,7 @@ func TestNamespaceDeletionWhenClusterDoesNotExist(rt *testing.T) {
 			temporalNamespace := &v1beta1.TemporalNamespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalNamespaceSpec{
-					ClusterRef: v1beta1.TemporalReference{
+					ClusterRef: v1beta1.ObjectReference{
 						Name: doesNotExistName,
 					},
 					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},
@@ -254,7 +254,7 @@ func TestNamespaceDeletionWhenClusterDeleted(rt *testing.T) {
 			temporalNamespace := &v1beta1.TemporalNamespace{
 				ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: namespace},
 				Spec: v1beta1.TemporalNamespaceSpec{
-					ClusterRef: v1beta1.TemporalReference{
+					ClusterRef: v1beta1.ObjectReference{
 						Name: cluster.GetName(),
 					},
 					RetentionPeriod: &metav1.Duration{Duration: 24 * time.Hour},

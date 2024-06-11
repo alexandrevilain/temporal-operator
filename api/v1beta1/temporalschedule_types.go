@@ -617,7 +617,7 @@ type Schedule struct {
 // TemporalScheduleSpec defines the desired state of Schedule.
 type TemporalScheduleSpec struct {
 	// Reference to the temporal namespace the schedule will be created in.
-	NamespaceRef TemporalReference `json:"namespaceRef"`
+	NamespaceRef ObjectReference `json:"namespaceRef"`
 
 	Schedule Schedule `json:"schedule"`
 

@@ -34,7 +34,7 @@ type TemporalNamespaceArchivalSpec struct {
 // TemporalNamespaceSpec defines the desired state of Namespace.
 type TemporalNamespaceSpec struct {
 	// Reference to the temporal cluster the namespace will be created.
-	ClusterRef TemporalReference `json:"clusterRef"`
+	ClusterRef ObjectReference `json:"clusterRef"`
 	// Namespace description.
 	// +optional
 	Description string `json:"description,omitempty"`
