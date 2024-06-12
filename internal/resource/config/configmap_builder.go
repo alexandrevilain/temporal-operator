@@ -350,6 +350,24 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		}
 	}
 
+	if b.instance.Spec.PProf != nil {
+		var pprofConfig = config.PProf{}
+
+		// Host is optional.
+		if b.instance.Spec.PProf.Host != nil {
+			if *b.instance.Spec.PProf.Host != "" {
+				pprofConfig.Host = *b.instance.Spec.PProf.Host
+			}
+		}
+
+		// Port is required.
+		// Do not set a pprof config if the port is 0.
+		if b.instance.Spec.PProf.Port > 0 {
+			pprofConfig.Port = b.instance.Spec.PProf.Port
+			temporalCfg.Global.PProf = pprofConfig
+		}
+	}
+
 	if b.instance.MTLSWithCertManagerEnabled() {
 		temporalCfg.Global.TLS = config.RootTLS{
 			RefreshInterval:  b.instance.Spec.MTLS.RefreshInterval.Duration,

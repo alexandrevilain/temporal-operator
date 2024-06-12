@@ -254,6 +254,20 @@ MetricsSpec
 </tr>
 <tr>
 <td>
+<code>pprof</code><br>
+<em>
+<a href="#temporal.io/v1beta1.PProfSpec">
+PProfSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PProf allows configuration of pprof.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>dynamicConfig</code><br>
 <em>
 <a href="#temporal.io/v1beta1.DynamicConfigSpec">
@@ -2199,6 +2213,50 @@ set by external tools to store and retrieve arbitrary metadata.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.PProfSpec">PProfSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>PProfSpec determines parameters for configuring pprof.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>port</code><br>
+<em>
+int
+</em>
+</td>
+<td>
+<p>Specifies the port that pprof&rsquo;s web server should run on. This must be specified to enable pprof.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>host</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Specifies the host that pprof&rsquo;s web server should run on. Defaults to &ldquo;localhost&rdquo; if not provided.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.PodTemplateSpecOverride">PodTemplateSpecOverride
 </h3>
 <p>
@@ -2820,6 +2878,19 @@ int
 <p>HTTPPort defines a custom http port for the service.
 Default values are:
 7243 for Frontend service</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pprofPort</code><br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PProfPort defines a custom pprof port for the service.
+The port is defined by the global config.</p>
 </td>
 </tr>
 <tr>
@@ -3556,6 +3627,20 @@ MetricsSpec
 <td>
 <em>(Optional)</em>
 <p>Metrics allows configuration of scraping endpoints for stats. prometheus or m3.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pprof</code><br>
+<em>
+<a href="#temporal.io/v1beta1.PProfSpec">
+PProfSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PProf allows configuration of pprof.</p>
 </td>
 </tr>
 <tr>

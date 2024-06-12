@@ -326,6 +326,16 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		}
 	}
 
+	if b.instance.Spec.PProf != nil && b.instance.Spec.PProf.Port > 0 {
+		b.service.PProfPort = &b.instance.Spec.PProf.Port
+
+		containerPorts = append(containerPorts, corev1.ContainerPort{
+			Name:          "pprof",
+			ContainerPort: int32(*b.service.PProfPort),
+			Protocol:      corev1.ProtocolTCP,
+		})
+	}
+
 	if b.serviceName == string(primitives.FrontendService) && b.instance.Spec.Services.Frontend.HTTPPort != nil {
 		containerPorts = append(containerPorts, corev1.ContainerPort{
 			Name:          "http",
