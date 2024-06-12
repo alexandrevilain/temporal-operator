@@ -35,7 +35,7 @@ func TestFilterAnnotations(t *testing.T) {
 				"a": "b",
 				"c": "d",
 			},
-			filterFunc: func(k, v string) bool {
+			filterFunc: func(_, _ string) bool {
 				return true
 			},
 			expected: map[string]string{
@@ -48,7 +48,7 @@ func TestFilterAnnotations(t *testing.T) {
 				"a": "b",
 				"c": "d",
 			},
-			filterFunc: func(k, v string) bool {
+			filterFunc: func(_, _ string) bool {
 				return false
 			},
 			expected: map[string]string{},
@@ -58,7 +58,7 @@ func TestFilterAnnotations(t *testing.T) {
 				"a": "b",
 				"c": "d",
 			},
-			filterFunc: func(k, v string) bool {
+			filterFunc: func(k, _ string) bool {
 				return k != "a"
 			},
 			expected: map[string]string{
@@ -70,7 +70,7 @@ func TestFilterAnnotations(t *testing.T) {
 				"a": "b",
 				"c": "d",
 			},
-			filterFunc: func(k, v string) bool {
+			filterFunc: func(_, v string) bool {
 				return v != "d"
 			},
 			expected: map[string]string{

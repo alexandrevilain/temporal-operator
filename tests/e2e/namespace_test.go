@@ -40,7 +40,7 @@ func TestNamespaceCreation(t *testing.T) {
 	var temporalNamespace *v1beta1.TemporalNamespace
 
 	namespaceFature := features.New("namespace creation using CRD").
-		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Setup(func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
@@ -51,7 +51,7 @@ func TestNamespaceCreation(t *testing.T) {
 			return SetTemporalClusterForFeature(ctx, cluster)
 		}).
 		Assess("Temporal cluster created", AssertTemporalClusterReady()).
-		Assess("Can create a temporal namespace", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Can create a temporal namespace", func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			// create the temporal cluster client
@@ -71,7 +71,7 @@ func TestNamespaceCreation(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Namespace exists", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Namespace exists", func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			connectAddr, closePortForward, err := forwardPortToTemporalFrontend(ctx, cfg, t, cluster)
 			if err != nil {
 				t.Fatal(err)
@@ -105,7 +105,7 @@ func TestNamespaceCreation(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Namespace can be deleted", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Namespace can be deleted", func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			err := retry.RetryOnConflict(retry.DefaultRetry, func() error {

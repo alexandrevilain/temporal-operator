@@ -48,7 +48,7 @@ func TestPersistence(t *testing.T) {
 		"postgres persistence": {
 			upgradePath:        defaultUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
 				return &v1beta1.TemporalCluster{
@@ -95,7 +95,7 @@ func TestPersistence(t *testing.T) {
 		"postgres12 persistence": {
 			upgradePath:        []string{},
 			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
 				return &v1beta1.TemporalCluster{
@@ -142,7 +142,7 @@ func TestPersistence(t *testing.T) {
 		"postgres persistence with ES advanced visibility": {
 			upgradePath:        []string{},
 			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres, deployAndWaitForElasticSearch},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 
 				return &v1beta1.TemporalCluster{
@@ -200,7 +200,7 @@ func TestPersistence(t *testing.T) {
 		"mysql persistence": {
 			upgradePath:        defaultUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
 				return &v1beta1.TemporalCluster{
@@ -247,7 +247,7 @@ func TestPersistence(t *testing.T) {
 		"mysql8 persistence": {
 			upgradePath:        []string{},
 			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
 
 				return &v1beta1.TemporalCluster{
@@ -294,7 +294,7 @@ func TestPersistence(t *testing.T) {
 		"cassandra persistence": {
 			upgradePath:        defaultUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForCassandra},
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
 
 				return &v1beta1.TemporalCluster{
