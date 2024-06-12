@@ -1,5 +1,5 @@
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.26
+ENVTEST_K8S_VERSION = 1.28.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -208,10 +208,10 @@ HELM_DOCS ?= $(LOCALBIN)/helm-docs
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.7
 OPERATOR_SDK_VERSION ?= 1.30.0
-CONTROLLER_TOOLS_VERSION ?=  v0.11.3
+CONTROLLER_TOOLS_VERSION ?=  v0.15.0
 GO_LICENSER_VERSION ?= v0.4.0
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
-GOLANGCI_LINT_VERSION ?= v1.55.2
+GOLANGCI_LINT_VERSION ?= v1.59.1
 YQ_VERSION ?= v4.30.6
 KIND_WITH_REGISTRY_VERSION ?= 0.17.0
 HELM_DOCS_VERSION ?= v1.12.0

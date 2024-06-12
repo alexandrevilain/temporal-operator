@@ -1,8 +1,6 @@
 run:
   timeout: 10m
-  go: "1.19"
-  skip-files:
-    - "zz_generated.*\\.go$"
+  go: "1.22"
   allow-parallel-runners: true
 
 linters:
@@ -131,3 +129,5 @@ linters-settings:
 issues:
   max-same-issues: 0
   max-issues-per-linter: 0
+  exclude-files:
+    - "zz_generated.*\\.go$"

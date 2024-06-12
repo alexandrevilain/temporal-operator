@@ -32,7 +32,7 @@ const (
 
 // BuildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
 func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service, configHash string) metav1.ObjectMeta {
-	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, v string) bool {
+	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, _ string) bool {
 		return k != "kubectl.kubernetes.io/last-applied-configuration"
 	})
 

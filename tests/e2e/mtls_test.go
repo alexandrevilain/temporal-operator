@@ -36,7 +36,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 	}{
 		"mTLS enabled with cert-manager": {
 			deployDependencies: deployAndWaitForPostgres,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
@@ -89,7 +89,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 		},
 		"mTLS enabled with cert-manager and internal frontend": {
 			deployDependencies: deployAndWaitForPostgres,
-			cluster: func(ctx context.Context, cfg *envconf.Config, namespace string) *v1beta1.TemporalCluster {
+			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
