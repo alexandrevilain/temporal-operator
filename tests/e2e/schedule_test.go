@@ -40,7 +40,7 @@ func TestScheduleCreation(t *testing.T) {
 	var cluster *v1beta1.TemporalCluster
 
 	scheduleFeature := features.New("schedule creation using CRD").
-		Setup(func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Setup(func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
@@ -88,7 +88,7 @@ func TestScheduleCreation(t *testing.T) {
 
 			return SetTemporalScheduleForFeature(ctx, temporalSchedule)
 		}).
-		Assess("Schedule exists", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Schedule exists", func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			temporalNamespace := GetTemporalNamespaceForFeature(ctx)
 			temporalSchedule := GetTemporalScheduleForFeature(ctx)
 
@@ -128,7 +128,7 @@ func TestScheduleCreation(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Schedule can be deleted", func(ctx context.Context, tt *testing.T, cfg *envconf.Config) context.Context {
+		Assess("Schedule can be deleted", func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 			temporalSchedule := GetTemporalScheduleForFeature(ctx)
 

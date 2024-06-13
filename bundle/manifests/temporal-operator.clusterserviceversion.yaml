@@ -74,15 +74,48 @@ metadata:
             "description": "Accounting team namespace",
             "retentionPeriod": "168h"
           }
+        },
+        {
+          "apiVersion": "temporal.io/v1beta1",
+          "kind": "TemporalSchedule",
+          "metadata": {
+            "name": "demo",
+            "namespace": "demo"
+          },
+          "spec": {
+            "allowDeletion": true,
+            "namespaceRef": {
+              "name": "demo"
+            },
+            "schedule": {
+              "action": {
+                "workflow": {
+                  "id": "Demo",
+                  "taskQueue": "SomeWorkflowQueue",
+                  "type": "SomeWorkflow"
+                }
+              },
+              "spec": {
+                "intervals": [
+                  {
+                    "every": "10m"
+                  }
+                ]
+              },
+              "state": {
+                "paused": false
+              }
+            }
+          }
         }
       ]
     capabilities: Seamless Upgrades
     categories: Application Runtime, Developer Tools, AI/Machine Learning
     containerImage: ghcr.io/alexandrevilain/temporal-operator
-    createdAt: "2024-04-30T10:06:00Z"
+    createdAt: "2024-06-13T10:47:21Z"
     operators.operatorframework.io/builder: operator-sdk-v1.30.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: temporal-operator.v0.18.0
+  name: temporal-operator.v0.19.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -104,6 +137,9 @@ spec:
       displayName: Temporal Namespace
       kind: TemporalNamespace
       name: temporalnamespaces.temporal.io
+      version: v1beta1
+    - kind: TemporalSchedule
+      name: temporalschedules.temporal.io
       version: v1beta1
   description: |
     ## Temporal
@@ -176,6 +212,7 @@ spec:
           - configmaps
           verbs:
           - create
+          - delete
           - get
           - list
           - update
@@ -376,6 +413,32 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalschedules
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalschedules/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - temporal.io
+          resources:
+          - temporalschedules/status
+          verbs:
+          - get
+          - patch
+          - update
         serviceAccountName: temporal-operator-controller-manager
       deployments:
       - label:
@@ -399,7 +462,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: ghcr.io/alexandrevilain/temporal-operator:v0.18.0
+                image: ghcr.io/alexandrevilain/temporal-operator:v0.19.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -503,8 +566,8 @@ spec:
   provider:
     name: Temporal Community
     url: https://temporal.io/
-  replaces: temporal-operator.v0.17.0
-  version: 0.18.0
+  replaces: temporal-operator.v0.18.0
+  version: 0.19.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
