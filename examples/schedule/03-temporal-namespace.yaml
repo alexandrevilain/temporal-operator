@@ -1,0 +1,11 @@
+apiVersion: temporal.io/v1beta1
+kind: TemporalNamespace
+metadata:
+  name: demo
+  namespace: demo
+spec:
+  clusterRef:
+    name: prod
+  description: Default namespace
+  retentionPeriod: 168h #7 days
+  allowDeletion: true

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-password
+  namespace: demo
+type: Opaque
+data:
+  PASSWORD: dGVzdA==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+  namespace: demo
+data:
+  init.sql: |
+    CREATE DATABASE temporal_visibility;
+    GRANT ALL PRIVILEGES ON temporal_visibility.* TO 'temporal'@'%';
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: demo
+  labels:
+    service: mysql
+spec:
+  selector:
+    matchLabels:
+      service: mysql
+  template:
+    metadata:
+      labels:
+        service: mysql
+    spec:
+      containers:
+      - image: mysql:8
+        name: mysql
+        env:
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_USER
+          value: temporal
+        - name: MYSQL_DATABASE
+          value: temporal
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-password
+              key: PASSWORD
+        ports:
+          - containerPort: 3306
+        volumeMounts:
+          - name: mysql-init
+            mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-init
+        configMap:
+          name: mysql-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+  selector:
+    service: mysql

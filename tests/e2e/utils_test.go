@@ -46,6 +46,8 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
+const doesNotExistName = "does-not-exist"
+
 func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, v string) (*v1beta1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)

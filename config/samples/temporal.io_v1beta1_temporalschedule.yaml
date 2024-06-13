@@ -1,0 +1,20 @@
+apiVersion: temporal.io/v1beta1
+kind: TemporalSchedule
+metadata:
+  name: demo
+  namespace: demo
+spec:
+  allowDeletion: true
+  namespaceRef:
+    name: demo
+  schedule:
+    action:
+      workflow:
+        id: Demo
+        type: SomeWorkflow
+        taskQueue: SomeWorkflowQueue
+    spec:
+      intervals:
+        - every: 10m
+    state:
+      paused: false

@@ -1,0 +1,39 @@
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+  namespace: demo
+spec:
+  version: 1.23.0
+  numHistoryShards: 1
+  persistence:
+    defaultStore:
+      sql:
+        user: temporal
+        pluginName: mysql
+        databaseName: temporal
+        connectAddr: mysql.demo:3306
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: mysql-password
+        key: PASSWORD
+    visibilityStore:
+      sql:
+        user: temporal
+        pluginName: mysql
+        databaseName: temporal_visibility
+        connectAddr: mysql.demo:3306
+        connectProtocol: tcp
+      passwordSecretRef:
+        name: mysql-password
+        key: PASSWORD
+  ui:
+    enabled: true
+    ingress:
+      ingressClassName: "nginx"
+      hosts:
+        - temporal.local
+  admintools:
+    enabled: true
+  metrics:
+    enabled: false
