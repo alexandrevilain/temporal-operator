@@ -3,6 +3,16 @@ entries:
   temporal-operator:
   - apiVersion: v2
     appVersion: v0.19.0
+    created: "2024-06-19T19:27:08.875130767Z"
+    description: The Temporal Kubernetes operator helm chart
+    digest: 5023b9976ff19daa7754925e6a4490126a25f07fdc7d87d5e1675beb07a8b264
+    name: temporal-operator
+    type: application
+    urls:
+    - https://github.com/alexandrevilain/temporal-operator/releases/download/helm-chart-0.5.0/temporal-operator-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
+    appVersion: v0.19.0
     created: "2024-06-13T14:57:09.869450681Z"
     description: The Temporal Kubernetes operator helm chart
     digest: ba92c754f7eec5049bd8eb118f0cd20c736f943de84b3e9875603d8a9f316dbc
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://github.com/alexandrevilain/temporal-operator/releases/download/helm-chart-0.1.0/temporal-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2024-06-13T14:57:09.869475868Z"
+generated: "2024-06-19T19:27:08.875158489Z"
