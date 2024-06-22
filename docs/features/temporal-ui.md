@@ -15,7 +15,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.23.0
+  version: 1.24.2
   numHistoryShards: 1
   # [...]
   ui:
@@ -39,7 +39,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.23.0
+  version: 1.24.2
   numHistoryShards: 1
   # [...]
   ui:
@@ -63,7 +63,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.23.0
+  version: 1.24.2
   numHistoryShards: 1
   # [...]
   ui:
@@ -92,7 +92,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.23.0
+  version: 1.24.2
   numHistoryShards: 1
   ui:
     enabled: true

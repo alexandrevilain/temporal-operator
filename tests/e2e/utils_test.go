@@ -55,6 +55,13 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		return nil, err
 	}
 
+	parsedVersion := version.MustNewVersionFromString(v)
+
+	pluginName := "postgres12"
+	if parsedVersion.GreaterOrEqual(version.V1_24_0) {
+		pluginName = "postgres12"
+	}
+
 	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
 	cluster := &v1beta1.TemporalCluster{
 		ObjectMeta: metav1.ObjectMeta{
@@ -84,7 +91,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 				DefaultStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
-						PluginName:      "postgres",
+						PluginName:      pluginName,
 						DatabaseName:    "temporal",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
@@ -97,7 +104,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 				VisibilityStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
-						PluginName:      "postgres",
+						PluginName:      pluginName,
 						DatabaseName:    "temporal_visibility",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
@@ -275,7 +282,8 @@ func waitForCluster(_ context.Context, cfg *envconf.Config, cluster *v1beta1.Tem
 
 func waitForClusterClient(_ context.Context, cfg *envconf.Config, clusterClient *v1beta1.TemporalClusterClient) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(clusterClient, func(object k8s.Object) bool {
-		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
+		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef != nil &&
+			object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }
