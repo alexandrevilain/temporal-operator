@@ -259,7 +259,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 	}
 
 	// Check for visibility store depreciations introduced in >= 1.21, that will be removed in >=1.23
-	if cluster.Spec.Version.GreaterOrEqual(version.V1_21_0) {
+	if cluster.Spec.Version.GreaterOrEqual(version.V1_21_0) && cluster.Spec.Version.LessThan(version.V1_24_0) {
 		if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
 			warns = append(warns,
 				"Starting from temporal >= 1.21 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration. Advanced visibility store usage will be forbidden by the operator for clusters >= 1.23.",
@@ -279,6 +279,23 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 			warns = append(warns,
 				"Support for Cassandra as a Visibility database is deprecated beginning with Temporal Server v1.21.",
 			)
+		}
+	}
+
+	// Check for >= 1.24.0 advanced visibility store deprecation.
+	if cluster.Spec.Version.GreaterOrEqual(version.V1_24_0) {
+		if cluster.Spec.Persistence.AdvancedVisibilityStore != nil {
+			errs = append(errs, field.Forbidden(
+				field.NewPath("spec", "persistence", "advancedVisibilityStore"),
+				"Starting from temporal >= 1.24 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration.",
+			))
+		}
+
+		if cluster.Spec.Persistence.VisibilityStore != nil && cluster.Spec.Persistence.VisibilityStore.Cassandra != nil {
+			errs = append(errs, field.Forbidden(
+				field.NewPath("spec", "persistence", "visibilityStore", "cassandra"),
+				"Support for Cassandra as a Visibility database has been removed with Temporal Server v1.24.",
+			))
 		}
 	}
 
