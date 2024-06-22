@@ -26,13 +26,14 @@ import (
 )
 
 const (
-	defaultTemporalVersion = "1.23.0"
+	defaultTemporalVersion = "1.24.2"
 	defaultTemporalImage   = "temporalio/server"
 
-	defaultTemporalUIVersion = "2.25.0"
+	defaultTemporalUIVersion = "2.27.3"
 	defaultTemporalUIImage   = "temporalio/ui"
 
-	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
+	defaultTemporalAdmintoolsImage   = "temporalio/admin-tools"
+	defaultTemporalAdmintoolsVersion = "1.24.1-tctl-1.18.1-cli-0.12.0"
 )
 
 // Default set default fields values.
@@ -211,6 +212,10 @@ func (c *TemporalCluster) Default() {
 
 	if c.Spec.AdminTools.Image == "" {
 		c.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
+	}
+
+	if c.Spec.AdminTools.Version == "" {
+		c.Spec.AdminTools.Version = defaultTemporalAdmintoolsVersion
 	}
 
 	if c.Spec.MTLS != nil {

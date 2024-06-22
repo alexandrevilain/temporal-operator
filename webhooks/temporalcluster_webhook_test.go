@@ -250,6 +250,58 @@ func TestValidateCreate(t *testing.T) {
 			},
 			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.persistence.advancedVisibilityStore.elasticsearch.version: Forbidden: temporal cluster version >= 1.18.0 doesn't support ElasticSearch v6",
 		},
+		"error with advanced visibility store used in >= 1.24.0": {
+			object: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.24.2"),
+					Persistence: v1beta1.TemporalPersistenceSpec{
+						AdvancedVisibilityStore: &v1beta1.DatastoreSpec{
+							Elasticsearch: &v1beta1.ElasticsearchSpec{
+								Version: "v7",
+							},
+						},
+					},
+				},
+			},
+			wh: &webhooks.TemporalClusterWebhook{
+				AvailableAPIs: &discovery.AvailableAPIs{
+					Istio:              false,
+					CertManager:        false,
+					PrometheusOperator: false,
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.persistence.advancedVisibilityStore: Forbidden: Starting from temporal >= 1.24 standard visibility becomes advanced visibility. Advanced visibility configuration is now moved to standard visibility. Please only use visibility datastore configuration.",
+		},
+		"error with cassandra used as advanced visibility store in >= 1.24.0": {
+			object: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.24.2"),
+					Persistence: v1beta1.TemporalPersistenceSpec{
+						VisibilityStore: &v1beta1.DatastoreSpec{
+							Cassandra: &v1beta1.CassandraSpec{
+								Hosts: []string{"fake"},
+							},
+						},
+					},
+				},
+			},
+			wh: &webhooks.TemporalClusterWebhook{
+				AvailableAPIs: &discovery.AvailableAPIs{
+					Istio:              false,
+					CertManager:        false,
+					PrometheusOperator: false,
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.persistence.visibilityStore.cassandra: Forbidden: Support for Cassandra as a Visibility database has been removed with Temporal Server v1.24.",
+		},
 	}
 
 	for name, test := range tests {

@@ -11,7 +11,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.23.0
+  version: 1.24.2
   numHistoryShards: 1
   persistence:
     defaultStore:
@@ -62,18 +62,20 @@ Somes examples are available to help you get started:
 The following table shows operator compatibility with Temporal and Kubernetes.
 Please note this table only reports end-to-end tests suite coverage, others versions *may* work.
 
-| Temporal Operator | Temporal           | Kubernetes     |
-|-------------------|--------------------|----------------|
-| v0.18.x           | v1.19.x to v1.23.x | v1.25 to v1.29 |
-| v0.17.x           | v1.18.x to v1.22.x | v1.25 to v1.29 |
-| v0.16.x           | v1.18.x to v1.22.x | v1.24 to v1.27 |
-| v0.15.x           | v1.18.x to v1.21.x | v1.24 to v1.27 |
-| v0.14.x           | v1.18.x to v1.21.x | v1.24 to v1.27 |
-| v0.13.x           | v1.18.x to v1.20.x | v1.24 to v1.27 |
-| v0.12.x           | v1.18.x to v1.20.x | v1.23 to v1.26 |
-| v0.11.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
-| v0.10.x           | v1.17.x to v1.19.x | v1.23 to v1.26 |
-| v0.9.x            | v1.16.x to v1.18.x | v1.22 to v1.25 |
+| Temporal Operator      | Temporal           | Kubernetes     |
+|------------------------|--------------------|----------------|
+| v0.20.x (not released) | v1.19.x to v1.24.x | v1.26 to v1.30 |
+| v0.19.x                | v1.19.x to v1.23.x | v1.25 to v1.29 |
+| v0.18.x                | v1.19.x to v1.23.x | v1.25 to v1.29 |
+| v0.17.x                | v1.18.x to v1.22.x | v1.25 to v1.29 |
+| v0.16.x                | v1.18.x to v1.22.x | v1.24 to v1.27 |
+| v0.15.x                | v1.18.x to v1.21.x | v1.24 to v1.27 |
+| v0.14.x                | v1.18.x to v1.21.x | v1.24 to v1.27 |
+| v0.13.x                | v1.18.x to v1.20.x | v1.24 to v1.27 |
+| v0.12.x                | v1.18.x to v1.20.x | v1.23 to v1.26 |
+| v0.11.x                | v1.17.x to v1.19.x | v1.23 to v1.26 |
+| v0.10.x                | v1.17.x to v1.19.x | v1.23 to v1.26 |
+| v0.9.x                 | v1.16.x to v1.18.x | v1.22 to v1.25 |
 
 ## Roadmap
 
