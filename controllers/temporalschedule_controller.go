@@ -271,7 +271,7 @@ func (r *TemporalScheduleReconciler) namespaceToSchedulesMapfunc(ctx context.Con
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalScheduleReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1beta1.TemporalSchedule{}, clusterRefField, func(rawObj client.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1beta1.TemporalSchedule{}, namespaceRefField, func(rawObj client.Object) []string {
 		temporalSchedule := rawObj.(*v1beta1.TemporalSchedule)
 		if temporalSchedule.Spec.NamespaceRef.Name == "" {
 			return nil
