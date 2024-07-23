@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/alexandrevilain/controller-tools/pkg/patch"
+	"github.com/go-logr/logr"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/api/serviceerror"
@@ -139,8 +140,9 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	}
 
-	err = r.reconcileCustomSearchAttributes(ctx, namespace, cluster)
+	err = r.reconcileCustomSearchAttributes(ctx, logger, namespace, cluster)
 	if err != nil {
+		logger.Info(fmt.Sprintf("Failed to reconcile custom search attributes: %v", err))
 		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 	}
 
@@ -152,88 +154,113 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 // reconcileCustomSearchAttributes ensures that the custom search attributes on the Temporal server exactly match those defined in the spec
-func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx context.Context, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
-	ns := namespace.GetName()
-
+func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx context.Context, logger logr.Logger, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
+	// To talk to the Temporal server, construct a client
 	client, err := temporal.GetClusterClient(ctx, r.Client, cluster)
 	if err != nil {
 		return err
 	}
+	// The Temporal OperatorService API requires requests to specify the namespace name, so capture it.
+	ns := namespace.GetName()
 
-	// List search attributes currently on the Temporal server
+	// List the current search attributes on the Temporal server
 	listReq := &operatorservice.ListSearchAttributesRequest{Namespace: ns}
-	searchAttributesOnServer, err := client.OperatorService().ListSearchAttributes(ctx, listReq)
+	serverSearchAttributes, err := client.OperatorService().ListSearchAttributes(ctx, listReq)
 	if err != nil {
 		return err
 	}
-	// just focus on the CUSTOM search attributes.
-	customSearchAttributesOnServer := &searchAttributesOnServer.CustomAttributes // a pointer avoids unecessary copying for the sake of just a named variable
+
+	// Narrow the focus to custom search attributes only.
+	serverCustomSearchAttributes := &serverSearchAttributes.CustomAttributes // use a pointer to avoid unecessary copying
 
 	// Note that the CustomSearchAttributes map data structure that is built using the Spec merely maps string->string.
 	// To rigorously compare search attributes between the spec and the Temporal server, the types need to be consistent.
-	// Therefore, we need to construct a string->enums.IndexedValueType map from the string->string map.
-	customSearchAttributesInSpec := make(map[string]enums.IndexedValueType, len(namespace.Spec.CustomSearchAttributes))
-	for searchAttrNameString, searchAttrTypeString := range namespace.Spec.CustomSearchAttributes {
-		indexedValueType, err := searchAttributeTypeStringToEnum(searchAttrTypeString)
+	// We therefore construct a string->enums.IndexedValueType map from the "weaker" string->string map.
+	specCustomSearchAttributes := make(map[string]enums.IndexedValueType, len(namespace.Spec.CustomSearchAttributes))
+	for searchAttributeNameString, searchAttributeTypeString := range namespace.Spec.CustomSearchAttributes {
+		indexedValueType, err := searchAttributeTypeStringToEnum(searchAttributeTypeString)
 		if err != nil {
-			return fmt.Errorf("unable to parse search attribute type %s: %w", searchAttrTypeString, err)
+			return fmt.Errorf("failed to parse search attribute %s because its type is %s: %w", searchAttributeNameString, searchAttributeTypeString, err)
 		}
-		customSearchAttributesInSpec[searchAttrNameString] = indexedValueType
+		specCustomSearchAttributes[searchAttributeNameString] = indexedValueType
 	}
 
-	// Remove those custom search attributes from the Temporal server whose name does not exist in the Spec,
-	// or whose name exists in the Spec but whose type doesn't match the type in the Spec.
+	/*
+		NOTE: At this point, we're ready to start comparing the current state (search attributes on the server)
+		to the desired state (search attributes in the spec).
+
+		Reconciling custom search attributes is accomplished in simple steps:
+
+		     1. Retrieve the custom search attributes which are currently on the Temporal server. (Already completed in above code)
+		     2. Determine which custom search attributes need to be removed, if any.
+		     3. Determine which custom search attributes need to be created, if any.
+		     4. Make any necessary requests to the Temporal server to remove/create custom search attributes.
+
+		Some of these steps may fail if some Temporal search attribute constraint is violated; in which case, this function will return early
+		with a helpful error message.
+	*/
+
+	// Remove those custom search attributes from the Temporal server whose name does not exist in the Spec.
 	customSearchAttributesToRemove := make([]string, 0)
-	for serverSearchAttrName, serverSearchAttrType := range *customSearchAttributesOnServer {
-		specSearchAttrType, serverSearchAttrNameExistsInSpec := customSearchAttributesInSpec[serverSearchAttrName]
-		if !serverSearchAttrNameExistsInSpec || serverSearchAttrType != specSearchAttrType {
-			customSearchAttributesToRemove = append(customSearchAttributesToRemove, serverSearchAttrName)
+	for serverSearchAttributeName := range *serverCustomSearchAttributes {
+		_, serverSearchAttributeNameExistsInSpec := specCustomSearchAttributes[serverSearchAttributeName]
+		if !serverSearchAttributeNameExistsInSpec {
+			customSearchAttributesToRemove = append(customSearchAttributesToRemove, serverSearchAttributeName)
 		}
 	}
-	removeReq := &operatorservice.RemoveSearchAttributesRequest{
-		Namespace:        ns,
-		SearchAttributes: customSearchAttributesToRemove,
-	}
-	_, err = client.OperatorService().RemoveSearchAttributes(ctx, removeReq)
-	if err != nil {
-		return fmt.Errorf("unable to remove search attributes: %w", err)
-	}
 
-	// Create custom search attributes from the Spec which don't yet exist on the Temporal server.
-	// If the Temporal server already has a custom search attribute with the same name but a different type,
-	// then return an error.
-	customSearchAttributesToCreate := make(map[string]enums.IndexedValueType)
-	for specSearchAttrName, specSearchAttrType := range customSearchAttributesInSpec {
-		serverSearchAttrType, specSearchAttrNameExistsOnServer := (*customSearchAttributesOnServer)[specSearchAttrName]
-		if specSearchAttrNameExistsOnServer {
-			if specSearchAttrType != serverSearchAttrType {
-				return fmt.Errorf("search attribute %s already exists and has different type %s", specSearchAttrName, serverSearchAttrType.String())
-			}
-		} else {
-			customSearchAttributesToCreate[specSearchAttrName] = specSearchAttrType
+	// Add custom search attributes from the Spec which don't yet exist on the Temporal server.
+	// If the Temporal server already has a custom search attribute with the same name but a different type, then return an error.
+	customSearchAttributesToAdd := make(map[string]enums.IndexedValueType)
+	for specSearchAttributeName, specSearchAttributeType := range specCustomSearchAttributes {
+		serverSearchAttributeType, specSearchAttributeNameExistsOnServer := (*serverCustomSearchAttributes)[specSearchAttributeName]
+		if !specSearchAttributeNameExistsOnServer {
+			customSearchAttributesToAdd[specSearchAttributeName] = specSearchAttributeType
+		} else if specSearchAttributeType != serverSearchAttributeType {
+			return fmt.Errorf("search attribute %s already exists and has different type %s", specSearchAttributeName, serverSearchAttributeType.String())
 		}
 	}
-	createReq := &operatorservice.AddSearchAttributesRequest{
-		Namespace:        ns,
-		SearchAttributes: customSearchAttributesToCreate,
-	}
-	_, err = client.OperatorService().AddSearchAttributes(ctx, createReq)
-	if err != nil {
-		return fmt.Errorf("unable to add search attributes: %w", err)
+
+	// If there are search attributes that should be removed, then make a request to the Temporal server to remove them.
+	if len(customSearchAttributesToRemove) > 0 {
+		removeReq := &operatorservice.RemoveSearchAttributesRequest{
+			Namespace:        ns,
+			SearchAttributes: customSearchAttributesToRemove,
+		}
+		_, err = client.OperatorService().RemoveSearchAttributes(ctx, removeReq)
+		if err != nil {
+			return fmt.Errorf("failed to remove search attributes: %w", err)
+		}
+		logger.Info(fmt.Sprintf("removed custom search attributes: %v", customSearchAttributesToRemove))
 	}
 
+	// If there are search attributes that should be added, then make a request the Temporal server to create them.
+	if len(customSearchAttributesToAdd) > 0 {
+		createReq := &operatorservice.AddSearchAttributesRequest{
+			Namespace:        ns,
+			SearchAttributes: customSearchAttributesToAdd,
+		}
+		_, err = client.OperatorService().AddSearchAttributes(ctx, createReq)
+		if err != nil {
+			return fmt.Errorf("failed to add search attributes: %w", err)
+		}
+		logger.Info(fmt.Sprintf("added custom search attributes: %v", customSearchAttributesToAdd))
+	}
 
 	return nil
 }
 
-// searchAttributeTypeStringToEnum returns the IndexedValueType for a given string or an error.
-func searchAttributeTypeStringToEnum(search string) (enums.IndexedValueType, error) {
+// searchAttributeTypeStringToEnum retrieves the actual IndexedValueType for a given string.
+// It expects searchAttributeTypeString to be a string representation of the valid Go type.
+// Returns the IndexedValueType if parsing is successful, otherwise an error.
+// See https://docs.temporal.io/visibility#supported-types for supported types.
+func searchAttributeTypeStringToEnum(searchAttributeTypeString string) (enums.IndexedValueType, error) {
 	for k, v := range enums.IndexedValueType_shorthandValue {
-		if strings.EqualFold(search, k) {
+		if strings.EqualFold(searchAttributeTypeString, k) {
 			return enums.IndexedValueType(v), nil
 		}
 	}
-	return enums.INDEXED_VALUE_TYPE_UNSPECIFIED, fmt.Errorf("unsupported search attribute type: %v", search)
+	return enums.INDEXED_VALUE_TYPE_UNSPECIFIED, fmt.Errorf("unsupported search attribute type: %v", searchAttributeTypeString)
 }
 
 // ensureFinalizer ensures the deletion finalizer is set on the object if the user allowed namespace deletion using the CRD.
