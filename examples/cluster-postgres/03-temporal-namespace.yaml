@@ -9,3 +9,11 @@ spec:
   description: Default namespace
   retentionPeriod: 168h #7 days
   allowDeletion: true
+  customSearchAttributes:
+    attr1: Bool
+    attr2: Datetime
+    attr3: Double
+    attr4: Int
+    attr5: Keyword
+    attr6: KeywordList
+    attr7: Text
