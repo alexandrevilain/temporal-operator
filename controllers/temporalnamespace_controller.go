@@ -140,7 +140,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	}
 
-	err = r.reconcileCustomSearchAttributes(ctx, logger, namespace, cluster)
+	err = r.reconcileCustomSearchAttributes(ctx, &logger, namespace, cluster)
 	if err != nil {
 		logger.Info(fmt.Sprintf("Failed to reconcile custom search attributes: %v", err))
 		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
@@ -153,19 +153,31 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return r.handleSuccess(namespace)
 }
 
-// reconcileCustomSearchAttributes ensures that the custom search attributes on the Temporal server exactly match those defined in the spec
-func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx context.Context, logger logr.Logger, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
+// reconcileCustomSearchAttributes ensures that custom search attributes on the Temporal server exactly match those defined in the spec.
+func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx context.Context, logger *logr.Logger, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
+	/*
+		NOTE: Reconciliation of custom search attributes is accomplished using these steps:
+
+		1. Retrieve the custom search attributes which are currently on the Temporal server.
+		2. Determine which custom search attributes need to be removed, if any.
+		3. Determine which custom search attributes need to be added, if any.
+		4. If needed, request the Temporal server to remove the necessary custom search attributes.
+		5. If needed, request the Temporal server to add the necessary custom search attributes.
+
+		Some of these steps may fail if some Temporal search attribute constraint is violated; in which case, this function will return early with a helpful error message.
+	*/
+
 	// To talk to the Temporal server, construct a client
 	client, err := temporal.GetClusterClient(ctx, r.Client, cluster)
 	if err != nil {
 		return err
 	}
-	// The Temporal OperatorService API requires requests to specify the namespace name, so capture it.
+	// Requests to Temporal's OperatorService API need to specify the namespace name, so capture it here for future use.
 	ns := namespace.GetName()
 
-	// List the current search attributes on the Temporal server
-	listReq := &operatorservice.ListSearchAttributesRequest{Namespace: ns}
-	serverSearchAttributes, err := client.OperatorService().ListSearchAttributes(ctx, listReq)
+	// List all search attributes that are currently on the Temporal server
+	listRequest := &operatorservice.ListSearchAttributesRequest{Namespace: ns}
+	serverSearchAttributes, err := client.OperatorService().ListSearchAttributes(ctx, listRequest)
 	if err != nil {
 		return err
 	}
@@ -184,21 +196,6 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 		}
 		specCustomSearchAttributes[searchAttributeNameString] = indexedValueType
 	}
-
-	/*
-		NOTE: At this point, we're ready to start comparing the current state (search attributes on the server)
-		to the desired state (search attributes in the spec).
-
-		Reconciling custom search attributes is accomplished in simple steps:
-
-		     1. Retrieve the custom search attributes which are currently on the Temporal server. (Already completed in above code)
-		     2. Determine which custom search attributes need to be removed, if any.
-		     3. Determine which custom search attributes need to be created, if any.
-		     4. Make any necessary requests to the Temporal server to remove/create custom search attributes.
-
-		Some of these steps may fail if some Temporal search attribute constraint is violated; in which case, this function will return early
-		with a helpful error message.
-	*/
 
 	// Remove those custom search attributes from the Temporal server whose name does not exist in the Spec.
 	customSearchAttributesToRemove := make([]string, 0)
@@ -223,11 +220,11 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 
 	// If there are search attributes that should be removed, then make a request to the Temporal server to remove them.
 	if len(customSearchAttributesToRemove) > 0 {
-		removeReq := &operatorservice.RemoveSearchAttributesRequest{
+		removeRequest := &operatorservice.RemoveSearchAttributesRequest{
 			Namespace:        ns,
 			SearchAttributes: customSearchAttributesToRemove,
 		}
-		_, err = client.OperatorService().RemoveSearchAttributes(ctx, removeReq)
+		_, err = client.OperatorService().RemoveSearchAttributes(ctx, removeRequest)
 		if err != nil {
 			return fmt.Errorf("failed to remove search attributes: %w", err)
 		}
@@ -236,11 +233,11 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 
 	// If there are search attributes that should be added, then make a request the Temporal server to create them.
 	if len(customSearchAttributesToAdd) > 0 {
-		createReq := &operatorservice.AddSearchAttributesRequest{
+		addRequest := &operatorservice.AddSearchAttributesRequest{
 			Namespace:        ns,
 			SearchAttributes: customSearchAttributesToAdd,
 		}
-		_, err = client.OperatorService().AddSearchAttributes(ctx, createReq)
+		_, err = client.OperatorService().AddSearchAttributes(ctx, addRequest)
 		if err != nil {
 			return fmt.Errorf("failed to add search attributes: %w", err)
 		}
