@@ -2693,10 +2693,17 @@ spec:
                     - visibilityStore
                   type: object
                 replication:
+                  description: Replication allows configuration of multi-cluster replication.
                   properties:
                     enableGlobalNamespace:
+                      description: |-
+                        EnableGlobalNamespace signifies to this node that global namespaces should be enabled.
+                        Namespaces that are marked global are replicated across nodes in the cluster.
                       type: boolean
                     initialFailoverVersion:
+                      description: |-
+                        InitialFailoverVersion is used to determine the leadership order between nodes in the cluster. The node with the
+                        lowest initial failover version will be the primary. This must be unique across the cluster.
                       format: int64
                       type: integer
                   required:
