@@ -35,7 +35,7 @@ temporal operator cluster upsert --frontend-address secondary-cluster.namespace.
 # port forward to the frontend of the secondary cluster
 kubectl port-forward secondary-frontend 7233:7233
 
-tepmoral operator cluster upsert --frontend-address primary-cluster.namespace.svc.cluster.local:7233 --enable-connection true
+temporal operator cluster upsert --frontend-address primary-cluster.namespace.svc.cluster.local:7233 --enable-connection true
 ```
 
 ## Replicating namespaces
@@ -57,7 +57,7 @@ spec:
   isGlobalNamespace: true
 ```
 
-| **🚨 Note**: Replication happens at workflow evaluation time, meaning that adding replication to a running cluster requires special care. If you set up replication with existing workflows on the primary node, make sure to query every workflow on the original node so that they are propagated or risk data loss.
+| **🚨 Note**: Enabling replication will not automatically replicate old workflows. It only replicates workflows as they are interacted with. For cases like trying to increase the shard count, this is important as you need to make sure each workflow has been evaluated at least once after replication has been set up.
 
 ## A mechanism for increasing the history shard count
 

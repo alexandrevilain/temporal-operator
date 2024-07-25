@@ -855,7 +855,7 @@ func (s *ClusterArchivalSpec) IsEnabled() bool {
 }
 
 // ClusterReplicationSpec defines the specifications for replication in the temporal cluster. Using these
-// the operator will comfigure the cluster to replicate data to other clusters. If this object is defined,
+// the operator will configure the cluster to replicate data to other clusters. If this object is defined,
 // then both properties below must be set.
 type ClusterReplicationSpec struct {
 	// EnableGlobalNamespace signifies to this node that global namespaces should be enabled.
