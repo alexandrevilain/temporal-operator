@@ -944,7 +944,7 @@ ArchivalSpec
 <a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
 </p>
 <p>ClusterReplicationSpec defines the specifications for replication in the temporal cluster. Using these
-the operator will comfigure the cluster to replicate data to other clusters. If this object is defined,
+the operator will configure the cluster to replicate data to other clusters. If this object is defined,
 then both properties below must be set.</p>
 <div class="md-typeset__scrollwrap">
 <div class="md-typeset__table">
