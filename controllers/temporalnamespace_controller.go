@@ -183,7 +183,7 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 	}
 
 	// Narrow the focus to custom search attributes only.
-	serverCustomSearchAttributes := &serverSearchAttributes.CustomAttributes // use a pointer to avoid unecessary copying
+	serverCustomSearchAttributes := &serverSearchAttributes.CustomAttributes // use a pointer to avoid unnecessary copying
 
 	// Note that the CustomSearchAttributes map data structure that is built using the Spec merely maps string->string.
 	// To rigorously compare search attributes between the spec and the Temporal server, the types need to be consistent.
