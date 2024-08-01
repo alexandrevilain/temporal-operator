@@ -36,6 +36,8 @@ kubectl apply -f examples/cluster-postgres/02-temporal-cluster.yaml
 kubectl apply -f examples/cluster-postgres/03-temporal-namespace.yaml
 ```
 
+Note: if you wish to interact with the Temporal Web UI or frontend gRPC service, you should port forward the services to localhost:
+
 ## Generate
 
 Generate crd and docs when api is modified
@@ -62,4 +64,10 @@ Run end-to-end tests on development computer using `kind`:
 
 ```bash
 make test-e2e-dev
+```
+
+## Gracefully Shutdown k8s Cluster
+
+```bash
+make clean-dev-cluster
 ```
