@@ -28,15 +28,13 @@ Once the local cluster is created, start applying your desired manifests and let
 ```bash
 # example
 make artifacts
-kubectl apply -f out/release/artifacts/temporal-operator.crds.yaml
-kubectl apply -f out/release/artifacts/temporal-operator.yaml
 kubectl apply -f examples/cluster-postgres/00-namespace.yaml
 kubectl apply -f examples/cluster-postgres/01-postgresql.yaml
 kubectl apply -f examples/cluster-postgres/02-temporal-cluster.yaml
 kubectl apply -f examples/cluster-postgres/03-temporal-namespace.yaml
 ```
 
-Note: if you wish to interact with the Temporal Web UI or frontend gRPC service, you should port forward the services to localhost:
+Note: if you wish to interact with the Temporal Web UI or frontend gRPC service, you should port forward the services to localhost.
 
 ## Generate
 
