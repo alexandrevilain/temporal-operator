@@ -154,20 +154,18 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 // reconcileCustomSearchAttributes ensures that custom search attributes on the Temporal server exactly match those defined in the spec.
+//
+// NOTE: Reconciliation of custom search attributes is accomplished using these steps:
+//
+// 1. Retrieve the custom search attributes which are currently on the Temporal server.
+// 2. Determine which custom search attributes need to be removed, if any.
+// 3. Determine which custom search attributes need to be added, if any.
+// 4. If needed, request the Temporal server to remove the necessary custom search attributes.
+// 5. If needed, request the Temporal server to add the necessary custom search attributes.
+//
+// Some of these steps may fail if some Temporal search attribute constraint is violated; in which case this function will return early with a helpful error message.
 func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx context.Context, logger *logr.Logger, namespace *v1beta1.TemporalNamespace, cluster *v1beta1.TemporalCluster) error {
-	/*
-		NOTE: Reconciliation of custom search attributes is accomplished using these steps:
-
-		1. Retrieve the custom search attributes which are currently on the Temporal server.
-		2. Determine which custom search attributes need to be removed, if any.
-		3. Determine which custom search attributes need to be added, if any.
-		4. If needed, request the Temporal server to remove the necessary custom search attributes.
-		5. If needed, request the Temporal server to add the necessary custom search attributes.
-
-		Some of these steps may fail if some Temporal search attribute constraint is violated; in which case, this function will return early with a helpful error message.
-	*/
-
-	// To talk to the Temporal server, construct a client
+	// Construct a client to talk to the Temporal server
 	client, err := temporal.GetClusterClient(ctx, r.Client, cluster)
 	if err != nil {
 		return err
@@ -188,13 +186,9 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 	// Note that the CustomSearchAttributes map data structure that is built using the Spec merely maps string->string.
 	// To rigorously compare search attributes between the spec and the Temporal server, the types need to be consistent.
 	// We therefore construct a string->enums.IndexedValueType map from the "weaker" string->string map.
-	specCustomSearchAttributes := make(map[string]enums.IndexedValueType, len(namespace.Spec.CustomSearchAttributes))
-	for searchAttributeNameString, searchAttributeTypeString := range namespace.Spec.CustomSearchAttributes {
-		indexedValueType, err := searchAttributeTypeStringToEnum(searchAttributeTypeString)
-		if err != nil {
-			return fmt.Errorf("failed to parse search attribute %s because its type is %s: %w", searchAttributeNameString, searchAttributeTypeString, err)
-		}
-		specCustomSearchAttributes[searchAttributeNameString] = indexedValueType
+	specCustomSearchAttributes, err := createIndexedValueTypeMap(&namespace.Spec.CustomSearchAttributes)
+	if err != nil {
+		return err
 	}
 
 	// Remove those custom search attributes from the Temporal server whose name does not exist in the Spec.
@@ -245,6 +239,20 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 	}
 
 	return nil
+}
+
+// createIndexedValueTypeMap is a helper function takes in a map[string]string and returns another
+// map where each entry value from the old map is translated from a plain string into an enums.IndexedValueType.
+func createIndexedValueTypeMap(m *map[string]string) (map[string]enums.IndexedValueType, error) {
+	specCustomSearchAttributes := make(map[string]enums.IndexedValueType, len(*m))
+	for searchAttributeNameString, searchAttributeTypeString := range *m {
+		indexedValueType, err := searchAttributeTypeStringToEnum(searchAttributeTypeString)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse search attribute %s because its type is %s: %w", searchAttributeNameString, searchAttributeTypeString, err)
+		}
+		specCustomSearchAttributes[searchAttributeNameString] = indexedValueType
+	}
+	return specCustomSearchAttributes, nil
 }
 
 // searchAttributeTypeStringToEnum retrieves the actual IndexedValueType for a given string.
