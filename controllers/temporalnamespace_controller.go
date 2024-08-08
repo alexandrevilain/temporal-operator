@@ -62,16 +62,19 @@ type TemporalNamespaceReconciler struct {
 func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, reterr error) {
 	logger := log.FromContext(ctx)
 
-	logger.Info("Starting reconciliation")
+	logger.Info("=== (NS) STARTING RECONCILIATION")
+	// logger.Info("Starting reconciliation")
 
 	namespace := &v1beta1.TemporalNamespace{}
 	err := r.Get(ctx, req.NamespacedName, namespace)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
+			logger.Info("=== (NS) COULD NOT GET NAMESPACE")
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
+	logger.Info("=== (NS) GOT NAMESPACE")
 
 	patchHelper, err := patch.NewHelper(namespace, r.Client)
 	if err != nil {
@@ -84,6 +87,7 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
+		logger.Info("=== (NS) PATCHING CLUSTER")
 	}()
 
 	cluster := &v1beta1.TemporalCluster{}
@@ -94,20 +98,25 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			//  - TemporalCluster has not been created yet. In this case, if the TemporalNamespace is deleted, no point in waiting for the TemporalCluster to be healthy.
 			//  - TemporalCluster existed at some point, but now is deleted. In this case, the underlying namespace in the Temporal server is already gone.
 			controllerutil.RemoveFinalizer(namespace, deletionFinalizer)
+			logger.Info("=== (NS) ERROR GETTING CLUSTER FROM k8s")
 			return reconcile.Result{}, nil
 		}
+		logger.Info("=== (NS) ERROR GETTING CLUSTER FROM k8s")
 		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 	}
+	logger.Info("=== (NS) GOT CLUSTER FROM k8s")
 
 	if !cluster.IsReady() {
-		logger.Info("Skipping namespace reconciliation until referenced cluster is ready")
+		logger.Info("=== (NS) SKIPPING NAMESPACE RECONCILIATION UNTIL REFERENCED CLUSTER IS READY, REQUEUEING")
+		// logger.Info("Skipping namespace reconciliation until referenced cluster is ready")
 
 		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	// Check if the resource has been marked for deletion
 	if !namespace.ObjectMeta.DeletionTimestamp.IsZero() {
-		logger.Info("Deleting namespace")
+		logger.Info("=== (NS) DELETING NAMESPACE")
+		// logger.Info("Deleting namespace")
 
 		err := r.ensureNamespaceDeleted(ctx, namespace, cluster)
 		if err != nil {
@@ -135,18 +144,23 @@ func (r *TemporalNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 		}
 		err = client.Update(ctx, temporal.NamespaceToUpdateNamespaceRequest(cluster, namespace))
+		logger.Info("=== (NS) UPDATING NAMESPACE")
 		if err != nil {
 			return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 		}
 	}
 
+	logger.Info("=== (CSA) BEFORE RECONCILING SEARCH ATTRIBUTES")
 	err = r.reconcileCustomSearchAttributes(ctx, &logger, namespace, cluster)
 	if err != nil {
-		logger.Info(fmt.Sprintf("Failed to reconcile custom search attributes: %v", err))
+		logger.Info(fmt.Sprintf("=== (CSA) FAILED TO RECONCILE CUSTOM SEARCH ATTRIBUTES: %v", err))
+		//logger.Info(fmt.Sprintf("Failed to reconcile custom search attributes: %v", err))
 		return r.handleError(namespace, v1beta1.ReconcileErrorReason, err)
 	}
+	logger.Info("=== (CSA) AFTER RECONCILING SEARCH ATTRIBUTES")
 
-	logger.Info("Successfully reconciled namespace", "namespace", namespace.GetName())
+	logger.Info("=== (NS) SUCCESSFULLY RECONCILED NAMESPACE", "namespace", namespace.GetName())
+	// logger.Info("Successfully reconciled namespace", "namespace", namespace.GetName())
 
 	v1beta1.SetTemporalNamespaceReady(namespace, metav1.ConditionTrue, v1beta1.TemporalNamespaceCreatedReason, "Namespace successfully created")
 
@@ -168,28 +182,36 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 	// Construct a client to talk to the Temporal server
 	client, err := temporal.GetClusterClient(ctx, r.Client, cluster)
 	if err != nil {
+		logger.Info("=== (CSA) COULDN'T CREATE CLIENT TO TALK TO TEMPORAL SERVER")
 		return err
 	}
+	logger.Info("=== (CSA) CREATED CLIENT TO TALK TO TEMPORAL SERVER")
 	// Requests to Temporal's OperatorService API need to specify the namespace name, so capture it here for future use.
 	ns := namespace.GetName()
 
 	// List all search attributes that are currently on the Temporal server
 	listRequest := &operatorservice.ListSearchAttributesRequest{Namespace: ns}
+	logger.Info("=== (CSA) CONSTRUCTED LIST SEARCH ATTR REQUEST")
 	serverSearchAttributes, err := client.OperatorService().ListSearchAttributes(ctx, listRequest)
 	if err != nil {
+		logger.Info("=== (CSA) COULDN'T RECEIVE SEARCH ATTRIBUTES ON SERVER")
 		return err
 	}
+	logger.Info("=== (CSA) RECEIVED SEARCH ATTRIBUTES ON SERVER")
 
 	// Narrow the focus to custom search attributes only.
 	serverCustomSearchAttributes := &serverSearchAttributes.CustomAttributes // use a pointer to avoid unnecessary copying
+	logger.Info(fmt.Sprintf("=== (CSA) CUSTOM SEARCH ATTRIBUTES ON SERVER: %v", serverCustomSearchAttributes))
 
 	// Note that the CustomSearchAttributes map data structure that is built using the Spec merely maps string->string.
 	// To rigorously compare search attributes between the spec and the Temporal server, the types need to be consistent.
 	// We therefore construct a string->enums.IndexedValueType map from the "weaker" string->string map.
 	specCustomSearchAttributes, err := createIndexedValueTypeMap(&namespace.Spec.CustomSearchAttributes)
 	if err != nil {
+		logger.Info(fmt.Sprintf("=== (CSA) ERROR READING CUSTOM SEARCH ATTRIBUTES IN SPEC: %v", specCustomSearchAttributes))
 		return err
 	}
+	logger.Info(fmt.Sprintf("=== (CSA) CUSTOM SEARCH ATTRIBUTES IN SPEC: %v", specCustomSearchAttributes))
 
 	// Remove those custom search attributes from the Temporal server whose name does not exist in the Spec.
 	customSearchAttributesToRemove := make([]string, 0)
@@ -199,6 +221,7 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 			customSearchAttributesToRemove = append(customSearchAttributesToRemove, serverSearchAttributeName)
 		}
 	}
+	logger.Info(fmt.Sprintf("=== (CSA) CUSTOM SEARCH ATTRIBUTES TO REMOVE: %v", customSearchAttributesToRemove))
 
 	// Add custom search attributes from the Spec which don't yet exist on the Temporal server.
 	// If the Temporal server already has a custom search attribute with the same name but a different type, then return an error.
@@ -208,9 +231,11 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 		if !specSearchAttributeNameExistsOnServer {
 			customSearchAttributesToAdd[specSearchAttributeName] = specSearchAttributeType
 		} else if specSearchAttributeType != serverSearchAttributeType {
+			logger.Info(fmt.Sprintf("=== (CSA) CUSTOM SEARCH ATTRIBUTE %s ALREADY EXISTS AND HAS DIFFERENT TYPE %s", specSearchAttributeName, serverSearchAttributeType.String()))
 			return fmt.Errorf("search attribute %s already exists and has different type %s", specSearchAttributeName, serverSearchAttributeType.String())
 		}
 	}
+	logger.Info(fmt.Sprintf("=== (CSA) CUSTOM SEARCH ATTRIBUTES TO ADD: %v", customSearchAttributesToAdd))
 
 	// If there are search attributes that should be removed, then make a request to the Temporal server to remove them.
 	if len(customSearchAttributesToRemove) > 0 {
@@ -218,11 +243,16 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 			Namespace:        ns,
 			SearchAttributes: customSearchAttributesToRemove,
 		}
+		logger.Info("=== (CSA) CONSTRUCTED REMOVE ATTR REQUEST")
 		_, err = client.OperatorService().RemoveSearchAttributes(ctx, removeRequest)
+		logger.Info("=== (CSA) SERVER RESPONDED TO REMOVE REQUEST")
 		if err != nil {
 			return fmt.Errorf("failed to remove search attributes: %w", err)
 		}
-		logger.Info(fmt.Sprintf("removed custom search attributes: %v", customSearchAttributesToRemove))
+		logger.Info(fmt.Sprintf("=== (CSA) REMOVED CUSTOM SEARCH ATTRIBUTES: %v", customSearchAttributesToRemove))
+		// logger.Info(fmt.Sprintf("removed custom search attributes: %v", customSearchAttributesToRemove))
+	} else {
+		logger.Info(fmt.Sprintf("=== (CSA) NO SEARCH ATTRIBUTES TO REMOVE %v", customSearchAttributesToRemove))
 	}
 
 	// If there are search attributes that should be added, then make a request the Temporal server to create them.
@@ -231,13 +261,20 @@ func (r *TemporalNamespaceReconciler) reconcileCustomSearchAttributes(ctx contex
 			Namespace:        ns,
 			SearchAttributes: customSearchAttributesToAdd,
 		}
+		logger.Info("=== (CSA) CONSTRUCTED ADD ATTR REQUEST")
 		_, err = client.OperatorService().AddSearchAttributes(ctx, addRequest)
+		logger.Info("=== (CSA) SERVER RESPONDED TO ADD REQUEST")
 		if err != nil {
 			return fmt.Errorf("failed to add search attributes: %w", err)
 		}
-		logger.Info(fmt.Sprintf("added custom search attributes: %v", customSearchAttributesToAdd))
+		logger.Info(fmt.Sprintf("=== (CSA) ADDED CUSTOM SEARCH ATTRIBUTES: %v", customSearchAttributesToAdd))
+		// logger.Info(fmt.Sprintf("added custom search attributes: %v", customSearchAttributesToAdd))
+	} else {
+		logger.Info(fmt.Sprintf("=== (CSA) NO SEARCH ATTRIBUTES TO ADD %v", customSearchAttributesToAdd))
 	}
 
+
+	logger.Info("=== (CSA) CUSTOM SEARCH ATTRIBUTE RECONCILIATION LOOP FINISHED")
 	return nil
 }
 
