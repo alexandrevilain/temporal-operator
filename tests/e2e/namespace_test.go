@@ -39,7 +39,7 @@ func TestNamespaceCreation(t *testing.T) {
 	var cluster *v1beta1.TemporalCluster
 	var temporalNamespace *v1beta1.TemporalNamespace
 
-	namespaceFature := features.New("namespace creation using CRD").
+	namespaceFeature := features.New("namespace creation using CRD").
 		Setup(func(ctx context.Context, _ *testing.T, cfg *envconf.Config) context.Context {
 			namespace := GetNamespaceForFeature(ctx)
 
@@ -189,7 +189,7 @@ func TestNamespaceCreation(t *testing.T) {
 		// }).
 		Feature()
 
-	testenv.Test(t, namespaceFature)
+	testenv.Test(t, namespaceFeature)
 }
 
 func TestNamespaceDeletionWhenClusterDoesNotExist(rt *testing.T) {
