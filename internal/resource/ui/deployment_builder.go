@@ -127,7 +127,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			Containers: []corev1.Container{
 				{
 					Name:                     "ui",
-					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Version),
+					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.UI.Image, b.instance.Spec.UI.Tag),
 					ImagePullPolicy:          corev1.PullIfNotPresent,
 					Resources:                b.instance.Spec.UI.Resources,
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,

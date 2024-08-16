@@ -174,6 +174,9 @@ spec:
                             More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                           type: object
                       type: object
+                    tag:
+                      description: Tag defines the temporal admin tools docker image tag the instance should run.
+                      type: string
                   type: object
                 archival:
                   description: Archival allows Workflow Execution Event Histories and Visibility data backups for the temporal cluster.
@@ -3553,6 +3556,9 @@ spec:
                           type: object
                       type: object
                   type: object
+                tag:
+                  description: Tag defines the temporal server docker image tag the cluster should use for each services.
+                  type: string
                 ui:
                   description: UI allows configuration of the optional temporal web ui deployed alongside the cluster.
                   properties:
@@ -3747,8 +3753,11 @@ spec:
                             (scope and select) objects.
                           type: object
                       type: object
+                    tag:
+                      description: Tag defines the temporal ui docker image tag the instance should run.
+                      type: string
                     version:
-                      description: Version defines the temporal ui version the instance should run.
+                      description: Deprecated. use `tag` instead.
                       type: string
                   type: object
                 version:

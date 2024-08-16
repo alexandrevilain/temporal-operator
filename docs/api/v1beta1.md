@@ -76,6 +76,18 @@ string
 </tr>
 <tr>
 <td>
+<code>tag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Tag defines the temporal server docker image tag the cluster should use for each services.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>version</code><br>
 <em>
 github.com/alexandrevilain/temporal-operator/pkg/version.Version
@@ -4574,6 +4586,18 @@ string
 </tr>
 <tr>
 <td>
+<code>tag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Tag defines the temporal admin tools docker image tag the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>resources</code><br>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
@@ -4783,6 +4807,18 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal server docker image the cluster should use for each services.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Tag defines the temporal server docker image tag the cluster should use for each services.</p>
 </td>
 </tr>
 <tr>
@@ -6027,7 +6063,7 @@ string
 </td>
 <td>
 <em>(Optional)</em>
-<p>Version defines the temporal ui version the instance should run.</p>
+<p>Deprecated. use <code>tag</code> instead.</p>
 </td>
 </tr>
 <tr>
@@ -6040,6 +6076,18 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal ui docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Tag defines the temporal ui docker image tag the instance should run.</p>
 </td>
 </tr>
 <tr>

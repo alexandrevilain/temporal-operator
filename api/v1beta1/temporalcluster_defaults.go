@@ -29,10 +29,11 @@ const (
 	defaultTemporalVersion = "1.23.0"
 	defaultTemporalImage   = "temporalio/server"
 
-	defaultTemporalUIVersion = "2.25.0"
-	defaultTemporalUIImage   = "temporalio/ui"
+	defaultTemporalUIImage = "temporalio/ui"
+	defaultTemporalUITag   = "2.25.0"
 
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
+	defaultTemporalAdmintoolsTag   = "1.23.1.1-tctl-1.18.1-cli-0.12.0"
 )
 
 // Default set default fields values.
@@ -63,6 +64,9 @@ func (c *TemporalCluster) Default() {
 	}
 	if c.Spec.Image == "" {
 		c.Spec.Image = defaultTemporalImage
+	}
+	if c.Spec.Tag == "" {
+		c.Spec.Tag = c.Spec.Version.String()
 	}
 
 	if c.Spec.Log == nil {
@@ -193,8 +197,12 @@ func (c *TemporalCluster) Default() {
 		c.Spec.UI = new(TemporalUISpec)
 	}
 
-	if c.Spec.UI.Version == "" {
-		c.Spec.UI.Version = defaultTemporalUIVersion
+	if c.Spec.UI.Tag == "" {
+		if c.Spec.UI.Version != "" {
+			c.Spec.UI.Tag = c.Spec.UI.Version
+		} else {
+			c.Spec.UI.Tag = defaultTemporalUITag
+		}
 	}
 
 	if c.Spec.UI.Image == "" {
@@ -211,6 +219,10 @@ func (c *TemporalCluster) Default() {
 
 	if c.Spec.AdminTools.Image == "" {
 		c.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
+	}
+
+	if c.Spec.AdminTools.Tag == "" {
+		c.Spec.AdminTools.Tag = defaultTemporalAdmintoolsTag
 	}
 
 	if c.Spec.MTLS != nil {
