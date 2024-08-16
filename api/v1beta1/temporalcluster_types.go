@@ -550,12 +550,16 @@ type TemporalUISpec struct {
 	// Enabled defines if the operator should deploy the web ui alongside the cluster.
 	// +optional
 	Enabled bool `json:"enabled"`
-	// Version defines the temporal ui version the instance should run.
+	// Deprecated. use `tag` instead.
 	// +optional
+	// +deprecated
 	Version string `json:"version"`
 	// Image defines the temporal ui docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// Tag defines the temporal ui docker image tag the instance should run.
+	// +optional
+	Tag string `json:"tag"`
 	// Number of desired replicas for the ui. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -585,6 +589,9 @@ type TemporalAdminToolsSpec struct {
 	// Image defines the temporal admin tools docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// Tag defines the temporal admin tools docker image tag the instance should run.
+	// +optional
+	Tag string `json:"tag"`
 	// Compute Resources required by the ui.
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 	// +optional
@@ -1002,6 +1009,9 @@ type TemporalClusterSpec struct {
 	// Image defines the temporal server docker image the cluster should use for each services.
 	// +optional
 	Image string `json:"image"`
+	// Tag defines the temporal server docker image tag the cluster should use for each services.
+	// +optional
+	Tag string `json:"tag"`
 	// Version defines the temporal version the cluster to be deployed.
 	// This version impacts the underlying persistence schemas versions.
 	// +optional

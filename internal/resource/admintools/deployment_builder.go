@@ -134,7 +134,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			Containers: []corev1.Container{
 				{
 					Name:                     "admintools",
-					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
+					Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.AdminTools.Tag),
 					ImagePullPolicy:          corev1.PullIfNotPresent,
 					TerminationMessagePath:   corev1.TerminationMessagePathDefault,
 					TerminationMessagePolicy: corev1.TerminationMessageReadFile,

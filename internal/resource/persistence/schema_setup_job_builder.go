@@ -123,7 +123,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					Containers: []corev1.Container{
 						{
 							Name:                     "schema-script-runner",
-							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
+							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.AdminTools.Tag),
 							ImagePullPolicy:          corev1.PullIfNotPresent,
 							Resources:                b.instance.Spec.JobResources,
 							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
