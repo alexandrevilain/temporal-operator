@@ -19,7 +19,10 @@ package main
 
 import (
 	"flag"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"io"
 	"os"
+	"strconv"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -66,20 +69,26 @@ func main() {
 		metricsAddr          string
 		enableLeaderElection bool
 		probeAddr            string
+		enableLumberjack     bool
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.BoolVar(&enableLumberjack, "lumberjack", false,
+		"Enable lumberjack logging to log to /logs/temporal-operator.log.")
 
+	flag.Parse()
 	opts := zap.Options{
 		Development: true,
+		DestWriter:  logWriter(enableLumberjack),
 	}
 	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	setupLog.Info("Lumberjack Logging Enabled ? " + strconv.FormatBool(enableLumberjack))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
@@ -161,4 +170,17 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func logWriter(enableLumberjack bool) io.Writer {
+	if enableLumberjack {
+		return io.MultiWriter(os.Stdout, &lumberjack.Logger{
+			Filename:   "/logs/temporal-operator.log",
+			MaxSize:    2, // megabytes
+			MaxBackups: 100,
+			MaxAge:     30,   // days
+			Compress:   true, // compress rotated log files
+		})
+	}
+	return os.Stdout
 }
