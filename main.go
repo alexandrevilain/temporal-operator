@@ -19,8 +19,9 @@ package main
 
 import (
 	"flag"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"io"
 	"os"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -66,20 +67,26 @@ func main() {
 		metricsAddr          string
 		enableLeaderElection bool
 		probeAddr            string
+		logOutputFile        string
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&logOutputFile, "logOutputFile", "",
+		"Log to output file using go lumberjack in addition to stdout.")
 
+	flag.Parse()
 	opts := zap.Options{
 		Development: true,
+		DestWriter:  logWriter(logOutputFile),
 	}
 	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	setupLog.Info("logOutputFile " + logOutputFile)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
@@ -161,4 +168,17 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func logWriter(outputFile string) io.Writer {
+	if len(outputFile) > 0 {
+		return io.MultiWriter(os.Stdout, &lumberjack.Logger{
+			Filename:   outputFile,
+			MaxSize:    2, // megabytes
+			MaxBackups: 100,
+			MaxAge:     30,   // days
+			Compress:   true, // compress rotated log files
+		})
+	}
+	return os.Stdout
 }

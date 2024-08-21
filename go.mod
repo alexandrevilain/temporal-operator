@@ -23,6 +23,7 @@ require (
 	go.temporal.io/server v1.23.0
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	google.golang.org/protobuf v1.34.2
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v1.22.3-0.20240703105953-437a88321a16
 	istio.io/client-go v1.22.3
