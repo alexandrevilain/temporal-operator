@@ -63,6 +63,8 @@ spec:
                 - name: extra-volume
                   configMap:
                     name: extra-config
+                  # Workaround https://github.com/alexandrevilain/temporal-operator/issues/793
+                  secret: null
 ```
 
 ### Example: add sidecar to all pods
@@ -208,6 +210,8 @@ spec:
                     env:
                       - name: HTTP_PROXY
                         value: example.com
+                        # Workaround https://github.com/alexandrevilain/temporal-operator/issues/793
+                        valueFrom: null
 ```
 
 ### Example: mount an extra volume to the frontend pod
@@ -235,6 +239,8 @@ spec:
                   - name: extra-volume
                     configMap:
                       name: extra-config
+                    # Workaround https://github.com/alexandrevilain/temporal-operator/issues/793
+                    secret: null
 ```
 
 ### Example: Add an environment variable from secretRef to the frontend pod

@@ -33,6 +33,191 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+func TestApplyListOverrides(t *testing.T) {
+	tests := map[string]struct {
+		original *appsv1.Deployment
+		override *v1beta1.DeploymentOverride
+		expected *appsv1.Deployment
+	}{
+		"add env var to existing env": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									Env: []corev1.EnvVar{
+										{
+											Name: "a",
+											ValueFrom: &corev1.EnvVarSource{
+												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "test",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				Spec: &v1beta1.DeploymentOverrideSpec{
+					Template: &v1beta1.PodTemplateSpecOverride{
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"containers":[{"name":"test", "env":[{"name":"b", "value":"c", "valueFrom": null}]}]}`),
+						},
+					},
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									Env: []corev1.EnvVar{
+										{
+											Name:  "b",
+											Value: "c",
+										},
+										{
+											Name: "a",
+											ValueFrom: &corev1.EnvVarSource{
+												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "test",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"add secret volume to existing volumes": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "a",
+											ReadOnly:  true,
+											MountPath: "/a",
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "a",
+									VolumeSource: corev1.VolumeSource{
+										ConfigMap: &corev1.ConfigMapVolumeSource{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				Spec: &v1beta1.DeploymentOverrideSpec{
+					Template: &v1beta1.PodTemplateSpecOverride{
+						Spec: &apiextensionsv1.JSON{
+							Raw: []byte(`{"containers":[{"name":"test", "volumeMounts":[{"name":"b", "readOnly":true, "mountPath":"/b"}]}], "volumes":[{"name":"b", "secret": {"secretName": "test"}, "configMap": null}]}`),
+						},
+					},
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "b",
+											ReadOnly:  true,
+											MountPath: "/b",
+										},
+										{
+											Name:      "a",
+											ReadOnly:  true,
+											MountPath: "/a",
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "b",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "test",
+										},
+									},
+								},
+								{
+									Name: "a",
+									VolumeSource: corev1.VolumeSource{
+										ConfigMap: &corev1.ConfigMapVolumeSource{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(tt *testing.T) {
+			err := kubernetes.ApplyDeploymentOverrides(test.original, test.override)
+			require.NoError(tt, err)
+			if !equality.Semantic.DeepEqual(test.original, test.expected) {
+				tt.Logf("expected: %+v", test.expected)
+				tt.Logf("actual: %+v", test.original)
+				assert.True(tt, false)
+			}
+		})
+	}
+}
+
 func TestApplyDeploymentOverrides(t *testing.T) {
 	tests := map[string]struct {
 		original *appsv1.Deployment
@@ -328,171 +513,6 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 										ProbeHandler: corev1.ProbeHandler{
 											Exec: &corev1.ExecAction{
 												Command: []string{"echo", "hi"},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"add env var to existing env": {
-			original: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: appsv1.DeploymentSpec{
-					Template: corev1.PodTemplateSpec{
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "test",
-									Env: []corev1.EnvVar{
-										{
-											Name: "a",
-											ValueFrom: &corev1.EnvVarSource{
-												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: "test",
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			override: &v1beta1.DeploymentOverride{
-				Spec: &v1beta1.DeploymentOverrideSpec{
-					Template: &v1beta1.PodTemplateSpecOverride{
-						Spec: &apiextensionsv1.JSON{
-							Raw: []byte(`{"containers":[{"name":"test", "env":[{"name":"b", "value":"c"}]}]}`),
-						},
-					},
-				},
-			},
-			expected: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: appsv1.DeploymentSpec{
-					Template: corev1.PodTemplateSpec{
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "test",
-									Env: []corev1.EnvVar{
-										{
-											Name:  "b",
-											Value: "c",
-										},
-										{
-											Name: "a",
-											ValueFrom: &corev1.EnvVarSource{
-												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-													LocalObjectReference: corev1.LocalObjectReference{
-														Name: "test",
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"add secret volume to existing volumes": {
-			original: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: appsv1.DeploymentSpec{
-					Template: corev1.PodTemplateSpec{
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "test",
-									VolumeMounts: []corev1.VolumeMount{
-										{
-											Name:      "a",
-											ReadOnly:  true,
-											MountPath: "/a",
-										},
-									},
-								},
-							},
-							Volumes: []corev1.Volume{
-								{
-									Name: "a",
-									VolumeSource: corev1.VolumeSource{
-										ConfigMap: &corev1.ConfigMapVolumeSource{
-											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "test",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			override: &v1beta1.DeploymentOverride{
-				Spec: &v1beta1.DeploymentOverrideSpec{
-					Template: &v1beta1.PodTemplateSpecOverride{
-						Spec: &apiextensionsv1.JSON{
-							Raw: []byte(`{"containers":[{"name":"test", "volumeMounts":[{"name":"b", "readOnly":true, "mountPath":"/b"}]}], "volumes":[{"name":"b", "secret": {"secretName": "test"}}]}`),
-						},
-					},
-				},
-			},
-			expected: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: appsv1.DeploymentSpec{
-					Template: corev1.PodTemplateSpec{
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								{
-									Name: "test",
-									VolumeMounts: []corev1.VolumeMount{
-										{
-											Name:      "b",
-											ReadOnly:  true,
-											MountPath: "/b",
-										},
-										{
-											Name:      "a",
-											ReadOnly:  true,
-											MountPath: "/a",
-										},
-									},
-								},
-							},
-							Volumes: []corev1.Volume{
-								{
-									Name: "b",
-									VolumeSource: corev1.VolumeSource{
-										Secret: &corev1.SecretVolumeSource{
-											SecretName: "test",
-										},
-									},
-								},
-								{
-									Name: "a",
-									VolumeSource: corev1.VolumeSource{
-										ConfigMap: &corev1.ConfigMapVolumeSource{
-											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "test",
 											},
 										},
 									},
