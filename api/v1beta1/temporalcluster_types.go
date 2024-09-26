@@ -585,6 +585,9 @@ type TemporalAdminToolsSpec struct {
 	// Image defines the temporal admin tools docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// Version defines the temporal admin tools version the instance should run.
+	// +optional
+	Version string `json:"version"`
 	// Compute Resources required by the ui.
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 	// +optional

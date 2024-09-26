@@ -48,11 +48,18 @@ import (
 
 const doesNotExistName = "does-not-exist"
 
-func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace, v string) (*v1beta1.TemporalCluster, error) {
+var defaultVersion = version.MustNewVersionFromString("1.24.2")
+
+func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Config, namespace string) (*v1beta1.TemporalCluster, error) {
 	// create the postgres
 	err := deployAndWaitForPostgres(ctx, cfg, namespace)
 	if err != nil {
 		return nil, err
+	}
+
+	pluginName := "postgres12"
+	if defaultVersion.GreaterOrEqual(version.V1_24_0) {
+		pluginName = "postgres12"
 	}
 
 	connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
@@ -64,7 +71,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 		Spec: v1beta1.TemporalClusterSpec{
 			NumHistoryShards:           1,
 			JobTTLSecondsAfterFinished: &jobTTL,
-			Version:                    version.MustNewVersionFromString(v),
+			Version:                    defaultVersion,
 			Metrics: &v1beta1.MetricsSpec{
 				Enabled: true,
 				Prometheus: &v1beta1.PrometheusSpec{
@@ -84,7 +91,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 				DefaultStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
-						PluginName:      "postgres",
+						PluginName:      pluginName,
 						DatabaseName:    "temporal",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
@@ -97,7 +104,7 @@ func deployAndWaitForTemporalWithPostgres(ctx context.Context, cfg *envconf.Conf
 				VisibilityStore: &v1beta1.DatastoreSpec{
 					SQL: &v1beta1.SQLSpec{
 						User:            "temporal",
-						PluginName:      "postgres",
+						PluginName:      pluginName,
 						DatabaseName:    "temporal_visibility",
 						ConnectAddr:     connectAddr,
 						ConnectProtocol: "tcp",
@@ -275,7 +282,8 @@ func waitForCluster(_ context.Context, cfg *envconf.Config, cluster *v1beta1.Tem
 
 func waitForClusterClient(_ context.Context, cfg *envconf.Config, clusterClient *v1beta1.TemporalClusterClient) error {
 	cond := conditions.New(cfg.Client().Resources()).ResourceMatch(clusterClient, func(object k8s.Object) bool {
-		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
+		return object.(*v1beta1.TemporalClusterClient).Status.SecretRef != nil &&
+			object.(*v1beta1.TemporalClusterClient).Status.SecretRef.Name != ""
 	})
 	return wait.For(cond, wait.WithTimeout(time.Minute*10))
 }

@@ -59,7 +59,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
@@ -72,7 +72,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 							VisibilityStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal_visibility",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
@@ -117,7 +117,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
@@ -130,7 +130,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 							VisibilityStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal_visibility",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",

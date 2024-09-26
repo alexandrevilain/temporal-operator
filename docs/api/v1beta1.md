@@ -4574,6 +4574,18 @@ string
 </tr>
 <tr>
 <td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Version defines the temporal admin tools version the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>resources</code><br>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
