@@ -470,6 +470,8 @@ sigs.k8s.io/controller-runtime v0.18.4 h1:87+guW1zhvuPLh1PHybKdYFLU0YJp4FhJRmiHv
 sigs.k8s.io/controller-runtime v0.18.4/go.mod h1:TVoGrfdpbA9VRFaRnKgk9P5/atA0pMwq+f+msb9M8Sg=
 sigs.k8s.io/e2e-framework v0.3.0 h1:eqQALBtPCth8+ulTs6lcPK7ytV5rZSSHJzQHZph4O7U=
 sigs.k8s.io/e2e-framework v0.3.0/go.mod h1:C+ef37/D90Dc7Xq1jQnNbJYscrUGpxrWog9bx2KIa+c=
+sigs.k8s.io/e2e-framework v0.4.0 h1:4yYmFDNNoTnazqmZJXQ6dlQF1vrnDbutmxlyvBpC5rY=
+sigs.k8s.io/e2e-framework v0.4.0/go.mod h1:JilFQPF1OL1728ABhMlf9huse7h+uBJDXl9YeTs49A8=
 sigs.k8s.io/gateway-api v1.1.0 h1:DsLDXCi6jR+Xz8/xd0Z1PYl2Pn0TyaFMOPPZIj4inDM=
 sigs.k8s.io/gateway-api v1.1.0/go.mod h1:ZH4lHrL2sDi0FHZ9jjneb8kKnGzFWyrTya35sWUTrRs=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
