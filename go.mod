@@ -1,8 +1,8 @@
 module github.com/alexandrevilain/temporal-operator
 
-go 1.22.0
+go 1.22.3
 
-toolchain go1.22.2
+toolchain go1.22.7
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -33,7 +33,7 @@ require (
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 	sigs.k8s.io/controller-runtime v0.18.4
-	sigs.k8s.io/e2e-framework v0.3.0
+	sigs.k8s.io/e2e-framework v0.4.0
 )
 
 require (
