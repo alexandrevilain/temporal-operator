@@ -67,3 +67,64 @@ func TestUpgradeConstraint(t *testing.T) {
 		})
 	}
 }
+
+func TestVersionGreaterOrEqual(t *testing.T) {
+	tests := map[string]struct {
+		version1 *version.Version
+		version2 *version.Version
+		expected bool
+	}{
+		"version is less than": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.18.0"),
+			expected: false,
+		},
+		"version is equal": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.17.5"),
+			expected: true,
+		},
+		"version is greater than": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.16.0"),
+			expected: true,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(tt *testing.T) {
+			result := test.version1.GreaterOrEqual(test.version2)
+			assert.Equal(tt, test.expected, result)
+		})
+	}
+}
+
+func TestVersionLessThan(t *testing.T) {
+	tests := map[string]struct {
+		version1 *version.Version
+		version2 *version.Version
+		expected bool
+	}{
+		"version is less than": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.18.0"),
+			expected: true,
+		},
+		"version is equal": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.17.5"),
+			expected: false,
+		},
+		"version is greater than": {
+			version1: version.MustNewVersionFromString("1.17.5"),
+			version2: version.MustNewVersionFromString("1.16.0"),
+			expected: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(tt *testing.T) {
+			result := test.version1.LessThan(test.version2)
+			assert.Equal(tt, test.expected, result)
+		})
+	}
+}

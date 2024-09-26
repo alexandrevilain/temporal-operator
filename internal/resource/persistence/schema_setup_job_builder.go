@@ -24,6 +24,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/linkerd"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -94,6 +95,11 @@ func (b *SchemaJobBuilder) Build() client.Object {
 
 	volumes = append(volumes, GetDatastoresVolumes(datastores)...)
 
+	tag := b.instance.Spec.AdminTools.Version
+	if tag == "" {
+		tag = version.PersistenceJobTag(b.instance.Spec.Version)
+	}
+
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.name),
@@ -123,7 +129,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					Containers: []corev1.Container{
 						{
 							Name:                     "schema-script-runner",
-							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, b.instance.Spec.Version),
+							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, tag),
 							ImagePullPolicy:          corev1.PullIfNotPresent,
 							Resources:                b.instance.Spec.JobResources,
 							TerminationMessagePath:   corev1.TerminationMessagePathDefault,

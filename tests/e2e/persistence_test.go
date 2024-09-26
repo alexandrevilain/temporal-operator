@@ -30,9 +30,10 @@ import (
 )
 
 var (
-	initialClusterVersion = "1.19.1"
-	newDatastoreVersion   = "1.20.0"
-	defaultUpgradePath    = []string{"1.20.4", "1.21.2", "1.22.6", "1.23.0"}
+	initialClusterVersion     = "1.19.1"
+	newDatastoreVersion       = "1.20.4"
+	oldPersistenceUpgradePath = []string{"1.20.4", "1.21.2", "1.22.6", "1.23.0"}
+	defaultUpgradePath        = []string{"1.21.2", "1.22.6", "1.23.0", "1.24.2"}
 )
 
 type (
@@ -46,7 +47,7 @@ func TestPersistence(t *testing.T) {
 		upgradePath        []string
 	}{
 		"postgres persistence": {
-			upgradePath:        defaultUpgradePath,
+			upgradePath:        oldPersistenceUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
 			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
@@ -93,10 +94,10 @@ func TestPersistence(t *testing.T) {
 			},
 		},
 		"postgres12 persistence": {
-			upgradePath:        []string{},
+			upgradePath:        defaultUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres},
 			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
-				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace) // create the temporal cluster
+				connectAddr := fmt.Sprintf("postgres.%s:5432", namespace)
 
 				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
@@ -158,7 +159,7 @@ func TestPersistence(t *testing.T) {
 							DefaultStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
@@ -171,7 +172,7 @@ func TestPersistence(t *testing.T) {
 							VisibilityStore: &v1beta1.DatastoreSpec{
 								SQL: &v1beta1.SQLSpec{
 									User:            "temporal",
-									PluginName:      "postgres",
+									PluginName:      "postgres12",
 									DatabaseName:    "temporal_visibility",
 									ConnectAddr:     connectAddr,
 									ConnectProtocol: "tcp",
@@ -198,7 +199,7 @@ func TestPersistence(t *testing.T) {
 			},
 		},
 		"mysql persistence": {
-			upgradePath:        defaultUpgradePath,
+			upgradePath:        oldPersistenceUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
 			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
@@ -245,7 +246,7 @@ func TestPersistence(t *testing.T) {
 			},
 		},
 		"mysql8 persistence": {
-			upgradePath:        []string{},
+			upgradePath:        defaultUpgradePath,
 			deployDependencies: []deployDependencyFunc{deployAndWaitForMySQL},
 			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
 				connectAddr := fmt.Sprintf("mysql.%s:3306", namespace)
@@ -293,10 +294,8 @@ func TestPersistence(t *testing.T) {
 		},
 		"cassandra persistence": {
 			upgradePath:        defaultUpgradePath,
-			deployDependencies: []deployDependencyFunc{deployAndWaitForCassandra},
+			deployDependencies: []deployDependencyFunc{deployAndWaitForPostgres, deployAndWaitForCassandra},
 			cluster: func(_ context.Context, _ *envconf.Config, namespace string) *v1beta1.TemporalCluster {
-				connectAddr := fmt.Sprintf("cassandra.%s", namespace)
-
 				return &v1beta1.TemporalCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test",
@@ -305,11 +304,13 @@ func TestPersistence(t *testing.T) {
 					Spec: v1beta1.TemporalClusterSpec{
 						NumHistoryShards:           1,
 						JobTTLSecondsAfterFinished: &jobTTL,
-						Version:                    version.MustNewVersionFromString(initialClusterVersion),
+						Version:                    version.MustNewVersionFromString(newDatastoreVersion),
 						Persistence: v1beta1.TemporalPersistenceSpec{
 							DefaultStore: &v1beta1.DatastoreSpec{
 								Cassandra: &v1beta1.CassandraSpec{
-									Hosts:      []string{connectAddr},
+									Hosts: []string{
+										fmt.Sprintf("cassandra.%s", namespace),
+									},
 									User:       "temporal",
 									Keyspace:   "temporal",
 									Datacenter: "datacenter1",
@@ -320,14 +321,15 @@ func TestPersistence(t *testing.T) {
 								},
 							},
 							VisibilityStore: &v1beta1.DatastoreSpec{
-								Cassandra: &v1beta1.CassandraSpec{
-									Hosts:      []string{connectAddr},
-									User:       "temporal",
-									Keyspace:   "temporal_visibility",
-									Datacenter: "datacenter1",
+								SQL: &v1beta1.SQLSpec{
+									User:            "temporal",
+									PluginName:      "postgres12",
+									DatabaseName:    "temporal_visibility",
+									ConnectAddr:     fmt.Sprintf("postgres.%s:5432", namespace),
+									ConnectProtocol: "tcp",
 								},
 								PasswordSecretRef: &v1beta1.SecretKeyReference{
-									Name: "cassandra-password",
+									Name: "postgres-password",
 									Key:  "PASSWORD",
 								},
 							},
