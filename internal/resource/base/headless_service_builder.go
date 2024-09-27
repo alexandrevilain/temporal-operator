@@ -99,13 +99,13 @@ func (b *HeadlessServiceBuilder) Update(object client.Object) error {
 			Name:       "tcp-rpc",
 			TargetPort: intstr.FromString("rpc"),
 			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(*b.service.Port),
+			Port:       *b.service.Port,
 		},
 		{
 			Name:       "tcp-membership",
 			TargetPort: intstr.FromString("membership"),
 			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(*b.service.MembershipPort),
+			Port:       *b.service.MembershipPort,
 		},
 	}
 

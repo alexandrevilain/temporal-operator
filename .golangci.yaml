@@ -16,7 +16,7 @@ linters:
   - durationcheck
   - errcheck
   - errchkjson
-  - exportloopref
+  - copyloopvar
   - ginkgolinter
   - goconst
   - gocritic

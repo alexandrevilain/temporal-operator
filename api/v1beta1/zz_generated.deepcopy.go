@@ -793,13 +793,9 @@ func (in *PrometheusScrapeConfigServiceMonitor) DeepCopyInto(out *PrometheusScra
 	}
 	if in.MetricRelabelConfigs != nil {
 		in, out := &in.MetricRelabelConfigs, &out.MetricRelabelConfigs
-		*out = make([]*monitoringv1.RelabelConfig, len(*in))
+		*out = make([]monitoringv1.RelabelConfig, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(monitoringv1.RelabelConfig)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 }
@@ -1320,17 +1316,17 @@ func (in *ServiceSpec) DeepCopyInto(out *ServiceSpec) {
 	*out = *in
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
-		*out = new(int)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.MembershipPort != nil {
 		in, out := &in.MembershipPort, &out.MembershipPort
-		*out = new(int)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.HTTPPort != nil {
 		in, out := &in.HTTPPort, &out.HTTPPort
-		*out = new(int)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.Replicas != nil {

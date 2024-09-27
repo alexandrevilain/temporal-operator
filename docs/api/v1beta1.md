@@ -4228,7 +4228,7 @@ string
 <td>
 <code>port</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -4245,7 +4245,7 @@ Default values are:
 <td>
 <code>membershipPort</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -4262,7 +4262,7 @@ Default values are:
 <td>
 <code>httpPort</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>

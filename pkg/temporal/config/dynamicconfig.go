@@ -36,7 +36,6 @@ func DynamicConfigToYamlDynamicConfig(dc *v1beta1.DynamicConfigSpec) (YamlDynami
 	for k, v := range dc.Values {
 		yamlConstrainedValues := []YamlConstrainedValue{}
 		for _, constrainedValue := range v {
-			constrainedValue := constrainedValue
 			yamlConstrainedValue, err := constrainedValueToYamlConstrainedValue(&constrainedValue)
 			if err != nil {
 				return result, err

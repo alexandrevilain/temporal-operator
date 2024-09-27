@@ -306,12 +306,12 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	containerPorts := []corev1.ContainerPort{
 		{
 			Name:          "rpc",
-			ContainerPort: int32(*b.service.Port),
+			ContainerPort: *b.service.Port,
 			Protocol:      corev1.ProtocolTCP,
 		},
 		{
 			Name:          "membership",
-			ContainerPort: int32(*b.service.MembershipPort),
+			ContainerPort: *b.service.MembershipPort,
 			Protocol:      corev1.ProtocolTCP,
 		},
 	}
@@ -329,7 +329,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	if b.serviceName == string(primitives.FrontendService) && b.instance.Spec.Services.Frontend.HTTPPort != nil {
 		containerPorts = append(containerPorts, corev1.ContainerPort{
 			Name:          "http",
-			ContainerPort: int32(*b.instance.Spec.Services.Frontend.HTTPPort),
+			ContainerPort: *b.instance.Spec.Services.Frontend.HTTPPort,
 			Protocol:      corev1.ProtocolTCP,
 		})
 	}

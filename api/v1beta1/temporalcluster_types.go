@@ -71,7 +71,7 @@ type ServiceSpec struct {
 	// 7235 for Matching service
 	// 7239 for Worker service
 	// +optional
-	Port *int `json:"port"`
+	Port *int32 `json:"port"`
 	// MembershipPort defines a custom membership port for the service.
 	// Default values are:
 	// 6933 for Frontend service
@@ -79,12 +79,12 @@ type ServiceSpec struct {
 	// 6935 for Matching service
 	// 6939 for Worker service
 	// +optional
-	MembershipPort *int `json:"membershipPort"`
+	MembershipPort *int32 `json:"membershipPort"`
 	// HTTPPort defines a custom http port for the service.
 	// Default values are:
 	// 7243 for Frontend service
 	// +optional
-	HTTPPort *int `json:"httpPort"`
+	HTTPPort *int32 `json:"httpPort"`
 	// Number of desired replicas for the service. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -739,7 +739,7 @@ type PrometheusScrapeConfigServiceMonitor struct {
 	Override *monitoringv1.ServiceMonitorSpec `json:"override,omitempty"`
 	// MetricRelabelConfigs to apply to samples before ingestion.
 	// +optional
-	MetricRelabelConfigs []*monitoringv1.RelabelConfig `json:"metricRelabelings,omitempty"`
+	MetricRelabelConfigs []monitoringv1.RelabelConfig `json:"metricRelabelings,omitempty"`
 }
 
 // PrometheusScrapeConfig is the configuration for making prometheus scrape components metrics.
