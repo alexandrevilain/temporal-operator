@@ -239,32 +239,32 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		Services: map[string]config.Service{
 			string(primitives.FrontendService): {
 				RPC: config.RPC{
-					GRPCPort:        *b.instance.Spec.Services.Frontend.Port,
-					MembershipPort:  *b.instance.Spec.Services.Frontend.MembershipPort,
+					GRPCPort:        int(*b.instance.Spec.Services.Frontend.Port),
+					MembershipPort:  int(*b.instance.Spec.Services.Frontend.MembershipPort),
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
 			},
 			string(primitives.HistoryService): {
 				RPC: config.RPC{
-					GRPCPort:        *b.instance.Spec.Services.History.Port,
-					MembershipPort:  *b.instance.Spec.Services.History.MembershipPort,
+					GRPCPort:        int(*b.instance.Spec.Services.History.Port),
+					MembershipPort:  int(*b.instance.Spec.Services.History.MembershipPort),
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
 			},
 			string(primitives.MatchingService): {
 				RPC: config.RPC{
-					GRPCPort:        *b.instance.Spec.Services.Matching.Port,
-					MembershipPort:  *b.instance.Spec.Services.Matching.MembershipPort,
+					GRPCPort:        int(*b.instance.Spec.Services.Matching.Port),
+					MembershipPort:  int(*b.instance.Spec.Services.Matching.MembershipPort),
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
 			},
 			string(primitives.WorkerService): {
 				RPC: config.RPC{
-					GRPCPort:        *b.instance.Spec.Services.Worker.Port,
-					MembershipPort:  *b.instance.Spec.Services.Worker.MembershipPort,
+					GRPCPort:        int(*b.instance.Spec.Services.Worker.Port),
+					MembershipPort:  int(*b.instance.Spec.Services.Worker.MembershipPort),
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
@@ -276,9 +276,9 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		if b.instance.Spec.Services.InternalFrontend.IsEnabled() {
 			temporalCfg.Services[string(primitives.InternalFrontendService)] = config.Service{
 				RPC: config.RPC{
-					GRPCPort:        *b.instance.Spec.Services.InternalFrontend.Port,
-					MembershipPort:  *b.instance.Spec.Services.InternalFrontend.MembershipPort,
-					HTTPPort:        *b.instance.Spec.Services.InternalFrontend.HTTPPort,
+					GRPCPort:        int(*b.instance.Spec.Services.InternalFrontend.Port),
+					MembershipPort:  int(*b.instance.Spec.Services.InternalFrontend.MembershipPort),
+					HTTPPort:        int(*b.instance.Spec.Services.InternalFrontend.HTTPPort),
 					BindOnLocalHost: false,
 					BindOnIP:        "0.0.0.0",
 				},
@@ -297,7 +297,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		b.instance.Spec.Services.Frontend.HTTPPort != nil {
 		frontend, ok := temporalCfg.Services[string(primitives.FrontendService)]
 		if ok {
-			frontend.RPC.HTTPPort = *b.instance.Spec.Services.Frontend.HTTPPort
+			frontend.RPC.HTTPPort = int(*b.instance.Spec.Services.Frontend.HTTPPort)
 			temporalCfg.Services[string(primitives.FrontendService)] = frontend
 		}
 	}

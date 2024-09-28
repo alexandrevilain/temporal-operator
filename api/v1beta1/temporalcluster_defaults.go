@@ -89,13 +89,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.Frontend.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Frontend.Port == nil {
-		c.Spec.Services.Frontend.Port = ptr.To(7233)
+		c.Spec.Services.Frontend.Port = ptr.To[int32](7233)
 	}
 	if c.Spec.Services.Frontend.MembershipPort == nil {
-		c.Spec.Services.Frontend.MembershipPort = ptr.To(6933)
+		c.Spec.Services.Frontend.MembershipPort = ptr.To[int32](6933)
 	}
 	if c.Spec.Services.Frontend.HTTPPort == nil {
-		c.Spec.Services.Frontend.HTTPPort = ptr.To(7243)
+		c.Spec.Services.Frontend.HTTPPort = ptr.To[int32](7243)
 	}
 	// Internal Frontend specs
 	if c.Spec.Services.InternalFrontend.IsEnabled() {
@@ -103,13 +103,13 @@ func (c *TemporalCluster) Default() {
 			c.Spec.Services.InternalFrontend.Replicas = ptr.To[int32](1)
 		}
 		if c.Spec.Services.InternalFrontend.Port == nil {
-			c.Spec.Services.InternalFrontend.Port = ptr.To(7236)
+			c.Spec.Services.InternalFrontend.Port = ptr.To[int32](7236)
 		}
 		if c.Spec.Services.InternalFrontend.MembershipPort == nil {
-			c.Spec.Services.InternalFrontend.MembershipPort = ptr.To(6936)
+			c.Spec.Services.InternalFrontend.MembershipPort = ptr.To[int32](6936)
 		}
 		if c.Spec.Services.InternalFrontend.HTTPPort == nil {
-			c.Spec.Services.InternalFrontend.HTTPPort = ptr.To(0)
+			c.Spec.Services.InternalFrontend.HTTPPort = ptr.To[int32](0)
 		}
 	}
 	// History specs
@@ -120,13 +120,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.History.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.History.Port == nil {
-		c.Spec.Services.History.Port = ptr.To(7234)
+		c.Spec.Services.History.Port = ptr.To[int32](7234)
 	}
 	if c.Spec.Services.History.MembershipPort == nil {
-		c.Spec.Services.History.MembershipPort = ptr.To(6934)
+		c.Spec.Services.History.MembershipPort = ptr.To[int32](6934)
 	}
 	if c.Spec.Services.History.HTTPPort == nil {
-		c.Spec.Services.History.HTTPPort = ptr.To(0)
+		c.Spec.Services.History.HTTPPort = ptr.To[int32](0)
 	}
 	// Matching specs
 	if c.Spec.Services.Matching == nil {
@@ -136,13 +136,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.Matching.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Matching.Port == nil {
-		c.Spec.Services.Matching.Port = ptr.To(7235)
+		c.Spec.Services.Matching.Port = ptr.To[int32](7235)
 	}
 	if c.Spec.Services.Matching.MembershipPort == nil {
-		c.Spec.Services.Matching.MembershipPort = ptr.To(6935)
+		c.Spec.Services.Matching.MembershipPort = ptr.To[int32](6935)
 	}
 	if c.Spec.Services.Matching.HTTPPort == nil {
-		c.Spec.Services.Matching.HTTPPort = ptr.To(0)
+		c.Spec.Services.Matching.HTTPPort = ptr.To[int32](0)
 	}
 	// Worker specs
 	if c.Spec.Services.Worker == nil {
@@ -152,13 +152,13 @@ func (c *TemporalCluster) Default() {
 		c.Spec.Services.Worker.Replicas = ptr.To[int32](1)
 	}
 	if c.Spec.Services.Worker.Port == nil {
-		c.Spec.Services.Worker.Port = ptr.To(7239)
+		c.Spec.Services.Worker.Port = ptr.To[int32](7239)
 	}
 	if c.Spec.Services.Worker.MembershipPort == nil {
-		c.Spec.Services.Worker.MembershipPort = ptr.To(6939)
+		c.Spec.Services.Worker.MembershipPort = ptr.To[int32](6939)
 	}
 	if c.Spec.Services.Worker.HTTPPort == nil {
-		c.Spec.Services.Worker.HTTPPort = ptr.To(0)
+		c.Spec.Services.Worker.HTTPPort = ptr.To[int32](0)
 	}
 
 	if c.Spec.Persistence.DefaultStore != nil {

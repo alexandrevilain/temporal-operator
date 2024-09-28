@@ -256,7 +256,6 @@ func (r *TemporalScheduleReconciler) namespaceToSchedulesMapfunc(ctx context.Con
 
 	result := []reconcile.Request{}
 	for _, schedule := range temporalSchedules.Items {
-		schedule := schedule
 		// As we're only indexing on spec.namespaceRef.Name, ensure that referenced schedule is watching the namespace's schedule.
 		if schedule.Spec.NamespaceRef.NamespacedName(&schedule) != client.ObjectKeyFromObject(namespace) {
 			continue

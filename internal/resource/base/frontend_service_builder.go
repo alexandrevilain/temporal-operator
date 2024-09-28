@@ -78,7 +78,7 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 		{
 			Name:       "grpc-rpc",
 			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(*b.instance.Spec.Services.Frontend.Port),
+			Port:       *b.instance.Spec.Services.Frontend.Port,
 			TargetPort: intstr.FromString("rpc"),
 		},
 	}
@@ -87,7 +87,7 @@ func (b *FrontendServiceBuilder) Update(object client.Object) error {
 		service.Spec.Ports = append(service.Spec.Ports, corev1.ServicePort{
 			Name:       "http",
 			Protocol:   corev1.ProtocolTCP,
-			Port:       int32(*b.instance.Spec.Services.Frontend.HTTPPort),
+			Port:       *b.instance.Spec.Services.Frontend.HTTPPort,
 			TargetPort: intstr.FromString("http"),
 		})
 	}

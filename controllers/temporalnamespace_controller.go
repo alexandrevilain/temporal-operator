@@ -216,7 +216,6 @@ func (r *TemporalNamespaceReconciler) clusterToNamespacesMapfunc(ctx context.Con
 
 	result := []reconcile.Request{}
 	for _, namespace := range temporalNamespaces.Items {
-		namespace := namespace
 		// As we're only indexing on spec.clusterRef.Name, ensure that referenced namespace is watching the cluster's namespace.
 		if namespace.Spec.ClusterRef.NamespacedName(&namespace) != client.ObjectKeyFromObject(cluster) {
 			continue
