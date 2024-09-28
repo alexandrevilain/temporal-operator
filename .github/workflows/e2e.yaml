@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 env:
-  KIND_VERSION: v0.22.0
+  KIND_VERSION: v0.24.0
   OPERATOR_IMAGE_PATH: /tmp/temporal-operator.tar
 
 jobs:
@@ -21,16 +21,16 @@ jobs:
       fail-fast: false
       matrix:
         kube-version:
-          - tag: v1.25.16
-            kind-image: kindest/node:v1.25.16@sha256:e8b50f8e06b44bb65a93678a65a26248fae585b3d3c2a669e5ca6c90c69dc519
-          - tag: v1.26.14
-            kind-image: kindest/node:v1.26.14@sha256:5d548739ddef37b9318c70cb977f57bf3e5015e4552be4e27e57280a8cbb8e4f
-          - tag: v1.27.11
-            kind-image: kindest/node:v1.27.11@sha256:681253009e68069b8e01aad36a1e0fa8cf18bb0ab3e5c4069b2e65cafdd70843
-          - tag: v1.28.7
-            kind-image: kindest/node:v1.28.7@sha256:9bc6c451a289cf96ad0bbaf33d416901de6fd632415b076ab05f5fa7e4f65c58
-          - tag: v1.29.2
-            kind-image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
+          - tag: v1.27.16
+            kind-image: kindest/node:v1.27.17@sha256:3fd82731af34efe19cd54ea5c25e882985bafa2c9baefe14f8deab1737d9fabe
+          - tag: v1.28.13
+            kind-image: kindest/node:v1.28.13@sha256:45d319897776e11167e4698f6b14938eb4d52eb381d9e3d7a9086c16c69a8110
+          - tag: v1.29.8
+            kind-image: kindest/node:v1.29.8@sha256:d46b7aa29567e93b27f7531d258c372e829d7224b25e3fc6ffdefed12476d3aa
+          - tag: v1.30.4
+            kind-image: kindest/node:v1.30.4@sha256:976ea815844d5fa93be213437e3ff5754cd599b040946b5cca43ca45c2047114
+          - tag: v1.31.0
+            kind-image: kindest/node:v1.31.0@sha256:53df588e04085fd41ae12de0c3fe4c72f7013bba32a20e7325357a1ac94ba865
     name: Run generate E2E tests
     steps:
       - name: Checkout
