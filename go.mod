@@ -24,8 +24,8 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
-	istio.io/api v1.22.3-0.20240703105953-437a88321a16
-	istio.io/client-go v1.22.3
+	istio.io/api v1.23.1-0.20240906150629-ba126bb830f0
+	istio.io/client-go v1.23.2
 	k8s.io/api v0.31.1
 	k8s.io/apiextensions-apiserver v0.31.1
 	k8s.io/apimachinery v0.31.1
