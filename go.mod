@@ -10,7 +10,7 @@ require (
 	github.com/cert-manager/cert-manager v1.15.0
 	github.com/elliotchance/orderedmap/v2 v2.4.0
 	github.com/go-logr/logr v1.4.2
-	github.com/gocql/gocql v1.6.0
+	github.com/gocql/gocql v1.7.0
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.14.0
 	github.com/lithammer/dedent v1.1.0
