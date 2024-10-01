@@ -4228,7 +4228,7 @@ string
 <td>
 <code>port</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -4245,7 +4245,7 @@ Default values are:
 <td>
 <code>membershipPort</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -4262,7 +4262,7 @@ Default values are:
 <td>
 <code>httpPort</code><br>
 <em>
-int
+int32
 </em>
 </td>
 <td>
@@ -4570,6 +4570,18 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal admin tools docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>version</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Version defines the temporal admin tools version the instance should run.</p>
 </td>
 </tr>
 <tr>

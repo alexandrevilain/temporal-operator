@@ -44,7 +44,7 @@ func TestScheduleCreation(t *testing.T) {
 			namespace := GetNamespaceForFeature(ctx)
 
 			var err error
-			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace, "1.23.0")
+			cluster, err = deployAndWaitForTemporalWithPostgres(ctx, cfg, namespace)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -236,7 +236,7 @@ func TestScheduleDeletionWhenNamespaceDeleted(rt *testing.T) {
 			// create TemporalCluster
 			namespace := GetNamespaceForFeature(ctx)
 
-			cluster, err := deployAndWaitForTemporalWithPostgres(ctx, c, namespace, "1.19.1")
+			cluster, err := deployAndWaitForTemporalWithPostgres(ctx, c, namespace)
 			if err != nil {
 				t.Fatal(err)
 			}
