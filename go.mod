@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/alexandrevilain/controller-tools v0.3.0
 	github.com/cert-manager/cert-manager v1.15.0
-	github.com/elliotchance/orderedmap/v2 v2.2.0
+	github.com/elliotchance/orderedmap/v2 v2.4.0
 	github.com/go-logr/logr v1.4.2
 	github.com/gocql/gocql v1.6.0
 	github.com/google/uuid v1.6.0
