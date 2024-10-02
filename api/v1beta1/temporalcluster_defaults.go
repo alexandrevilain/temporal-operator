@@ -213,6 +213,10 @@ func (c *TemporalCluster) Default() {
 		c.Spec.AdminTools.Image = defaultTemporalAdmintoolsImage
 	}
 
+	if c.Spec.AdminTools.Version == "" {
+		c.Spec.AdminTools.Version = version.DefaultAdminToolTag(c.Spec.Version)
+	}
+
 	if c.Spec.MTLS != nil {
 		if c.Spec.MTLS.RefreshInterval == nil {
 			c.Spec.MTLS.RefreshInterval = &metav1.Duration{Duration: time.Hour}
