@@ -95,11 +95,6 @@ func (b *SchemaJobBuilder) Build() client.Object {
 
 	volumes = append(volumes, GetDatastoresVolumes(datastores)...)
 
-	tag := b.instance.Spec.AdminTools.Version
-	if tag == "" {
-		tag = version.PersistenceJobTag(b.instance.Spec.Version)
-	}
-
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        b.instance.ChildResourceName(b.name),
@@ -129,7 +124,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					Containers: []corev1.Container{
 						{
 							Name:                     "schema-script-runner",
-							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, tag),
+							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, version.DefaultAdminToolTag(b.instance.Spec.Version)),
 							ImagePullPolicy:          corev1.PullIfNotPresent,
 							Resources:                b.instance.Spec.JobResources,
 							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
