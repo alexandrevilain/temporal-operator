@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.1
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/alexandrevilain/controller-tools v0.3.0
 	github.com/cert-manager/cert-manager v1.15.3
 	github.com/elliotchance/orderedmap/v2 v2.4.0
