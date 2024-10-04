@@ -2388,7 +2388,7 @@ map[string]string
 <td>
 <code>override</code><br>
 <em>
-<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.ServiceMonitorSpec">
+<a href="https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.ServiceMonitorSpec">
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.ServiceMonitorSpec
 </a>
 </em>
@@ -2403,7 +2403,7 @@ All fields can be overwritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rd
 <td>
 <code>metricRelabelings</code><br>
 <em>
-<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.RelabelConfig">
+<a href="https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.RelabelConfig">
 []github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig
 </a>
 </em>
