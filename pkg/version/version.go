@@ -28,7 +28,7 @@ import (
 
 var (
 	// SupportedVersionsRange holds all supported temporal versions.
-	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.25.0")
+	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.26.0")
 	ForbiddenBrokenReleases = []*Version{
 		// v1.21.0 is reported as broken, see: https://github.com/temporalio/temporal/releases/tag/v1.21.0
 		MustNewVersionFromString("1.21.0"),
