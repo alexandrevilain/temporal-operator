@@ -294,6 +294,20 @@ AuthorizationSpec
 <p>Authorization allows authorization configuration for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>replication</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterReplicationSpec">
+ClusterReplicationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Replication allows configuration of multi-cluster replication.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -917,6 +931,53 @@ ArchivalSpec
 <td>
 <em>(Optional)</em>
 <p>Visibility is the default config for visibility archival.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ClusterReplicationSpec">ClusterReplicationSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>ClusterReplicationSpec defines the specifications for replication in the temporal cluster. Using these
+the operator will configure the cluster to replicate data to other clusters. If this object is defined,
+then both properties below must be set.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enableGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>EnableGlobalNamespace signifies to this node that global namespaces should be enabled.
+Namespaces that are marked global are replicated across nodes in the cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>initialFailoverVersion</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<p>InitialFailoverVersion is used to determine the leadership order between nodes in the cluster. The node with the
+lowest initial failover version will be the primary. This must be unique across the cluster.</p>
 </td>
 </tr>
 </tbody>
@@ -5015,6 +5076,20 @@ AuthorizationSpec
 <td>
 <em>(Optional)</em>
 <p>Authorization allows authorization configuration for the temporal cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>replication</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterReplicationSpec">
+ClusterReplicationSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Replication allows configuration of multi-cluster replication.</p>
 </td>
 </tr>
 </tbody>
