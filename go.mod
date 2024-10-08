@@ -22,7 +22,7 @@ require (
 	go.temporal.io/sdk v1.26.1
 	go.temporal.io/server v1.24.2
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v1.23.2
 	istio.io/client-go v1.23.2
