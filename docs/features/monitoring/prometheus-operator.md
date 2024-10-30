@@ -23,7 +23,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.24.2
+  version: 1.24.3
   numHistoryShards: 1
   # [...]
   metrics:
@@ -67,4 +67,3 @@ spec:
 ```
 
 To see all the features provided by this field check the `monitoring.coreos.com/v1.RelabelConfig` [API reference](https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.RelabelConfig) on [prometheus-operator website](https://prometheus-operator.dev/).
- 

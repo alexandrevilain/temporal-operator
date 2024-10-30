@@ -257,7 +257,7 @@ func TestValidateCreate(t *testing.T) {
 					Name: "fake",
 				},
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: version.MustNewVersionFromString("1.24.2"),
+					Version: version.MustNewVersionFromString("1.24.3"),
 					Persistence: v1beta1.TemporalPersistenceSpec{
 						AdvancedVisibilityStore: &v1beta1.DatastoreSpec{
 							Elasticsearch: &v1beta1.ElasticsearchSpec{
@@ -283,7 +283,7 @@ func TestValidateCreate(t *testing.T) {
 					Name: "fake",
 				},
 				Spec: v1beta1.TemporalClusterSpec{
-					Version: version.MustNewVersionFromString("1.24.2"),
+					Version: version.MustNewVersionFromString("1.24.3"),
 					Persistence: v1beta1.TemporalPersistenceSpec{
 						VisibilityStore: &v1beta1.DatastoreSpec{
 							Cassandra: &v1beta1.CassandraSpec{

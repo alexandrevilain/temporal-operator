@@ -16,12 +16,12 @@ func TestDefaultAdminToolTag(t *testing.T) {
 		{
 			name:     "Version 1.24.1",
 			version:  version.MustNewVersionFromString("1.24.1"),
-			expected: "1.24.2-tctl-1.18.1-cli-0.13.2",
+			expected: "1.24.2-tctl-1.18.1-cli-1.0.0",
 		},
 		{
 			name:     "Version 1.24.9",
 			version:  version.MustNewVersionFromString("1.24.9"),
-			expected: "1.24.2-tctl-1.18.1-cli-0.13.2",
+			expected: "1.24.2-tctl-1.18.1-cli-1.0.0",
 		},
 		{
 			name:     "Version 1.25.0",
