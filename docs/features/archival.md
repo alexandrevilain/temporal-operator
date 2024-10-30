@@ -68,7 +68,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.24.2
+  version: 1.24.3
   numHistoryShards: 1
   # [...]
   archival:
@@ -104,7 +104,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.24.2
+  version: 1.24.3
   numHistoryShards: 1
   # [...]
   archival:
@@ -142,7 +142,7 @@ kind: TemporalCluster
 metadata:
   name: prod
 spec:
-  version: 1.24.2
+  version: 1.24.3
   numHistoryShards: 1
   # [...]
   services:
@@ -195,7 +195,7 @@ metadata:
   name: prod
   namespace: demo
 spec:
-  version: 1.24.2
+  version: 1.24.3
   numHistoryShards: 1
   # [...]
   archival:

@@ -7,7 +7,7 @@ import "fmt"
 func DefaultAdminToolTag(version *Version) string {
 	// Particular case for >= 1.24.0 but < 1.25.0
 	if version.GreaterOrEqual(V1_24_0) && version.LessThan(V1_25_0) {
-		return "1.24.2-tctl-1.18.1-cli-0.13.2"
+		return "1.24.2-tctl-1.18.1-cli-1.0.0"
 	}
 
 	// Particular case for >= 1.25 because the admin tools image tag doesn't

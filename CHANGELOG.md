@@ -95,7 +95,7 @@ Updates:
 - Bump github.com/cert-manager/cert-manager from 1.10.1 to 1.11.0 [#245](https://github.com/alexandrevilain/temporal-operator/pull/245)
 - Bump go.temporal.io/server from 1.19.0 to 1.19.1 [#248](https://github.com/alexandrevilain/temporal-operator/pull/248)
 - Bump go.temporal.io/sdk from 1.19.0 to 1.20.0 [#249](https://github.com/alexandrevilain/temporal-operator/pull/249)
-- Bump github.com/onsi/gomega from 1.24.2 to 1.25.0 [#250](https://github.com/alexandrevilain/temporal-operator/pull/250)
+- Bump github.com/onsi/gomega from 1.24.3 to 1.25.0 [#250](https://github.com/alexandrevilain/temporal-operator/pull/250)
 - Bump go.temporal.io/api from 1.14.0 to 1.15.0 [#253](https://github.com/alexandrevilain/temporal-operator/pull/253)
 
 ## 0.10.0
