@@ -32,8 +32,12 @@ spec:
           periodSeconds: 20
         name: manager
         ports:
-        - containerPort: 9443
-          name: webhook-server
+        - name: webhook-server
+          {{- if .Values.webhook.containerPort }}
+          containerPort: {{ .Values.webhook.containerPort }}
+          {{- else }}
+          containerPort: 9443
+          {{- end }}
           protocol: TCP
         readinessProbe:
           httpGet:
@@ -50,6 +54,10 @@ spec:
       imagePullSecrets: {{ .Values.imagePullSecrets | default list | toJson }}
       securityContext:
         runAsNonRoot: true
+      {{- if .Values.webhook.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
       serviceAccountName: {{ include "temporal-operator.fullname" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:

@@ -29,10 +29,12 @@ manager:
   tolerations: []
 
 webhook:
+  # -- Service ports settings for the webhook server.
   ports:
   - port: 443
     protocol: TCP
     targetPort: 9443
+  # -- Service type for the webhook server.
   type: ClusterIP
   # -- Certificate manager settings for the webhook server.
   certManager:
@@ -45,6 +47,13 @@ webhook:
       # -- Issuer references if you want to use custom issuer
       # In other case will be used selfSigned issuer.
       issuerRef: {}
+  # -- The port that the webhook listens on.
+  containerPort: 9443
+  # -- Set to true if the webhook should be started in hostNetwork mode.
+  # This is useful in managed clusters (e.g. AWS EKS) with custom CNI (such as Calico),
+  # where the control-plane cannot reach pods' IP CIDR and admission webhooks are not working.
+  # `webhook.containerPort` should be adapted in case it conflicts with the host network.
+  hostNetwork: false
 
 # -- Image pull secrets for accessing private image repositories.
 imagePullSecrets: []
