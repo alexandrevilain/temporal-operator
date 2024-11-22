@@ -40,6 +40,8 @@ spec:
 2. Disable the validations in the ArgoCD `Application` `spec`:
 ```yaml
 spec:
+  syncOptions:
+    - RespectIgnoreDifferences=true
   ignoreDifferences:
     - group: temporal.io
       kind: TemporalCluster
