@@ -34,7 +34,8 @@ nav:
       - Using prometheus-operator: features/monitoring/prometheus-operator.md
       - Using prometheus: features/monitoring/prometheus.md
     - Overrides: features/overrides.md
-    - ArgoCD: features/argocd.md
+  - Operations:
+    - ArgoCD: operations/argocd.md
   - API:
     - v1beta1: api/v1beta1.md
   - Contributing:
