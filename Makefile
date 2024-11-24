@@ -177,7 +177,6 @@ prepare-release: kustomize
 	$(eval OLD_VERSION := $(shell curl -s https://api.github.com/repos/alexandrevilain/temporal-operator/releases | jq -r '.[0].tag_name'))
 	cd config/manager && $(KUSTOMIZE) edit set image ghcr.io/alexandrevilain/temporal-operator:v$(VERSION)
 	sed -i'' -e 's/replaces: temporal-operator.v.*/replaces: temporal-operator.$(OLD_VERSION)/' config/manifests/bases/temporal-operator.clusterserviceversion.yaml
-	sed -i '' 's/^appVersion: ".*"/appVersion: "$(VERSION)"/' charts/temporal-operator/Chart.yaml
 	$(MAKE) bundle
 
 OPERATOR_HUB_FORK_REPOSITORY ?= git@github.com:alexandrevilain/community-operators.git
