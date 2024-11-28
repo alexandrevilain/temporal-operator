@@ -199,6 +199,30 @@ func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.Arch
 	return cfg, namespaceDefaults
 }
 
+func (b *ConfigmapBuilder) buildClusterMetadataConfig() *cluster.Config {
+	failoverVersion := int64(1)
+	enableGlobalNamespace := false
+
+	if b.instance.Spec.Replication != nil {
+		failoverVersion = b.instance.Spec.Replication.InitialFailoverVersion
+		enableGlobalNamespace = b.instance.Spec.Replication.EnableGlobalNamespace
+	}
+
+	return &cluster.Config{
+		EnableGlobalNamespace:    enableGlobalNamespace,
+		FailoverVersionIncrement: 10,
+		MasterClusterName:        b.instance.Name,
+		CurrentClusterName:       b.instance.Name,
+		ClusterInformation: map[string]cluster.ClusterInformation{
+			b.instance.Name: {
+				Enabled:                true,
+				InitialFailoverVersion: failoverVersion,
+				RPCAddress:             "127.0.0.1:7233",
+			},
+		},
+	}
+}
+
 func (b *ConfigmapBuilder) Update(object client.Object) error {
 	configMap := object.(*corev1.ConfigMap)
 
@@ -208,6 +232,8 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	archivalConfig, archivalNamespaceDefaults := b.buildArchivalConfig()
+
+	clusterMetadata := b.buildClusterMetadataConfig()
 
 	temporalCfg := config.Config{
 		Global: config.Global{
@@ -223,19 +249,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		NamespaceDefaults: config.NamespaceDefaults{
 			Archival: *archivalNamespaceDefaults,
 		},
-		ClusterMetadata: &cluster.Config{
-			EnableGlobalNamespace:    false,
-			FailoverVersionIncrement: 10,
-			MasterClusterName:        b.instance.Name,
-			CurrentClusterName:       b.instance.Name,
-			ClusterInformation: map[string]cluster.ClusterInformation{
-				b.instance.Name: {
-					Enabled:                true,
-					InitialFailoverVersion: 1,
-					RPCAddress:             "127.0.0.1:7233",
-				},
-			},
-		},
+		ClusterMetadata: clusterMetadata,
 		Services: map[string]config.Service{
 			string(primitives.FrontendService): {
 				RPC: config.RPC{

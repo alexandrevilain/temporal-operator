@@ -857,6 +857,20 @@ func (s *ClusterArchivalSpec) IsEnabled() bool {
 	return s != nil && s.Enabled
 }
 
+// ClusterReplicationSpec defines the specifications for replication in the temporal cluster. Using these
+// the operator will configure the cluster to replicate data to other clusters. If this object is defined,
+// then both properties below must be set.
+type ClusterReplicationSpec struct {
+	// EnableGlobalNamespace signifies to this node that global namespaces should be enabled.
+	// Namespaces that are marked global are replicated across nodes in the cluster.
+	// +kubebuilder:validation:Required
+	EnableGlobalNamespace bool `json:"enableGlobalNamespace"`
+	// InitialFailoverVersion is used to determine the leadership order between nodes in the cluster. The node with the
+	// lowest initial failover version will be the primary. This must be unique across the cluster.
+	// +kubebuilder:validation:Required
+	InitialFailoverVersion int64 `json:"initialFailoverVersion"`
+}
+
 type ArchivalProviderKind string
 
 const (
@@ -1058,6 +1072,9 @@ type TemporalClusterSpec struct {
 	// Authorization allows authorization configuration for the temporal cluster.
 	// +optional
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+	// Replication allows configuration of multi-cluster replication.
+	// +optional
+	Replication *ClusterReplicationSpec `json:"replication,omitempty"`
 }
 
 // ServiceStatus reports a service status.
