@@ -163,6 +163,7 @@ artifacts: kustomize
 
 .PHONY: helm
 helm: helm-docs manifests artifacts
+	sed -i '' 's/^appVersion: ".*"/appVersion: "v$(shell cat VERSION)"/' charts/temporal-operator/Chart.yaml
 	cp ${RELEASE_PATH}/temporal-operator.crds.yaml charts/temporal-operator/crds
 	$(HELM_DOCS) --chart-search-root=charts/temporal-operator --template-files=hack/helm/template/README.md.gotmpl
 
