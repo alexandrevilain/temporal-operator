@@ -19,7 +19,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.1
 	github.com/stretchr/testify v1.9.0
 	go.temporal.io/api v1.43.0
-	go.temporal.io/sdk v1.27.0
+	go.temporal.io/sdk v1.30.1
 	go.temporal.io/server v1.25.2
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	google.golang.org/protobuf v1.35.1
@@ -95,6 +95,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/nexus-rpc/sdk-go v0.0.12 // indirect
 	github.com/olivere/elastic/v7 v7.0.32 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

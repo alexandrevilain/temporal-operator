@@ -212,6 +212,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f h1:y5//uYreIhSUg3J1GEMiLbxo1LJaP8RfCpH6pymGZus=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=
+github.com/nexus-rpc/sdk-go v0.0.12 h1:Bsjo3aKIaApgi/eohhzufwrAeK/sEphcbeZM1Z7S/nI=
+github.com/nexus-rpc/sdk-go v0.0.12/go.mod h1:TpfkM2Cw0Rlk9drGkoiSMpFqflKTiQLWUNyKJjF8mKQ=
 github.com/olivere/elastic/v7 v7.0.32 h1:R7CXvbu8Eq+WlsLgxmKVKPox0oOwAE/2T9Si5BnvK6E=
 github.com/olivere/elastic/v7 v7.0.32/go.mod h1:c7PVmLe3Fxq77PIfY/bZmxY/TAamBhCzZ8xDOE09a9k=
 github.com/onsi/ginkgo/v2 v2.21.0 h1:7rg/4f3rB88pb5obDgNZrNHrQ4e6WpjonchcpuBRnZM=
@@ -310,8 +312,8 @@ go.opentelemetry.io/proto/otlp v1.3.1 h1:TrMUixzpM0yuc/znrFTP9MMRh8trP93mkCiDVeX
 go.opentelemetry.io/proto/otlp v1.3.1/go.mod h1:0X1WI4de4ZsLrrJNLAQbFeLCm3T7yBkR0XqQ7niQU+8=
 go.temporal.io/api v1.43.0 h1:lBhq+u5qFJqGMXwWsmg/i8qn1UA/3LCwVc88l2xUMHg=
 go.temporal.io/api v1.43.0/go.mod h1:1WwYUMo6lao8yl0371xWUm13paHExN5ATYT/B7QtFis=
-go.temporal.io/sdk v1.27.0 h1:C5oOE/IRyLcZaFoB13kEHsjvSHEnGcwT6bNys0HFFHk=
-go.temporal.io/sdk v1.27.0/go.mod h1:PnOq5f3dWuU2NAbY+yczXkIeycsIIdBtoCO62ZE0aak=
+go.temporal.io/sdk v1.30.1 h1:4wgfSjwuaayQl9Q0mUzpNV6w55TPAESSroR6Z5lE49o=
+go.temporal.io/sdk v1.30.1/go.mod h1:hNCZzd6dt7bxD9B4AECQgjHTd2NrzjdmGDbbv4xHuFU=
 go.temporal.io/server v1.25.2 h1:AVlFfNStYVvgyIG/QlfPsp1RgiP+IBuMnEX/kIYAHJ4=
 go.temporal.io/server v1.25.2/go.mod h1:3BzDvfiMwi9ETiv4UoE1LWhuIctR6Ep+G1RVomH9YZE=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
