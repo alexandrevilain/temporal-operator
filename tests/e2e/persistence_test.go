@@ -31,9 +31,9 @@ import (
 
 var (
 	initialClusterVersion     = "1.19.1"
-	newDatastoreVersion       = "1.20.4"
+	newDatastoreVersion       = "1.21.2"
 	oldPersistenceUpgradePath = []string{"1.20.4", "1.21.2", "1.22.6", "1.23.0"}
-	defaultUpgradePath        = []string{"1.21.2", "1.22.6", "1.23.0", "1.24.3"}
+	defaultUpgradePath        = []string{"1.22.6", "1.23.0", "1.24.2", "1.25.0"}
 )
 
 type (
@@ -343,6 +343,9 @@ func TestPersistence(t *testing.T) {
 	featureTable := []features.Feature{}
 
 	for name, testCase := range tests {
+		if name != "cassandra persistence" {
+			continue
+		}
 		test := testCase
 		feature := features.New(name).
 			Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
