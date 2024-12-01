@@ -31,11 +31,13 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/certmanager"
 	archivalutil "github.com/alexandrevilain/temporal-operator/pkg/temporal/archival"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/authorization"
+	"github.com/alexandrevilain/temporal-operator/pkg/temporal/config"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/log"
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/persistence"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common/cluster"
-	"go.temporal.io/server/common/config"
+
+	temporalconfig "go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/metrics"
 	"go.temporal.io/server/common/primitives"
@@ -76,8 +78,8 @@ func (b *ConfigmapBuilder) Enabled() bool {
 	return true
 }
 
-func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*config.DataStore, error) {
-	cfg := &config.DataStore{}
+func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*temporalconfig.DataStore, error) {
+	cfg := &temporalconfig.DataStore{}
 	switch store.GetType() {
 	case v1beta1.PostgresSQLDatastore,
 		v1beta1.PostgresSQL12Datastore,
@@ -102,12 +104,12 @@ func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*
 }
 
 func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error) {
-	cfg := &config.Persistence{
-		NumHistoryShards: b.instance.Spec.NumHistoryShards,
-		DefaultStore:     b.instance.Spec.Persistence.DefaultStore.Name,
-		VisibilityStore:  b.instance.Spec.Persistence.VisibilityStore.Name,
-		DataStores:       map[string]config.DataStore{},
-	}
+	cfg := &config.Persistence{}
+
+	cfg.NumHistoryShards = b.instance.Spec.NumHistoryShards
+	cfg.DefaultStore = b.instance.Spec.Persistence.DefaultStore.Name
+	cfg.VisibilityStore = b.instance.Spec.Persistence.VisibilityStore.Name
+	cfg.DataStores = map[string]temporalconfig.DataStore{}
 
 	// Instroduced in >= 1.21.x
 	if b.instance.Spec.Persistence.SecondaryVisibilityStore != nil {
@@ -131,9 +133,9 @@ func (b *ConfigmapBuilder) buildPersistenceConfig() (*config.Persistence, error)
 	return cfg, nil
 }
 
-func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.ArchivalNamespaceDefaults) {
-	cfg := &config.Archival{}
-	namespaceDefaults := &config.ArchivalNamespaceDefaults{}
+func (b *ConfigmapBuilder) buildArchivalConfig() (*temporalconfig.Archival, *temporalconfig.ArchivalNamespaceDefaults) {
+	cfg := &temporalconfig.Archival{}
+	namespaceDefaults := &temporalconfig.ArchivalNamespaceDefaults{}
 
 	if !b.instance.Spec.Archival.IsEnabled() {
 		return cfg, namespaceDefaults
@@ -141,19 +143,19 @@ func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.Arch
 
 	archival := b.instance.Spec.Archival
 
-	cfg.History = config.HistoryArchival{}
-	cfg.Visibility = config.VisibilityArchival{}
+	cfg.History = temporalconfig.HistoryArchival{}
+	cfg.Visibility = temporalconfig.VisibilityArchival{}
 
 	// Configure provider for both history and visibility even if there is no default config for
 	// both of them. The user can choose to provide the provider at cluster-level and enable archival per-namespace.
 	if archival.Provider != nil {
-		cfg.History.Provider = &config.HistoryArchiverProvider{
+		cfg.History.Provider = &temporalconfig.HistoryArchiverProvider{
 			Filestore: archivalutil.FilestoreArchiverToTemporalFilestoreArchiver(archival.Provider.Filestore),
 			Gstorage:  archivalutil.GCSArchiverToTemporalGstorageArchiver(archival.Provider.GCS),
 			S3store:   archivalutil.S3ArchiverToTemporalS3Archiver(archival.Provider.S3),
 		}
 
-		cfg.Visibility.Provider = &config.VisibilityArchiverProvider{
+		cfg.Visibility.Provider = &temporalconfig.VisibilityArchiverProvider{
 			Filestore: archivalutil.FilestoreArchiverToTemporalFilestoreArchiver(archival.Provider.Filestore),
 			Gstorage:  archivalutil.GCSArchiverToTemporalGstorageArchiver(archival.Provider.GCS),
 			S3store:   archivalutil.S3ArchiverToTemporalS3Archiver(archival.Provider.S3),
@@ -161,36 +163,36 @@ func (b *ConfigmapBuilder) buildArchivalConfig() (*config.Archival, *config.Arch
 	}
 
 	if archival.History != nil {
-		state := config.ArchivalDisabled
+		state := temporalconfig.ArchivalDisabled
 		if archival.History.Enabled {
-			state = config.ArchivalEnabled
+			state = temporalconfig.ArchivalEnabled
 		}
 		if archival.History.Paused {
-			state = config.ArchivalPaused
+			state = temporalconfig.ArchivalPaused
 		}
 
 		cfg.History.State = state
 		cfg.History.EnableRead = archival.History.EnableRead
 
-		namespaceDefaults.History = config.HistoryArchivalNamespaceDefaults{
+		namespaceDefaults.History = temporalconfig.HistoryArchivalNamespaceDefaults{
 			State: state,
 			URI:   archivalutil.URI(archival.Provider, archival.History),
 		}
 	}
 
 	if archival.Visibility != nil {
-		state := config.ArchivalDisabled
+		state := temporalconfig.ArchivalDisabled
 		if archival.Visibility.Enabled {
-			state = config.ArchivalEnabled
+			state = temporalconfig.ArchivalEnabled
 		}
 		if archival.Visibility.Paused {
-			state = config.ArchivalPaused
+			state = temporalconfig.ArchivalPaused
 		}
 
 		cfg.Visibility.State = state
 		cfg.Visibility.EnableRead = archival.Visibility.EnableRead
 
-		namespaceDefaults.Visibility = config.VisibilityArchivalNamespaceDefaults{
+		namespaceDefaults.Visibility = temporalconfig.VisibilityArchivalNamespaceDefaults{
 			State: state,
 			URI:   archivalutil.URI(archival.Provider, archival.Visibility),
 		}
@@ -209,73 +211,73 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 
 	archivalConfig, archivalNamespaceDefaults := b.buildArchivalConfig()
 
-	temporalCfg := config.Config{
-		Global: config.Global{
-			Membership: config.Membership{
-				MaxJoinDuration:  30 * time.Second,
-				BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
-			},
-			Authorization: authorization.ToTemporalAuthorization(b.instance.Spec.Authorization),
+	temporalCfg := config.Config{}
+	temporalCfg.Global = temporalconfig.Global{
+		Membership: temporalconfig.Membership{
+			MaxJoinDuration:  30 * time.Second,
+			BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
 		},
-		Persistence: *persistenceConfig,
-		Log:         log.NewSQLConfigFromDatastoreSpec(b.instance.Spec.Log),
-		Archival:    *archivalConfig,
-		NamespaceDefaults: config.NamespaceDefaults{
-			Archival: *archivalNamespaceDefaults,
-		},
-		ClusterMetadata: &cluster.Config{
-			EnableGlobalNamespace:    false,
-			FailoverVersionIncrement: 10,
-			MasterClusterName:        b.instance.Name,
-			CurrentClusterName:       b.instance.Name,
-			ClusterInformation: map[string]cluster.ClusterInformation{
-				b.instance.Name: {
-					Enabled:                true,
-					InitialFailoverVersion: 1,
-					RPCAddress:             "127.0.0.1:7233",
-				},
+		Authorization: authorization.ToTemporalAuthorization(b.instance.Spec.Authorization),
+	}
+
+	temporalCfg.Persistence = *persistenceConfig
+	temporalCfg.Log = log.NewSQLConfigFromDatastoreSpec(b.instance.Spec.Log)
+	temporalCfg.Archival = *archivalConfig
+	temporalCfg.NamespaceDefaults = temporalconfig.NamespaceDefaults{
+		Archival: *archivalNamespaceDefaults,
+	}
+	temporalCfg.ClusterMetadata = &cluster.Config{
+		EnableGlobalNamespace:    false,
+		FailoverVersionIncrement: 10,
+		MasterClusterName:        b.instance.Name,
+		CurrentClusterName:       b.instance.Name,
+		ClusterInformation: map[string]cluster.ClusterInformation{
+			b.instance.Name: {
+				Enabled:                true,
+				InitialFailoverVersion: 1,
+				RPCAddress:             "127.0.0.1:7233",
 			},
 		},
-		Services: map[string]config.Service{
-			string(primitives.FrontendService): {
-				RPC: config.RPC{
-					GRPCPort:        int(*b.instance.Spec.Services.Frontend.Port),
-					MembershipPort:  int(*b.instance.Spec.Services.Frontend.MembershipPort),
-					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
-				},
+	}
+	temporalCfg.Services = map[string]temporalconfig.Service{
+		string(primitives.FrontendService): {
+			RPC: temporalconfig.RPC{
+				GRPCPort:        int(*b.instance.Spec.Services.Frontend.Port),
+				MembershipPort:  int(*b.instance.Spec.Services.Frontend.MembershipPort),
+				BindOnLocalHost: false,
+				BindOnIP:        "0.0.0.0",
 			},
-			string(primitives.HistoryService): {
-				RPC: config.RPC{
-					GRPCPort:        int(*b.instance.Spec.Services.History.Port),
-					MembershipPort:  int(*b.instance.Spec.Services.History.MembershipPort),
-					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
-				},
+		},
+		string(primitives.HistoryService): {
+			RPC: temporalconfig.RPC{
+				GRPCPort:        int(*b.instance.Spec.Services.History.Port),
+				MembershipPort:  int(*b.instance.Spec.Services.History.MembershipPort),
+				BindOnLocalHost: false,
+				BindOnIP:        "0.0.0.0",
 			},
-			string(primitives.MatchingService): {
-				RPC: config.RPC{
-					GRPCPort:        int(*b.instance.Spec.Services.Matching.Port),
-					MembershipPort:  int(*b.instance.Spec.Services.Matching.MembershipPort),
-					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
-				},
+		},
+		string(primitives.MatchingService): {
+			RPC: temporalconfig.RPC{
+				GRPCPort:        int(*b.instance.Spec.Services.Matching.Port),
+				MembershipPort:  int(*b.instance.Spec.Services.Matching.MembershipPort),
+				BindOnLocalHost: false,
+				BindOnIP:        "0.0.0.0",
 			},
-			string(primitives.WorkerService): {
-				RPC: config.RPC{
-					GRPCPort:        int(*b.instance.Spec.Services.Worker.Port),
-					MembershipPort:  int(*b.instance.Spec.Services.Worker.MembershipPort),
-					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
-				},
+		},
+		string(primitives.WorkerService): {
+			RPC: temporalconfig.RPC{
+				GRPCPort:        int(*b.instance.Spec.Services.Worker.Port),
+				MembershipPort:  int(*b.instance.Spec.Services.Worker.MembershipPort),
+				BindOnLocalHost: false,
+				BindOnIP:        "0.0.0.0",
 			},
 		},
 	}
 
 	if b.instance.Spec.Version.GreaterOrEqual(version.V1_20_0) {
 		if b.instance.Spec.Services.InternalFrontend.IsEnabled() {
-			temporalCfg.Services[string(primitives.InternalFrontendService)] = config.Service{
-				RPC: config.RPC{
+			temporalCfg.Services[string(primitives.InternalFrontendService)] = temporalconfig.Service{
+				RPC: temporalconfig.RPC{
 					GRPCPort:        int(*b.instance.Spec.Services.InternalFrontend.Port),
 					MembershipPort:  int(*b.instance.Spec.Services.InternalFrontend.MembershipPort),
 					HTTPPort:        int(*b.instance.Spec.Services.InternalFrontend.HTTPPort),
@@ -287,7 +289,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	if !b.instance.Spec.Version.GreaterOrEqual(version.V1_18_0) {
-		temporalCfg.PublicClient = config.PublicClient{
+		temporalCfg.PublicClient = temporalconfig.PublicClient{
 			HostPort: b.instance.GetPublicClientAddress(),
 		}
 	}
@@ -351,9 +353,9 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	}
 
 	if b.instance.MTLSWithCertManagerEnabled() {
-		temporalCfg.Global.TLS = config.RootTLS{
+		temporalCfg.Global.TLS = temporalconfig.RootTLS{
 			RefreshInterval:  b.instance.Spec.MTLS.RefreshInterval.Duration,
-			ExpirationChecks: config.CertExpirationValidation{},
+			ExpirationChecks: temporalconfig.CertExpirationValidation{},
 		}
 
 		internodeMTLS := b.instance.Spec.MTLS.Internode
@@ -364,7 +366,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		internodeIntermediateCAFilePath := path.Join(internodeMTLS.GetIntermediateCACertificateMountPath(), certmanager.TLSCA)
 		internodeServerCertFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSCert)
 		internodeServerKeyFilePath := path.Join(internodeMTLS.GetCertificateMountPath(), certmanager.TLSKey)
-		internodeClientTLS := config.ClientTLS{
+		internodeClientTLS := temporalconfig.ClientTLS{
 			ServerName:              internodeMTLS.ServerName(b.instance),
 			DisableHostVerification: false,
 			RootCAFiles:             []string{internodeIntermediateCAFilePath},
@@ -372,9 +374,9 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		}
 
 		if b.instance.Spec.MTLS.InternodeEnabled() {
-			temporalCfg.Global.TLS.Internode = config.GroupTLS{
+			temporalCfg.Global.TLS.Internode = temporalconfig.GroupTLS{
 				Client: internodeClientTLS,
-				Server: config.ServerTLS{
+				Server: temporalconfig.ServerTLS{
 					CertFile: internodeServerCertFilePath,
 					KeyFile:  internodeServerKeyFilePath,
 					ClientCAFiles: []string{
@@ -387,7 +389,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			// If internode mTLs is enabled and internal frontend is enabled,
 			// use internode mTLS certificates for the worker TLS.
 			if b.instance.Spec.Services.InternalFrontend.IsEnabled() {
-				temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
+				temporalCfg.Global.TLS.SystemWorker = temporalconfig.WorkerTLS{
 					Client:   internodeClientTLS,
 					CertFile: internodeServerCertFilePath,
 					KeyFile:  internodeServerKeyFilePath,
@@ -399,8 +401,8 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 			frontendMTLS := b.instance.Spec.MTLS.Frontend
 			frontendIntermediateCAFilePath := path.Join(frontendMTLS.GetIntermediateCACertificateMountPath(), certmanager.TLSCA)
 
-			temporalCfg.Global.TLS.Frontend = config.GroupTLS{
-				Server: config.ServerTLS{
+			temporalCfg.Global.TLS.Frontend = temporalconfig.GroupTLS{
+				Server: temporalconfig.ServerTLS{
 					CertFile:          path.Join(frontendMTLS.GetCertificateMountPath(), certmanager.TLSCert),
 					KeyFile:           path.Join(frontendMTLS.GetCertificateMountPath(), certmanager.TLSKey),
 					RequireClientAuth: true,
@@ -409,21 +411,21 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 						frontendIntermediateCAFilePath,
 					},
 				},
-				Client: config.ClientTLS{
+				Client: temporalconfig.ClientTLS{
 					ServerName:              frontendMTLS.ServerName(b.instance),
 					DisableHostVerification: false,
 					RootCAFiles:             []string{frontendIntermediateCAFilePath},
 					ForceTLS:                true,
 				},
-				PerHostOverrides: map[string]config.ServerTLS{},
+				PerHostOverrides: map[string]temporalconfig.ServerTLS{},
 			}
 
 			// If the Frontend mTLS is enabled, and if the internal frontend with internode mTLS is not enabled, the system worker should use the Frontend mTLS.
 			if !(b.instance.Spec.MTLS.InternodeEnabled() && b.instance.Spec.Services.InternalFrontend.IsEnabled()) {
-				temporalCfg.Global.TLS.SystemWorker = config.WorkerTLS{
+				temporalCfg.Global.TLS.SystemWorker = temporalconfig.WorkerTLS{
 					CertFile: path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSCert),
 					KeyFile:  path.Join(frontendMTLS.GetWorkerCertificateMountPath(), certmanager.TLSKey),
-					Client: config.ClientTLS{
+					Client: temporalconfig.ClientTLS{
 						ServerName:              frontendMTLS.ServerName(b.instance),
 						DisableHostVerification: false,
 						RootCAFiles:             []string{frontendIntermediateCAFilePath},
