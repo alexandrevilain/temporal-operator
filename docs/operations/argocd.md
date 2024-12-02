@@ -1,6 +1,6 @@
 # ArgoCD caveats
 
-If you're using ArgoCD, you might run into `Out Of Sync` diff issues when using durations in the `spec` of some of the operator's CRDs.  This issue is [documented with ArgoCD](https://github.com/argoproj/argo-cd/discussions/14229) and appears when using durations in the `spec`. For example, in the `mTLS` part:
+If you're using ArgoCD or a similar tool that normalizes yaml manifests, you might run into `Out Of Sync` diff issues when using durations in the `spec` of some of the operator's CRDs.  This issue is [documented with ArgoCD](https://github.com/argoproj/argo-cd/discussions/14229) and appears when using durations in the `spec`. For example, in the `mTLS` part:
 
 ```yaml
 mTLS:
