@@ -15,7 +15,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/lithammer/dedent v1.1.0
 	github.com/onsi/ginkgo/v2 v2.21.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/gomega v1.36.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.2
 	github.com/stretchr/testify v1.10.0
 	go.temporal.io/api v1.43.0
