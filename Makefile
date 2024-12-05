@@ -10,6 +10,13 @@ endif
 
 UNAME=$(shell uname -s)
 
+# GNU vs BSD sed incompatibility adaption
+ifeq ($(UNAME), Darwin)
+  SEDI = sed -i ''
+else
+  SEDI = sed -i
+endif
+
 VERSION ?= "$(shell cat VERSION)"
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -163,7 +170,7 @@ artifacts: kustomize
 
 .PHONY: helm
 helm: helm-docs manifests artifacts
-	sed -i '' 's/^appVersion: ".*"/appVersion: "v$(shell cat VERSION)"/' charts/temporal-operator/Chart.yaml
+	$(SEDI) 's/^appVersion: ".*"/appVersion: "v$(shell cat VERSION)"/' charts/temporal-operator/Chart.yaml
 	cp ${RELEASE_PATH}/temporal-operator.crds.yaml charts/temporal-operator/crds
 	$(HELM_DOCS) --chart-search-root=charts/temporal-operator --template-files=hack/helm/template/README.md.gotmpl
 
