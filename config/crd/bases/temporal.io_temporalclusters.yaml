@@ -64,6 +64,8 @@ spec:
                         deployment:
                           description: Override configuration for the temporal service Deployment.
                           properties:
+                            jsonPatch:
+                              x-kubernetes-preserve-unknown-fields: true
                             metadata:
                               description: |-
                                 ObjectMetaOverride provides the ability to override an object metadata.
@@ -2910,6 +2912,8 @@ spec:
                             deployment:
                               description: Override configuration for the temporal service Deployment.
                               properties:
+                                jsonPatch:
+                                  x-kubernetes-preserve-unknown-fields: true
                                 metadata:
                                   description: |-
                                     ObjectMetaOverride provides the ability to override an object metadata.
@@ -3075,6 +3079,8 @@ spec:
                             deployment:
                               description: Override configuration for the temporal service Deployment.
                               properties:
+                                jsonPatch:
+                                  x-kubernetes-preserve-unknown-fields: true
                                 metadata:
                                   description: |-
                                     ObjectMetaOverride provides the ability to override an object metadata.
@@ -3246,6 +3252,8 @@ spec:
                             deployment:
                               description: Override configuration for the temporal service Deployment.
                               properties:
+                                jsonPatch:
+                                  x-kubernetes-preserve-unknown-fields: true
                                 metadata:
                                   description: |-
                                     ObjectMetaOverride provides the ability to override an object metadata.
@@ -3411,6 +3419,8 @@ spec:
                             deployment:
                               description: Override configuration for the temporal service Deployment.
                               properties:
+                                jsonPatch:
+                                  x-kubernetes-preserve-unknown-fields: true
                                 metadata:
                                   description: |-
                                     ObjectMetaOverride provides the ability to override an object metadata.
@@ -3549,6 +3559,8 @@ spec:
                         deployment:
                           description: Override configuration for the temporal service Deployment.
                           properties:
+                            jsonPatch:
+                              x-kubernetes-preserve-unknown-fields: true
                             metadata:
                               description: |-
                                 ObjectMetaOverride provides the ability to override an object metadata.
@@ -3637,6 +3649,8 @@ spec:
                             deployment:
                               description: Override configuration for the temporal service Deployment.
                               properties:
+                                jsonPatch:
+                                  x-kubernetes-preserve-unknown-fields: true
                                 metadata:
                                   description: |-
                                     ObjectMetaOverride provides the ability to override an object metadata.
@@ -3829,6 +3843,8 @@ spec:
                         deployment:
                           description: Override configuration for the temporal service Deployment.
                           properties:
+                            jsonPatch:
+                              x-kubernetes-preserve-unknown-fields: true
                             metadata:
                               description: |-
                                 ObjectMetaOverride provides the ability to override an object metadata.
