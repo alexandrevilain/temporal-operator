@@ -338,6 +338,166 @@ func TestApplyDeploymentOverrides(t *testing.T) {
 				},
 			},
 		},
+		"add env var to existing env": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									Env: []corev1.EnvVar{
+										{
+											Name: "a",
+											ValueFrom: &corev1.EnvVarSource{
+												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "test",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				JSONPatch: &apiextensionsv1.JSON{
+					Raw: []byte(`[{"op":"add", "path":"/spec/template/spec/containers/0/env/-", "value":{"name":"b","value":"c"}}]`),
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									Env: []corev1.EnvVar{
+										{
+											Name: "a",
+											ValueFrom: &corev1.EnvVarSource{
+												ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+													LocalObjectReference: corev1.LocalObjectReference{
+														Name: "test",
+													},
+												},
+											},
+										},
+										{
+											Name:  "b",
+											Value: "c",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"add secret volume to existing volumes": {
+			original: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "a",
+											ReadOnly:  true,
+											MountPath: "/a",
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "a",
+									VolumeSource: corev1.VolumeSource{
+										ConfigMap: &corev1.ConfigMapVolumeSource{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			override: &v1beta1.DeploymentOverride{
+				JSONPatch: &apiextensionsv1.JSON{
+					Raw: []byte(`[
+						{"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts/-", "value": {"name": "b", "readOnly": true, "mountPath": "/b"}}, 
+						{"op": "add", "path": "/spec/template/spec/volumes/-", "value": {"name": "b", "secret": {"secretName": "test"}}}
+					]`),
+				},
+			},
+			expected: &appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      "a",
+											ReadOnly:  true,
+											MountPath: "/a",
+										},
+										{
+											Name:      "b",
+											ReadOnly:  true,
+											MountPath: "/b",
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "a",
+									VolumeSource: corev1.VolumeSource{
+										ConfigMap: &corev1.ConfigMapVolumeSource{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test",
+											},
+										},
+									},
+								},
+								{
+									Name: "b",
+									VolumeSource: corev1.VolumeSource{
+										Secret: &corev1.SecretVolumeSource{
+											SecretName: "test",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {

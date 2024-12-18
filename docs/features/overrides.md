@@ -15,6 +15,8 @@ The API provides you the ability to apply your overrides:
 - per temporal service (using `spec.services.[frontend|history|matching|worker].overrides`)
 - for all services (using `spec.services.overrides`)
 
+There are two ways of performing overrides, one is via StrategicPatchMerge and one using RFC6902 JSON patches. You can find examples of both below. If working with certain fields that aren't handled by StrategicPatchMerge properly (i.e., arrays that don't have go struct tags for merging valid for your use case), you may want to consider using JSON patches.
+
 ## Overrides for all services
 
 Here is a general example:
@@ -210,7 +212,7 @@ spec:
                         value: example.com
 ```
 
-### Example: mount an extra volume to the frontend pod
+### Example: Mount an extra secret volume to the frontend pod
 
 ```yaml
 apiVersion: temporal.io/v1beta1
@@ -223,18 +225,18 @@ spec:
     frontend:
       overrides:
         deployment:
-          spec:
-            template:
-              spec:
-                containers:
-                  - name: service
-                    volumeMounts:
-                      - name: extra-volume
-                        mountPath: /etc/extra
-                volumes:
-                  - name: extra-volume
-                    configMap:
-                      name: extra-config
+          jsonPatch:
+            - op: add
+              path: /spec/template/spec/containers/0/volumeMounts/-
+              value:
+                name: extra-volume
+                mountPath: /etc/extra
+            - op: add
+              path: /spec/template/spec/volumes/-
+              value:
+                name: extra-volume
+                secret:
+                  secretName: test-secret
 ```
 
 ### Example: Add an environment variable from secretRef to the frontend pod
@@ -284,6 +286,29 @@ spec:
                       grpc:
                         port: 7233
                         service: frontend.temporal.temporal.svc.cluster.local
+```
+
+### Example: Add environment variable from a secret to frontend pod
+```yaml
+apiVersion: temporal.io/v1beta1
+kind: TemporalCluster
+metadata:
+  name: prod
+spec:
+  # [...]
+  services:
+    frontend:
+      overrides:
+        deployment:
+          jsonPatch:
+            - op: add
+              path: /spec/template/spec/containers/0/env/-
+              value:
+                name: TEST
+                valueFrom:
+                  secretKeyRef:
+                    name: test-secret
+                    key: test
 ```
 
 Read more in [Strategic Merge Patch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md#strategic-merge-patch).

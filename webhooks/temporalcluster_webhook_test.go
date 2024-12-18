@@ -26,6 +26,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/alexandrevilain/temporal-operator/webhooks"
 	"github.com/stretchr/testify/assert"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/ptr"
@@ -301,6 +302,39 @@ func TestValidateCreate(t *testing.T) {
 				},
 			},
 			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.persistence.visibilityStore.cassandra: Forbidden: Support for Cassandra as a Visibility database has been removed with Temporal Server v1.24.",
+		},
+		"error with override spec and JSON patch": {
+			object: &v1beta1.TemporalCluster{
+				TypeMeta: v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "fake",
+				},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version: version.MustNewVersionFromString("1.18.4"),
+					Services: &v1beta1.ServicesSpec{
+						Overrides: &v1beta1.ServiceSpecOverride{
+							Deployment: &v1beta1.DeploymentOverride{
+								JSONPatch: &apiextensionsv1.JSON{
+									Raw: []byte(`{ "op": "replace", "path": "/spec/replicas", "value": 3 }`),
+								},
+								Spec: &v1beta1.DeploymentOverrideSpec{
+									Template: &v1beta1.PodTemplateSpecOverride{
+										Spec: &apiextensionsv1.JSON{Raw: []byte(`{ "replicas": 2 }`)},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wh: &webhooks.TemporalClusterWebhook{
+				AvailableAPIs: &discovery.AvailableAPIs{
+					Istio:              false,
+					CertManager:        false,
+					PrometheusOperator: false,
+				},
+			},
+			expectedErr: "Forbidden: Can't set JSONPatch when Spec is set on Deployment override",
 		},
 	}
 
