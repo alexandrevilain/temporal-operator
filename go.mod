@@ -7,7 +7,7 @@ toolchain go1.23.1
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/alexandrevilain/controller-tools v0.3.0
-	github.com/cert-manager/cert-manager v1.16.1
+	github.com/cert-manager/cert-manager v1.16.3
 	github.com/elliotchance/orderedmap/v2 v2.4.0
 	github.com/go-logr/logr v1.4.2
 	github.com/gocql/gocql v1.7.0
@@ -134,7 +134,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
