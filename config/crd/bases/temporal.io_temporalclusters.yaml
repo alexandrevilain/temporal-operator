@@ -643,6 +643,12 @@ spec:
                           description: Enabled defines if the operator should enable mTLS for network between cluster nodes.
                           type: boolean
                       type: object
+                    permissiveMetrics:
+                      description: |-
+                        PermissiveMetrics allows insecure HTTP requests to the metrics endpoint.
+                        This is handy if the metrics collector does not support mTLS.
+                        Useless if mTLS provider is not istio
+                      type: boolean
                     provider:
                       default: cert-manager
                       description: Provider defines the tool used to manage mTLS certificates.

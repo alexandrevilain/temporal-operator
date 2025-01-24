@@ -78,6 +78,16 @@ func (b *PeerAuthenticationBuilder) Update(object client.Object) error {
 		},
 	}
 
+	if b.instance.Spec.Metrics.IsEnabled() && b.instance.Spec.MTLS.PermissiveMetrics {
+		if b.instance.Spec.Metrics.Prometheus != nil && b.instance.Spec.Metrics.Prometheus.ListenPort != nil {
+			pa.Spec.PortLevelMtls = map[uint32]*istioapisecurityv1beta1.PeerAuthentication_MutualTLS{
+				uint32(*b.instance.Spec.Metrics.Prometheus.ListenPort): { //nolint:gosec
+					Mode: istioapisecurityv1beta1.PeerAuthentication_MutualTLS_PERMISSIVE,
+				},
+			}
+		}
+	}
+
 	if err := controllerutil.SetControllerReference(b.instance, pa, b.scheme); err != nil {
 		return fmt.Errorf("failed setting controller reference: %w", err)
 	}

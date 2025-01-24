@@ -17,3 +17,16 @@ spec:
 ```
 
 The Operator creates for each temporal services a `DestinationRule` and a `PeerAuthentication`. They both ensure mutual and strict mTLS.
+
+## Allowing permissive mTLS for metrics
+
+If your metrics collector isn't using Istio or is otherwise unable to connect using mTLS, you can enable permissive mode for the metrics port.
+
+```yaml
+spec:
+# [...]
+  mTLS:
+    provider: istio
+    permissiveMetrics: true
+# [...]
+```
