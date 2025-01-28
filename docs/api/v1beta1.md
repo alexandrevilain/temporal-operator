@@ -2056,6 +2056,20 @@ issued certificate&rsquo;s duration. Minimum accepted value is 5 minutes.
 Useless if mTLS provider is not cert-manager.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>permissiveMetrics</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PermissiveMetrics allows insecure HTTP requests to the metrics endpoint.
+This is handy if the metrics collector does not support mTLS.
+Useless if mTLS provider is not istio</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2388,7 +2402,7 @@ map[string]string
 <td>
 <code>override</code><br>
 <em>
-<a href="https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.ServiceMonitorSpec">
+<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.ServiceMonitorSpec">
 github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.ServiceMonitorSpec
 </a>
 </em>
@@ -2403,7 +2417,7 @@ All fields can be overwritten except &ldquo;endpoints&rdquo;, &ldquo;selector&rd
 <td>
 <code>metricRelabelings</code><br>
 <em>
-<a href="https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.RelabelConfig">
+<a href="https://prometheus-operator.dev/docs/operator/api/#monitoring.coreos.com/v1.RelabelConfig">
 []github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.RelabelConfig
 </a>
 </em>

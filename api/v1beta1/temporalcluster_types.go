@@ -715,6 +715,11 @@ type MTLSSpec struct {
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	RenewBefore *metav1.Duration `json:"renewBefore,omitempty"`
+	// PermissiveMetrics allows insecure HTTP requests to the metrics endpoint.
+	// This is handy if the metrics collector does not support mTLS.
+	// Useless if mTLS provider is not istio
+	// +optional
+	PermissiveMetrics bool `json:"permissiveMetrics"`
 }
 
 func (m *MTLSSpec) InternodeEnabled() bool {
