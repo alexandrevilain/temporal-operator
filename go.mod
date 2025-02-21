@@ -9,6 +9,7 @@ require (
 	github.com/alexandrevilain/controller-tools v0.3.0
 	github.com/cert-manager/cert-manager v1.16.3
 	github.com/elliotchance/orderedmap/v2 v2.4.0
+	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/go-logr/logr v1.4.2
 	github.com/gocql/gocql v1.7.0
 	github.com/google/uuid v1.6.0
@@ -53,7 +54,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
-	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect

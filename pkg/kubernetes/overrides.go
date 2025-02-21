@@ -23,6 +23,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
@@ -108,6 +109,24 @@ func ApplyDeploymentOverrides(deployment *appsv1.Deployment, override *v1beta1.D
 		if err != nil {
 			return err
 		}
+	}
+
+	if override.JSONPatch != nil {
+		patch, err := jsonpatch.DecodePatch(override.JSONPatch.Raw)
+		if err != nil {
+			return fmt.Errorf("can't decode json patch: %w", err)
+		}
+
+		original, err := json.Marshal(deployment)
+		if err != nil {
+			return fmt.Errorf("can't marshal deployment spec: %w", err)
+		}
+
+		patched, err := patch.Apply(original)
+		if err != nil {
+			return fmt.Errorf("can't apply json patch: %w", err)
+		}
+		return json.Unmarshal(patched, &deployment)
 	}
 
 	return nil

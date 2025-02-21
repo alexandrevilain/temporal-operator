@@ -174,7 +174,8 @@ type DeploymentOverride struct {
 	*ObjectMetaOverride `json:"metadata,omitempty"`
 	// Specification of the desired behavior of the Deployment.
 	// +optional
-	Spec *DeploymentOverrideSpec `json:"spec,omitempty"`
+	Spec      *DeploymentOverrideSpec `json:"spec,omitempty"`
+	JSONPatch *apiextensionsv1.JSON   `json:"jsonPatch,omitempty"`
 }
 
 // DeploymentOverrideSpec provides the ability to override a Deployment Spec.

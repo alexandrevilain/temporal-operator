@@ -28,6 +28,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	enumspb "go.temporal.io/api/enums/v1"
 	enumsspb "go.temporal.io/server/api/enums/v1"
+	"go.temporal.io/server/common/primitives"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -317,6 +318,46 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
+	if cluster.Spec.Services != nil {
+		overrides := cluster.Spec.Services.Overrides
+		if overrides != nil && overrides.Deployment != nil && overrides.Deployment.Spec != nil && overrides.Deployment.JSONPatch != nil {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "services", "overrides", "deployment", "jsonPatch"),
+					"Can't set JSONPatch when Spec is set on Deployment override",
+				),
+			)
+		}
+
+		services := []primitives.ServiceName{
+			primitives.FrontendService,
+			primitives.HistoryService,
+			primitives.MatchingService,
+			primitives.WorkerService,
+			primitives.InternalFrontendService,
+		}
+
+		for _, service := range services {
+			spec, err := cluster.Spec.Services.GetServiceSpec(service)
+			if err != nil {
+				errs = append(errs,
+					field.Invalid(
+						field.NewPath("spec", "services", string(service)),
+						string(service),
+						fmt.Sprintf("Invalid service: %s", string(service)),
+					),
+				)
+			}
+			if spec != nil && spec.Overrides != nil && spec.Overrides.Deployment != nil && spec.Overrides.Deployment.Spec != nil && spec.Overrides.Deployment.JSONPatch != nil {
+				errs = append(errs,
+					field.Forbidden(
+						field.NewPath("spec", "services", string(service), "overrides", "deployment", "jsonPatch"),
+						"Can't set JSONPatch when Spec is set on Deployment override",
+					),
+				)
+			}
+		}
+	}
 	return warns, errs
 }
 

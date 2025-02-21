@@ -1400,6 +1400,18 @@ DeploymentOverrideSpec
 </table>
 </td>
 </tr>
+<tr>
+<td>
+<code>jsonPatch</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
