@@ -10,7 +10,7 @@ spec:
     defaultStore:
       sql:
         user: temporal
-        pluginName: postgres
+        pluginName: postgres12
         databaseName: temporal
         connectAddr: postgres.demo.svc.cluster.local:5432
         connectProtocol: tcp
