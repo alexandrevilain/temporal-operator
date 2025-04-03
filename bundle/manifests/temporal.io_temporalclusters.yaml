@@ -69,6 +69,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
@@ -682,6 +684,12 @@ spec:
                           mTLS for network between cluster nodes.
                         type: boolean
                     type: object
+                  permissiveMetrics:
+                    description: |-
+                      PermissiveMetrics allows insecure HTTP requests to the metrics endpoint.
+                      This is handy if the metrics collector does not support mTLS.
+                      Useless if mTLS provider is not istio
+                    type: boolean
                   provider:
                     default: cert-manager
                     description: Provider defines the tool used to manage mTLS certificates.
@@ -1920,6 +1928,23 @@ spec:
                                           type: string
                                         type: array
                                     type: object
+                                  nativeHistogramBucketLimit:
+                                    description: |-
+                                      If there are more than this many buckets in a native histogram,
+                                      buckets will be merged to stay within the limit.
+                                      It requires Prometheus >= v2.45.0.
+                                    format: int64
+                                    type: integer
+                                  nativeHistogramMinBucketFactor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
+                                    description: |-
+                                      If the growth factor of one bucket to the next is smaller than this,
+                                      buckets will be merged to increase the factor sufficiently.
+                                      It requires Prometheus >= v2.50.0.
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   podTargetLabels:
                                     description: |-
                                       `podTargetLabels` defines the labels which are transferred from the
@@ -1937,6 +1962,11 @@ spec:
                                     description: The scrape class to apply.
                                     minLength: 1
                                     type: string
+                                  scrapeClassicHistograms:
+                                    description: |-
+                                      Whether to scrape a classic histogram that is also exposed as a native histogram.
+                                      It requires Prometheus >= v2.45.0.
+                                    type: boolean
                                   scrapeProtocols:
                                     description: |-
                                       `scrapeProtocols` defines the protocols to negotiate during a scrape. It tells clients the
@@ -3175,6 +3205,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3347,6 +3379,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3526,6 +3560,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3698,6 +3734,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3841,6 +3879,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
@@ -3935,6 +3975,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -4139,6 +4181,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
