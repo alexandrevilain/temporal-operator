@@ -73,5 +73,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-artifacts
+          name: e2e-artifacts-${{ matrix.kube-version.tag }}
           path: out/tests/e2e/
