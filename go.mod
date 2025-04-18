@@ -19,11 +19,11 @@ require (
 	github.com/onsi/gomega v1.36.1
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.2
 	github.com/stretchr/testify v1.10.0
-	go.temporal.io/api v1.43.0
+	go.temporal.io/api v1.48.0
 	go.temporal.io/sdk v1.30.1
 	go.temporal.io/server v1.25.2
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.5
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v1.24.1
 	istio.io/client-go v1.24.0
