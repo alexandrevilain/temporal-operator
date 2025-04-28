@@ -21,3 +21,4 @@ spec:
     # https://hub.docker.com/r/temporalio/admin-tools/tags
     version: 1.24.2-tctl-1.18.1-cli-1.0.0
 ```
+Note: You need helm chart version 0.6.0 or above to specify admintools version.
