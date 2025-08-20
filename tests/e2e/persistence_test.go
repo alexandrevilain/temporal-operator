@@ -33,7 +33,7 @@ var (
 	initialClusterVersion     = "1.19.1"
 	newDatastoreVersion       = "1.21.2"
 	oldPersistenceUpgradePath = []string{"1.20.4", "1.21.2", "1.22.6", "1.23.0"}
-	defaultUpgradePath        = []string{"1.22.6", "1.23.0", "1.24.2", "1.25.0"}
+	defaultUpgradePath        = []string{"1.25.2", "1.26.2", "1.27.2", "1.28.1"}
 )
 
 type (
