@@ -209,6 +209,42 @@ var (
 
                         curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
                     ;;
+                    v8)
+                        echo "Upgrading to schema v8"
+
+                        new_mapping='
+                        {
+                        "properties": {
+                            "TemporalPauseInfo": {
+                            "type": "keyword"
+                            }
+                        }
+                        }
+                        '
+
+                        curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
+                    ;;
+                    v9)
+                        echo "Upgrading to schema v9"
+
+                        new_mapping='
+                        {
+                        "properties": {
+                            "TemporalWorkerDeploymentVersion": {
+                            "type": "keyword"
+                            },
+                            "TemporalWorkflowVersioningBehavior": {
+                            "type": "keyword"
+                            },
+                            "TemporalWorkerDeployment": {
+                            "type": "keyword"
+                            }
+                        }
+                        }
+                        '
+
+                        curl --silent --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.Visibility }}/_mapping" -H "Content-Type: application/json" --data-binary "$new_mapping" | jq
+                    ;;
                 esac
             }
 
@@ -282,12 +318,30 @@ var (
                 fi
             fi
 
-            # v7 has the "RootRunId" key
-            is_v7=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("RootRunId")')
+            # v7 does not have the "TemporalPauseInfo" key
+            is_v7=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalPauseInfo") | not')
             if [ $is_v7 == "true" ]; then
                 if [ $current_version_found = false ]; then
                     current_version_found=true
                     current_version="v7"
+                fi
+            fi
+
+            # v8 does not have the "TemporalWorkerDeployment" key
+            is_v8=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalWorkerDeployment") | not')
+            if [ $is_v8 == "true" ]; then
+                if [ $current_version_found = false ]; then
+                    current_version_found=true
+                    current_version="v8"
+                fi
+            fi
+
+            # v9 has the "TemporalWorkerDeployment" key
+            is_v9=$(echo $current_mapping | jq -r '.{{ .Indices.Visibility }}.mappings.properties | has("TemporalWorkerDeployment")')
+            if [ $is_v9 == "true" ]; then
+                if [ $current_version_found = false ]; then
+                    current_version_found=true
+                    current_version="v9"
                 fi
             fi
 
