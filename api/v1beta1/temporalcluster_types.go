@@ -1182,6 +1182,10 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 }
 
 func (c *TemporalCluster) GetPublicClientAddress() string {
+	// Use internal frontend if it's enabled, otherwise use regular frontend
+	if c.Spec.Services != nil && c.Spec.Services.InternalFrontend.IsEnabled() {
+		return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("internal-frontend-headless"), c.GetNamespace(), *c.Spec.Services.InternalFrontend.Port)
+	}
 	return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
 }
 
