@@ -68,7 +68,7 @@ jobs:
           KIND_IMAGE: ${{ matrix.kube-version.kind-image }}
 
       - name: Archive e2e logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: e2e-artifacts-${{ matrix.kube-version.tag }}
