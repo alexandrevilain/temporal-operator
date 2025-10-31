@@ -5258,6 +5258,20 @@ Only applicable if the namespace is a global namespace.</p>
 </tr>
 <tr>
 <td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Search attributes are key-value pairs of metadata objects included in a workflow
+execution&rsquo;s visibility information. Temporal uses some default search attributes
+but also supports custom search attributes.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>activeClusterName</code><br>
 <em>
 string
@@ -5478,6 +5492,20 @@ bool
 <em>(Optional)</em>
 <p>List of clusters names to which the namespace can fail over.
 Only applicable if the namespace is a global namespace.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Search attributes are key-value pairs of metadata objects included in a workflow
+execution&rsquo;s visibility information. Temporal uses some default search attributes
+but also supports custom search attributes.</p>
 </td>
 </tr>
 <tr>
