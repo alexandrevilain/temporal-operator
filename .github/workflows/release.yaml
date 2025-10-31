@@ -1,16 +1,15 @@
 name: Publish release artifacts
 
 on:
-  release:
-    types: 
-      - created
+  push:
+    branches: [main]
+    tags: ["v*"]
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
   release:
-    if: startsWith(github.ref, 'refs/tags/v') == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,6 +41,7 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/alexandrevilain/temporal-operator
           tags: |
+            type=ref,event=branch
             type=ref,event=tag
       - name: Build and push operator docker image
         uses: docker/build-push-action@v5
@@ -58,6 +58,7 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/alexandrevilain/temporal-operator-bundle
           tags: |
+            type=ref,event=branch
             type=ref,event=tag
       - name: Build and push bundle docker image
         uses: docker/build-push-action@v5
@@ -68,8 +69,8 @@ jobs:
           tags: ${{ steps.metabundle.outputs.tags }}
           labels: ${{ steps.metabundle.outputs.labels }}
       - name: Release
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             out/release/artifacts/*.yaml
-          
