@@ -55,6 +55,11 @@ type TemporalNamespaceSpec struct {
 	// Only applicable if the namespace is a global namespace.
 	// +optional
 	Clusters []string `json:"clusters,omitempty"`
+	// Search attributes are key-value pairs of metadata objects included in a workflow
+	// execution's visibility information. Temporal uses some default search attributes
+	// but also supports custom search attributes.
+	// +optional
+	CustomSearchAttributes map[string]string `json:"customSearchAttributes,omitempty"`
 	// The name of active Temporal Cluster.
 	// Only applicable if the namespace is a global namespace.
 	// +optional

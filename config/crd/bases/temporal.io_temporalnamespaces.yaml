@@ -130,6 +130,14 @@ spec:
                 items:
                   type: string
                 type: array
+              customSearchAttributes:
+                additionalProperties:
+                  type: string
+                description: |-
+                  Search attributes are key-value pairs of metadata objects included in a workflow
+                  execution's visibility information. Temporal uses some default search attributes
+                  but also supports custom search attributes.
+                type: object
               data:
                 additionalProperties:
                   type: string

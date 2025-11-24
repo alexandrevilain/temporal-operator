@@ -93,6 +93,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 - [x] Automatic mTLS certificates management (using cert-manager).
 - [x] Support for integration in meshes: istio & linkerd.
 - [x] Namespace management using CRDs.
+- [x] Custom search attribute management.
 - [x] Cluster version upgrades.
 - [x] Cluster monitoring.
 - [x] Complete end2end test suite.

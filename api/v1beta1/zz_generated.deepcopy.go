@@ -1840,6 +1840,13 @@ func (in *TemporalNamespaceSpec) DeepCopyInto(out *TemporalNamespaceSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.CustomSearchAttributes != nil {
+		in, out := &in.CustomSearchAttributes, &out.CustomSearchAttributes
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.Archival != nil {
 		in, out := &in.Archival, &out.Archival
 		*out = new(TemporalNamespaceArchivalSpec)
