@@ -97,7 +97,7 @@ Please note this table only reports end-to-end tests suite coverage, others vers
 - [x] Cluster monitoring.
 - [x] Complete end2end test suite.
 - [x] Archival.
-- [ ] Auto scaling.
+- [x] Auto scaling.
 - [ ] Multi cluster replication.
 
 ## Contributing

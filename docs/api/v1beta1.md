@@ -570,6 +570,84 @@ the specified URIs.</p>
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.AutoscalingSpec">AutoscalingSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.ServiceSpec">ServiceSpec</a>)
+</p>
+<p>AutoscalingSpec defines the configuration for Horizontal Pod Autoscaling.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>minReplicas</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MinReplicas is the lower limit for the number of replicas to which the autoscaler
+can scale down. It defaults to 1 pod.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxReplicas</code><br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MaxReplicas is the upper limit for the number of replicas to which the autoscaler can scale up.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>metrics</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#metricspec-v2-autoscaling">
+[]Kubernetes autoscaling/v2.MetricSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Metrics contains the specifications for which to use to calculate the
+desired replica count (the maximum replica count across all metrics will
+be used). If not set, defaults to 80% CPU and 70% memory utilization.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>behavior</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#horizontalpodautoscalerbehavior-v2-autoscaling">
+Kubernetes autoscaling/v2.HorizontalPodAutoscalerBehavior
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Behavior configures the scaling behavior of the target
+in both Up and Down directions (scaleUp and scaleDown fields respectively).
+If not set, the default HPAScalingRules for scale up and scale down are used.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.CassandraConsistencySpec">CassandraConsistencySpec
 </h3>
 <p>
@@ -4352,6 +4430,21 @@ Those overrides takes precedence over spec.services.overrides.</p>
 <td>
 <em>(Optional)</em>
 <p>InitContainers adds a list of init containers to the service&rsquo;s deployment.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>autoscaling</code><br>
+<em>
+<a href="#temporal.io/v1beta1.AutoscalingSpec">
+AutoscalingSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Autoscaling enables horizontal pod autoscaling for the service.
+When enabled, the controller will bypass the replicas field and create an HPA resource instead.</p>
 </td>
 </tr>
 </tbody>

@@ -41,6 +41,7 @@ import (
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -76,6 +77,7 @@ type TemporalClusterReconciler struct {
 //+kubebuilder:rbac:groups="",resources=events,verbs=get;create;patch
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;delete
 //+kubebuilder:rbac:groups="cert-manager.io",resources=certificates;issuers,verbs=get;list;watch;create;update;delete
@@ -222,6 +224,7 @@ func (r *TemporalClusterReconciler) resourceBuilders(temporalCluster *v1beta1.Te
 
 		builders = append(builders, base.NewServiceAccountBuilder(serviceName, temporalCluster, r.Scheme))
 		builders = append(builders, base.NewDeploymentBuilder(serviceName, temporalCluster, r.Scheme, specs, configHash))
+		builders = append(builders, base.NewHPABuilder(serviceName, temporalCluster, r.Scheme, specs))
 		builders = append(builders, base.NewHeadlessServiceBuilder(serviceName, temporalCluster, r.Scheme, specs))
 
 		builders = append(builders, istio.NewPeerAuthenticationBuilder(serviceName, temporalCluster, r.Scheme, specs))
@@ -275,7 +278,7 @@ func (r *TemporalClusterReconciler) handleErrorWithRequeue(cluster *v1beta1.Temp
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	for _, resource := range []client.Object{&appsv1.Deployment{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}, &batchv1.Job{}} {
+	for _, resource := range []client.Object{&appsv1.Deployment{}, &autoscalingv2.HorizontalPodAutoscaler{}, &corev1.ConfigMap{}, &corev1.Service{}, &corev1.ServiceAccount{}, &networkingv1.Ingress{}, &batchv1.Job{}} {
 		if err := mgr.GetFieldIndexer().IndexField(context.Background(), resource, ownerKey, addResourceToIndex); err != nil {
 			return err
 		}
@@ -288,6 +291,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			predicate.AnnotationChangedPredicate{},
 		))).
 		Owns(&appsv1.Deployment{}).
+		Owns(&autoscalingv2.HorizontalPodAutoscaler{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ServiceAccount{}).
@@ -334,6 +338,7 @@ func (r *TemporalClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func addResourceToIndex(rawObj client.Object) []string {
 	switch resourceObject := rawObj.(type) {
 	case *appsv1.Deployment,
+		*autoscalingv2.HorizontalPodAutoscaler,
 		*corev1.ConfigMap,
 		*corev1.Service,
 		*corev1.ServiceAccount,
