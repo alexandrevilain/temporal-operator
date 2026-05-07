@@ -31,17 +31,21 @@ const (
 )
 
 // BuildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
-func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service, configHash string) metav1.ObjectMeta {
+// It merges existing pod template labels and annotations with the operator-managed ones,
+// so that externally-added annotations (e.g. from kubectl rollout restart) are preserved.
+func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service, configHash string, existing metav1.ObjectMeta) metav1.ObjectMeta {
 	instanceAnnotations := metadata.FilterAnnotations(instance.Annotations, func(k, _ string) bool {
 		return k != "kubectl.kubernetes.io/last-applied-configuration"
 	})
 
 	return metav1.ObjectMeta{
 		Labels: metadata.Merge(
+			existing.Labels,
 			istio.GetLabels(instance),
 			metadata.GetLabels(instance, service, instance.Spec.Version, instance.Labels),
 		),
 		Annotations: metadata.Merge(
+			existing.Annotations,
 			linkerd.GetAnnotations(instance),
 			istio.GetAnnotations(instance),
 			prometheus.GetAnnotations(instance),

@@ -341,7 +341,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	}
 
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName, b.configHash),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName, b.configHash, deployment.Spec.Template.ObjectMeta),
 		Spec: corev1.PodSpec{
 			ServiceAccountName:       b.instance.ChildResourceName(b.serviceName),
 			DeprecatedServiceAccount: b.instance.ChildResourceName(b.serviceName),

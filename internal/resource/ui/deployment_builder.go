@@ -121,7 +121,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		MatchLabels: metadata.LabelsSelector(b.instance, "ui"),
 	}
 	deployment.Spec.Template = corev1.PodTemplateSpec{
-		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui", b.configHash),
+		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui", b.configHash, deployment.Spec.Template.ObjectMeta),
 		Spec: corev1.PodSpec{
 			ImagePullSecrets: b.instance.Spec.ImagePullSecrets,
 			Containers: []corev1.Container{
