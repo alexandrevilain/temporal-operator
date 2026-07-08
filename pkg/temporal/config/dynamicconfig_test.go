@@ -24,6 +24,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/temporal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -46,7 +47,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 				"matching.numTaskqueueReadPartitions": {
 					{
 						Constraints: map[string]any{},
-						Value:       float64(5),
+						Value:       int(5),
 					},
 				},
 			},
@@ -70,7 +71,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 						Constraints: map[string]any{
 							"namespace": "accounting",
 						},
-						Value: float64(5),
+						Value: int(5),
 					},
 				},
 			},
@@ -98,7 +99,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 							"taskqueuename": "accounting-tq",
 							"shardid":       int32(1),
 						},
-						Value: float64(5),
+						Value: int(5),
 					},
 				},
 			},
@@ -122,7 +123,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 						Constraints: map[string]any{
 							"tasktype": "Workflow",
 						},
-						Value: float64(5),
+						Value: int(5),
 					},
 				},
 			},
@@ -146,7 +147,7 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 						Constraints: map[string]any{
 							"historytasktype": "ActivityRetryTimer",
 						},
-						Value: float64(5),
+						Value: int(5),
 					},
 				},
 			},
@@ -160,4 +161,57 @@ func TestDynamicConfigToYamlDynamicConfig(t *testing.T) {
 			assert.EqualValues(tt, test.expectedYamlDynamicConfig, result)
 		})
 	}
+}
+
+// TestDynamicConfigToYamlDynamicConfigLargeInteger ensures that large integer
+// values are marshaled as plain integers and not in floating-point scientific
+// notation (e.g. 2.097152e+06). Temporal's file based dynamic config client
+// parses the resulting YAML and fails to load a setting when the number is
+// rendered as a float for a setting that expects an integer.
+func TestDynamicConfigToYamlDynamicConfigLargeInteger(t *testing.T) {
+	dc := &v1beta1.DynamicConfigSpec{
+		Values: map[string][]v1beta1.ConstrainedValue{
+			"limit.blobSize.error": {
+				{
+					Value: &apiextensionsv1.JSON{Raw: []byte(`2097152`)},
+				},
+			},
+		},
+	}
+
+	result, err := config.DynamicConfigToYamlDynamicConfig(dc)
+	require.NoError(t, err)
+
+	out, err := yaml.Marshal(result)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "value: 2097152")
+	assert.NotContains(t, string(out), "2.097152e+06")
+}
+
+// TestDynamicConfigToYamlDynamicConfigNestedLargeInteger ensures large integers
+// nested inside object/array values are also rendered as plain integers, since
+// json.Unmarshal into an any coerces every number (including nested ones) to
+// float64.
+func TestDynamicConfigToYamlDynamicConfigNestedLargeInteger(t *testing.T) {
+	dc := &v1beta1.DynamicConfigSpec{
+		Values: map[string][]v1beta1.ConstrainedValue{
+			"history.defaultActivityRetryPolicy": {
+				{
+					Value: &apiextensionsv1.JSON{Raw: []byte(`{"MaximumInterval": 2097152, "Sizes": [1048576, 4194304]}`)},
+				},
+			},
+		},
+	}
+
+	result, err := config.DynamicConfigToYamlDynamicConfig(dc)
+	require.NoError(t, err)
+
+	out, err := yaml.Marshal(result)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "MaximumInterval: 2097152")
+	assert.Contains(t, string(out), "- 1048576")
+	assert.Contains(t, string(out), "- 4194304")
+	assert.NotContains(t, string(out), "e+06")
 }
