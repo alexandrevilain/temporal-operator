@@ -26,6 +26,7 @@ nav:
     - Archival: features/archival.md
     - Temporal UI: features/temporal-ui.md
     - Admin Tools: features/admin-tools.md
+    - Image tag & digest: features/image-pinning.md
     - mTLS:
       - Using Cert-Manager: features/mtls/cert-manager.md
       - Using Istio: features/mtls/istio.md

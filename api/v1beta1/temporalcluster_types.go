@@ -557,6 +557,17 @@ type TemporalUISpec struct {
 	// Image defines the temporal ui docker image the instance should run.
 	// +optional
 	Image string `json:"image"`
+	// ImageTag overrides the tag used for the temporal ui image. When set, it
+	// is used instead of Version as the image tag.
+	// +optional
+	ImageTag string `json:"imageTag,omitempty"`
+	// ImageDigest pins the temporal ui image to an immutable digest
+	// (e.g. "sha256:abc..."). When set, it is appended to the image reference
+	// (repository:tag@digest) so the running image cannot change behind a
+	// mutable tag.
+	// +kubebuilder:validation:Pattern=`^sha256:[a-fA-F0-9]{64}$`
+	// +optional
+	ImageDigest string `json:"imageDigest,omitempty"`
 	// Number of desired replicas for the ui. Default to 1.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -589,6 +600,17 @@ type TemporalAdminToolsSpec struct {
 	// Version defines the temporal admin tools version the instance should run.
 	// +optional
 	Version string `json:"version"`
+	// ImageTag overrides the tag used for the temporal admin tools image. When
+	// set, it is used instead of Version as the image tag.
+	// +optional
+	ImageTag string `json:"imageTag,omitempty"`
+	// ImageDigest pins the temporal admin tools image to an immutable digest
+	// (e.g. "sha256:abc..."). When set, it is appended to the image reference
+	// (repository:tag@digest) so the running image cannot change behind a
+	// mutable tag.
+	// +kubebuilder:validation:Pattern=`^sha256:[a-fA-F0-9]{64}$`
+	// +optional
+	ImageDigest string `json:"imageDigest,omitempty"`
 	// Compute Resources required by the ui.
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 	// +optional
@@ -1015,6 +1037,18 @@ type TemporalClusterSpec struct {
 	// This version impacts the underlying persistence schemas versions.
 	// +optional
 	Version *version.Version `json:"version"`
+	// ImageTag overrides the tag used for the temporal server image. When set,
+	// it is used instead of Version as the image tag. Version still drives the
+	// persistence schema version regardless of this override.
+	// +optional
+	ImageTag string `json:"imageTag,omitempty"`
+	// ImageDigest pins the temporal server image to an immutable digest
+	// (e.g. "sha256:abc..."). When set, it is appended to the image reference
+	// (repository:tag@digest) so the running image cannot change behind a
+	// mutable tag.
+	// +kubebuilder:validation:Pattern=`^sha256:[a-fA-F0-9]{64}$`
+	// +optional
+	ImageDigest string `json:"imageDigest,omitempty"`
 	// Log defines temporal cluster's logger configuration.
 	// +optional
 	Log *LogSpec `json:"log,omitempty"`

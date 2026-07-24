@@ -22,6 +22,7 @@ import (
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/metadata"
+	"github.com/alexandrevilain/temporal-operator/internal/resource/meta"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/linkerd"
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
@@ -124,7 +125,7 @@ func (b *SchemaJobBuilder) Build() client.Object {
 					Containers: []corev1.Container{
 						{
 							Name:                     "schema-script-runner",
-							Image:                    fmt.Sprintf("%s:%s", b.instance.Spec.AdminTools.Image, version.DefaultAdminToolTag(b.instance.Spec.Version)),
+							Image:                    meta.ContainerImage(b.instance.Spec.AdminTools.Image, version.DefaultAdminToolTag(b.instance.Spec.Version), b.instance.Spec.AdminTools.ImageTag, b.instance.Spec.AdminTools.ImageDigest),
 							ImagePullPolicy:          corev1.PullIfNotPresent,
 							Resources:                b.instance.Spec.JobResources,
 							TerminationMessagePath:   corev1.TerminationMessagePathDefault,
