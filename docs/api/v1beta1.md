@@ -89,6 +89,35 @@ This version impacts the underlying persistence schemas versions.</p>
 </tr>
 <tr>
 <td>
+<code>imageTag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageTag overrides the tag used for the temporal server image. When set,
+it is used instead of Version as the image tag. Version still drives the
+persistence schema version regardless of this override.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageDigest</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageDigest pins the temporal server image to an immutable digest
+(e.g. &ldquo;sha256:abc&hellip;&rdquo;). When set, it is appended to the image reference
+(repository:tag@digest) so the running image cannot change behind a
+mutable tag.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>log</code><br>
 <em>
 <a href="#temporal.io/v1beta1.LogSpec">
@@ -4612,6 +4641,34 @@ string
 </tr>
 <tr>
 <td>
+<code>imageTag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageTag overrides the tag used for the temporal admin tools image. When
+set, it is used instead of Version as the image tag.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageDigest</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageDigest pins the temporal admin tools image to an immutable digest
+(e.g. &ldquo;sha256:abc&hellip;&rdquo;). When set, it is appended to the image reference
+(repository:tag@digest) so the running image cannot change behind a
+mutable tag.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>resources</code><br>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#resourcerequirements-v1-core">
@@ -4834,6 +4891,35 @@ github.com/alexandrevilain/temporal-operator/pkg/version.Version
 <em>(Optional)</em>
 <p>Version defines the temporal version the cluster to be deployed.
 This version impacts the underlying persistence schemas versions.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageTag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageTag overrides the tag used for the temporal server image. When set,
+it is used instead of Version as the image tag. Version still drives the
+persistence schema version regardless of this override.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageDigest</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageDigest pins the temporal server image to an immutable digest
+(e.g. &ldquo;sha256:abc&hellip;&rdquo;). When set, it is appended to the image reference
+(repository:tag@digest) so the running image cannot change behind a
+mutable tag.</p>
 </td>
 </tr>
 <tr>
@@ -5297,6 +5383,32 @@ TemporalNamespaceArchivalSpec
 If not set, the default cluster configuration is used.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -5519,6 +5631,32 @@ TemporalNamespaceArchivalSpec
 <em>(Optional)</em>
 <p>Archival is a per-namespace archival configuration.
 If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
 </td>
 </tr>
 </tbody>
@@ -6078,6 +6216,34 @@ string
 <td>
 <em>(Optional)</em>
 <p>Image defines the temporal ui docker image the instance should run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageTag</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageTag overrides the tag used for the temporal ui image. When set, it
+is used instead of Version as the image tag.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>imageDigest</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ImageDigest pins the temporal ui image to an immutable digest
+(e.g. &ldquo;sha256:abc&hellip;&rdquo;). When set, it is appended to the image reference
+(repository:tag@digest) so the running image cannot change behind a
+mutable tag.</p>
 </td>
 </tr>
 <tr>
