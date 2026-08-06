@@ -34,10 +34,15 @@ const (
 	// Setup schemas templates.
 	setupSchemaTemplate = "setup-schema.sh"
 	setupESVisibility   = "setup-es-visibility.sh"
+	// setupESVisibilityTool uses temporal-elasticsearch-tool (Temporal >= 1.30,
+	// where curl/jq were removed from the admin-tools image).
+	setupESVisibilityTool = "setup-es-visibility-tool.sh"
 
 	// Update schemas templates.
 	updateSchemaTemplate = "update-schema.sh"
 	updateESVisibility   = "update-es-visibility.sh"
+	// updateESVisibilityTool uses temporal-elasticsearch-tool (Temporal >= 1.30).
+	updateESVisibilityTool = "update-es-visibility-tool.sh"
 
 	// noOpTemplate does nothing.
 	noOpTemplate = "no-op.sh"
@@ -89,6 +94,24 @@ var (
             {{ if .Indices.SecondaryVisibility }}
             curl --user "{{ .Username }}":"${{ .PasswordEnvVar }}" -X PUT "{{ .URL }}/{{ .Indices.SecondaryVisibility }}" --write-out "\n"
             {{ end }}
+            {{ template "scripts" . }}
+        `),
+		// setupESVisibilityTool targets Temporal >= 1.30, whose admin-tools image
+		// dropped curl/jq and ships temporal-elasticsearch-tool instead. setup-schema
+		// applies the (embedded) cluster settings + index template; create-index
+		// creates the visibility index (idempotent: the tool treats
+		// resource_already_exists_exception as success, so the job is re-runnable).
+		//
+		// The steps are chained with && rather than guarded by "set -e": the
+		// shared "scripts" footer must still run when a step fails, otherwise the
+		// service-mesh sidecar is never told to shut down and the Job pod stays
+		// Running forever instead of failing. && gives the same fail-fast
+		// behaviour while leaving $? for the footer to propagate.
+		setupESVisibilityTool: dedent.Dedent(`
+            #!/bin/sh
+            {{ .Tool }} {{ .ConnectionArgs }} setup-schema && \
+            {{ .Tool }} {{ .ConnectionArgs }} create-index --index "{{ .Indices.Visibility }}"{{ if .Indices.SecondaryVisibility }} && \
+            {{ .Tool }} {{ .ConnectionArgs }} create-index --index "{{ .Indices.SecondaryVisibility }}"{{ end }}
             {{ template "scripts" . }}
         `),
 		updateESVisibility: dedent.Dedent(`
@@ -382,12 +405,26 @@ var (
             done
             {{ template "scripts" . }}
         `),
+		// updateESVisibilityTool targets Temporal >= 1.30. update-schema upgrades the
+		// index template to the version embedded in the tool, and the per-index
+		// mappings when --index is given (covers all built-in search attributes).
+		// Chained with && rather than "set -e" so the shared "scripts" footer still
+		// runs on failure; see setupESVisibilityTool.
+		updateESVisibilityTool: dedent.Dedent(`
+            #!/bin/sh
+            {{ .Tool }} {{ .ConnectionArgs }} update-schema --index "{{ .Indices.Visibility }}"{{ if .Indices.SecondaryVisibility }} && \
+            {{ .Tool }} {{ .ConnectionArgs }} update-schema --index "{{ .Indices.SecondaryVisibility }}"{{ end }}
+            {{ template "scripts" . }}
+        `),
 	}
 )
 
 type (
 	baseData struct {
 		MTLSProvider string
+		// UseWget makes the MTLS sidecar-shutdown footer use busybox wget instead
+		// of curl, which was removed from the admin-tools image in Temporal >= 1.30.
+		UseWget bool
 	}
 
 	createDatabase struct {
@@ -426,18 +463,36 @@ type (
 		PasswordEnvVar string
 		Indices        v1beta1.ElasticsearchIndices
 	}
+
+	// esToolData drives the temporal-elasticsearch-tool based templates (Temporal >= 1.30).
+	esToolData struct {
+		baseData
+		Tool           string
+		ConnectionArgs string
+		Indices        v1beta1.ElasticsearchIndices
+	}
 )
 
+// proxyShutdownScriptsContent tells the service-mesh sidecar to quit once the
+// script's real work is done, so the Job pod can terminate.
+//
+// The exit status is captured into $x *before* the shutdown call, so the
+// shutdown command's own status never masks the script's. No "|| true" is
+// needed for that, and adding one only hides a genuinely unreachable proxy —
+// the wget and curl branches deliberately behave identically here.
+//
+// wget is BusyBox wget (verified: admin-tools 1.31.1 ships BusyBox v1.37.0 and
+// no curl at all); it supports --post-data.
 var proxyShutdownScriptsContent = dedent.Dedent(`
         {{- define "scripts" -}}
         {{- if eq .MTLSProvider "linkerd" -}}
         x=$?
-        curl -X POST http://localhost:4191/shutdown
+        {{ if .UseWget }}wget -q -O- --post-data='' http://localhost:4191/shutdown{{ else }}curl -X POST http://localhost:4191/shutdown{{ end }}
         exit $x
         {{- end -}}
         {{- if eq .MTLSProvider "istio" -}}
         x=$?
-        curl -sf -XPOST http://127.0.0.1:15020/quitquitquit
+        {{ if .UseWget }}wget -q -O- --post-data='' http://127.0.0.1:15020/quitquitquit{{ else }}curl -sf -XPOST http://127.0.0.1:15020/quitquitquit{{ end }}
         exit $x
         {{- end -}}
         {{- end -}}

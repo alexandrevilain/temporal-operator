@@ -5,17 +5,17 @@ resources:
 - ../crd
 - ../default
 
-patchesStrategicMerge:
-- |-
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: controller-manager
-    namespace: system
-  spec:
-    template:
-      spec:
-        containers:
-        - name: manager
-          image: localhost:5001/temporal-operator:latest
-          imagePullPolicy: IfNotPresent
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: controller-manager
+      namespace: system
+    spec:
+      template:
+        spec:
+          containers:
+          - name: manager
+            image: localhost:5001/temporal-operator:latest
+            imagePullPolicy: IfNotPresent

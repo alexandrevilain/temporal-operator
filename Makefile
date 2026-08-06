@@ -1,6 +1,3 @@
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.0
-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -214,45 +211,52 @@ KIND_WITH_REGISTRY ?= $(LOCALBIN)/kind-with-registry
 HELM_DOCS ?= $(LOCALBIN)/helm-docs
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v4.5.7
-OPERATOR_SDK_VERSION ?= 1.37.0
-CONTROLLER_TOOLS_VERSION ?=  v0.16.3
-GO_LICENSER_VERSION ?= v0.4.0
-GEN_CRD_API_REFERENCE_DOCS_VERSION ?= 3f29e6853552dcf08a8e846b1225f275ed0f3e3b
-GOLANGCI_LINT_VERSION ?= v1.64.8
-YQ_VERSION ?= v4.30.6
-KIND_WITH_REGISTRY_VERSION ?= 0.17.0
-HELM_DOCS_VERSION ?= v1.12.0
+KUSTOMIZE_VERSION ?= v5.8.1
+OPERATOR_SDK_VERSION ?= 1.42.3
+CONTROLLER_TOOLS_VERSION ?= v0.21.0
+GO_LICENSER_VERSION ?= v0.4.2
+GEN_CRD_API_REFERENCE_DOCS_VERSION ?= fca9c57bb1b2075a32100ca24637513a7b1d9dfe
+GOLANGCI_LINT_VERSION ?= v2.12.2
+YQ_VERSION ?= v4.53.3
+KIND_WITH_REGISTRY_VERSION ?= 0.32.0
+HELM_DOCS_VERSION ?= v1.14.2
+# GO_VERSION is the Go version this module targets, taken from go.mod. It is used to
+# pin GOTOOLCHAIN when building golangci-lint: golangci-lint's own go.mod requires a
+# lower Go version than ours, so a plain `go install` builds it with that lower
+# toolchain, and it then refuses to run with "the Go language version used to build
+# golangci-lint is lower than the targeted Go version".
+GO_VERSION ?= $(shell go list -m -f '{{.GoVersion}}')
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell v='$(call gomodver,sigs.k8s.io/controller-runtime)'; \
   [ -n "$$v" ] || { echo "Set ENVTEST_VERSION manually (controller-runtime replace has no tag)" >&2; exit 1; }; \
   printf '%s\n' "$$v" | sed -E 's/^v?([0-9]+)\.([0-9]+).*/release-\1.\2/')
-  #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
+#ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
 ENVTEST_K8S_VERSION ?= $(shell v='$(call gomodver,k8s.io/api)'; \
   [ -n "$$v" ] || { echo "Set ENVTEST_K8S_VERSION manually (k8s.io/api replace has no tag)" >&2; exit 1; }; \
   printf '%s\n' "$$v" | sed -E 's/^v?[0-9]+\.([0-9]+).*/1.\1/')
 
+# The version-checked tools below hang their recipe off the .PHONY target rather
+# than off $(LOCALBIN)/<tool>. As a file target the recipe is skipped whenever the
+# binary already exists, so the version check never runs and a bump to the pins
+# above silently has no effect on anyone with a warm bin/ -- which is how a v4
+# kustomize survived the v5 bump and emitted unsubstituted placeholders.
 .PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
-$(KUSTOMIZE): $(LOCALBIN)
+kustomize: $(LOCALBIN) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
 	@if test -x $(LOCALBIN)/kustomize && ! $(LOCALBIN)/kustomize version | grep -q $(KUSTOMIZE_VERSION); then \
 		echo "$(LOCALBIN)/kustomize version is not expected $(KUSTOMIZE_VERSION). Removing it before installing."; \
 		rm -rf $(LOCALBIN)/kustomize; \
 	fi
-	test -s $(LOCALBIN)/kustomize || GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION}
+	@test -s $(LOCALBIN)/kustomize || GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION}
 
 .PHONY: operator-sdk
-operator-sdk: $(OPERATOR_SDK)
-$(OPERATOR_SDK): $(LOCALBIN)
-	test -s $(LOCALBIN)/operator-sdk && $(LOCALBIN)/operator-sdk version | grep -q $(OPERATOR_SDK_VERSION) || \
-	curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
-	@chmod +x $(OPERATOR_SDK)
+operator-sdk: $(LOCALBIN)
+	@test -s $(LOCALBIN)/operator-sdk && $(LOCALBIN)/operator-sdk version | grep -q $(OPERATOR_SDK_VERSION) || \
+	{ curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH` && chmod +x $(OPERATOR_SDK); }
 
 .PHONY: golangci-lint
-golangci-lint: $(GOLANGCI_LINT)
-$(GOLANGCI_LINT): $(LOCALBIN)
-	test -s $(LOCALBIN)/golangci-lint && $(LOCALBIN)/golangci-lint version | grep -q $(GOLANGCI_LINT_VERSION) || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+golangci-lint: $(LOCALBIN)
+	@test -s $(LOCALBIN)/golangci-lint && $(LOCALBIN)/golangci-lint version | grep -q $(GOLANGCI_LINT_VERSION) || \
+	GOTOOLCHAIN=go$(GO_VERSION) GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 .PHONY: go-licenser
 go-licenser: $(GO_LICENSER)
@@ -260,9 +264,8 @@ $(GO_LICENSER): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install github.com/elastic/go-licenser@$(GO_LICENSER_VERSION)
 
 .PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
+controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
+	@test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: gen-crd-api-reference-docs
@@ -275,9 +278,11 @@ envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
 
+# yq is version-checked because `make manifests` and `make helm` run it over the
+# generated CRDs; a stale yq can change emitted YAML formatting.
 .PHONY: yq
-yq: $(YQ)
-$(YQ): $(LOCALBIN)
+yq: $(LOCALBIN)
+	@test -s $(LOCALBIN)/yq && $(LOCALBIN)/yq --version | grep -q $(YQ_VERSION) || \
 	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@$(YQ_VERSION)
 
 .PHONY: kind-with-registry

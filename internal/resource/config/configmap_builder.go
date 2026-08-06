@@ -49,6 +49,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+// bindAllAddresses is the address services bind on when they should accept
+// connections on every interface in the pod.
+const bindAllAddresses = "0.0.0.0"
+
 var _ resource.Builder = (*ConfigmapBuilder)(nil)
 
 type ConfigmapBuilder struct {
@@ -61,6 +65,31 @@ func NewConfigmapBuilder(instance *v1beta1.TemporalCluster, scheme *runtime.Sche
 		instance: instance,
 		scheme:   scheme,
 	}
+}
+
+// envPlaceholder returns a config-template placeholder resolving the given
+// environment variable at server startup.
+//
+// Temporal Server >= 1.30 removed dockerize and renders config templates with an
+// embedded sprig engine executed with nil template data (see
+// go.temporal.io/server/common/config loader). The dockerize-style
+// "{{ .Env.NAME }}" syntax therefore no longer resolves and must be replaced by
+// the sprig "{{ env \"NAME\" }}" function.
+func (b *ConfigmapBuilder) envPlaceholder(name string) string {
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_30_0) {
+		return fmt.Sprintf(`{{ env "%s" }}`, name)
+	}
+	return fmt.Sprintf("{{ .Env.%s }}", name)
+}
+
+// broadcastAddressPlaceholder returns the membership broadcast address template,
+// defaulting to 0.0.0.0 when POD_IP is unset, using the templating syntax
+// supported by the target Temporal Server version.
+func (b *ConfigmapBuilder) broadcastAddressPlaceholder() string {
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_30_0) {
+		return `{{ default "0.0.0.0" (env "POD_IP") }}`
+	}
+	return `{{ default .Env.POD_IP "0.0.0.0" }}`
 }
 
 func (b *ConfigmapBuilder) Build() client.Object {
@@ -86,17 +115,21 @@ func (b *ConfigmapBuilder) buildDatastoreConfig(store *v1beta1.DatastoreSpec) (*
 		v1beta1.MySQLDatastore,
 		v1beta1.MySQL8Datastore:
 		cfg.SQL = persistence.NewSQLConfigFromDatastoreSpec(store)
-		cfg.SQL.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		// When the datastore resolves its password through an external command
+		// (Temporal >= 1.31), the static password must be left empty.
+		if store.SQL.PasswordCommand == nil {
+			cfg.SQL.Password = b.envPlaceholder(store.GetPasswordEnvVarName())
+		}
 	case v1beta1.CassandraDatastore:
 		cfg.Cassandra = persistence.NewCassandraConfigFromDatastoreSpec(store)
-		cfg.Cassandra.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		cfg.Cassandra.Password = b.envPlaceholder(store.GetPasswordEnvVarName())
 	case v1beta1.ElasticsearchDatastore:
 		esCfg, err := persistence.NewElasticsearchConfigFromDatastoreSpec(store)
 		if err != nil {
 			return nil, fmt.Errorf("can't get elasticsearch config: %w", err)
 		}
 		cfg.Elasticsearch = esCfg
-		cfg.Elasticsearch.Password = fmt.Sprintf("{{ .Env.%s }}", store.GetPasswordEnvVarName())
+		cfg.Elasticsearch.Password = b.envPlaceholder(store.GetPasswordEnvVarName())
 	case v1beta1.UnknownDatastore:
 		return nil, errors.New("unknown datastore")
 	}
@@ -215,7 +248,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	temporalCfg.Global = temporalconfig.Global{
 		Membership: temporalconfig.Membership{
 			MaxJoinDuration:  30 * time.Second,
-			BroadcastAddress: "{{ default .Env.POD_IP \"0.0.0.0\" }}",
+			BroadcastAddress: b.broadcastAddressPlaceholder(),
 		},
 		Authorization: authorization.ToTemporalAuthorization(b.instance.Spec.Authorization),
 	}
@@ -245,7 +278,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				GRPCPort:        int(*b.instance.Spec.Services.Frontend.Port),
 				MembershipPort:  int(*b.instance.Spec.Services.Frontend.MembershipPort),
 				BindOnLocalHost: false,
-				BindOnIP:        "0.0.0.0",
+				BindOnIP:        bindAllAddresses,
 			},
 		},
 		string(primitives.HistoryService): {
@@ -253,7 +286,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				GRPCPort:        int(*b.instance.Spec.Services.History.Port),
 				MembershipPort:  int(*b.instance.Spec.Services.History.MembershipPort),
 				BindOnLocalHost: false,
-				BindOnIP:        "0.0.0.0",
+				BindOnIP:        bindAllAddresses,
 			},
 		},
 		string(primitives.MatchingService): {
@@ -261,7 +294,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				GRPCPort:        int(*b.instance.Spec.Services.Matching.Port),
 				MembershipPort:  int(*b.instance.Spec.Services.Matching.MembershipPort),
 				BindOnLocalHost: false,
-				BindOnIP:        "0.0.0.0",
+				BindOnIP:        bindAllAddresses,
 			},
 		},
 		string(primitives.WorkerService): {
@@ -269,7 +302,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 				GRPCPort:        int(*b.instance.Spec.Services.Worker.Port),
 				MembershipPort:  int(*b.instance.Spec.Services.Worker.MembershipPort),
 				BindOnLocalHost: false,
-				BindOnIP:        "0.0.0.0",
+				BindOnIP:        bindAllAddresses,
 			},
 		},
 	}
@@ -282,7 +315,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 					MembershipPort:  int(*b.instance.Spec.Services.InternalFrontend.MembershipPort),
 					HTTPPort:        int(*b.instance.Spec.Services.InternalFrontend.HTTPPort),
 					BindOnLocalHost: false,
-					BindOnIP:        "0.0.0.0",
+					BindOnIP:        bindAllAddresses,
 				},
 			}
 		}
@@ -314,7 +347,7 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 	if b.instance.Spec.Metrics.IsEnabled() {
 		temporalCfg.Global.Metrics = &metrics.Config{
 			ClientConfig: metrics.ClientConfig{
-				Tags: map[string]string{"type": "{{ .Env.SERVICES }}"},
+				Tags: map[string]string{"type": b.envPlaceholder("SERVICES")},
 			},
 		}
 
@@ -441,8 +474,17 @@ func (b *ConfigmapBuilder) Update(object client.Object) error {
 		return fmt.Errorf("failed marshaling temporal config: %w", err)
 	}
 
+	renderedConfig := string(result)
+
+	// Temporal Server >= 1.30 renders config templates with an embedded sprig
+	// engine (dockerize was removed). Templating is only activated when the file
+	// starts with an "enable-template" comment within its first 1KB.
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_30_0) {
+		renderedConfig = "# enable-template\n" + renderedConfig
+	}
+
 	configMap.Data = map[string]string{
-		"config_template.yaml": string(result),
+		meta.ConfigFileName: renderedConfig,
 	}
 
 	if err := controllerutil.SetControllerReference(b.instance, configMap, b.scheme); err != nil {

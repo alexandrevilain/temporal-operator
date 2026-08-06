@@ -29,3 +29,18 @@ const (
 	ServiceUIName     = "ui"
 	ServiceAdminTools = "admintools"
 )
+
+// Server config file location.
+//
+// These three values have to agree: the rendered config is stored in the config
+// ConfigMap under ConfigFileName, mounted into the server container at
+// ConfigFilePath, and — for Temporal >= 1.30, which no longer has a fixed
+// built-in location — found by the server through the
+// TEMPORAL_SERVER_CONFIG_FILE_PATH environment variable. If they drift apart the
+// server exits at startup with "could not read config file", so they are
+// defined once here rather than repeated at each use.
+const (
+	ConfigFileName = "config_template.yaml"
+	ConfigMountDir = "/etc/temporal/config"
+	ConfigFilePath = ConfigMountDir + "/" + ConfigFileName
+)

@@ -22,13 +22,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/Masterminds/semver/v3"
 )
 
 var (
 	// SupportedVersionsRange holds all supported temporal versions.
-	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.29.0")
+	SupportedVersionsRange  = mustNewConstraint(">= 1.14.0 < 1.32.0")
 	ForbiddenBrokenReleases = []*Version{
 		// v1.21.0 is reported as broken, see: https://github.com/temporalio/temporal/releases/tag/v1.21.0
 		MustNewVersionFromString("1.21.0"),
@@ -38,14 +39,25 @@ var (
 		MustNewVersionFromString("1.24.0"),
 		// v1.27.0 is reported as broken, see: https://github.com/temporalio/temporal/releases/tag/v1.27.0
 		MustNewVersionFromString("1.27.0"),
+		// The releases below are retracted by upstream's own go.mod, see the
+		// retract block in https://github.com/temporalio/temporal/blob/v1.31.2/go.mod
+		// None of them has a published GitHub release or container image.
+		// v1.26.0 was "published accidentally"; use v1.26.2+.
+		MustNewVersionFromString("1.26.0"),
+		// v1.26.1 "contains retractions only"; use v1.26.2+.
+		MustNewVersionFromString("1.26.1"),
+		// v1.30.0 is retracted; use v1.30.1+.
+		MustNewVersionFromString("1.30.0"),
 	}
-	V1_18_0 = MustNewVersionFromString("1.18.0") //nolint:stylecheck,revive
-	V1_20_0 = MustNewVersionFromString("1.20.0") //nolint:stylecheck,revive
-	V1_21_0 = MustNewVersionFromString("1.21.0") //nolint:stylecheck,revive
-	V1_22_0 = MustNewVersionFromString("1.22.0") //nolint:stylecheck,revive
-	V1_23_0 = MustNewVersionFromString("1.23.0") //nolint:stylecheck,revive
-	V1_24_0 = MustNewVersionFromString("1.24.0") //nolint:stylecheck,revive
-	V1_25_0 = MustNewVersionFromString("1.25.0") //nolint:stylecheck,revive
+	V1_18_0 = MustNewVersionFromString("1.18.0") //nolint:staticcheck,revive
+	V1_20_0 = MustNewVersionFromString("1.20.0") //nolint:staticcheck,revive
+	V1_21_0 = MustNewVersionFromString("1.21.0") //nolint:staticcheck,revive
+	V1_22_0 = MustNewVersionFromString("1.22.0") //nolint:staticcheck,revive
+	V1_23_0 = MustNewVersionFromString("1.23.0") //nolint:staticcheck,revive
+	V1_24_0 = MustNewVersionFromString("1.24.0") //nolint:staticcheck,revive
+	V1_25_0 = MustNewVersionFromString("1.25.0") //nolint:staticcheck,revive
+	V1_30_0 = MustNewVersionFromString("1.30.0") //nolint:staticcheck,revive
+	V1_31_0 = MustNewVersionFromString("1.31.0") //nolint:staticcheck,revive
 )
 
 // Version is a wrapper around semver.Version which supports correct
@@ -53,6 +65,37 @@ var (
 // +kubebuilder:validation:Type=string
 type Version struct {
 	*semver.Version
+}
+
+// IsBrokenRelease reports whether v is one of the releases the operator refuses
+// to run.
+func IsBrokenRelease(v *Version) bool {
+	for _, broken := range ForbiddenBrokenReleases {
+		if v.Equal(broken.Version) {
+			return true
+		}
+	}
+	return false
+}
+
+// NextNonBrokenPatch returns the first patch release after v that is not itself
+// marked broken.
+//
+// Broken releases can be consecutive: v1.26.0 and v1.26.1 are both retracted
+// upstream. Suggesting a plain IncPatch would send users from 1.26.0 to 1.26.1,
+// which the webhook rejects in turn.
+func (v *Version) NextNonBrokenPatch() *Version {
+	candidate := v
+	// ForbiddenBrokenReleases is finite so this always terminates; the bound is
+	// only a guard against a future list that fails to advance.
+	for range len(ForbiddenBrokenReleases) + 1 {
+		next := candidate.IncPatch()
+		candidate = &Version{Version: &next}
+		if !IsBrokenRelease(candidate) {
+			break
+		}
+	}
+	return candidate
 }
 
 // Validate checks if the current version is in the supported temporal cluster
@@ -99,15 +142,39 @@ func (v Version) MarshalJSON() ([]byte, error) {
 
 // GreaterOrEqual returns whenever version is greater or equal than the provided version.
 func (v *Version) GreaterOrEqual(compare *Version) bool {
-	str := fmt.Sprintf(">= %s", compare.String())
-	c, _ := semver.NewConstraint(str)
-	return c.Check(v.Version)
+	return checkConstraint(v, ">= %s", compare)
 }
 
 // LessThan returns whenever version is less than the provided version.
 func (v *Version) LessThan(compare *Version) bool {
-	str := fmt.Sprintf("< %s", compare.String())
-	c, _ := semver.NewConstraint(str)
+	return checkConstraint(v, "< %s", compare)
+}
+
+// constraintCache memoizes compiled semver constraints, keyed by their textual
+// form.
+//
+// GreaterOrEqual and LessThan are called repeatedly during a single reconcile —
+// once per datastore, once per deployment builder, once per config section —
+// and nearly always against the same handful of package-level version
+// constants, so recompiling the identical constraint every time is pure waste.
+var constraintCache sync.Map
+
+func checkConstraint(v *Version, format string, compare *Version) bool {
+	expr := fmt.Sprintf(format, compare.String())
+
+	if cached, ok := constraintCache.Load(expr); ok {
+		return cached.(*semver.Constraints).Check(v.Version)
+	}
+
+	c, err := semver.NewConstraint(expr)
+	if err != nil {
+		// compare always renders as a valid semver, so this is unreachable.
+		// It is handled anyway because the previous code discarded the error
+		// and would have dereferenced a nil *Constraints if that ever changed.
+		return false
+	}
+
+	constraintCache.Store(expr, c)
 	return c.Check(v.Version)
 }
 

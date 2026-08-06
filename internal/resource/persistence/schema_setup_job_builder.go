@@ -62,38 +62,36 @@ func (b *SchemaJobBuilder) Enabled() bool {
 func (b *SchemaJobBuilder) Build() client.Object {
 	datastores := b.instance.Spec.Persistence.GetDatastores()
 
-	envVars := []corev1.EnvVar{
-		{
-			Name:  "TEMPORAL_CLI_ADDRESS",
-			Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
-		},
-	}
-	envVars = append(envVars, GetDatastoresEnvironmentVariables(datastores)...)
+	datastoreEnvVars := GetDatastoresEnvironmentVariables(datastores)
+	envVars := make([]corev1.EnvVar, 0, 1+len(datastoreEnvVars))
+	envVars = append(envVars, corev1.EnvVar{
+		Name:  "TEMPORAL_CLI_ADDRESS",
+		Value: fmt.Sprintf("%s:%d", b.instance.ChildResourceName("frontend"), *b.instance.Spec.Services.Frontend.Port),
+	})
+	envVars = append(envVars, datastoreEnvVars...)
 
-	volumeMounts := []corev1.VolumeMount{
-		{
-			Name:      "scripts",
-			MountPath: "/etc/scripts",
-		},
-	}
+	datastoreVolumeMounts := GetDatastoresVolumeMounts(datastores)
+	volumeMounts := make([]corev1.VolumeMount, 0, 1+len(datastoreVolumeMounts))
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{
+		Name:      "scripts",
+		MountPath: "/etc/scripts",
+	})
+	volumeMounts = append(volumeMounts, datastoreVolumeMounts...)
 
-	volumeMounts = append(volumeMounts, GetDatastoresVolumeMounts(datastores)...)
-
-	volumes := []corev1.Volume{
-		{
-			Name: "scripts",
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: b.instance.ChildResourceName("schema-scripts"),
-					},
-					DefaultMode: ptr.To[int32](0o777),
+	datastoreVolumes := GetDatastoresVolumes(datastores)
+	volumes := make([]corev1.Volume, 0, 1+len(datastoreVolumes))
+	volumes = append(volumes, corev1.Volume{
+		Name: "scripts",
+		VolumeSource: corev1.VolumeSource{
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: b.instance.ChildResourceName("schema-scripts"),
 				},
+				DefaultMode: ptr.To[int32](0o777),
 			},
 		},
-	}
-
-	volumes = append(volumes, GetDatastoresVolumes(datastores)...)
+	})
+	volumes = append(volumes, datastoreVolumes...)
 
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
