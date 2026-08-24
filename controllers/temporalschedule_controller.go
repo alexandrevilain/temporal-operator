@@ -91,7 +91,10 @@ func (r *TemporalScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			// Two ways to get here:
 			//  - TemporalNamespace has not been created yet. In this case, if the TemporalSchedule is deleted, no point in waiting for the TemporalNamespace to be healthy.
 			//  - TemporalNamespace existed at some point, but now is deleted. In this case, the underlying schedule in the Temporal server is already gone.
-			controllerutil.RemoveFinalizer(schedule, deletionFinalizer)
+			if err := removeDeletionFinalizer(ctx, r.Client, schedule); err != nil {
+				return r.handleErrorWithRequeue(ctx, schedule, v1beta1.ReconcileErrorReason, "Removing finalizer", err, finalizerRetryPeriod)
+			}
+
 			return reconcile.Result{}, nil
 		}
 
@@ -112,7 +115,10 @@ func (r *TemporalScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			// Two ways to get here:
 			//  - TemporalCluster has not been created yet. In this case, if the TemporalSchedule is deleted, no point in waiting for the TemporalCluster to be healthy.
 			//  - TemporalCluster existed at some point, but now is deleted. In this case, the underlying schedule in the Temporal server is already gone.
-			controllerutil.RemoveFinalizer(schedule, deletionFinalizer)
+			if err := removeDeletionFinalizer(ctx, r.Client, schedule); err != nil {
+				return r.handleErrorWithRequeue(ctx, schedule, v1beta1.ReconcileErrorReason, "Removing finalizer", err, finalizerRetryPeriod)
+			}
+
 			return reconcile.Result{}, nil
 		}
 
@@ -141,13 +147,21 @@ func (r *TemporalScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 		err := r.ensureScheduleDeleted(ctx, schedule, &client)
 		if err != nil {
-			return r.handleError(ctx, schedule, v1beta1.ReconcileErrorReason, "Deleting schedule", err)
+			return r.handleErrorWithRequeue(ctx, schedule, v1beta1.ReconcileErrorReason, "Deleting schedule", err, finalizerRetryPeriod)
 		}
 		return reconcile.Result{}, nil
 	}
 
 	// Ensure the schedule have a deletion marker if the AllowDeletion is set to true.
-	r.ensureFinalizer(schedule)
+	if err := r.ensureFinalizer(ctx, schedule); err != nil {
+		if apierrors.IsNotFound(err) {
+			// The schedule was deleted mid-reconciliation: nothing left to finalize, and no
+			// status left to report a failure through.
+			return reconcile.Result{}, nil
+		}
+
+		return r.handleErrorWithRequeue(ctx, schedule, v1beta1.ReconcileErrorReason, "Ensuring finalizer", err, finalizerRetryPeriod)
+	}
 
 	request, err := temporal.ScheduleToCreateScheduleRequest(schedule)
 	if err != nil {
@@ -182,14 +196,16 @@ func (r *TemporalScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 // ensureFinalizer ensures the deletion finalizer is set on the object if the user allowed schedule deletion using the CRD.
-func (r *TemporalScheduleReconciler) ensureFinalizer(schedule *v1beta1.TemporalSchedule) {
-	if schedule.ObjectMeta.DeletionTimestamp.IsZero() {
-		if schedule.Spec.AllowDeletion {
-			_ = controllerutil.AddFinalizer(schedule, deletionFinalizer)
-		} else {
-			_ = controllerutil.RemoveFinalizer(schedule, deletionFinalizer)
-		}
+func (r *TemporalScheduleReconciler) ensureFinalizer(ctx context.Context, schedule *v1beta1.TemporalSchedule) error {
+	if !schedule.ObjectMeta.DeletionTimestamp.IsZero() {
+		return nil
 	}
+
+	if schedule.Spec.AllowDeletion {
+		return addDeletionFinalizer(ctx, r.Client, schedule)
+	}
+
+	return removeDeletionFinalizer(ctx, r.Client, schedule)
 }
 
 func (r *TemporalScheduleReconciler) ensureScheduleDeleted(ctx context.Context, schedule *v1beta1.TemporalSchedule, client *temporalclient.Client) error {
@@ -201,7 +217,6 @@ func (r *TemporalScheduleReconciler) ensureScheduleDeleted(ctx context.Context, 
 
 	_, err := (*client).WorkflowService().DeleteSchedule(ctx, temporal.ScheduleToDeleteScheduleRequest(schedule))
 	if err != nil {
-		println(fmt.Sprintf("%T: %+v", err, err))
 		var scheduleNotFoundError *serviceerror.NotFound
 		if errors.As(err, &scheduleNotFoundError) {
 			logger.Info("try to delete but not found", "schedule", schedule.GetName())
@@ -210,8 +225,7 @@ func (r *TemporalScheduleReconciler) ensureScheduleDeleted(ctx context.Context, 
 		}
 	}
 
-	_ = controllerutil.RemoveFinalizer(schedule, deletionFinalizer)
-	return nil
+	return removeDeletionFinalizer(ctx, r.Client, schedule)
 }
 
 func (r *TemporalScheduleReconciler) handleSuccess(schedule *v1beta1.TemporalSchedule) (ctrl.Result, error) {
@@ -219,10 +233,7 @@ func (r *TemporalScheduleReconciler) handleSuccess(schedule *v1beta1.TemporalSch
 }
 
 func (r *TemporalScheduleReconciler) handleError(ctx context.Context, schedule *v1beta1.TemporalSchedule, reason string, action string, err error) (ctrl.Result, error) { //nolint:unparam
-	logger := log.FromContext(ctx)
-
-	logger.Error(err, action)
-	return r.handleErrorWithRequeue(schedule, reason, err, 0)
+	return r.handleErrorWithRequeue(ctx, schedule, reason, action, err, 0)
 }
 
 func (r *TemporalScheduleReconciler) handleSuccessWithRequeue(schedule *v1beta1.TemporalSchedule, requeueAfter time.Duration) (ctrl.Result, error) {
@@ -230,7 +241,11 @@ func (r *TemporalScheduleReconciler) handleSuccessWithRequeue(schedule *v1beta1.
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
 
-func (r *TemporalScheduleReconciler) handleErrorWithRequeue(schedule *v1beta1.TemporalSchedule, reason string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+func (r *TemporalScheduleReconciler) handleErrorWithRequeue(ctx context.Context, schedule *v1beta1.TemporalSchedule, reason string, action string, err error, requeueAfter time.Duration) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+
+	logger.Error(err, action)
+
 	if reason == "" {
 		reason = v1beta1.ReconcileErrorReason
 	}
