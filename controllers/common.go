@@ -17,8 +17,14 @@
 
 package controllers
 
+import "time"
+
 const (
 	deletionFinalizer = "deletion.finalizers.temporal.io"
 	clusterRefField   = "spec.clusterRef.name"
 	namespaceRefField = "spec.namespaceRef.name"
 )
+
+// finalizerRetryPeriod requeues a failed finalizer write: the error handler returns no error and the
+// predicates only fire on a spec change, so nothing else brings the object back.
+const finalizerRetryPeriod = 10 * time.Second
