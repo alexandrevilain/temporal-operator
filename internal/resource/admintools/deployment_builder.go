@@ -127,6 +127,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		MatchLabels: metadata.LabelsSelector(b.instance, "admintools"),
 	}
 
+	previousAnnotations := deployment.Spec.Template.Annotations
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "admintools", b.configHash),
 		Spec: corev1.PodSpec{
@@ -166,6 +167,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			Volumes:                       volumes,
 		},
 	}
+	meta.KeepRolloutRestart(previousAnnotations, &deployment.Spec.Template)
 
 	if b.instance.Spec.AdminTools.Overrides != nil && b.instance.Spec.AdminTools.Overrides.Deployment != nil {
 		err := kubernetes.ApplyDeploymentOverrides(deployment, b.instance.Spec.AdminTools.Overrides.Deployment)

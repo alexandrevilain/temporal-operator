@@ -120,6 +120,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	deployment.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: metadata.LabelsSelector(b.instance, "ui"),
 	}
+	previousAnnotations := deployment.Spec.Template.Annotations
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: meta.BuildPodObjectMeta(b.instance, "ui", b.configHash),
 		Spec: corev1.PodSpec{
@@ -155,6 +156,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			},
 		},
 	}
+	meta.KeepRolloutRestart(previousAnnotations, &deployment.Spec.Template)
 
 	if b.instance.Spec.UI.Overrides != nil && b.instance.Spec.UI.Overrides.Deployment != nil {
 		err := kubernetes.ApplyDeploymentOverrides(deployment, b.instance.Spec.UI.Overrides.Deployment)

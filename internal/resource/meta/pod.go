@@ -23,11 +23,14 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/istio"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/mtls/linkerd"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/prometheus"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	configHashKey = "operator.temporal.io/config"
+	// restartedAtKey is set on a pod template by `kubectl rollout restart`.
+	restartedAtKey = "kubectl.kubernetes.io/restartedAt"
 )
 
 // BuildPodObjectMeta return ObjectMeta for the service (frontend, ui, admintools) of the provided Cluster.
@@ -51,4 +54,15 @@ func BuildPodObjectMeta(instance *v1beta1.TemporalCluster, service, configHash s
 			},
 		),
 	}
+}
+
+// KeepRolloutRestart copies the `kubectl rollout restart` annotation from the
+// previous pod template annotations to the rebuilt template. Without it, a reconcile
+// reverts the template and the restart's new ReplicaSet is scaled back down.
+func KeepRolloutRestart(previous map[string]string, template *corev1.PodTemplateSpec) {
+	at, ok := previous[restartedAtKey]
+	if !ok {
+		return
+	}
+	template.Annotations = metadata.Merge(template.Annotations, map[string]string{restartedAtKey: at})
 }
