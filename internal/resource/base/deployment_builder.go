@@ -340,6 +340,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		MatchLabels: metadata.LabelsSelector(b.instance, b.serviceName),
 	}
 
+	previousAnnotations := deployment.Spec.Template.Annotations
 	deployment.Spec.Template = corev1.PodTemplateSpec{
 		ObjectMeta: meta.BuildPodObjectMeta(b.instance, b.serviceName, b.configHash),
 		Spec: corev1.PodSpec{
@@ -380,6 +381,7 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 			Volumes: volumes,
 		},
 	}
+	meta.KeepRolloutRestart(previousAnnotations, &deployment.Spec.Template)
 
 	if b.instance.Spec.Services.Overrides != nil && b.instance.Spec.Services.Overrides.Deployment != nil {
 		err := kubernetes.ApplyDeploymentOverrides(deployment, b.instance.Spec.Services.Overrides.Deployment)
