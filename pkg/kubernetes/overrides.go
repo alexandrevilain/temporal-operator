@@ -75,6 +75,13 @@ func ApplyPodTemplateSpecOverrides(podTemplate *corev1.PodTemplateSpec, override
 	}
 
 	if override.Spec != nil {
+		overrideSpec := corev1.PodSpec{}
+		if err := json.Unmarshal(override.Spec.Raw, &overrideSpec); err != nil {
+			return fmt.Errorf("can't unmarshal pod template spec override: %w", err)
+		}
+		replaceEnvVars(podTemplate.Spec.Containers, overrideSpec.Containers)
+		replaceEnvVars(podTemplate.Spec.InitContainers, overrideSpec.InitContainers)
+
 		original, err := json.Marshal(podTemplate.Spec)
 		if err != nil {
 			return fmt.Errorf("can't marshal pod template spec: %w", err)
@@ -146,4 +153,25 @@ func ApplyServiceOverrides(service *corev1.Service, override *v1beta1.ObjectMeta
 		service.Annotations = metadata.Merge(service.Annotations, override.Annotations)
 	}
 	return nil
+}
+
+// replaceEnvVars replaces each env var of containers that an override container of
+// the same name also sets, in place. A strategic merge patch merges env vars field by
+// field, so an override "value" would be kept next to the operator's "valueFrom",
+// which the API server rejects. The merge that follows then finds them equal.
+func replaceEnvVars(containers, overrides []corev1.Container) {
+	for _, o := range overrides {
+		for i := range containers {
+			if containers[i].Name != o.Name {
+				continue
+			}
+			for _, env := range o.Env {
+				for j := range containers[i].Env {
+					if containers[i].Env[j].Name == env.Name {
+						containers[i].Env[j] = env
+					}
+				}
+			}
+		}
+	}
 }

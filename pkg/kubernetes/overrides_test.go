@@ -656,13 +656,47 @@ func TestApplyPodTemplateSpecOverrides(t *testing.T) {
 				},
 			},
 		},
+		// An env var is replaced whole: a strategic merge would keep the base
+		// valueFrom next to the override's value, which the API server rejects.
+		"env var value replaces valueFrom": {
+			original: &corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "service",
+						Env: []corev1.EnvVar{
+							{Name: "POD_IP", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"}}},
+							{Name: "TEMPORAL_ADDRESS", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"}}},
+							{Name: "SERVICES", Value: "worker"},
+						},
+					}},
+				},
+			},
+			override: &v1beta1.PodTemplateSpecOverride{
+				Spec: &apiextensionsv1.JSON{
+					Raw: []byte(`{"containers":[{"name":"service","env":[{"name":"TEMPORAL_ADDRESS","value":"prod-internal-frontend:7236"},{"name":"EXTRA","value":"1"}]}]}`),
+				},
+			},
+			expected: &corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "service",
+						Env: []corev1.EnvVar{
+							{Name: "POD_IP", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "status.podIP"}}},
+							{Name: "TEMPORAL_ADDRESS", Value: "prod-internal-frontend:7236"},
+							{Name: "EXTRA", Value: "1"},
+							{Name: "SERVICES", Value: "worker"},
+						},
+					}},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(tt *testing.T) {
 			err := kubernetes.ApplyPodTemplateSpecOverrides(test.original, test.override)
 			require.NoError(tt, err)
-			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected))
+			assert.True(tt, equality.Semantic.DeepEqual(test.original, test.expected), "got %+v", test.original.Spec.Containers)
 		})
 	}
 }
