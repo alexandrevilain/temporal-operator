@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	defaultTemporalVersion = "1.31.1"
+	defaultTemporalVersion = "1.32.2"
 	defaultTemporalImage   = "temporalio/server"
 
 	defaultTemporalUIVersion = "2.49.1"

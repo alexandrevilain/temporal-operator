@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 Improvements:
+- Add support for Temporal Server v1.32.x, and make v1.32.2 the default version. v1.32 changes no static config, server image entrypoint or admin-tools contents (BusyBox `wget`, no `curl`/`jq`, same tools as v1.31); its breaking changes are in dynamic config, APIs and metrics (see the [v1.32.0 release notes](https://github.com/temporalio/temporal/releases/tag/v1.32.0), e.g. the unified visibility query converter is now the default). Upgrade from v1.31.x as usual, one minor at a time.
 - Add support for Temporal Server v1.29.x. Temporal v1.29 introduces only dynamic-config changes (task-queue fairness, task-queue config API), which are already supported through the cluster `dynamicConfig` field.
 - Add support for Temporal Server v1.30.x. (The defaults and supported range moved on again with v1.31 support below; see that entry for the values this release actually ships.)
   - Temporal v1.30 removed `dockerize`/`auto-setup` from the `temporalio/server` image and moved config-template rendering into the server binary (embedded sprig engine). For clusters running `>= 1.30`, the operator now emits config templates with the `# enable-template` header and sprig `{{ env "NAME" }}` placeholders (instead of the dockerize `{{ .Env.NAME }}` syntax), sets `TEMPORAL_SERVER_CONFIG_FILE_PATH`, and selects the service to start through the new `TEMPORAL_SERVICES` environment variable (the legacy `SERVICES` variable is still set for backward compatibility).
