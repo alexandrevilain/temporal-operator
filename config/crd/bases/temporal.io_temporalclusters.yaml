@@ -3063,9 +3063,11 @@ spec:
                           format: int32
                           type: integer
                         replicas:
-                          description: Number of desired replicas for the service. Default to 1.
+                          description: |-
+                            Number of desired replicas for the service. Default to 1. 0 stops the
+                            service without deleting the cluster (its Deployment scales to zero).
                           format: int32
-                          minimum: 1
+                          minimum: 0
                           type: integer
                         resources:
                           description: |-
@@ -3230,9 +3232,11 @@ spec:
                           format: int32
                           type: integer
                         replicas:
-                          description: Number of desired replicas for the service. Default to 1.
+                          description: |-
+                            Number of desired replicas for the service. Default to 1. 0 stops the
+                            service without deleting the cluster (its Deployment scales to zero).
                           format: int32
-                          minimum: 1
+                          minimum: 0
                           type: integer
                         resources:
                           description: |-
@@ -3403,9 +3407,11 @@ spec:
                           format: int32
                           type: integer
                         replicas:
-                          description: Number of desired replicas for the service. Default to 1.
+                          description: |-
+                            Number of desired replicas for the service. Default to 1. 0 stops the
+                            service without deleting the cluster (its Deployment scales to zero).
                           format: int32
-                          minimum: 1
+                          minimum: 0
                           type: integer
                         resources:
                           description: |-
@@ -3570,9 +3576,11 @@ spec:
                           format: int32
                           type: integer
                         replicas:
-                          description: Number of desired replicas for the service. Default to 1.
+                          description: |-
+                            Number of desired replicas for the service. Default to 1. 0 stops the
+                            service without deleting the cluster (its Deployment scales to zero).
                           format: int32
-                          minimum: 1
+                          minimum: 0
                           type: integer
                         resources:
                           description: |-
@@ -3800,9 +3808,11 @@ spec:
                           format: int32
                           type: integer
                         replicas:
-                          description: Number of desired replicas for the service. Default to 1.
+                          description: |-
+                            Number of desired replicas for the service. Default to 1. 0 stops the
+                            service without deleting the cluster (its Deployment scales to zero).
                           format: int32
-                          minimum: 1
+                          minimum: 0
                           type: integer
                         resources:
                           description: |-
