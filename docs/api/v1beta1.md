@@ -4307,7 +4307,8 @@ int32
 </td>
 <td>
 <em>(Optional)</em>
-<p>Number of desired replicas for the service. Default to 1.</p>
+<p>Number of desired replicas for the service. Default to 1. 0 stops the
+service without deleting the cluster (its Deployment scales to zero).</p>
 </td>
 </tr>
 <tr>
