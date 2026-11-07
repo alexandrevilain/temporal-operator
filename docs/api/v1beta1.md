@@ -294,6 +294,21 @@ AuthorizationSpec
 <p>Authorization allows authorization configuration for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>clusterMetadata</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterMetadataSpec">
+ClusterMetadataSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClusterMetadata configures the cluster for multi-cluster replication.
+If not set, the cluster is a standalone cluster.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -917,6 +932,66 @@ ArchivalSpec
 <td>
 <em>(Optional)</em>
 <p>Visibility is the default config for visibility archival.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.ClusterMetadataSpec">ClusterMetadataSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>ClusterMetadataSpec defines the cluster metadata needed for multi-cluster replication.
+Remote clusters are not listed here: they are added at runtime with <code>temporal operator cluster upsert</code>.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enableGlobalNamespace</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>EnableGlobalNamespace allows the cluster to host global namespaces.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>initialFailoverVersion</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>InitialFailoverVersion is the cluster&rsquo;s initial failover version.
+Must be unique across replicating clusters and lower than the failover version increment (10).
+Defaults to 1.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dcRedirectionPolicy</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DCRedirectionPolicy is the frontend datacenter redirection policy.</p>
 </td>
 </tr>
 </tbody>
@@ -5043,6 +5118,21 @@ AuthorizationSpec
 <p>Authorization allows authorization configuration for the temporal cluster.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>clusterMetadata</code><br>
+<em>
+<a href="#temporal.io/v1beta1.ClusterMetadataSpec">
+ClusterMetadataSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClusterMetadata configures the cluster for multi-cluster replication.
+If not set, the cluster is a standalone cluster.</p>
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -5297,6 +5387,32 @@ TemporalNamespaceArchivalSpec
 If not set, the default cluster configuration is used.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -5519,6 +5635,32 @@ TemporalNamespaceArchivalSpec
 <em>(Optional)</em>
 <p>Archival is a per-namespace archival configuration.
 If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
 </td>
 </tr>
 </tbody>

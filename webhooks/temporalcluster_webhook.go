@@ -416,6 +416,27 @@ func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newOb
 		)
 	}
 
+	// Once a cluster may host global namespaces, its failover versions are recorded in their histories.
+	// Temporal persists both settings and ignores later config changes to them, so forbid the changes here.
+	if oldMD, newMD := oldCluster.Spec.ClusterMetadata, newCluster.Spec.ClusterMetadata; oldMD.IsGlobalNamespaceEnabled() {
+		if !newMD.IsGlobalNamespaceEnabled() {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "clusterMetadata", "enableGlobalNamespace"),
+					"Global namespaces can't be disabled once enabled",
+				),
+			)
+		}
+		if newMD.GetInitialFailoverVersion() != oldMD.GetInitialFailoverVersion() {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "clusterMetadata", "initialFailoverVersion"),
+					"Initial failover version is immutable once global namespaces are enabled",
+				),
+			)
+		}
+	}
+
 	return warns, w.aggregateClusterErrors(newCluster, errs)
 }
 
