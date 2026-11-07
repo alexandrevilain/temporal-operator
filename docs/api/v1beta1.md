@@ -1489,7 +1489,7 @@ Defaults to 10s.</p>
 <code>values</code><br>
 <em>
 <a href="#temporal.io/v1beta1.ConstrainedValue">
-map[string][]./api/v1beta1.ConstrainedValue
+map[string][]ConstrainedValue
 </a>
 </em>
 </td>
@@ -2721,6 +2721,66 @@ Kubernetes core/v1.SecretKeySelector
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.SQLPasswordCommandSpec">SQLPasswordCommandSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.SQLSpec">SQLSpec</a>)
+</p>
+<p>SQLPasswordCommandSpec configures an external command used to retrieve the
+datastore password at runtime. Available for Temporal clusters &gt;= 1.31.0.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>command</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Command is the path to the executable to run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>args</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Args is the list of arguments passed to the command.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Timeout is the maximum duration to wait for the command to complete.
+Defaults to 30 seconds if unset.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.SQLSpec">SQLSpec
 </h3>
 <p>
@@ -2866,6 +2926,25 @@ string
 <td>
 <em>(Optional)</em>
 <p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>passwordCommand</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SQLPasswordCommandSpec">
+SQLPasswordCommandSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PasswordCommand executes an external command whose standard output is used
+as the datastore password, for instance to generate a short-lived cloud IAM
+auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+passwordSecretRef. When the command returns an expiring token, set
+maxConnLifetime so connections are recycled before the token expires.
+Requires Temporal &gt;= 1.31.0.</p>
 </td>
 </tr>
 </tbody>
@@ -5297,6 +5376,32 @@ TemporalNamespaceArchivalSpec
 If not set, the default cluster configuration is used.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -5519,6 +5624,32 @@ TemporalNamespaceArchivalSpec
 <em>(Optional)</em>
 <p>Archival is a per-namespace archival configuration.
 If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
 </td>
 </tr>
 </tbody>

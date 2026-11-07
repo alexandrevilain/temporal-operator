@@ -29,6 +29,7 @@ import (
 	"github.com/alexandrevilain/temporal-operator/internal/resource/persistence"
 	"github.com/alexandrevilain/temporal-operator/internal/resource/prometheus"
 	"github.com/alexandrevilain/temporal-operator/pkg/kubernetes"
+	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"go.temporal.io/server/common/primitives"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -119,6 +120,24 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 		},
 	}
 
+	// Temporal Server >= 1.30 removed dockerize/auto-setup from the server image.
+	// The service to start is now selected through the TEMPORAL_SERVICES env var
+	// (the --service flag) and the config file is located through
+	// TEMPORAL_SERVER_CONFIG_FILE_PATH. The legacy SERVICES env var is kept for
+	// backward compatibility and for the metrics "type" tag.
+	if b.instance.Spec.Version.GreaterOrEqual(version.V1_30_0) {
+		envVars = append(envVars,
+			corev1.EnvVar{
+				Name:  "TEMPORAL_SERVICES",
+				Value: b.serviceName,
+			},
+			corev1.EnvVar{
+				Name:  "TEMPORAL_SERVER_CONFIG_FILE_PATH",
+				Value: meta.ConfigFilePath,
+			},
+		)
+	}
+
 	datastores := b.instance.Spec.Persistence.GetDatastores()
 
 	envVars = append(envVars, persistence.GetDatastoresEnvironmentVariables(datastores)...)
@@ -126,8 +145,8 @@ func (b *DeploymentBuilder) Update(object client.Object) error {
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      "config",
-			MountPath: "/etc/temporal/config/config_template.yaml",
-			SubPath:   "config_template.yaml",
+			MountPath: meta.ConfigFilePath,
+			SubPath:   meta.ConfigFileName,
 		},
 	}
 

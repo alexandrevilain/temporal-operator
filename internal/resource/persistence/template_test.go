@@ -25,14 +25,22 @@ import (
 )
 
 func TestTemplates(t *testing.T) {
-	var s strings.Builder
-	assert.NoError(t, templates[createDatabaseTemplate].Execute(&s, struct {
+	type data struct {
 		MTLSProvider   string
+		UseWget        bool
 		Tool           string
 		ConnectionArgs string
 		DatabaseName   string
-	}{
-		MTLSProvider: "linkerd",
-	}))
+	}
+
+	// Without UseWget (Temporal < 1.30), the linkerd shutdown uses curl.
+	var s strings.Builder
+	assert.NoError(t, templates[createDatabaseTemplate].Execute(&s, data{MTLSProvider: "linkerd"}))
 	assert.Contains(t, s.String(), "curl -X POST http://localhost:4191/shutdown")
+
+	// With UseWget (Temporal >= 1.30, curl removed from the image), it uses busybox wget.
+	var w strings.Builder
+	assert.NoError(t, templates[createDatabaseTemplate].Execute(&w, data{MTLSProvider: "linkerd", UseWget: true}))
+	assert.Contains(t, w.String(), "wget -q -O- --post-data='' http://localhost:4191/shutdown")
+	assert.NotContains(t, w.String(), "curl")
 }

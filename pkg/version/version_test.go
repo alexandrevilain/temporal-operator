@@ -128,3 +128,58 @@ func TestVersionLessThan(t *testing.T) {
 		})
 	}
 }
+
+// TestNextNonBrokenPatch asserts the upgrade suggestion never points at another
+// release the webhook also rejects. v1.26.0 and v1.26.1 are both retracted
+// upstream, so a plain IncPatch would send a user from one rejected version
+// straight into the next.
+func TestNextNonBrokenPatch(t *testing.T) {
+	for _, tt := range []struct {
+		from string
+		want string
+	}{
+		{from: "1.26.0", want: "1.26.2"}, // 1.26.1 is broken too, skip it
+		{from: "1.26.1", want: "1.26.2"},
+		{from: "1.21.0", want: "1.21.2"}, // 1.21.1 is broken too
+		{from: "1.24.0", want: "1.24.1"},
+		{from: "1.27.0", want: "1.27.1"},
+		{from: "1.30.0", want: "1.30.1"},
+	} {
+		t.Run(tt.from, func(t *testing.T) {
+			got := version.MustNewVersionFromString(tt.from).NextNonBrokenPatch()
+			assert.Equal(t, tt.want, got.String())
+			assert.False(t, version.IsBrokenRelease(got), "suggested version must not itself be broken")
+		})
+	}
+}
+
+func TestIsBrokenRelease(t *testing.T) {
+	assert.True(t, version.IsBrokenRelease(version.MustNewVersionFromString("1.30.0")))
+	assert.False(t, version.IsBrokenRelease(version.MustNewVersionFromString("1.30.1")))
+}
+
+// TestValidateSupportedRange pins both ends of the range and the sequential
+// path from 1.28 up to the newest supported minor, 1.32.
+func TestValidateSupportedRange(t *testing.T) {
+	for v, ok := range map[string]bool{
+		"1.13.9": false,
+		"1.14.0": true,
+		"1.28.4": true,
+		"1.29.7": true,
+		"1.30.8": true,
+		"1.31.4": true,
+		"1.32.1": true,
+		"1.32.2": true,
+		"1.33.0": false,
+	} {
+		err := version.MustNewVersionFromString(v).Validate()
+		assert.Equal(t, ok, err == nil, v)
+	}
+
+	path := []string{"1.28.4", "1.29.7", "1.30.8", "1.31.4", "1.32.1"}
+	for i := 1; i < len(path); i++ {
+		constraint, err := version.MustNewVersionFromString(path[i-1]).UpgradeConstraint()
+		require.NoError(t, err)
+		assert.True(t, constraint.Check(version.MustNewVersionFromString(path[i]).Version), "%s -> %s", path[i-1], path[i])
+	}
+}

@@ -30,7 +30,7 @@ import (
 
 // NewSQLconfigFromDatastoreSpec creates a new instance of a temporal SQL config from the provided DatastoreSpec.
 func NewSQLConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *config.SQL {
-	return &config.SQL{
+	cfg := &config.SQL{
 		User:               spec.SQL.User,
 		Password:           "",
 		PluginName:         spec.SQL.PluginName,
@@ -44,6 +44,23 @@ func NewSQLConfigFromDatastoreSpec(spec *v1beta1.DatastoreSpec) *config.SQL {
 		TaskScanPartitions: spec.SQL.TaskScanPartitions,
 		TLS:                tlsConfigConfigFromDatastoreSpec(spec),
 	}
+
+	// PasswordCommand (Temporal >= 1.31) resolves the datastore password by
+	// running an external command, e.g. to fetch a cloud IAM auth token. It is
+	// mutually exclusive with a static password.
+	if spec.SQL.PasswordCommand != nil {
+		cfg.PasswordCommand = &config.PasswordCommandConfig{
+			Command: spec.SQL.PasswordCommand.Command,
+			Args:    spec.SQL.PasswordCommand.Args,
+		}
+		// Leave Timeout at its zero value when unset so the server applies its
+		// own default rather than a hard 0s.
+		if spec.SQL.PasswordCommand.Timeout != nil {
+			cfg.PasswordCommand.Timeout = spec.SQL.PasswordCommand.Timeout.Duration
+		}
+	}
+
+	return cfg
 }
 
 // NewElasticsearchConfigFromDatastoreSpec creates a new instance of a temporal elasticsearch client config from the provided DatastoreSpec.

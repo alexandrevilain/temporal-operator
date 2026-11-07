@@ -30,7 +30,6 @@ import (
 	enumsspb "go.temporal.io/server/api/enums/v1"
 	"go.temporal.io/server/common/primitives"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	"k8s.io/utils/strings/slices"
@@ -42,14 +41,6 @@ import (
 // and set default fields values for TemporalCluster objects.
 type TemporalClusterWebhook struct {
 	AvailableAPIs *discovery.AvailableAPIs
-}
-
-func (w *TemporalClusterWebhook) getClusterFromRequest(obj runtime.Object) (*v1beta1.TemporalCluster, error) {
-	cluster, ok := obj.(*v1beta1.TemporalCluster)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected an TemporalCluster but got a %T", obj))
-	}
-	return cluster, nil
 }
 
 func (w *TemporalClusterWebhook) aggregateClusterErrors(cluster *v1beta1.TemporalCluster, errs field.ErrorList) error {
@@ -65,12 +56,7 @@ func (w *TemporalClusterWebhook) aggregateClusterErrors(cluster *v1beta1.Tempora
 }
 
 // Default ensures empty fields have their default value.
-func (w *TemporalClusterWebhook) Default(_ context.Context, obj runtime.Object) error {
-	cluster, err := w.getClusterFromRequest(obj)
-	if err != nil {
-		return err
-	}
-
+func (w *TemporalClusterWebhook) Default(_ context.Context, cluster *v1beta1.TemporalCluster) error {
 	if cluster.Spec.Metrics.IsEnabled() {
 		if cluster.Spec.Metrics.Prometheus != nil {
 			// If the user has set the deprecated ListenAddress field and not the new ListenPort,
@@ -210,15 +196,15 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 	}
 
 	// Check that the user-specified version is not marked as broken.
-	for _, version := range version.ForbiddenBrokenReleases {
-		if cluster.Spec.Version.Equal(version.Version) {
-			errs = append(errs,
-				field.Forbidden(
-					field.NewPath("spec", "version"),
-					fmt.Sprintf("version %s is marked as broken by the operator, please upgrade to %s (if allowed)", cluster.Spec.Version.String(), cluster.Spec.Version.IncPatch().String()),
-				),
-			)
-		}
+	// The suggested version skips any release that is itself broken, so users
+	// are not sent from one rejected version straight to another.
+	if version.IsBrokenRelease(cluster.Spec.Version) {
+		errs = append(errs,
+			field.Forbidden(
+				field.NewPath("spec", "version"),
+				fmt.Sprintf("version %s is marked as broken by the operator, please upgrade to %s (if allowed)", cluster.Spec.Version.String(), cluster.Spec.Version.NextNonBrokenPatch().String()),
+			),
+		)
 	}
 
 	// Check new features introduced in cluster version >= 1.20 are not enabled for older version.
@@ -300,6 +286,44 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
+	// Validate SQL passwordCommand usage. It resolves the datastore password by
+	// running an external command and is only supported by Temporal >= 1.31.
+	for name, store := range cluster.Spec.Persistence.GetDatastoresMap() {
+		if store == nil || store.SQL == nil || store.SQL.PasswordCommand == nil {
+			continue
+		}
+		path := field.NewPath("spec", "persistence", name, "sql", "passwordCommand")
+		if !cluster.Spec.Version.GreaterOrEqual(version.V1_31_0) {
+			errs = append(errs, field.Forbidden(
+				path,
+				"sql.passwordCommand requires Temporal >= 1.31.0.",
+			))
+		}
+		if store.PasswordSecretRef != nil {
+			errs = append(errs, field.Forbidden(
+				path,
+				"sql.passwordCommand is mutually exclusive with passwordSecretRef.",
+			))
+		}
+		if store.SQL.PasswordCommand.Command == "" {
+			errs = append(errs, field.Required(
+				path.Child("command"),
+				"command is required when passwordCommand is set.",
+			))
+		}
+		// The persistence schema jobs run the same command inside the
+		// admin-tools image, and that image cannot be extended: the job's pod
+		// spec is fully operator-owned, so there is no volume or container
+		// override through which a helper binary could be supplied. If the
+		// command is not already present in admin-tools, schema setup fails
+		// with an authentication error even though the server pods themselves
+		// resolve the password fine.
+		warns = append(warns, fmt.Sprintf(
+			"%s: the command must already exist in the admin-tools image; the persistence schema jobs run it there and their pod spec cannot be extended with extra volumes or containers",
+			path.String(),
+		))
+	}
+
 	// Check for per unit histogram boundaries if metrics is enabled
 	if cluster.Spec.Metrics.IsEnabled() && cluster.Spec.Metrics.PerUnitHistogramBoundaries != nil {
 		p := cluster.Spec.Metrics.PerUnitHistogramBoundaries
@@ -362,12 +386,7 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 }
 
 // ValidateCreate ensures the user is creating a consistent temporal cluster.
-func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	cluster, err := w.getClusterFromRequest(obj)
-	if err != nil {
-		return nil, err
-	}
-
+func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, cluster *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	warns, errs := w.validateCluster(cluster)
 
 	return warns, w.aggregateClusterErrors(cluster, errs)
@@ -375,17 +394,7 @@ func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, obj runtime.O
 
 // ValidateUpdate validates TemporalCluster updates.
 // It mainly check for sequential version upgrades.
-func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	oldCluster, err := w.getClusterFromRequest(oldObj)
-	if err != nil {
-		return nil, err
-	}
-
-	newCluster, err := w.getClusterFromRequest(newObj)
-	if err != nil {
-		return nil, err
-	}
-
+func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldCluster, newCluster *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	warns, errs := w.validateCluster(newCluster)
 
 	// Ensure user is doing a sequential version upgrade.
@@ -420,14 +429,13 @@ func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newOb
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalClusterWebhook) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
+func (w *TemporalClusterWebhook) ValidateDelete(_ context.Context, _ *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	// No delete validation needed.
 	return nil, nil
 }
 
 func (w *TemporalClusterWebhook) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(&v1beta1.TemporalCluster{}).
+	return ctrl.NewWebhookManagedBy(mgr, &v1beta1.TemporalCluster{}).
 		WithDefaulter(w).
 		WithValidator(w).
 		Complete()
