@@ -445,6 +445,98 @@ func TestValidateUpdate(t *testing.T) {
 				},
 			},
 			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.numHistoryShards: Forbidden: Number of history shards is immutable",
+		}, "initialFailoverVersion change allowed while global namespaces are disabled": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: false, InitialFailoverVersion: ptr.To(int64(1))},
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(2))},
+				},
+			},
+		},
+		"enabling global namespaces from unset": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: nil,
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(1))},
+				},
+			},
+		},
+		"initialFailoverVersion immutable once global namespaces are enabled": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(1))},
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(2))},
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.clusterMetadata.initialFailoverVersion: Forbidden: Initial failover version is immutable once global namespaces are enabled",
+		},
+		"global namespaces can't be disabled once enabled": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(2))},
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: false, InitialFailoverVersion: ptr.To(int64(2))},
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.clusterMetadata.enableGlobalNamespace: Forbidden: Global namespaces can't be disabled once enabled",
+		},
+		"clusterMetadata can't be removed once global namespaces are enabled": {
+			oldlObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: &v1beta1.ClusterMetadataSpec{EnableGlobalNamespace: true, InitialFailoverVersion: ptr.To(int64(1))},
+				},
+			},
+			newObject: &v1beta1.TemporalCluster{
+				TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+				Spec: v1beta1.TemporalClusterSpec{
+					Version:         version.MustNewVersionFromString("1.19.4"),
+					ClusterMetadata: nil,
+				},
+			},
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.clusterMetadata.enableGlobalNamespace: Forbidden: Global namespaces can't be disabled once enabled",
 		},
 	}
 

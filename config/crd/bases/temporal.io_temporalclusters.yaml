@@ -402,6 +402,31 @@ spec:
                       description: PermissionsClaimName is the name of the claim within the JWT token that contains the user's permissions.
                       type: string
                   type: object
+                clusterMetadata:
+                  description: |-
+                    ClusterMetadata configures the cluster for multi-cluster replication.
+                    If not set, the cluster is a standalone cluster.
+                  properties:
+                    dcRedirectionPolicy:
+                      description: DCRedirectionPolicy is the frontend datacenter redirection policy.
+                      enum:
+                        - noop
+                        - selected-apis-forwarding
+                        - all-apis-forwarding
+                      type: string
+                    enableGlobalNamespace:
+                      description: EnableGlobalNamespace allows the cluster to host global namespaces.
+                      type: boolean
+                    initialFailoverVersion:
+                      description: |-
+                        InitialFailoverVersion is the cluster's initial failover version.
+                        Must be unique across replicating clusters and lower than the failover version increment (10).
+                        Defaults to 1.
+                      format: int64
+                      maximum: 9
+                      minimum: 1
+                      type: integer
+                  type: object
                 dynamicConfig:
                   description: DynamicConfig allows advanced configuration for the temporal cluster.
                   properties:
