@@ -404,7 +404,7 @@ func TestValidateUpdate(t *testing.T) {
 				Spec:   v1beta1.TemporalClusterSpec{Version: version.MustNewVersionFromString("1.18.4")},
 				Status: v1beta1.TemporalClusterStatus{},
 			},
-			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x)",
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x). Set spec.upgrade.strategy to Automatic to let the operator step through intermediate versions",
 		},
 		"not a sequential version update": {
 			oldlObject: &v1beta1.TemporalCluster{
@@ -424,7 +424,7 @@ func TestValidateUpdate(t *testing.T) {
 				Spec:   v1beta1.TemporalClusterSpec{Version: version.MustNewVersionFromString("1.19.4")},
 				Status: v1beta1.TemporalClusterStatus{},
 			},
-			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x)",
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x). Set spec.upgrade.strategy to Automatic to let the operator step through intermediate versions",
 		},
 		"immutable numHistoryShards": {
 			oldlObject: &v1beta1.TemporalCluster{

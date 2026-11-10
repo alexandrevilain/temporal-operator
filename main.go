@@ -113,8 +113,9 @@ func main() {
 		// than record.EventRecorder. Those are different interfaces and switching
 		// moves event emission from the core v1 API group to events.k8s.io/v1, which
 		// is an observable behaviour change. Deferred to its own change.
-		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager), //nolint:staticcheck // SA1019: see note above.
-		AvailableAPIs: availableAPIs,
+		Base:            controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager), //nolint:staticcheck // SA1019: see note above.
+		AvailableAPIs:   availableAPIs,
+		UpgradeRecorder: mgr.GetEventRecorderFor("cluster-upgrade"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
 		os.Exit(1)
