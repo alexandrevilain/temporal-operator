@@ -24,6 +24,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestValidate(t *testing.T) {
+	tests := map[string]bool{
+		"1.13.9": false,
+		"1.14.0": true,
+		"1.31.5": true,
+		"1.32.0": true,
+		"1.32.2": true,
+		"1.33.0": false,
+	}
+
+	for v, expectedValid := range tests {
+		t.Run(v, func(tt *testing.T) {
+			err := version.MustNewVersionFromString(v).Validate()
+			if expectedValid {
+				assert.NoError(tt, err)
+			} else {
+				assert.Error(tt, err)
+			}
+		})
+	}
+}
+
 func TestUpgradeConstraint(t *testing.T) {
 	tests := map[string]struct {
 		version        *version.Version
