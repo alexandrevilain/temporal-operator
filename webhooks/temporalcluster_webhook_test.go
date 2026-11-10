@@ -19,6 +19,7 @@ package webhooks_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
@@ -26,16 +27,16 @@ import (
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/alexandrevilain/temporal-operator/webhooks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/ptr"
 )
 
 func TestDefault(t *testing.T) {
 	tests := map[string]struct {
-		initialObject  runtime.Object
-		expectedObject runtime.Object
+		initialObject  *v1beta1.TemporalCluster
+		expectedObject *v1beta1.TemporalCluster
 		expectedErr    string
 	}{
 		"default fields": {
@@ -45,7 +46,7 @@ func TestDefault(t *testing.T) {
 					Name: "fake",
 				},
 			},
-			expectedObject: func() runtime.Object {
+			expectedObject: func() *v1beta1.TemporalCluster {
 				c := &v1beta1.TemporalCluster{
 					TypeMeta: v1beta1.TemporalClusterTypeMeta,
 					ObjectMeta: metav1.ObjectMeta{
@@ -72,7 +73,7 @@ func TestDefault(t *testing.T) {
 					},
 				},
 			},
-			expectedObject: func() runtime.Object {
+			expectedObject: func() *v1beta1.TemporalCluster {
 				c := &v1beta1.TemporalCluster{
 					TypeMeta: v1beta1.TemporalClusterTypeMeta,
 					ObjectMeta: metav1.ObjectMeta{
@@ -145,7 +146,7 @@ func TestDefault(t *testing.T) {
 
 func TestValidateCreate(t *testing.T) {
 	tests := map[string]struct {
-		object      runtime.Object
+		object      *v1beta1.TemporalCluster
 		wh          *webhooks.TemporalClusterWebhook
 		expectedErr string
 	}{
@@ -195,7 +196,9 @@ func TestValidateCreate(t *testing.T) {
 			wh: &webhooks.TemporalClusterWebhook{
 				AvailableAPIs: &discovery.AvailableAPIs{},
 			},
-			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: version 1.21.0 is marked as broken by the operator, please upgrade to 1.21.1 (if allowed)",
+			// 1.21.1 is broken too, so the suggestion has to skip it: telling a
+			// user to move to a version this same check rejects is a dead end.
+			expectedErr: "TemporalCluster.temporal.io \"fake\" is invalid: spec.version: Forbidden: version 1.21.0 is marked as broken by the operator, please upgrade to 1.21.2 (if allowed)",
 		},
 		"error when no cert manager and mTLS with cert-manager enabled": {
 			object: &v1beta1.TemporalCluster{
@@ -357,8 +360,8 @@ func TestValidateCreate(t *testing.T) {
 
 func TestValidateUpdate(t *testing.T) {
 	tests := map[string]struct {
-		oldlObject  runtime.Object
-		newObject   runtime.Object
+		oldlObject  *v1beta1.TemporalCluster
+		newObject   *v1beta1.TemporalCluster
 		expectedErr string
 	}{
 		"allowed upgrade": {
@@ -460,4 +463,59 @@ func TestValidateUpdate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestValidateCreate_PasswordCommandWarning asserts users are told about the
+// one place sql.passwordCommand cannot work.
+//
+// The schema-setup jobs run the command inside the admin-tools image, and their
+// pod spec is entirely operator-owned — there is no volume or container
+// override through which a helper binary (an RDS/Cloud SQL IAM token generator,
+// the documented use case) could be supplied. The server pods resolve the
+// password natively, so the failure surfaces only as a password-authentication
+// error from the very first schema job, which is hard to attribute.
+func TestValidateCreate_PasswordCommandWarning(t *testing.T) {
+	wh := &webhooks.TemporalClusterWebhook{
+		AvailableAPIs: &discovery.AvailableAPIs{},
+	}
+
+	cluster := &v1beta1.TemporalCluster{
+		TypeMeta:   v1beta1.TemporalClusterTypeMeta,
+		ObjectMeta: metav1.ObjectMeta{Name: "fake"},
+		Spec: v1beta1.TemporalClusterSpec{
+			Version: version.MustNewVersionFromString("1.31.1"),
+			Persistence: v1beta1.TemporalPersistenceSpec{
+				DefaultStore: &v1beta1.DatastoreSpec{
+					Name: "default",
+					SQL: &v1beta1.SQLSpec{
+						User:         "temporal",
+						PluginName:   "postgres12",
+						DatabaseName: "temporal",
+						ConnectAddr:  "postgres:5432",
+						PasswordCommand: &v1beta1.SQLPasswordCommandSpec{
+							Command: "/usr/local/bin/rds-token",
+							Args:    []string{"--host", "db"},
+						},
+					},
+				},
+				VisibilityStore: &v1beta1.DatastoreSpec{
+					Name: "visibility",
+					SQL: &v1beta1.SQLSpec{
+						User:         "temporal",
+						PluginName:   "postgres12",
+						DatabaseName: "temporal_visibility",
+						ConnectAddr:  "postgres:5432",
+					},
+					PasswordSecretRef: &v1beta1.SecretKeyReference{Name: "pg", Key: "PASSWORD"},
+				},
+			},
+		},
+	}
+	cluster.Default()
+
+	warns, err := wh.ValidateCreate(context.Background(), cluster)
+	require.NoError(t, err)
+	require.NotEmpty(t, warns, "passwordCommand must warn about the admin-tools image")
+	assert.Contains(t, strings.Join(warns, "\n"), "admin-tools image")
+	assert.Contains(t, strings.Join(warns, "\n"), "spec.persistence.defaultStore.sql.passwordCommand")
 }

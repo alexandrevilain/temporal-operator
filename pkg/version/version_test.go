@@ -24,6 +24,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestValidate(t *testing.T) {
+	tests := map[string]bool{
+		"1.13.9": false,
+		"1.14.0": true,
+		"1.31.5": true,
+		"1.32.0": true,
+		"1.32.2": true,
+		"1.33.0": false,
+	}
+
+	for v, expectedValid := range tests {
+		t.Run(v, func(tt *testing.T) {
+			err := version.MustNewVersionFromString(v).Validate()
+			if expectedValid {
+				assert.NoError(tt, err)
+			} else {
+				assert.Error(tt, err)
+			}
+		})
+	}
+}
+
 func TestUpgradeConstraint(t *testing.T) {
 	tests := map[string]struct {
 		version        *version.Version
@@ -127,4 +149,33 @@ func TestVersionLessThan(t *testing.T) {
 			assert.Equal(tt, test.expected, result)
 		})
 	}
+}
+
+// TestNextNonBrokenPatch asserts the upgrade suggestion never points at another
+// release the webhook also rejects. v1.26.0 and v1.26.1 are both retracted
+// upstream, so a plain IncPatch would send a user from one rejected version
+// straight into the next.
+func TestNextNonBrokenPatch(t *testing.T) {
+	for _, tt := range []struct {
+		from string
+		want string
+	}{
+		{from: "1.26.0", want: "1.26.2"}, // 1.26.1 is broken too, skip it
+		{from: "1.26.1", want: "1.26.2"},
+		{from: "1.21.0", want: "1.21.2"}, // 1.21.1 is broken too
+		{from: "1.24.0", want: "1.24.1"},
+		{from: "1.27.0", want: "1.27.1"},
+		{from: "1.30.0", want: "1.30.1"},
+	} {
+		t.Run(tt.from, func(t *testing.T) {
+			got := version.MustNewVersionFromString(tt.from).NextNonBrokenPatch()
+			assert.Equal(t, tt.want, got.String())
+			assert.False(t, version.IsBrokenRelease(got), "suggested version must not itself be broken")
+		})
+	}
+}
+
+func TestIsBrokenRelease(t *testing.T) {
+	assert.True(t, version.IsBrokenRelease(version.MustNewVersionFromString("1.30.0")))
+	assert.False(t, version.IsBrokenRelease(version.MustNewVersionFromString("1.30.1")))
 }

@@ -9,35 +9,95 @@ resources:
 - ../webhook
 - ../certmanager
 
-patchesStrategicMerge:
-- manager_webhook_patch.yaml
-- webhookcainjection_patch.yaml
+patches:
+- path: manager_webhook_patch.yaml
+- path: webhookcainjection_patch.yaml
 
-# the following config is for teaching kustomize how to do var substitution
-vars:
-- name: CERTIFICATE_NAMESPACE # namespace of the certificate CR
-  objref:
-    kind: Certificate
-    group: cert-manager.io
-    version: v1
-    name: serving-cert # this name should match the one in certificate.yaml
-  fieldref:
-    fieldpath: metadata.namespace
-- name: CERTIFICATE_NAME
-  objref:
-    kind: Certificate
-    group: cert-manager.io
-    version: v1
-    name: serving-cert # this name should match the one in certificate.yaml
-- name: SERVICE_NAMESPACE # namespace of the service
-  objref:
+# Replacements run after the namePrefix and namespace transformers, so the
+# sources below carry the final names. They fill in the placeholder tokens in
+# certmanager/certificate.yaml and webhookcainjection_patch.yaml.
+replacements:
+# Certificate dnsNames: SERVICE_NAME.SERVICE_NAMESPACE.svc[.cluster.local]
+- source:
     kind: Service
     version: v1
     name: webhook-service
-  fieldref:
-    fieldpath: metadata.namespace
-- name: SERVICE_NAME
-  objref:
+    fieldPath: .metadata.name
+  targets:
+  - select:
+      kind: Certificate
+      group: cert-manager.io
+      version: v1
+      name: serving-cert
+    fieldPaths:
+    - .spec.dnsNames.0
+    - .spec.dnsNames.1
+    options:
+      delimiter: '.'
+      index: 0
+      create: true
+- source:
     kind: Service
     version: v1
     name: webhook-service
+    fieldPath: .metadata.namespace
+  targets:
+  - select:
+      kind: Certificate
+      group: cert-manager.io
+      version: v1
+      name: serving-cert
+    fieldPaths:
+    - .spec.dnsNames.0
+    - .spec.dnsNames.1
+    options:
+      delimiter: '.'
+      index: 1
+      create: true
+# Webhook CA injection: CERTIFICATE_NAMESPACE/CERTIFICATE_NAME
+- source:
+    kind: Certificate
+    group: cert-manager.io
+    version: v1
+    name: serving-cert
+    fieldPath: .metadata.namespace
+  targets:
+  - select:
+      kind: MutatingWebhookConfiguration
+    fieldPaths:
+    - .metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 0
+      create: true
+  - select:
+      kind: ValidatingWebhookConfiguration
+    fieldPaths:
+    - .metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 0
+      create: true
+- source:
+    kind: Certificate
+    group: cert-manager.io
+    version: v1
+    name: serving-cert
+    fieldPath: .metadata.name
+  targets:
+  - select:
+      kind: MutatingWebhookConfiguration
+    fieldPaths:
+    - .metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 1
+      create: true
+  - select:
+      kind: ValidatingWebhookConfiguration
+    fieldPaths:
+    - .metadata.annotations.[cert-manager.io/inject-ca-from]
+    options:
+      delimiter: '/'
+      index: 1
+      create: true

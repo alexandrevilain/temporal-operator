@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 env:
-  GOLANG_CI_VERSION: v1.64.8
+  GOLANG_CI_VERSION: v2.12.2
 
 jobs:
   license:
@@ -31,9 +31,21 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
       - name: lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ env.GOLANG_CI_VERSION }}
+          # A restored analysis cache produces incorrect results. Two runs of
+          # this workflow over a byte-identical main.go disagreed: the first,
+          # which populated the cache, reported no issues; the second, which
+          # restored it, reported the two SA1019 //nolint directives in main.go
+          # as unused. Removing those directives and running cold shows SA1019
+          # firing at both sites, so the directives are used and the cached
+          # verdict was wrong. It fails in the other direction too — a warm
+          # cache locally reported "0 issues" on a tree that genuinely had one.
+          #
+          # Correct lint results matter more than the ~1 minute the cache saves
+          # (the cached run still took 130s), so every run starts cold.
+          skip-cache: true
   build:
     name: Build operator
     runs-on: 'ubuntu-latest'

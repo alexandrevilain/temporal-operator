@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: temporalclusterclients.temporal.io
 spec:
   group: temporal.io
@@ -90,7 +90,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: temporalclusters.temporal.io
 spec:
   group: temporal.io
@@ -156,6 +156,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
@@ -222,7 +224,7 @@ spec:
                           Claims lists the names of resources, defined in spec.resourceClaims,
                           that are used by this container.
 
-                          This is an alpha field and requires enabling the
+                          This field depends on the
                           DynamicResourceAllocation feature gate.
 
                           This field is immutable. It can only be set for containers.
@@ -606,7 +608,7 @@ spec:
                       Claims lists the names of resources, defined in spec.resourceClaims,
                       that are used by this container.
 
-                      This is an alpha field and requires enabling the
+                      This field depends on the
                       DynamicResourceAllocation feature gate.
 
                       This field is immutable. It can only be set for containers.
@@ -769,6 +771,12 @@ spec:
                           mTLS for network between cluster nodes.
                         type: boolean
                     type: object
+                  permissiveMetrics:
+                    description: |-
+                      PermissiveMetrics allows insecure HTTP requests to the metrics endpoint.
+                      This is handy if the metrics collector does not support mTLS.
+                      Useless if mTLS provider is not istio
+                    type: boolean
                   provider:
                     default: cert-manager
                     description: Provider defines the tool used to manage mTLS certificates.
@@ -974,6 +982,11 @@ spec:
                                       It requires Prometheus >= v2.28.0.
                                     pattern: (^0|([0-9]*[.])?[0-9]+((K|M|G|T|E|P)i?)?B)$
                                     type: string
+                                  convertClassicHistogramsToNHCB:
+                                    description: |-
+                                      Whether to convert all scraped classic histograms into a native histogram with custom buckets.
+                                      It requires Prometheus >= v3.0.0.
+                                    type: boolean
                                   endpoints:
                                     description: |-
                                       List of endpoints part of this ServiceMonitor.
@@ -1249,6 +1262,14 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
+                                        noProxy:
+                                          description: |-
+                                            `noProxy` is a comma-separated string that can contain IPs, CIDR notation, domain names
+                                            that should be excluded from proxying. IP and domain names can
+                                            contain port numbers.
+
+                                            It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
+                                          type: string
                                         oauth2:
                                           description: |-
                                             `oauth2` configures the OAuth2 settings to use when scraping the target.
@@ -1355,7 +1376,7 @@ spec:
                                                 that should be excluded from proxying. IP and domain names can
                                                 contain port numbers.
 
-                                                It requires Prometheus >= v2.43.0 or Alertmanager >= 0.25.0.
+                                                It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
                                               type: string
                                             proxyConnectHeader:
                                               additionalProperties:
@@ -1391,19 +1412,19 @@ spec:
                                                 ProxyConnectHeader optionally specifies headers to send to
                                                 proxies during CONNECT requests.
 
-                                                It requires Prometheus >= v2.43.0 or Alertmanager >= 0.25.0.
+                                                It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
                                               type: object
                                               x-kubernetes-map-type: atomic
                                             proxyFromEnvironment:
                                               description: |-
                                                 Whether to use the proxy configuration defined by environment variables (HTTP_PROXY, HTTPS_PROXY, and NO_PROXY).
 
-                                                It requires Prometheus >= v2.43.0 or Alertmanager >= 0.25.0.
+                                                It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
                                               type: boolean
                                             proxyUrl:
                                               description: '`proxyURL` defines the
                                                 HTTP proxy server to use.'
-                                              pattern: ^http(s)?://.+$
+                                              pattern: ^(http|https|socks5)://.+$
                                               type: string
                                             scopes:
                                               description: '`scopes` defines the OAuth2
@@ -1567,7 +1588,7 @@ spec:
                                                   description: |-
                                                     Maximum acceptable TLS version.
 
-                                                    It requires Prometheus >= v2.41.0.
+                                                    It requires Prometheus >= v2.41.0 or Thanos >= v0.31.0.
                                                   enum:
                                                   - TLS10
                                                   - TLS11
@@ -1578,7 +1599,7 @@ spec:
                                                   description: |-
                                                     Minimum acceptable TLS version.
 
-                                                    It requires Prometheus >= v2.35.0.
+                                                    It requires Prometheus >= v2.35.0 or Thanos >= v0.28.0.
                                                   enum:
                                                   - TLS10
                                                   - TLS11
@@ -1620,10 +1641,52 @@ spec:
 
                                             It takes precedence over `targetPort`.
                                           type: string
-                                        proxyUrl:
+                                        proxyConnectHeader:
+                                          additionalProperties:
+                                            items:
+                                              description: SecretKeySelector selects
+                                                a key of a Secret.
+                                              properties:
+                                                key:
+                                                  description: The key of the secret
+                                                    to select from.  Must be a valid
+                                                    secret key.
+                                                  type: string
+                                                name:
+                                                  default: ""
+                                                  description: |-
+                                                    Name of the referent.
+                                                    This field is effectively required, but due to backwards compatibility is
+                                                    allowed to be empty. Instances of this type with an empty value here are
+                                                    almost certainly wrong.
+                                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                                  type: string
+                                                optional:
+                                                  description: Specify whether the
+                                                    Secret or its key must be defined
+                                                  type: boolean
+                                              required:
+                                              - key
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                            type: array
                                           description: |-
-                                            `proxyURL` configures the HTTP Proxy URL (e.g.
-                                            "http://proxyserver:2195") to go through when scraping the target.
+                                            ProxyConnectHeader optionally specifies headers to send to
+                                            proxies during CONNECT requests.
+
+                                            It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
+                                          type: object
+                                          x-kubernetes-map-type: atomic
+                                        proxyFromEnvironment:
+                                          description: |-
+                                            Whether to use the proxy configuration defined by environment variables (HTTP_PROXY, HTTPS_PROXY, and NO_PROXY).
+
+                                            It requires Prometheus >= v2.43.0, Alertmanager >= v0.25.0 or Thanos >= v0.32.0.
+                                          type: boolean
+                                        proxyUrl:
+                                          description: '`proxyURL` defines the HTTP
+                                            proxy server to use.'
+                                          pattern: ^(http|https|socks5)://.+$
                                           type: string
                                         relabelings:
                                           description: |-
@@ -1738,6 +1801,7 @@ spec:
 
                                             If empty, Prometheus uses the global scrape timeout unless it is less
                                             than the target's scrape interval value in which the latter is used.
+                                            The value cannot be greater than the scrape interval otherwise the operator will reject the resource.
                                           pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                                           type: string
                                         targetPort:
@@ -1915,7 +1979,7 @@ spec:
                                               description: |-
                                                 Maximum acceptable TLS version.
 
-                                                It requires Prometheus >= v2.41.0.
+                                                It requires Prometheus >= v2.41.0 or Thanos >= v0.31.0.
                                               enum:
                                               - TLS10
                                               - TLS11
@@ -1926,7 +1990,7 @@ spec:
                                               description: |-
                                                 Minimum acceptable TLS version.
 
-                                                It requires Prometheus >= v2.35.0.
+                                                It requires Prometheus >= v2.35.0 or Thanos >= v0.28.0.
                                               enum:
                                               - TLS10
                                               - TLS11
@@ -1948,6 +2012,18 @@ spec:
                                           type: boolean
                                       type: object
                                     type: array
+                                  fallbackScrapeProtocol:
+                                    description: |-
+                                      The protocol to use if a scrape returns blank, unparseable, or otherwise invalid Content-Type.
+
+                                      It requires Prometheus >= v3.0.0.
+                                    enum:
+                                    - PrometheusProto
+                                    - OpenMetricsText0.0.1
+                                    - OpenMetricsText1.0.0
+                                    - PrometheusText0.0.4
+                                    - PrometheusText1.0.0
+                                    type: string
                                   jobLabel:
                                     description: |-
                                       `jobLabel` selects the label from the associated Kubernetes `Service`
@@ -2045,6 +2121,8 @@ spec:
                                     description: |-
                                       Whether to scrape a classic histogram that is also exposed as a native histogram.
                                       It requires Prometheus >= v2.45.0.
+
+                                      Notice: `scrapeClassicHistograms` corresponds to the `always_scrape_classic_histograms` field in the Prometheus configuration.
                                     type: boolean
                                   scrapeProtocols:
                                     description: |-
@@ -2062,11 +2140,13 @@ spec:
                                         * `OpenMetricsText1.0.0`
                                         * `PrometheusProto`
                                         * `PrometheusText0.0.4`
+                                        * `PrometheusText1.0.0`
                                       enum:
                                       - PrometheusProto
                                       - OpenMetricsText0.0.1
                                       - OpenMetricsText1.0.0
                                       - PrometheusText0.0.4
+                                      - PrometheusText1.0.0
                                       type: string
                                     type: array
                                     x-kubernetes-list-type: set
@@ -2118,6 +2198,18 @@ spec:
                                         type: object
                                     type: object
                                     x-kubernetes-map-type: atomic
+                                  selectorMechanism:
+                                    description: |-
+                                      Mechanism used to select the endpoints to scrape.
+                                      By default, the selection process relies on relabel configurations to filter the discovered targets.
+                                      Alternatively, you can opt in for role selectors, which may offer better efficiency in large clusters.
+                                      Which strategy is best for your use case needs to be carefully evaluated.
+
+                                      It requires Prometheus >= v2.17.0.
+                                    enum:
+                                    - RelabelConfig
+                                    - RoleSelector
+                                    type: string
                                   targetLabels:
                                     description: |-
                                       `targetLabels` defines the labels which are transferred from the
@@ -2181,7 +2273,7 @@ spec:
                                 - LOCAL_QUORUM
                                 - EACH_QUORUM
                                 - LOCAL_ONE
-                                type: integer
+                                type: string
                               serialConsistency:
                                 description: |-
                                   SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2189,7 +2281,7 @@ spec:
                                 enum:
                                 - SERIAL
                                 - LOCAL_SERIAL
-                                type: integer
+                                type: string
                             type: object
                           datacenter:
                             description: Datacenter is the data center filter arg
@@ -2343,6 +2435,33 @@ spec:
                             description: MaxIdleConns is the max number of idle connections
                               to this datastore.
                             type: integer
+                          passwordCommand:
+                            description: |-
+                              PasswordCommand executes an external command whose standard output is used
+                              as the datastore password, for instance to generate a short-lived cloud IAM
+                              auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                              passwordSecretRef. When the command returns an expiring token, set
+                              maxConnLifetime so connections are recycled before the token expires.
+                              Requires Temporal >= 1.31.0.
+                            properties:
+                              args:
+                                description: Args is the list of arguments passed
+                                  to the command.
+                                items:
+                                  type: string
+                                type: array
+                              command:
+                                description: Command is the path to the executable
+                                  to run.
+                                type: string
+                              timeout:
+                                description: |-
+                                  Timeout is the maximum duration to wait for the command to complete.
+                                  Defaults to 30 seconds if unset.
+                                type: string
+                            required:
+                            - command
+                            type: object
                           pluginName:
                             description: PluginName is the name of SQL plugin.
                             enum:
@@ -2452,7 +2571,7 @@ spec:
                                 - LOCAL_QUORUM
                                 - EACH_QUORUM
                                 - LOCAL_ONE
-                                type: integer
+                                type: string
                               serialConsistency:
                                 description: |-
                                   SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2460,7 +2579,7 @@ spec:
                                 enum:
                                 - SERIAL
                                 - LOCAL_SERIAL
-                                type: integer
+                                type: string
                             type: object
                           datacenter:
                             description: Datacenter is the data center filter arg
@@ -2614,6 +2733,33 @@ spec:
                             description: MaxIdleConns is the max number of idle connections
                               to this datastore.
                             type: integer
+                          passwordCommand:
+                            description: |-
+                              PasswordCommand executes an external command whose standard output is used
+                              as the datastore password, for instance to generate a short-lived cloud IAM
+                              auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                              passwordSecretRef. When the command returns an expiring token, set
+                              maxConnLifetime so connections are recycled before the token expires.
+                              Requires Temporal >= 1.31.0.
+                            properties:
+                              args:
+                                description: Args is the list of arguments passed
+                                  to the command.
+                                items:
+                                  type: string
+                                type: array
+                              command:
+                                description: Command is the path to the executable
+                                  to run.
+                                type: string
+                              timeout:
+                                description: |-
+                                  Timeout is the maximum duration to wait for the command to complete.
+                                  Defaults to 30 seconds if unset.
+                                type: string
+                            required:
+                            - command
+                            type: object
                           pluginName:
                             description: PluginName is the name of SQL plugin.
                             enum:
@@ -2725,7 +2871,7 @@ spec:
                                 - LOCAL_QUORUM
                                 - EACH_QUORUM
                                 - LOCAL_ONE
-                                type: integer
+                                type: string
                               serialConsistency:
                                 description: |-
                                   SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2733,7 +2879,7 @@ spec:
                                 enum:
                                 - SERIAL
                                 - LOCAL_SERIAL
-                                type: integer
+                                type: string
                             type: object
                           datacenter:
                             description: Datacenter is the data center filter arg
@@ -2887,6 +3033,33 @@ spec:
                             description: MaxIdleConns is the max number of idle connections
                               to this datastore.
                             type: integer
+                          passwordCommand:
+                            description: |-
+                              PasswordCommand executes an external command whose standard output is used
+                              as the datastore password, for instance to generate a short-lived cloud IAM
+                              auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                              passwordSecretRef. When the command returns an expiring token, set
+                              maxConnLifetime so connections are recycled before the token expires.
+                              Requires Temporal >= 1.31.0.
+                            properties:
+                              args:
+                                description: Args is the list of arguments passed
+                                  to the command.
+                                items:
+                                  type: string
+                                type: array
+                              command:
+                                description: Command is the path to the executable
+                                  to run.
+                                type: string
+                              timeout:
+                                description: |-
+                                  Timeout is the maximum duration to wait for the command to complete.
+                                  Defaults to 30 seconds if unset.
+                                type: string
+                            required:
+                            - command
+                            type: object
                           pluginName:
                             description: PluginName is the name of SQL plugin.
                             enum:
@@ -2996,7 +3169,7 @@ spec:
                                 - LOCAL_QUORUM
                                 - EACH_QUORUM
                                 - LOCAL_ONE
-                                type: integer
+                                type: string
                               serialConsistency:
                                 description: |-
                                   SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -3004,7 +3177,7 @@ spec:
                                 enum:
                                 - SERIAL
                                 - LOCAL_SERIAL
-                                type: integer
+                                type: string
                             type: object
                           datacenter:
                             description: Datacenter is the data center filter arg
@@ -3158,6 +3331,33 @@ spec:
                             description: MaxIdleConns is the max number of idle connections
                               to this datastore.
                             type: integer
+                          passwordCommand:
+                            description: |-
+                              PasswordCommand executes an external command whose standard output is used
+                              as the datastore password, for instance to generate a short-lived cloud IAM
+                              auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                              passwordSecretRef. When the command returns an expiring token, set
+                              maxConnLifetime so connections are recycled before the token expires.
+                              Requires Temporal >= 1.31.0.
+                            properties:
+                              args:
+                                description: Args is the list of arguments passed
+                                  to the command.
+                                items:
+                                  type: string
+                                type: array
+                              command:
+                                description: Command is the path to the executable
+                                  to run.
+                                type: string
+                              timeout:
+                                description: |-
+                                  Timeout is the maximum duration to wait for the command to complete.
+                                  Defaults to 30 seconds if unset.
+                                type: string
+                            required:
+                            - command
+                            type: object
                           pluginName:
                             description: PluginName is the name of SQL plugin.
                             enum:
@@ -3284,6 +3484,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3366,7 +3568,7 @@ spec:
                               Claims lists the names of resources, defined in spec.resourceClaims,
                               that are used by this container.
 
-                              This is an alpha field and requires enabling the
+                              This field depends on the
                               DynamicResourceAllocation feature gate.
 
                               This field is immutable. It can only be set for containers.
@@ -3456,6 +3658,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3538,7 +3742,7 @@ spec:
                               Claims lists the names of resources, defined in spec.resourceClaims,
                               that are used by this container.
 
-                              This is an alpha field and requires enabling the
+                              This field depends on the
                               DynamicResourceAllocation feature gate.
 
                               This field is immutable. It can only be set for containers.
@@ -3635,6 +3839,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3717,7 +3923,7 @@ spec:
                               Claims lists the names of resources, defined in spec.resourceClaims,
                               that are used by this container.
 
-                              This is an alpha field and requires enabling the
+                              This field depends on the
                               DynamicResourceAllocation feature gate.
 
                               This field is immutable. It can only be set for containers.
@@ -3807,6 +4013,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -3889,7 +4097,7 @@ spec:
                               Claims lists the names of resources, defined in spec.resourceClaims,
                               that are used by this container.
 
-                              This is an alpha field and requires enabling the
+                              This field depends on the
                               DynamicResourceAllocation feature gate.
 
                               This field is immutable. It can only be set for containers.
@@ -3950,6 +4158,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
@@ -4044,6 +4254,8 @@ spec:
                             description: Override configuration for the temporal service
                               Deployment.
                             properties:
+                              jsonPatch:
+                                x-kubernetes-preserve-unknown-fields: true
                               metadata:
                                 description: |-
                                   ObjectMetaOverride provides the ability to override an object metadata.
@@ -4126,7 +4338,7 @@ spec:
                               Claims lists the names of resources, defined in spec.resourceClaims,
                               that are used by this container.
 
-                              This is an alpha field and requires enabling the
+                              This field depends on the
                               DynamicResourceAllocation feature gate.
 
                               This field is immutable. It can only be set for containers.
@@ -4248,6 +4460,8 @@ spec:
                         description: Override configuration for the temporal service
                           Deployment.
                         properties:
+                          jsonPatch:
+                            x-kubernetes-preserve-unknown-fields: true
                           metadata:
                             description: |-
                               ObjectMetaOverride provides the ability to override an object metadata.
@@ -4320,7 +4534,7 @@ spec:
                           Claims lists the names of resources, defined in spec.resourceClaims,
                           that are used by this container.
 
-                          This is an alpha field and requires enabling the
+                          This field depends on the
                           DynamicResourceAllocation feature gate.
 
                           This field is immutable. It can only be set for containers.
@@ -4590,7 +4804,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: temporalnamespaces.temporal.io
 spec:
   group: temporal.io
@@ -4636,6 +4850,11 @@ spec:
                 description: |-
                   AllowDeletion makes the controller delete the Temporal namespace if the
                   CRD is deleted.
+                type: boolean
+              allowSearchAttributeDeletion:
+                description: |-
+                  AllowSearchAttributeDeletion makes the controller remove custom search attributes
+                  from the Temporal server if they are not present in the spec.
                 type: boolean
               archival:
                 description: |-
@@ -4717,6 +4936,13 @@ spec:
                 items:
                   type: string
                 type: array
+              customSearchAttributes:
+                additionalProperties:
+                  type: string
+                description: |-
+                  CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+                  Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.
+                type: object
               data:
                 additionalProperties:
                   type: string
@@ -4815,7 +5041,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: temporalschedules.temporal.io
 spec:
   group: temporal.io

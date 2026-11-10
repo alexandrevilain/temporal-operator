@@ -108,7 +108,12 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterReconciler{
-		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager),
+		// GetEventRecorderFor is deprecated in controller-runtime v0.23 in favour of
+		// GetEventRecorder, but the replacement returns events.EventRecorder rather
+		// than record.EventRecorder. Those are different interfaces and switching
+		// moves event emission from the core v1 API group to events.k8s.io/v1, which
+		// is an observable behaviour change. Deferred to its own change.
+		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("cluster-controller"), discoveryManager), //nolint:staticcheck // SA1019: see note above.
 		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
@@ -123,7 +128,12 @@ func main() {
 	}
 
 	if err = (&controllers.TemporalClusterClientReconciler{
-		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager),
+		// GetEventRecorderFor is deprecated in controller-runtime v0.23 in favour of
+		// GetEventRecorder, but the replacement returns events.EventRecorder rather
+		// than record.EventRecorder. Those are different interfaces and switching
+		// moves event emission from the core v1 API group to events.k8s.io/v1, which
+		// is an observable behaviour change. Deferred to its own change.
+		Base:          controllers.New(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("clusterclient-controller"), discoveryManager), //nolint:staticcheck // SA1019: see note above.
 		AvailableAPIs: availableAPIs,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterClient")

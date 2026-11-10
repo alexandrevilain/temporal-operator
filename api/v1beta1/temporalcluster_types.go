@@ -22,12 +22,13 @@ import (
 	"path"
 	"strings"
 
+	"slices"
+
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"go.temporal.io/server/common/primitives"
-	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -253,6 +254,28 @@ type SQLSpec struct {
 	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.
 	// +optional
 	GCPServiceAccount *string `json:"gcpServiceAccount,omitempty"`
+	// PasswordCommand executes an external command whose standard output is used
+	// as the datastore password, for instance to generate a short-lived cloud IAM
+	// auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+	// passwordSecretRef. When the command returns an expiring token, set
+	// maxConnLifetime so connections are recycled before the token expires.
+	// Requires Temporal >= 1.31.0.
+	// +optional
+	PasswordCommand *SQLPasswordCommandSpec `json:"passwordCommand,omitempty"`
+}
+
+// SQLPasswordCommandSpec configures an external command used to retrieve the
+// datastore password at runtime. Available for Temporal clusters >= 1.31.0.
+type SQLPasswordCommandSpec struct {
+	// Command is the path to the executable to run.
+	Command string `json:"command"`
+	// Args is the list of arguments passed to the command.
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// Timeout is the maximum duration to wait for the command to complete.
+	// Defaults to 30 seconds if unset.
+	// +optional
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
 }
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.
