@@ -22,6 +22,9 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"time"
+
+	"slices"
 
 	"github.com/alexandrevilain/temporal-operator/api/v1beta1"
 	"github.com/alexandrevilain/temporal-operator/internal/discovery"
@@ -30,10 +33,8 @@ import (
 	enumsspb "go.temporal.io/server/api/enums/v1"
 	"go.temporal.io/server/common/primitives"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
-	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -42,14 +43,6 @@ import (
 // and set default fields values for TemporalCluster objects.
 type TemporalClusterWebhook struct {
 	AvailableAPIs *discovery.AvailableAPIs
-}
-
-func (w *TemporalClusterWebhook) getClusterFromRequest(obj runtime.Object) (*v1beta1.TemporalCluster, error) {
-	cluster, ok := obj.(*v1beta1.TemporalCluster)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected an TemporalCluster but got a %T", obj))
-	}
-	return cluster, nil
 }
 
 func (w *TemporalClusterWebhook) aggregateClusterErrors(cluster *v1beta1.TemporalCluster, errs field.ErrorList) error {
@@ -65,12 +58,7 @@ func (w *TemporalClusterWebhook) aggregateClusterErrors(cluster *v1beta1.Tempora
 }
 
 // Default ensures empty fields have their default value.
-func (w *TemporalClusterWebhook) Default(_ context.Context, obj runtime.Object) error {
-	cluster, err := w.getClusterFromRequest(obj)
-	if err != nil {
-		return err
-	}
-
+func (w *TemporalClusterWebhook) Default(_ context.Context, cluster *v1beta1.TemporalCluster) error {
 	if cluster.Spec.Metrics.IsEnabled() {
 		if cluster.Spec.Metrics.Prometheus != nil {
 			// If the user has set the deprecated ListenAddress field and not the new ListenPort,
@@ -210,15 +198,15 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 	}
 
 	// Check that the user-specified version is not marked as broken.
-	for _, version := range version.ForbiddenBrokenReleases {
-		if cluster.Spec.Version.Equal(version.Version) {
-			errs = append(errs,
-				field.Forbidden(
-					field.NewPath("spec", "version"),
-					fmt.Sprintf("version %s is marked as broken by the operator, please upgrade to %s (if allowed)", cluster.Spec.Version.String(), cluster.Spec.Version.IncPatch().String()),
-				),
-			)
-		}
+	// The suggested version skips any release that is itself broken, so users
+	// are not sent from one rejected version straight to another.
+	if version.IsBrokenRelease(cluster.Spec.Version) {
+		errs = append(errs,
+			field.Forbidden(
+				field.NewPath("spec", "version"),
+				fmt.Sprintf("version %s is marked as broken by the operator, please upgrade to %s (if allowed)", cluster.Spec.Version.String(), cluster.Spec.Version.NextNonBrokenPatch().String()),
+			),
+		)
 	}
 
 	// Check new features introduced in cluster version >= 1.20 are not enabled for older version.
@@ -300,6 +288,44 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 		}
 	}
 
+	// Validate SQL passwordCommand usage. It resolves the datastore password by
+	// running an external command and is only supported by Temporal >= 1.31.
+	for name, store := range cluster.Spec.Persistence.GetDatastoresMap() {
+		if store == nil || store.SQL == nil || store.SQL.PasswordCommand == nil {
+			continue
+		}
+		path := field.NewPath("spec", "persistence", name, "sql", "passwordCommand")
+		if !cluster.Spec.Version.GreaterOrEqual(version.V1_31_0) {
+			errs = append(errs, field.Forbidden(
+				path,
+				"sql.passwordCommand requires Temporal >= 1.31.0.",
+			))
+		}
+		if store.PasswordSecretRef != nil {
+			errs = append(errs, field.Forbidden(
+				path,
+				"sql.passwordCommand is mutually exclusive with passwordSecretRef.",
+			))
+		}
+		if store.SQL.PasswordCommand.Command == "" {
+			errs = append(errs, field.Required(
+				path.Child("command"),
+				"command is required when passwordCommand is set.",
+			))
+		}
+		// The persistence schema jobs run the same command inside the
+		// admin-tools image, and that image cannot be extended: the job's pod
+		// spec is fully operator-owned, so there is no volume or container
+		// override through which a helper binary could be supplied. If the
+		// command is not already present in admin-tools, schema setup fails
+		// with an authentication error even though the server pods themselves
+		// resolve the password fine.
+		warns = append(warns, fmt.Sprintf(
+			"%s: the command must already exist in the admin-tools image; the persistence schema jobs run it there and their pod spec cannot be extended with extra volumes or containers",
+			path.String(),
+		))
+	}
+
 	// Check for per unit histogram boundaries if metrics is enabled
 	if cluster.Spec.Metrics.IsEnabled() && cluster.Spec.Metrics.PerUnitHistogramBoundaries != nil {
 		p := cluster.Spec.Metrics.PerUnitHistogramBoundaries
@@ -317,6 +343,10 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 			}
 		}
 	}
+
+	upgradeWarns, upgradeErrs := validateUpgradeSpec(cluster)
+	warns = append(warns, upgradeWarns...)
+	errs = append(errs, upgradeErrs...)
 
 	if cluster.Spec.Services != nil {
 		overrides := cluster.Spec.Services.Overrides
@@ -361,48 +391,168 @@ func (w *TemporalClusterWebhook) validateCluster(cluster *v1beta1.TemporalCluste
 	return warns, errs
 }
 
-// ValidateCreate ensures the user is creating a consistent temporal cluster.
-func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	cluster, err := w.getClusterFromRequest(obj)
-	if err != nil {
-		return nil, err
+// minUpgradeStepTimeout is the lowest accepted spec.upgrade.stepTimeout: a step always includes
+// schema jobs and a rolling update of every service.
+const minUpgradeStepTimeout = time.Minute
+
+// validateUpgradeSpec validates spec.upgrade on its own.
+func validateUpgradeSpec(cluster *v1beta1.TemporalCluster) (admission.Warnings, field.ErrorList) {
+	var warns admission.Warnings
+	var errs field.ErrorList
+
+	upgrade := cluster.Spec.Upgrade
+	if upgrade == nil {
+		return nil, nil
+	}
+	path := field.NewPath("spec", "upgrade")
+
+	if !upgrade.IsAutomatic() {
+		if upgrade.Target != "" && upgrade.Target != v1beta1.VersionUpgradeTarget {
+			errs = append(errs, field.Forbidden(path.Child("target"),
+				fmt.Sprintf("target %q requires strategy %q", upgrade.Target, v1beta1.AutomaticUpgradeStrategy)))
+		}
+		if upgrade.Paused {
+			warns = append(warns, "spec.upgrade.paused has no effect unless spec.upgrade.strategy is Automatic")
+		}
+		return warns, errs
 	}
 
+	if upgrade.StepTimeout != nil && upgrade.StepTimeout.Duration < minUpgradeStepTimeout {
+		errs = append(errs, field.Invalid(path.Child("stepTimeout"), upgrade.StepTimeout.Duration.String(),
+			fmt.Sprintf("must be at least %s", minUpgradeStepTimeout)))
+	}
+
+	if upgrade.TargetsLatest() {
+		warns = append(warns, fmt.Sprintf(
+			"spec.upgrade.target is Latest: the cluster converges to %s, the newest Temporal release known to this operator, and upgrading the operator may start a new multi-step Temporal upgrade",
+			version.LatestKnownRelease()))
+	}
+
+	if cluster.Spec.AdminTools != nil && cluster.Spec.AdminTools.Version != "" && !version.IsKnownDefaultAdminToolTag(cluster.Spec.AdminTools.Version) {
+		warns = append(warns, fmt.Sprintf(
+			"spec.admintools.version %q is not an operator default admin tools tag, so automatic upgrades keep it as is at every step; leave it unset (or set an operator default tag) to follow the server version",
+			cluster.Spec.AdminTools.Version))
+	}
+
+	return warns, errs
+}
+
+// validateUpgradePath validates the cluster at every version an automatic upgrade renders on the
+// way to its target, starting after floor (or at the target, for a cluster not deployed yet).
+// Rules that depend on the server version, e.g. a feature that requires a minimum version, must
+// hold at each step, not only at spec.version.
+func (w *TemporalClusterWebhook) validateUpgradePath(cluster *v1beta1.TemporalCluster, floor *version.Version) field.ErrorList {
+	target := cluster.UpgradeTargetVersion()
+	versionPath := field.NewPath("spec", "version")
+
+	var steps []*version.Version
+	if floor == nil {
+		steps = []*version.Version{target}
+	} else {
+		if target.LessThan(floor) {
+			return field.ErrorList{field.Forbidden(versionPath, fmt.Sprintf(
+				"the upgrade target %s is lower than %s, a version the cluster already runs or has started upgrading to; downgrades are not supported",
+				target, floor))}
+		}
+		var err error
+		steps, err = version.UpgradePath(floor, target)
+		if err != nil {
+			return field.ErrorList{field.Forbidden(versionPath, fmt.Sprintf("can't upgrade automatically: %v", err))}
+		}
+	}
+
+	// Errors already reported for spec.version itself are not repeated.
+	_, specErrs := w.validateCluster(cluster)
+	seen := map[string]bool{}
+	key := func(e *field.Error) string { return e.Type.String() + "|" + e.Field + "|" + e.Detail }
+	for _, e := range specErrs {
+		seen[key(e)] = true
+	}
+
+	var errs field.ErrorList
+	for _, step := range steps {
+		if step.Equal(cluster.Spec.Version.Version) {
+			continue
+		}
+		stepped := cluster.DeepCopy()
+		stepped.Spec.Version = step
+		_, stepErrs := w.validateCluster(stepped)
+		for _, e := range stepErrs {
+			if seen[key(e)] {
+				continue
+			}
+			seen[key(e)] = true
+			e.Detail = fmt.Sprintf("at upgrade step %s: %s", step, e.Detail)
+			errs = append(errs, e)
+		}
+	}
+	return errs
+}
+
+// ValidateCreate ensures the user is creating a consistent temporal cluster.
+func (w *TemporalClusterWebhook) ValidateCreate(_ context.Context, cluster *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	warns, errs := w.validateCluster(cluster)
+
+	if cluster.Spec.Upgrade.IsAutomatic() {
+		errs = append(errs, w.validateUpgradePath(cluster, nil)...)
+	}
 
 	return warns, w.aggregateClusterErrors(cluster, errs)
 }
 
 // ValidateUpdate validates TemporalCluster updates.
 // It mainly check for sequential version upgrades.
-func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	oldCluster, err := w.getClusterFromRequest(oldObj)
-	if err != nil {
-		return nil, err
-	}
-
-	newCluster, err := w.getClusterFromRequest(newObj)
-	if err != nil {
-		return nil, err
-	}
-
+func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldCluster, newCluster *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	warns, errs := w.validateCluster(newCluster)
 
-	// Ensure user is doing a sequential version upgrade.
-	// See: https://docs.temporal.io/cluster-deployment-guide#upgrade-server
-	constraint, err := oldCluster.Spec.Version.UpgradeConstraint()
-	if err != nil {
-		return nil, fmt.Errorf("can't compute version upgrade constraint: %w", err)
-	}
+	// The highest version the cluster has reached, fully or partially. Status is not part of the
+	// update request a user sends, so it is read from the stored object.
+	floor := oldCluster.ObservedVersionFloor()
 
-	allowed := constraint.Check(newCluster.Spec.Version.Version)
-	if !allowed {
-		errs = append(errs,
-			field.Forbidden(
-				field.NewPath("spec", "version"),
-				"Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x)",
-			),
-		)
+	switch {
+	case newCluster.Spec.Upgrade.IsAutomatic():
+		// The operator walks every intermediate minor version itself, so spec.version (or the
+		// Latest target) may be any later supported version, as long as it does not go below what
+		// the cluster has reached.
+		if floor == nil && !oldCluster.Spec.Upgrade.IsAutomatic() {
+			floor = oldCluster.Spec.Version
+		}
+		errs = append(errs, w.validateUpgradePath(newCluster, floor)...)
+
+	case oldCluster.Spec.Upgrade.IsAutomatic() && floor != nil:
+		// Leaving the automatic strategy: spec.version is rendered as is from now on, so it must be
+		// a sequential upgrade from what the cluster has reached, not from the old spec.version,
+		// which may be several minor versions ahead (or, with the Latest target, behind).
+		constraint, err := floor.UpgradeConstraint()
+		if err != nil {
+			return nil, fmt.Errorf("can't compute version upgrade constraint: %w", err)
+		}
+		if !constraint.Check(newCluster.Spec.Version.Version) {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "version"),
+					fmt.Sprintf("Can't leave the Automatic upgrade strategy with spec.version %s: the cluster has reached %s, and a manual upgrade may only move from v1.n.x to v1.n+1.x. Set spec.version accordingly, or pause the upgrade with spec.upgrade.paused instead", newCluster.Spec.Version, floor),
+				),
+			)
+		}
+
+	default:
+		// Ensure user is doing a sequential version upgrade.
+		// See: https://docs.temporal.io/cluster-deployment-guide#upgrade-server
+		constraint, err := oldCluster.Spec.Version.UpgradeConstraint()
+		if err != nil {
+			return nil, fmt.Errorf("can't compute version upgrade constraint: %w", err)
+		}
+
+		allowed := constraint.Check(newCluster.Spec.Version.Version)
+		if !allowed {
+			errs = append(errs,
+				field.Forbidden(
+					field.NewPath("spec", "version"),
+					"Unauthorized version upgrade. Only sequential version upgrades are allowed (from v1.n.x to v1.n+1.x). Set spec.upgrade.strategy to Automatic to let the operator step through intermediate versions",
+				),
+			)
+		}
 	}
 
 	// Ensure user can't update the spec.numHistoryShards.
@@ -420,14 +570,13 @@ func (w *TemporalClusterWebhook) ValidateUpdate(_ context.Context, oldObj, newOb
 }
 
 // ValidateDelete does nothing.
-func (w *TemporalClusterWebhook) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
+func (w *TemporalClusterWebhook) ValidateDelete(_ context.Context, _ *v1beta1.TemporalCluster) (admission.Warnings, error) {
 	// No delete validation needed.
 	return nil, nil
 }
 
 func (w *TemporalClusterWebhook) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(&v1beta1.TemporalCluster{}).
+	return ctrl.NewWebhookManagedBy(mgr, &v1beta1.TemporalCluster{}).
 		WithDefaulter(w).
 		WithValidator(w).
 		Complete()

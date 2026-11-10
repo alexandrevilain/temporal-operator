@@ -27,6 +27,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -68,6 +69,9 @@ type TemporalClusterReconciler struct {
 	Base
 
 	AvailableAPIs *discovery.AvailableAPIs
+	// UpgradeRecorder records automatic upgrade events under their own source, so they are not
+	// rate-limited away by the per-resource events of the same reconcile. Defaults to Recorder.
+	UpgradeRecorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
@@ -121,6 +125,48 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 	}()
 
+	// With automatic upgrades the cluster is rendered at the current upgrade step rather than at
+	// spec.version: working is then a copy whose status is written back to cluster before patching.
+	working, halted, err := r.prepareUpgrade(ctx, cluster)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	if working != cluster {
+		defer func() {
+			// Runs before the patch above, deferred calls being LIFO.
+			cluster.Status = working.Status
+		}()
+	}
+
+	if halted {
+		logger.Info("Automatic upgrade step failed, not reconciling workloads until the spec changes", "step", working.Spec.Version.String())
+		return reconcile.Result{}, nil
+	}
+
+	result, persistenceDone, reconcileErr := r.reconcileCluster(ctx, working)
+
+	if working.Spec.Upgrade.IsAutomatic() {
+		upgradeRequeue, err := r.evaluateUpgrade(ctx, working, persistenceDone)
+		if err != nil {
+			return result, kerrors.NewAggregate([]error{reconcileErr, err})
+		}
+		if working.Status.Upgrade.Phase == v1beta1.UpgradePhaseFailed {
+			// Halt: don't requeue on a timer nor return the reconcile error for a backoff retry.
+			return reconcile.Result{}, nil
+		}
+		if upgradeRequeue > 0 && (result.RequeueAfter == 0 || upgradeRequeue < result.RequeueAfter) {
+			result.RequeueAfter = upgradeRequeue
+		}
+	}
+
+	return result, reconcileErr
+}
+
+// reconcileCluster reconciles the persistence and the workloads of the cluster, as rendered at
+// cluster.Spec.Version. persistenceDone reports whether every persistence job has completed.
+func (r *TemporalClusterReconciler) reconcileCluster(ctx context.Context, cluster *v1beta1.TemporalCluster) (_ ctrl.Result, persistenceDone bool, _ error) {
+	logger := log.FromContext(ctx)
+
 	// Check the ready condition
 	cond, exists := v1beta1.GetTemporalClusterReadyCondition(cluster)
 	if !exists || cond.ObservedGeneration != cluster.GetGeneration() {
@@ -133,19 +179,22 @@ func (r *TemporalClusterReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			if requeueAfter == 0 {
 				requeueAfter = 2 * time.Second
 			}
-			return r.handleErrorWithRequeue(cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
+			result, err := r.handleErrorWithRequeue(cluster, v1beta1.PersistenceReconciliationFailedReason, err, requeueAfter)
+			return result, false, err
 		}
 		if requeueAfter > 0 {
-			return reconcile.Result{RequeueAfter: requeueAfter}, nil
+			return reconcile.Result{RequeueAfter: requeueAfter}, false, nil
 		}
 	}
 
 	if err := r.reconcileResources(ctx, cluster); err != nil {
 		logger.Error(err, "Can't reconcile resources")
-		return r.handleErrorWithRequeue(cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		result, err := r.handleErrorWithRequeue(cluster, v1beta1.ResourcesReconciliationFailedReason, err, 2*time.Second)
+		return result, true, err
 	}
 
-	return r.handleSuccess(cluster)
+	result, err := r.handleSuccess(cluster)
+	return result, true, err
 }
 
 func (r *TemporalClusterReconciler) reconcileResources(ctx context.Context, temporalCluster *v1beta1.TemporalCluster) error {

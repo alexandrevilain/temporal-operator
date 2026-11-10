@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: temporalclusters.temporal.io
 spec:
   group: temporal.io
@@ -129,7 +129,7 @@ spec:
                             Claims lists the names of resources, defined in spec.resourceClaims,
                             that are used by this container.
 
-                            This is an alpha field and requires enabling the
+                            This field depends on the
                             DynamicResourceAllocation feature gate.
 
                             This field is immutable. It can only be set for containers.
@@ -486,7 +486,7 @@ spec:
                         Claims lists the names of resources, defined in spec.resourceClaims,
                         that are used by this container.
 
-                        This is an alpha field and requires enabling the
+                        This field depends on the
                         DynamicResourceAllocation feature gate.
 
                         This field is immutable. It can only be set for containers.
@@ -2029,7 +2029,7 @@ spec:
                                     - LOCAL_QUORUM
                                     - EACH_QUORUM
                                     - LOCAL_ONE
-                                  type: integer
+                                  type: string
                                 serialConsistency:
                                   description: |-
                                     SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2037,7 +2037,7 @@ spec:
                                   enum:
                                     - SERIAL
                                     - LOCAL_SERIAL
-                                  type: integer
+                                  type: string
                               type: object
                             datacenter:
                               description: Datacenter is the data center filter arg for cassandra.
@@ -2166,6 +2166,31 @@ spec:
                             maxIdleConns:
                               description: MaxIdleConns is the max number of idle connections to this datastore.
                               type: integer
+                            passwordCommand:
+                              description: |-
+                                PasswordCommand executes an external command whose standard output is used
+                                as the datastore password, for instance to generate a short-lived cloud IAM
+                                auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                                passwordSecretRef. When the command returns an expiring token, set
+                                maxConnLifetime so connections are recycled before the token expires.
+                                Requires Temporal >= 1.31.0.
+                              properties:
+                                args:
+                                  description: Args is the list of arguments passed to the command.
+                                  items:
+                                    type: string
+                                  type: array
+                                command:
+                                  description: Command is the path to the executable to run.
+                                  type: string
+                                timeout:
+                                  description: |-
+                                    Timeout is the maximum duration to wait for the command to complete.
+                                    Defaults to 30 seconds if unset.
+                                  type: string
+                              required:
+                                - command
+                              type: object
                             pluginName:
                               description: PluginName is the name of SQL plugin.
                               enum:
@@ -2267,7 +2292,7 @@ spec:
                                     - LOCAL_QUORUM
                                     - EACH_QUORUM
                                     - LOCAL_ONE
-                                  type: integer
+                                  type: string
                                 serialConsistency:
                                   description: |-
                                     SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2275,7 +2300,7 @@ spec:
                                   enum:
                                     - SERIAL
                                     - LOCAL_SERIAL
-                                  type: integer
+                                  type: string
                               type: object
                             datacenter:
                               description: Datacenter is the data center filter arg for cassandra.
@@ -2404,6 +2429,31 @@ spec:
                             maxIdleConns:
                               description: MaxIdleConns is the max number of idle connections to this datastore.
                               type: integer
+                            passwordCommand:
+                              description: |-
+                                PasswordCommand executes an external command whose standard output is used
+                                as the datastore password, for instance to generate a short-lived cloud IAM
+                                auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                                passwordSecretRef. When the command returns an expiring token, set
+                                maxConnLifetime so connections are recycled before the token expires.
+                                Requires Temporal >= 1.31.0.
+                              properties:
+                                args:
+                                  description: Args is the list of arguments passed to the command.
+                                  items:
+                                    type: string
+                                  type: array
+                                command:
+                                  description: Command is the path to the executable to run.
+                                  type: string
+                                timeout:
+                                  description: |-
+                                    Timeout is the maximum duration to wait for the command to complete.
+                                    Defaults to 30 seconds if unset.
+                                  type: string
+                              required:
+                                - command
+                              type: object
                             pluginName:
                               description: PluginName is the name of SQL plugin.
                               enum:
@@ -2507,7 +2557,7 @@ spec:
                                     - LOCAL_QUORUM
                                     - EACH_QUORUM
                                     - LOCAL_ONE
-                                  type: integer
+                                  type: string
                                 serialConsistency:
                                   description: |-
                                     SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2515,7 +2565,7 @@ spec:
                                   enum:
                                     - SERIAL
                                     - LOCAL_SERIAL
-                                  type: integer
+                                  type: string
                               type: object
                             datacenter:
                               description: Datacenter is the data center filter arg for cassandra.
@@ -2644,6 +2694,31 @@ spec:
                             maxIdleConns:
                               description: MaxIdleConns is the max number of idle connections to this datastore.
                               type: integer
+                            passwordCommand:
+                              description: |-
+                                PasswordCommand executes an external command whose standard output is used
+                                as the datastore password, for instance to generate a short-lived cloud IAM
+                                auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                                passwordSecretRef. When the command returns an expiring token, set
+                                maxConnLifetime so connections are recycled before the token expires.
+                                Requires Temporal >= 1.31.0.
+                              properties:
+                                args:
+                                  description: Args is the list of arguments passed to the command.
+                                  items:
+                                    type: string
+                                  type: array
+                                command:
+                                  description: Command is the path to the executable to run.
+                                  type: string
+                                timeout:
+                                  description: |-
+                                    Timeout is the maximum duration to wait for the command to complete.
+                                    Defaults to 30 seconds if unset.
+                                  type: string
+                              required:
+                                - command
+                              type: object
                             pluginName:
                               description: PluginName is the name of SQL plugin.
                               enum:
@@ -2745,7 +2820,7 @@ spec:
                                     - LOCAL_QUORUM
                                     - EACH_QUORUM
                                     - LOCAL_ONE
-                                  type: integer
+                                  type: string
                                 serialConsistency:
                                   description: |-
                                     SerialConsistency sets the consistency for the serial prtion of queries. Values identical to gocql SerialConsistency values.
@@ -2753,7 +2828,7 @@ spec:
                                   enum:
                                     - SERIAL
                                     - LOCAL_SERIAL
-                                  type: integer
+                                  type: string
                               type: object
                             datacenter:
                               description: Datacenter is the data center filter arg for cassandra.
@@ -2882,6 +2957,31 @@ spec:
                             maxIdleConns:
                               description: MaxIdleConns is the max number of idle connections to this datastore.
                               type: integer
+                            passwordCommand:
+                              description: |-
+                                PasswordCommand executes an external command whose standard output is used
+                                as the datastore password, for instance to generate a short-lived cloud IAM
+                                auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+                                passwordSecretRef. When the command returns an expiring token, set
+                                maxConnLifetime so connections are recycled before the token expires.
+                                Requires Temporal >= 1.31.0.
+                              properties:
+                                args:
+                                  description: Args is the list of arguments passed to the command.
+                                  items:
+                                    type: string
+                                  type: array
+                                command:
+                                  description: Command is the path to the executable to run.
+                                  type: string
+                                timeout:
+                                  description: |-
+                                    Timeout is the maximum duration to wait for the command to complete.
+                                    Defaults to 30 seconds if unset.
+                                  type: string
+                              required:
+                                - command
+                              type: object
                             pluginName:
                               description: PluginName is the name of SQL plugin.
                               enum:
@@ -3077,7 +3177,7 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-                                This is an alpha field and requires enabling the
+                                This field depends on the
                                 DynamicResourceAllocation feature gate.
 
                                 This field is immutable. It can only be set for containers.
@@ -3244,7 +3344,7 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-                                This is an alpha field and requires enabling the
+                                This field depends on the
                                 DynamicResourceAllocation feature gate.
 
                                 This field is immutable. It can only be set for containers.
@@ -3417,7 +3517,7 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-                                This is an alpha field and requires enabling the
+                                This field depends on the
                                 DynamicResourceAllocation feature gate.
 
                                 This field is immutable. It can only be set for containers.
@@ -3584,7 +3684,7 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-                                This is an alpha field and requires enabling the
+                                This field depends on the
                                 DynamicResourceAllocation feature gate.
 
                                 This field is immutable. It can only be set for containers.
@@ -3814,7 +3914,7 @@ spec:
                                 Claims lists the names of resources, defined in spec.resourceClaims,
                                 that are used by this container.
 
-                                This is an alpha field and requires enabling the
+                                This field depends on the
                                 DynamicResourceAllocation feature gate.
 
                                 This field is immutable. It can only be set for containers.
@@ -3998,7 +4098,7 @@ spec:
                             Claims lists the names of resources, defined in spec.resourceClaims,
                             that are used by this container.
 
-                            This is an alpha field and requires enabling the
+                            This field depends on the
                             DynamicResourceAllocation feature gate.
 
                             This field is immutable. It can only be set for containers.
@@ -4069,6 +4169,43 @@ spec:
                       type: object
                     version:
                       description: Version defines the temporal ui version the instance should run.
+                      type: string
+                  type: object
+                upgrade:
+                  description: |-
+                    Upgrade configures how the operator moves the cluster to a new spec.version.
+                    When unset, upgrades are manual: spec.version may only move one minor version at a time.
+                  properties:
+                    paused:
+                      description: |-
+                        Paused stops the operator from starting new automatic upgrade steps.
+                        A step already in progress is completed. Like any spec change, toggling it also retries a
+                        failed step.
+                      type: boolean
+                    stepTimeout:
+                      description: |-
+                        StepTimeout bounds how long a single automatic upgrade step may take, from the moment it
+                        starts until the schema jobs are done and every service is ready at the step's version.
+                        A step that exceeds it is marked failed and the upgrade halts. Defaults to 1h.
+                      type: string
+                    strategy:
+                      description: |-
+                        Strategy defines how the operator reaches spec.version.
+                        "Manual" (default) keeps the sequential rule: spec.version may only move one minor version
+                        at a time. "Automatic" accepts any later supported version and rolls out every intermediate
+                        minor version, one at a time, waiting for each to be healthy.
+                      enum:
+                        - Manual
+                        - Automatic
+                      type: string
+                    target:
+                      description: |-
+                        Target defines the version an automatic upgrade converges to: "Version" (default) for
+                        spec.version, or "Latest" for the newest Temporal release known to the operator.
+                        Only allowed with strategy Automatic.
+                      enum:
+                        - Version
+                        - Latest
                       type: string
                   type: object
                 version:
@@ -4242,6 +4379,44 @@ spec:
                       - version
                     type: object
                   type: array
+                upgrade:
+                  description: 'Upgrade reports the progress of an automatic upgrade (spec.upgrade.strategy: Automatic).'
+                  properties:
+                    currentStep:
+                      description: |-
+                        CurrentStep is the version the operator is currently rolling out (or holding, when paused
+                        or failed).
+                      type: string
+                    failedGeneration:
+                      description: |-
+                        FailedGeneration is the metadata.generation observed when CurrentStep failed. The failure
+                        is cleared, and the step retried, once the generation changes.
+                      format: int64
+                      type: integer
+                    message:
+                      description: Message is a human readable description of the upgrade state.
+                      type: string
+                    pendingSteps:
+                      description: PendingSteps lists the versions still to be rolled out after CurrentStep, in order.
+                      items:
+                        type: string
+                      type: array
+                    phase:
+                      description: Phase is the phase of the automatic upgrade.
+                      type: string
+                    startVersion:
+                      description: StartVersion is the version the cluster ran when the upgrade towards TargetVersion began.
+                      type: string
+                    stepStartTime:
+                      description: StepStartTime is when CurrentStep started (or was last retried).
+                      format: date-time
+                      type: string
+                    targetVersion:
+                      description: |-
+                        TargetVersion is the version the upgrade converges to, resolved from spec.version or, for
+                        spec.upgrade.target: Latest, from the operator's release catalog.
+                      type: string
+                  type: object
                 version:
                   description: Version holds the current temporal version.
                   type: string

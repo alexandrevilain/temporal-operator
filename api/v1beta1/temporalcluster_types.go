@@ -22,12 +22,13 @@ import (
 	"path"
 	"strings"
 
+	"slices"
+
 	"github.com/alexandrevilain/temporal-operator/pkg/version"
 	"github.com/gocql/gocql"
 	"github.com/gosimple/slug"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"go.temporal.io/server/common/primitives"
-	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -253,6 +254,28 @@ type SQLSpec struct {
 	// GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.
 	// +optional
 	GCPServiceAccount *string `json:"gcpServiceAccount,omitempty"`
+	// PasswordCommand executes an external command whose standard output is used
+	// as the datastore password, for instance to generate a short-lived cloud IAM
+	// auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+	// passwordSecretRef. When the command returns an expiring token, set
+	// maxConnLifetime so connections are recycled before the token expires.
+	// Requires Temporal >= 1.31.0.
+	// +optional
+	PasswordCommand *SQLPasswordCommandSpec `json:"passwordCommand,omitempty"`
+}
+
+// SQLPasswordCommandSpec configures an external command used to retrieve the
+// datastore password at runtime. Available for Temporal clusters >= 1.31.0.
+type SQLPasswordCommandSpec struct {
+	// Command is the path to the executable to run.
+	Command string `json:"command"`
+	// Args is the list of arguments passed to the command.
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// Timeout is the maximum duration to wait for the command to complete.
+	// Defaults to 30 seconds if unset.
+	// +optional
+	Timeout *metav1.Duration `json:"timeout,omitempty"`
 }
 
 // DatastoreTLSSpec contains datastore TLS connections specifications.
@@ -596,6 +619,115 @@ type TemporalAdminToolsSpec struct {
 	// Overrides adds some overrides to the resources deployed for the ui.
 	// +optional
 	Overrides *ServiceSpecOverride `json:"overrides,omitempty"`
+}
+
+// UpgradeStrategy defines how the operator reaches a spec.version more than one minor version ahead
+// of the version the cluster runs.
+// +kubebuilder:validation:Enum=Manual;Automatic
+type UpgradeStrategy string
+
+const (
+	// ManualUpgradeStrategy is the default: spec.version may only move one minor version at a
+	// time (from v1.n.x to v1.n+1.x), and the user waits for each rollout before the next change.
+	ManualUpgradeStrategy UpgradeStrategy = "Manual"
+	// AutomaticUpgradeStrategy lets spec.version (or spec.upgrade.target: Latest) name any later
+	// supported version. The operator rolls out every intermediate minor version in turn, using
+	// its newest known non-broken patch, and only starts the next step once the current one is
+	// fully rolled out: schema jobs done, every service deployment ready at that version.
+	AutomaticUpgradeStrategy UpgradeStrategy = "Automatic"
+)
+
+// UpgradeTarget defines which version an automatic upgrade converges to.
+// +kubebuilder:validation:Enum=Version;Latest
+type UpgradeTarget string
+
+const (
+	// VersionUpgradeTarget converges to spec.version. This is the default.
+	VersionUpgradeTarget UpgradeTarget = "Version"
+	// LatestUpgradeTarget converges to the newest Temporal release known to the running operator,
+	// regardless of spec.version. Upgrading the operator to a release that knows a newer Temporal
+	// version starts a new automatic upgrade.
+	LatestUpgradeTarget UpgradeTarget = "Latest"
+)
+
+// UpgradeSpec configures how the operator upgrades the Temporal cluster.
+type UpgradeSpec struct {
+	// Strategy defines how the operator reaches spec.version.
+	// "Manual" (default) keeps the sequential rule: spec.version may only move one minor version
+	// at a time. "Automatic" accepts any later supported version and rolls out every intermediate
+	// minor version, one at a time, waiting for each to be healthy.
+	// +optional
+	Strategy UpgradeStrategy `json:"strategy,omitempty"`
+	// Target defines the version an automatic upgrade converges to: "Version" (default) for
+	// spec.version, or "Latest" for the newest Temporal release known to the operator.
+	// Only allowed with strategy Automatic.
+	// +optional
+	Target UpgradeTarget `json:"target,omitempty"`
+	// Paused stops the operator from starting new automatic upgrade steps.
+	// A step already in progress is completed. Like any spec change, toggling it also retries a
+	// failed step.
+	// +optional
+	Paused bool `json:"paused,omitempty"`
+	// StepTimeout bounds how long a single automatic upgrade step may take, from the moment it
+	// starts until the schema jobs are done and every service is ready at the step's version.
+	// A step that exceeds it is marked failed and the upgrade halts. Defaults to 1h.
+	// +optional
+	StepTimeout *metav1.Duration `json:"stepTimeout,omitempty"`
+}
+
+// IsAutomatic returns true if the automatic upgrade strategy is enabled.
+func (u *UpgradeSpec) IsAutomatic() bool {
+	return u != nil && u.Strategy == AutomaticUpgradeStrategy
+}
+
+// TargetsLatest returns true if the automatic upgrade converges to the newest known release.
+func (u *UpgradeSpec) TargetsLatest() bool {
+	return u.IsAutomatic() && u.Target == LatestUpgradeTarget
+}
+
+// UpgradePhase is the phase of an automatic upgrade.
+type UpgradePhase string
+
+const (
+	// UpgradePhaseProgressing means a step is being rolled out.
+	UpgradePhaseProgressing UpgradePhase = "Progressing"
+	// UpgradePhasePaused means spec.upgrade.paused holds the cluster before the next step.
+	UpgradePhasePaused UpgradePhase = "Paused"
+	// UpgradePhaseFailed means the current step failed; no further step is started, and the
+	// operator stops reconciling the cluster's workloads until the spec changes.
+	UpgradePhaseFailed UpgradePhase = "Failed"
+	// UpgradePhaseCompleted means the cluster runs the target version.
+	UpgradePhaseCompleted UpgradePhase = "Completed"
+)
+
+// UpgradeStatus reports the progress of an automatic upgrade.
+type UpgradeStatus struct {
+	// Phase is the phase of the automatic upgrade.
+	Phase UpgradePhase `json:"phase,omitempty"`
+	// TargetVersion is the version the upgrade converges to, resolved from spec.version or, for
+	// spec.upgrade.target: Latest, from the operator's release catalog.
+	// +optional
+	TargetVersion *version.Version `json:"targetVersion,omitempty"`
+	// StartVersion is the version the cluster ran when the upgrade towards TargetVersion began.
+	// +optional
+	StartVersion *version.Version `json:"startVersion,omitempty"`
+	// CurrentStep is the version the operator is currently rolling out (or holding, when paused
+	// or failed).
+	// +optional
+	CurrentStep *version.Version `json:"currentStep,omitempty"`
+	// PendingSteps lists the versions still to be rolled out after CurrentStep, in order.
+	// +optional
+	PendingSteps []string `json:"pendingSteps,omitempty"`
+	// StepStartTime is when CurrentStep started (or was last retried).
+	// +optional
+	StepStartTime *metav1.Time `json:"stepStartTime,omitempty"`
+	// FailedGeneration is the metadata.generation observed when CurrentStep failed. The failure
+	// is cleared, and the step retried, once the generation changes.
+	// +optional
+	FailedGeneration int64 `json:"failedGeneration,omitempty"`
+	// Message is a human readable description of the upgrade state.
+	// +optional
+	Message string `json:"message,omitempty"`
 }
 
 // MTLSProvider is the enum for support mTLS provider.
@@ -1015,6 +1147,10 @@ type TemporalClusterSpec struct {
 	// This version impacts the underlying persistence schemas versions.
 	// +optional
 	Version *version.Version `json:"version"`
+	// Upgrade configures how the operator moves the cluster to a new spec.version.
+	// When unset, upgrades are manual: spec.version may only move one minor version at a time.
+	// +optional
+	Upgrade *UpgradeSpec `json:"upgrade,omitempty"`
 	// Log defines temporal cluster's logger configuration.
 	// +optional
 	Log *LogSpec `json:"log,omitempty"`
@@ -1112,8 +1248,71 @@ type TemporalClusterStatus struct {
 	Services []ServiceStatus `json:"services,omitempty"`
 	// Persistence holds all datastores statuses.
 	Persistence *TemporalPersistenceStatus `json:"persistence,omitempty"`
+	// Upgrade reports the progress of an automatic upgrade (spec.upgrade.strategy: Automatic).
+	// +optional
+	Upgrade *UpgradeStatus `json:"upgrade,omitempty"`
 	// Conditions represent the latest available observations of the Cluster state.
 	Conditions []metav1.Condition `json:"conditions"`
+}
+
+// UpgradeTargetVersion returns the version the cluster converges to: the newest release known to
+// the operator when spec.upgrade.target is Latest, spec.version otherwise.
+func (c *TemporalCluster) UpgradeTargetVersion() *version.Version {
+	if c.Spec.Upgrade.TargetsLatest() {
+		latest := version.LatestKnownRelease()
+		// Never resolve below what the user asked for.
+		if c.Spec.Version != nil && c.Spec.Version.GreaterOrEqual(latest) {
+			return c.Spec.Version.DeepCopy()
+		}
+		return latest
+	}
+	return c.Spec.Version
+}
+
+// ObservedVersionFloor returns the highest Temporal version the cluster is known to have reached,
+// fully or partially: the rolled out version, any service deployment's version, any datastore's
+// schema version, and the automatic upgrade step in flight. Nothing below it may be rendered again:
+// the schema may already have been migrated past older versions. It is nil for a cluster the
+// operator has not deployed yet.
+func (c *TemporalCluster) ObservedVersionFloor() *version.Version {
+	var floor *version.Version
+	consider := func(v *version.Version) {
+		if v == nil || v.Version == nil {
+			return
+		}
+		if floor == nil || v.GreaterThan(floor.Version) {
+			floor = v.DeepCopy()
+		}
+	}
+	considerString := func(s string) {
+		if s == "" {
+			return
+		}
+		if v, err := version.NewVersionFromString(s); err == nil {
+			consider(v)
+		}
+	}
+
+	considerString(c.Status.Version)
+	for _, svc := range c.Status.Services {
+		considerString(svc.Version)
+	}
+	if p := c.Status.Persistence; p != nil {
+		for _, store := range []*DatastoreStatus{p.DefaultStore, p.VisibilityStore, p.SecondaryVisibilityStore, p.AdvancedVisibilityStore} {
+			if store != nil {
+				consider(store.SchemaVersion)
+			}
+		}
+	}
+	if c.Status.Upgrade != nil {
+		consider(c.Status.Upgrade.CurrentStep)
+	}
+
+	// "0.0.0" is what a service without a version label reports.
+	if floor != nil && floor.Major() == 0 && floor.Minor() == 0 && floor.Patch() == 0 {
+		return nil
+	}
+	return floor
 }
 
 // AddServiceStatus adds the provided service status to the cluster's status.

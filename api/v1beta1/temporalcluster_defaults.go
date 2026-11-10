@@ -26,13 +26,16 @@ import (
 )
 
 const (
-	defaultTemporalVersion = "1.24.3"
+	defaultTemporalVersion = "1.32.2"
 	defaultTemporalImage   = "temporalio/server"
 
-	defaultTemporalUIVersion = "2.27.3"
+	defaultTemporalUIVersion = "2.58.1"
 	defaultTemporalUIImage   = "temporalio/ui"
 
 	defaultTemporalAdmintoolsImage = "temporalio/admin-tools"
+
+	// DefaultUpgradeStepTimeout is the default spec.upgrade.stepTimeout.
+	DefaultUpgradeStepTimeout = time.Hour
 )
 
 // Default set default fields values.
@@ -63,6 +66,21 @@ func (c *TemporalCluster) Default() {
 	}
 	if c.Spec.Image == "" {
 		c.Spec.Image = defaultTemporalImage
+	}
+
+	// spec.upgrade is left nil when unset so existing objects are not modified.
+	if c.Spec.Upgrade != nil {
+		if c.Spec.Upgrade.Strategy == "" {
+			c.Spec.Upgrade.Strategy = ManualUpgradeStrategy
+		}
+		if c.Spec.Upgrade.IsAutomatic() {
+			if c.Spec.Upgrade.Target == "" {
+				c.Spec.Upgrade.Target = VersionUpgradeTarget
+			}
+			if c.Spec.Upgrade.StepTimeout == nil {
+				c.Spec.Upgrade.StepTimeout = &metav1.Duration{Duration: DefaultUpgradeStepTimeout}
+			}
+		}
 	}
 
 	if c.Spec.Log == nil {

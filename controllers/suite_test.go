@@ -32,6 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	temporaliov1beta1 "github.com/alexandrevilain/temporal-operator/api/v1beta1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -67,6 +71,13 @@ var _ = BeforeSuite(func() {
 
 	err = temporaliov1beta1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
+
+	// The same optional APIs main.go registers: the reconciler builds their objects and lets
+	// discovery skip the ones the API server does not serve.
+	Expect(certmanagerv1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(istiosecurityv1beta1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(istionetworkingv1beta1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(monitoringv1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	//+kubebuilder:scaffold:scheme
 

@@ -147,7 +147,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 		},
 	}
 
-	featureTable := []features.Feature{}
+	featureTable := make([]features.Feature, 0, len(tests))
 
 	for name, testCase := range tests {
 		test := testCase

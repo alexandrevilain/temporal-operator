@@ -89,6 +89,21 @@ This version impacts the underlying persistence schemas versions.</p>
 </tr>
 <tr>
 <td>
+<code>upgrade</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradeSpec">
+UpgradeSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Upgrade configures how the operator moves the cluster to a new spec.version.
+When unset, upgrades are manual: spec.version may only move one minor version at a time.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>log</code><br>
 <em>
 <a href="#temporal.io/v1beta1.LogSpec">
@@ -1489,7 +1504,7 @@ Defaults to 10s.</p>
 <code>values</code><br>
 <em>
 <a href="#temporal.io/v1beta1.ConstrainedValue">
-map[string][]./api/v1beta1.ConstrainedValue
+map[string][]ConstrainedValue
 </a>
 </em>
 </td>
@@ -2721,6 +2736,66 @@ Kubernetes core/v1.SecretKeySelector
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.SQLPasswordCommandSpec">SQLPasswordCommandSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.SQLSpec">SQLSpec</a>)
+</p>
+<p>SQLPasswordCommandSpec configures an external command used to retrieve the
+datastore password at runtime. Available for Temporal clusters &gt;= 1.31.0.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>command</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Command is the path to the executable to run.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>args</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Args is the list of arguments passed to the command.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Timeout is the maximum duration to wait for the command to complete.
+Defaults to 30 seconds if unset.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <h3 id="temporal.io/v1beta1.SQLSpec">SQLSpec
 </h3>
 <p>
@@ -2866,6 +2941,25 @@ string
 <td>
 <em>(Optional)</em>
 <p>GCPServiceAccount is the service account to use to authenticate with GCP CloudSQL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>passwordCommand</code><br>
+<em>
+<a href="#temporal.io/v1beta1.SQLPasswordCommandSpec">
+SQLPasswordCommandSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PasswordCommand executes an external command whose standard output is used
+as the datastore password, for instance to generate a short-lived cloud IAM
+auth token (AWS RDS, GCP Cloud SQL). Mutually exclusive with the datastore
+passwordSecretRef. When the command returns an expiring token, set
+maxConnLifetime so connections are recycled before the token expires.
+Requires Temporal &gt;= 1.31.0.</p>
 </td>
 </tr>
 </tbody>
@@ -4838,6 +4932,21 @@ This version impacts the underlying persistence schemas versions.</p>
 </tr>
 <tr>
 <td>
+<code>upgrade</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradeSpec">
+UpgradeSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Upgrade configures how the operator moves the cluster to a new spec.version.
+When unset, upgrades are manual: spec.version may only move one minor version at a time.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>log</code><br>
 <em>
 <a href="#temporal.io/v1beta1.LogSpec">
@@ -5103,6 +5212,20 @@ TemporalPersistenceStatus
 </tr>
 <tr>
 <td>
+<code>upgrade</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradeStatus">
+UpgradeStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Upgrade reports the progress of an automatic upgrade (spec.upgrade.strategy: Automatic).</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>conditions</code><br>
 <em>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#condition-v1-meta">
@@ -5295,6 +5418,32 @@ TemporalNamespaceArchivalSpec
 <em>(Optional)</em>
 <p>Archival is a per-namespace archival configuration.
 If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
 </td>
 </tr>
 </table>
@@ -5519,6 +5668,32 @@ TemporalNamespaceArchivalSpec
 <em>(Optional)</em>
 <p>Archival is a per-namespace archival configuration.
 If not set, the default cluster configuration is used.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>customSearchAttributes</code><br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CustomSearchAttributes is an optional mapping of custom search attribute names to types.
+Supported types: Text, Keyword, Int, Double, Bool, DateTime, KeywordList.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>allowSearchAttributeDeletion</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowSearchAttributeDeletion makes the controller remove custom search attributes
+from the Temporal server if they are not present in the spec.</p>
 </td>
 </tr>
 </tbody>
@@ -6154,6 +6329,235 @@ ObjectMetaOverride
 </table>
 </div>
 </div>
+<h3 id="temporal.io/v1beta1.UpgradePhase">UpgradePhase
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.UpgradeStatus">UpgradeStatus</a>)
+</p>
+<p>UpgradePhase is the phase of an automatic upgrade.</p>
+<h3 id="temporal.io/v1beta1.UpgradeSpec">UpgradeSpec
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterSpec">TemporalClusterSpec</a>)
+</p>
+<p>UpgradeSpec configures how the operator upgrades the Temporal cluster.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>strategy</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradeStrategy">
+UpgradeStrategy
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Strategy defines how the operator reaches spec.version.
+&ldquo;Manual&rdquo; (default) keeps the sequential rule: spec.version may only move one minor version
+at a time. &ldquo;Automatic&rdquo; accepts any later supported version and rolls out every intermediate
+minor version, one at a time, waiting for each to be healthy.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>target</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradeTarget">
+UpgradeTarget
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Target defines the version an automatic upgrade converges to: &ldquo;Version&rdquo; (default) for
+spec.version, or &ldquo;Latest&rdquo; for the newest Temporal release known to the operator.
+Only allowed with strategy Automatic.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>paused</code><br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Paused stops the operator from starting new automatic upgrade steps.
+A step already in progress is completed. Like any spec change, toggling it also retries a
+failed step.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>stepTimeout</code><br>
+<em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StepTimeout bounds how long a single automatic upgrade step may take, from the moment it
+starts until the schema jobs are done and every service is ready at the step&rsquo;s version.
+A step that exceeds it is marked failed and the upgrade halts. Defaults to 1h.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.UpgradeStatus">UpgradeStatus
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.TemporalClusterStatus">TemporalClusterStatus</a>)
+</p>
+<p>UpgradeStatus reports the progress of an automatic upgrade.</p>
+<div class="md-typeset__scrollwrap">
+<div class="md-typeset__table">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>phase</code><br>
+<em>
+<a href="#temporal.io/v1beta1.UpgradePhase">
+UpgradePhase
+</a>
+</em>
+</td>
+<td>
+<p>Phase is the phase of the automatic upgrade.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>targetVersion</code><br>
+<em>
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TargetVersion is the version the upgrade converges to, resolved from spec.version or, for
+spec.upgrade.target: Latest, from the operator&rsquo;s release catalog.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>startVersion</code><br>
+<em>
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StartVersion is the version the cluster ran when the upgrade towards TargetVersion began.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>currentStep</code><br>
+<em>
+github.com/alexandrevilain/temporal-operator/pkg/version.Version
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>CurrentStep is the version the operator is currently rolling out (or holding, when paused
+or failed).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pendingSteps</code><br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PendingSteps lists the versions still to be rolled out after CurrentStep, in order.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>stepStartTime</code><br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StepStartTime is when CurrentStep started (or was last retried).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>failedGeneration</code><br>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>FailedGeneration is the metadata.generation observed when CurrentStep failed. The failure
+is cleared, and the step retried, once the generation changes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>message</code><br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Message is a human readable description of the upgrade state.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 id="temporal.io/v1beta1.UpgradeStrategy">UpgradeStrategy
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.UpgradeSpec">UpgradeSpec</a>)
+</p>
+<p>UpgradeStrategy defines how the operator reaches a spec.version more than one minor version ahead
+of the version the cluster runs.</p>
+<h3 id="temporal.io/v1beta1.UpgradeTarget">UpgradeTarget
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#temporal.io/v1beta1.UpgradeSpec">UpgradeSpec</a>)
+</p>
+<p>UpgradeTarget defines which version an automatic upgrade converges to.</p>
 <div class="admonition note">
 <p class="last">This page was automatically generated with <code>gen-crd-api-reference-docs</code></p>
 </div>

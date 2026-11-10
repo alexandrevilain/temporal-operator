@@ -1,133 +1,170 @@
+version: "2"
 run:
-  timeout: 10m
-  go: "1.22"
+  # Language version is derived from go.mod. Do not pin it here: a stale pin
+  # silently holds linters to older semantics than the module actually targets.
   allow-parallel-runners: true
-
 linters:
-  disable-all: true
+  default: none
   enable:
-  - asasalint
-  - asciicheck
-  - bidichk
-  - bodyclose
-  - containedctx
-  - dogsled
-  - dupword
-  - durationcheck
-  - errcheck
-  - errchkjson
-  - copyloopvar
-  - ginkgolinter
-  - goconst
-  - gocritic
-  - godot
-  - gofmt
-  - goimports
-  - goprintffuncname
-  - gosec
-  - gosimple
-  - govet
-  - importas
-  - ineffassign
-  - misspell
-  - nakedret
-  - nilerr
-  - noctx
-  - nolintlint
-  - nosprintfhostport
-  - prealloc
-  - predeclared
-  - revive
-  - rowserrcheck
-  - staticcheck
-  - stylecheck
-  - typecheck
-  - unconvert
-  - unused
-  - usestdlibvars
-  - whitespace
-  - unparam
-
-linters-settings:
-  ginkgolinter:
-    # Suppress the wrong length assertion warning.
-    suppress-len-assertion: false
-    # Suppress the wrong nil assertion warning.
-    suppress-nil-assertion: false
-    # Suppress the wrong error assertion warning.
-    suppress-err-assertion: true
-  stylecheck:
-    checks: ["all", "-ST1000", "-ST1020"]
-  importas:
-    no-unaliased: true
-    alias:
-      # Kubernetes
-      - pkg: k8s.io/api/core/v1
-        alias: corev1
-      - pkg: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
-        alias: apiextensionsv1
-      - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
-        alias: metav1
-      - pkg: k8s.io/apimachinery/pkg/api/errors
-        alias: apierrors
-      - pkg: k8s.io/apimachinery/pkg/util/errors
-        alias: kerrors
-      - pkg: k8s.io/api/apps/v1
-        alias: appsv1
-      - pkg: k8s.io/api/batch/v1
-        alias: batchv1
-      - pkg: k8s.io/api/networking/v1
-        alias: networkingv1
-      # Cert Manager
-      - pkg: github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1
-        alias: certmanagerv1
-      # Prometheus Operator
-      - pkg: github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1
-        alias: monitoringv1
-      # Istio
-      - pkg: istio.io/client-go/pkg/apis/networking/v1beta1
-        alias: istionetworkingv1beta1
-      - pkg: istio.io/client-go/pkg/apis/security/v1beta1
-        alias: istiosecurityv1beta1
-      - pkg: istio.io/api/security/v1beta1
-        alias: istioapisecurityv1beta1
-      - pkg: istio.io/api/type/v1beta1
-        alias: istioapiv1beta1
-      # Controller Runtime
-      - pkg: sigs.k8s.io/controller-runtime
-        alias: ctrl
-  nolintlint:
-    allow-unused: false
-    require-specific: true
-  revive:
-    rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-      - name: empty-block
-      - name: superfluous-else
-      - name: unreachable-code
-      - name: redefines-builtin-id
-      - name: bool-literal-in-expr
-      - name: constant-logical-expr
-      - name: exported
-      - name: unused-parameter
-      - name: package-comments
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - copyloopvar
+    - dogsled
+    - dupword
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - ginkgolinter
+    - goconst
+    - gocritic
+    - godot
+    - goprintffuncname
+    - gosec
+    - govet
+    - importas
+    - ineffassign
+    - misspell
+    - nakedret
+    - nilerr
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - whitespace
+  settings:
+    goconst:
+      # Table-driven tests legitimately repeat short literals ("test", "secret",
+      # "password") across cases; hoisting those into constants makes the tables
+      # harder to read, not easier.
+      #
+      # This restores v1's signal rather than suppressing it. Evidence: the v1
+      # config carried no test exclusions at all (only zz_generated), and the
+      # lint job was green on upstream main 1398896 with v1.64.8 — while the
+      # files this would newly flag (internal/resource/persistence/utils_test.go,
+      # pkg/status/status_test.go, pkg/kubernetes/overrides_test.go, ...) all
+      # already existed at that commit. So v1's goconst was not reporting them,
+      # and without this setting the v2 migration would add ~70 findings that
+      # have nothing to do with any behaviour change.
+      ignore-tests: true
+    govet:
+      disable:
+        # Reports "cannot inline: type parameter inference is not yet supported"
+        # on generic calls such as slices.Contains. That is the analyzer
+        # describing its own limitation, not a defect in our code, and it only
+        # started firing once the module moved to go 1.26.
+        - inline
+    ginkgolinter:
+      suppress-len-assertion: false
+      suppress-nil-assertion: false
+      suppress-err-assertion: true
+    importas:
+      alias:
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
+          alias: apiextensionsv1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/apimachinery/pkg/api/errors
+          alias: apierrors
+        - pkg: k8s.io/apimachinery/pkg/util/errors
+          alias: kerrors
+        - pkg: k8s.io/api/apps/v1
+          alias: appsv1
+        - pkg: k8s.io/api/batch/v1
+          alias: batchv1
+        - pkg: k8s.io/api/networking/v1
+          alias: networkingv1
+        - pkg: github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1
+          alias: certmanagerv1
+        - pkg: github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1
+          alias: monitoringv1
+        - pkg: istio.io/client-go/pkg/apis/networking/v1beta1
+          alias: istionetworkingv1beta1
+        - pkg: istio.io/client-go/pkg/apis/security/v1beta1
+          alias: istiosecurityv1beta1
+        - pkg: istio.io/api/security/v1beta1
+          alias: istioapisecurityv1beta1
+        - pkg: istio.io/api/type/v1beta1
+          alias: istioapiv1beta1
+        - pkg: sigs.k8s.io/controller-runtime
+          alias: ctrl
+      no-unaliased: true
+    nolintlint:
+      require-specific: true
+      allow-unused: false
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: redefines-builtin-id
+        - name: bool-literal-in-expr
+        - name: constant-logical-expr
+        - name: exported
+        - name: unused-parameter
+        - name: package-comments
+    staticcheck:
+      # v1 applied this list to `stylecheck`, where "all" meant the ST* checks.
+      # v2 merged gosimple/stylecheck/typecheck into staticcheck, so "all" now
+      # also pulls in the QF* ("quickfix") suggestions, which v1 never ran.
+      # Excluding QF* keeps the enabled set equivalent to the pre-migration one.
+      checks:
+        - all
+        - -ST1000
+        - -ST1020
+        - -QF1001
+        - -QF1008
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - zz_generated.*\.go$
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  max-same-issues: 0
   max-issues-per-linter: 0
-  exclude-files:
-    - "zz_generated.*\\.go$"
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - zz_generated.*\.go$
+      - third_party$
+      - builtin$
+      - examples$

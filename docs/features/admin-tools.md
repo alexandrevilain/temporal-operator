@@ -22,3 +22,6 @@ spec:
     version: 1.24.2-tctl-1.18.1-cli-1.0.0
 ```
 Note: You need helm chart version 0.6.0 or above to specify admintools version.
+
+With [automatic upgrades](upgrades.md#admin-tools-and-ui), a tag that is one of the operator's
+default tags (like the one above) follows every upgrade step; a custom tag is kept as is.
