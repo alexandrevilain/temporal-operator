@@ -23,6 +23,7 @@ Improvements:
     - the `tasks_expired` metric is removed in favour of `tasks_dropped`;
     - v1.32 is the last release with the deprecated Worker Versioning APIs; migrate to Worker Deployments before v1.33.
   - Upgrades still move one minor version at a time (`1.31.x` -> `1.32.x`).
+  - **Upgrading the operator restarts every managed cluster once.** The rendered server config is marshalled from `go.temporal.io/server`'s config struct, and v1.32 adds two zero-valued fields (`global.metrics.tagsCacheMaxSize`, `global.remoteClusterAuth.require`). That changes the config hash on the pod templates, so all services of every TemporalCluster roll once, whatever its Temporal version. The fields are inert, and older servers accept them (verified on a 1.24.3 cluster). Rolling the operator back rolls the pods again.
 Fixes:
 - `spec.version` values that are marked broken no longer suggest another broken release as the upgrade target (`1.26.0` previously suggested `1.26.1`, which is also rejected).
 
